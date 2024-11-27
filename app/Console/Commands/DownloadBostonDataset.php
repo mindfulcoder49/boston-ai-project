@@ -15,7 +15,7 @@ class DownloadBostonDataset extends Command
     {
         // Load configuration
         $config = config('datasets');
-        $baseUrl = 'https://data.boston.gov/api/3/action/datastore_search';
+        $baseUrl = 'http://data.boston.gov/api/3/action/datastore_search';
         $datasets = $config['datasets'];
         $apiKey = config('services.bostongov.api_key');
 
@@ -31,11 +31,13 @@ class DownloadBostonDataset extends Command
         $url = $baseUrl;
         $filename = $this->generateFilename($name, 'json');
         $destination = storage_path("app/{$filename}");
+        $proxy = 'http://44.218.183.55:80';
 
         $this->info("Attempting to download dataset: {$name} using resource_id: {$resourceId}...");
 
         try {
             $client = new Client([
+                'proxy' => $proxy,
                 'timeout' => 30,
                 'headers' => [
                     'Authorization' => $apiKey,
