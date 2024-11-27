@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 
 class DownloadBostonDataset extends Command
 {
@@ -48,19 +50,46 @@ class DownloadBostonDataset extends Command
      * @return bool
      */
     private function downloadFile(string $url, string $destination): bool
-    {
-        try {
-            $fileContents = file_get_contents($url);
-            if ($fileContents === false) {
-                return false;
-            }
-            file_put_contents($destination, $fileContents);
-            return true;
-        } catch (\Exception $e) {
-            $this->error("Error downloading the file: " . $e->getMessage());
+{
+    try {
+        $client = new Client([
+            'timeout' => 30, // Set a timeout for the request
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            ],
+        ]);
+
+        // Make the request
+        $response = $client->get($url);
+
+        // Check HTTP status code
+        if ($response->getStatusCode() !== 200) {
+            $this->error("HTTP request failed with status code: " . $response->getStatusCode());
             return false;
         }
+
+        // Get the file contents
+        $fileContents = $response->getBody()->getContents();
+
+        // Check if content is valid
+        if (empty($fileContents)) {
+            $this->error("Downloaded file is empty.");
+            return false;
+        }
+
+        // Save file contents to the destination
+        file_put_contents($destination, $fileContents);
+
+        $this->info("File downloaded successfully to: {$destination}");
+        return true;
+    } catch (RequestException $e) {
+        $this->error("HTTP request error: " . $e->getMessage());
+        return false;
+    } catch (\Exception $e) {
+        $this->error("Error downloading the file: " . $e->getMessage());
+        return false;
     }
+}
     
     
 
