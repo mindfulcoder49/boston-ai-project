@@ -50,41 +50,11 @@ class DownloadBostonDataset extends Command
     private function downloadFile(string $url, string $destination): bool
     {
         try {
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-            curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Set a timeout for the request
-    
-            $fileContents = curl_exec($ch);
-    
-            // Check for curl errors
-            if (curl_errno($ch)) {
-                $this->error("cURL error: " . curl_error($ch));
-                curl_close($ch);
+            $fileContents = file_get_contents($url);
+            if ($fileContents === false) {
                 return false;
             }
-    
-            // Get HTTP status code
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
-            // Ensure we got a 200 OK response
-            if ($httpCode !== 200) {
-                $this->error("HTTP request failed with status code: " . $httpCode);
-                curl_close($ch);
-                return false;
-            }
-    
-            // Check if content is valid
-            if (empty($fileContents)) {
-                $this->error("Downloaded file is empty.");
-                curl_close($ch);
-                return false;
-            }
-    
-            // Save file contents to destination
             file_put_contents($destination, $fileContents);
-            curl_close($ch);
             return true;
         } catch (\Exception $e) {
             $this->error("Error downloading the file: " . $e->getMessage());
