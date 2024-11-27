@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'base_url' => 'https://data.boston.gov/datastore/dump',
+    'base_url' => 'http://data.boston.gov/datastore/dump',
     'datasets' => [
         [
             //311 Service Requests 2024
