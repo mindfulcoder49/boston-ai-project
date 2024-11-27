@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../BODC-DEI-siteOLD/OLD"
+		}
+	],
+	"settings": {
+		"workbench.colorTheme": "Tomorrow Night Blue"
+	}
+}
