@@ -9,7 +9,7 @@ use GuzzleHttp\Exception\RequestException;
 class DownloadBostonDataset extends Command
 {
     protected $signature = 'app:download-boston-dataset';
-    protected $description = 'Downloads datasets from Boston Open Data';
+    protected $description = 'Downloads datasets from Boston Open Data using CKAN API';
 
     public function handle()
     {
@@ -28,7 +28,7 @@ class DownloadBostonDataset extends Command
 
     protected function fetchDataset($baseUrl, $resourceId, $name, $apiKey)
     {
-        $url = "{$baseUrl}?resource_id={$resourceId}&limit=1000";
+        $url = $baseUrl;
         $filename = $this->generateFilename($name, 'json');
         $destination = storage_path("app/{$filename}");
 
@@ -38,12 +38,22 @@ class DownloadBostonDataset extends Command
             $client = new Client([
                 'timeout' => 30,
                 'headers' => [
+                    'Authorization' => $apiKey,
+                    'Content-Type' => 'application/json',
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Authorization' => "Bearer {$apiKey}", // Include API key here
                 ],
             ]);
 
-            $response = $client->get($url);
+            // Prepare the POST data payload
+            $postData = [
+                'json' => [
+                    'resource_id' => $resourceId,
+                    'limit' => 1000,
+                ],
+            ];
+
+            // Send the request
+            $response = $client->post($url, $postData);
 
             if ($response->getStatusCode() !== 200) {
                 $this->error("HTTP request failed with status code: " . $response->getStatusCode());
