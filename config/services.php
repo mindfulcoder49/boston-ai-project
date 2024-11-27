@@ -39,4 +39,7 @@ return [
     'api_key' => env('ANTHROPIC_API_KEY'),
     ],
 
+    'bostongov' => [
+        'api_key' => env('BOSTON_API_KEY'),
+    ],
 ];
