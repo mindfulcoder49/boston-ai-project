@@ -40,7 +40,7 @@ class GenericMapController extends Controller
         Log::info('Bounding box calculated.', ['boundingBox' => $boundingBox]);
 
         // Get the 'days' parameter from the request, default to 7 days if not provided
-        $days = $request->input('days', 7);
+        $days = $request->input('days', 14);
 
         $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $days));
         Log::info('Crime data fetched.', ['crimeDataCount' => $crimeData->count()]);

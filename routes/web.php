@@ -49,11 +49,6 @@ Route::get('/', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');  */
 
-/* add route to dashboard that goes through middleware but doesn't require user to be logged in */
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->name('dashboard');
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -75,13 +70,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::get('/cases', [ThreeOneOneCaseController::class, 'index'])->name('cases.index');
 
 Route::get('/scatter', [ThreeOneOneCaseController::class, 'indexnofilter'])->name('cases.indexnofilter');
 
 
-Route::inertia('/311demo', "ThreeOneOneDemo")->name('311demo');
-Route::inertia('/thebostonappdemo', "TheBostonAppDemo")->name('thebostonappdemo');
 
 Route::post('/api/crime-data', [CrimeMapController::class, 'getCrimeData'])->name('crime-data.api');
 Route::get('/crime-map', [CrimeMapController::class, 'index'])->name('crime-map');

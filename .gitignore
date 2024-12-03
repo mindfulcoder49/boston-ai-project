@@ -41,3 +41,5 @@ Thumbs.db
 *.csv
 *manifest.txt
 *m4n1f3st.txt
+
+transferdata.sh

@@ -32,7 +32,7 @@ const showingNavigationDropdown = ref(false);
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
 
-                                <NavLink :href="route('home')" :active="route().current('home')">
+                                <NavLink :href="route('map.index')" :active="route().current('map.index')">
                                     Home
                                 </NavLink>
                                 <!--
@@ -54,9 +54,6 @@ const showingNavigationDropdown = ref(false);
                                 <!-- Add a link to the cases.indexnofilter page, it's a Boston 311 Case Map-->
                                 <NavLink :href="route('cases.indexnofilter')" :active="route().current('scatter')">
                                     Boston 311 Case Map
-                                </NavLink>
-                                <NavLink :href="route('map.index')" :active="route().current('map.index')">
-                                    The Boston App
                                 </NavLink>
 
 
@@ -140,17 +137,8 @@ const showingNavigationDropdown = ref(false);
                     class="sm:hidden"
                 >
                     <div class="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink :href="route('home')" :active="route().current('home')">
-                            Home
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                            Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('chirps.index')" :active="route().current('chirps.index')">
-                            Chirps
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('projects')" :active="route().current('projects')">
-                            Projects    
+                        <ResponsiveNavLink :href="route('map.index')" :active="route().current('map.index')">
+                            The Boston App
                         </ResponsiveNavLink>
                         <!-- Add a link to the crime map page -->
                         <ResponsiveNavLink :href="route('crime-map')" :active="route().current('crime-map')">
@@ -159,9 +147,6 @@ const showingNavigationDropdown = ref(false);
                         <!-- Add a link to the cases.indexnofilter page, it's a Boston 311 Case Map-->
                         <ResponsiveNavLink :href="route('cases.indexnofilter')" :active="route().current('scatter')">
                             Boston 311 Case Map
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('map.index')" :active="route().current('map.index')">
-                            The Boston App
                         </ResponsiveNavLink>
                     </div>
 

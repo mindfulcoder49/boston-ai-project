@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, watch, nextTick, markRaw } from 'vue';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 
@@ -32,8 +32,8 @@ const getDivIcon = (type) => {
 
   return L.divIcon({
     className,
-    html: ``, // You can customize this to show more data
-    iconSize: [10, 10],
+    html: `<div></div>`, // You can customize this to show more data
+    iconSize: null,
     popupAnchor: [0, -15],
   });
 };
@@ -63,7 +63,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['map-click']);
+const emit = defineEmits(['map-click', 'marker-click']);
 const initialMap = ref(null);
 const markerCenter = ref(null); // Store the center marker
 const newMarker = ref(null); // Ref for dynamically added marker
@@ -71,7 +71,8 @@ const newMarker = ref(null); // Ref for dynamically added marker
 onMounted(() => {
   nextTick(() => {
     // Initialize the map with the provided center or default to Boston if not available
-    initialMap.value = L.map('map').setView(props.center || [42.3601, -71.0589], 16);
+    initialMap.value = markRaw(L.map('map').setView(props.center || [42.3601, -71.0589], 16));
+
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -88,16 +89,16 @@ onMounted(() => {
         }
 
         // Add new center marker dynamically
-        newMarker.value = L.marker([e.latlng.lat, e.latlng.lng], {
+        newMarker.value = markRaw(L.marker([e.latlng.lat, e.latlng.lng], {
           icon: getDivIcon('Center'),
-        }).addTo(initialMap.value);
+        })).addTo(initialMap.value);
       }
     });
 
     // Add the center marker
-    markerCenter.value = L.marker(props.center, {
+    markerCenter.value = markRaw(L.marker(props.center, {
       icon: getDivIcon('Center'),
-    }).addTo(initialMap.value); 
+    })).addTo(initialMap.value); 
 
     // Initialize the markers for the dataPoints
     updateMarkers(props.dataPoints);
@@ -117,20 +118,30 @@ const updateMarkers = (dataPoints) => {
   // Add new markers with DivIcons
   dataPoints.forEach((dataPoint) => {
     if (dataPoint.latitude && dataPoint.longitude) {
+
+      //display date in popup like Nov 1, 2021 12:00:00 AM, and then display more details below
+      //get date from dataPoint.date and convert to string
       const popupContent = `
 
-         <div><strong>Date:</strong> ${new Date(dataPoint.date).toLocaleString()}<br></div>
-        <div><strong>Type:</strong> ${dataPoint.type}<br></div>
-        ${Object.entries(dataPoint.info).map(([key, value]) => `<div><div class="infoname">${key}:</div><div class="infovalue">${value}</div></div>`).join('')}
+         <div><strong>${new Date(dataPoint.date).toLocaleString()}</strong>
+          <strong>More Details Below</strong> <br></div>
 
 
-      `;
+      `; 
 
-      const marker = L.marker([dataPoint.latitude, dataPoint.longitude], {
+      const marker = markRaw(L.marker([dataPoint.latitude, dataPoint.longitude], {
         icon: getDivIcon(dataPoint.type),
+      }));
+
+
+      
+
+      marker.on('click', () => {
+        emit('marker-click', dataPoint);
       });
 
-      marker.bindPopup(popupContent);
+      marker.bindPopup(popupContent).openPopup();
+
       marker.addTo(initialMap.value);
 
       // Store marker reference in array

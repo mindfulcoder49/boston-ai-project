@@ -1,5 +1,9 @@
 <template>
+  
   <PageTemplate>
+    <Head>
+      <title>Home</title>
+    </Head>
     <!-- Filter Buttons -->
     <div class="filter-container">
       <button 
@@ -26,6 +30,7 @@ import { ref, computed } from 'vue';
 import BostonMap from '../Components/BostonMap.vue';
 import PageTemplate from '@/Components/PageTemplate.vue';
 import AiAssistant from '@/Components/AiAssistant.vue';
+import { Head, Link } from '@inertiajs/vue3';
 
 export default {
   name: 'GenericMap',

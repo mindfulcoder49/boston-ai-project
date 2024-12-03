@@ -1,5 +1,8 @@
 <template>
   <PageTemplate>
+    <Head>
+      <title>Home</title>
+    </Head>
 
     <!-- Page Title -->
     <h1 class="text-2xl font-bold text-gray-800 text-center">The Boston App</h1>
@@ -60,7 +63,11 @@
       :centerSelectionActive="centerSelectionActive" 
       :cancelNewMarker="cancelNewMarker"
       @map-click="setNewCenter" 
+      @marker-click="displayDataPoint" 
     />
+
+
+
     <div>
 
        <!-- Date Slider and Manual Input -->
@@ -145,6 +152,11 @@
     <p class="text-gray-700 mt-4 mb-4 text-lg leading-relaxed">
       Filter by data type by clicking the filter buttons above
     </p>
+    </div>
+        <!-- DataPointDetails Component -->
+        <DataPointDetails :dataPoint="selectedDataPoint" />
+    <div>
+    <!-- AiAssistant Component -->
 
       <AiAssistant :context="filteredDataPoints" />
 
@@ -165,10 +177,12 @@ import GenericDataList from '@/Components/GenericDataList.vue';
 import JsonTree from '@/Components/JsonTree.vue';
 import { map } from 'leaflet';
 import AddressSearch from '@/Components/AddressSearch.vue'; // Import the new component
+import { Head, Link } from '@inertiajs/vue3';
+import DataPointDetails from '@/Components/DataPointDetails.vue';
 
 export default {
   name: 'RadialMap',
-  components: { BostonMap, PageTemplate, AiAssistant, GenericDataList, JsonTree, AddressSearch },
+  components: { BostonMap, PageTemplate, AiAssistant, GenericDataList, JsonTree, AddressSearch, Head, Link, DataPointDetails },
   props: ['dataPoints', 'centralLocation'],
   
   setup(props) {
@@ -186,6 +200,11 @@ export default {
     const maxDate = ref('');
     const dayOffset = ref(0);
     const showAllDates = ref(true);
+    const selectedDataPoint = ref(null);
+
+    const displayDataPoint = (dataPoint) => {
+      selectedDataPoint.value = dataPoint;
+    };
 
     // Calculate the number of days between the minDate and maxDate
     const daysBetweenMinAndMax = ref(0);
@@ -347,6 +366,8 @@ export default {
       dayOffset,
       showAllDates,
       updateCenterCoordinates,
+      displayDataPoint,
+      selectedDataPoint,
     };
   },
 };

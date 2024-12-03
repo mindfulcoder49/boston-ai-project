@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, markRaw } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
@@ -141,13 +141,13 @@ const districts = ['A1', 'A15', 'A7', 'B2', 'B3', 'C11', 'C6', 'D14', 'D4', 'E13
 const years = ['2024', '2023', '2022', '2021', '2020', '2019', '2018', '2017'];
 
 onMounted(() => {
-  initialMap.value = L.map('map').setView([42.3601, -71.0589], 13);
+  initialMap.value = markRaw(L.map('map').setView([42.3601, -71.0589], 13));
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(initialMap.value);
 
-  markers.value = L.markerClusterGroup();
+  markers.value = markRaw(L.markerClusterGroup());
   initialMap.value.addLayer(markers.value);
   updateMarkers();
 });
@@ -180,7 +180,7 @@ const updateMarkers = async () => {
             <strong>Offense Category:</strong> ${crime.offense_category}
           </div>
         `;
-        const marker = L.marker([crime.lat, crime.long]);
+        const marker = markRaw(L.marker([crime.lat, crime.long]));
         marker.bindPopup(popupContent);
         markers.value.addLayer(marker);
       }

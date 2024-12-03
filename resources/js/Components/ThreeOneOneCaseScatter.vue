@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue';
+import { computed, ref, onMounted, watch, markRaw } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
@@ -35,13 +35,13 @@ const openCases = computed(() =>
 );
 
 onMounted(() => {
-    initialMap.value = L.map('map').setView([42.3601, -71.0589], 13);
+    initialMap.value = markRaw(L.map('map').setView([42.3601, -71.0589], 13));
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(initialMap.value);
   
-    markers.value = L.markerClusterGroup();
+    markers.value = markRaw(L.markerClusterGroup());
     initialMap.value.addLayer(markers.value);
     updateMarkers();
   });
@@ -74,7 +74,7 @@ onMounted(() => {
         `;
 
         
-        const marker = L.marker([item.latitude, item.longitude]);
+        const marker = markRaw(L.marker([item.latitude, item.longitude]));
         marker.bindPopup(popupContent);
 
         markers.value.addLayer(marker);

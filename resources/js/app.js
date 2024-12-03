@@ -6,7 +6,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 
-const appName = 'BODC-DEI';
+const appName = 'Boston City Services'
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
