@@ -55,7 +55,7 @@
     />
 
   </div>
-  <div class="flex space-x-4" :v-else>
+  <div class="flex space-x-4" v-else>
     <p class="text-gray-700 mt-4 mt-8 text-lg leading-relaxed text-center">
       Log in to save locations
     </p>
@@ -227,7 +227,7 @@ export default {
     const showAllDates = ref(true);
     const selectedDataPoint = ref(null);
 
-    const isAuthenticated = props.auth.user !== null;
+    const isAuthenticated = computed(() => !!props.auth?.user);
 
     const displayDataPoint = (dataPoint) => {
       selectedDataPoint.value = dataPoint;

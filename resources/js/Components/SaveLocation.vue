@@ -44,7 +44,7 @@
             :key="savedLocation.id"
             class="flex flex-wrap items-center justify-between p-2 border-b last:border-none"
           >
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2 pr-5">
               <p class="font-bold">{{ savedLocation.name }}</p>
               <p class="text-sm text-gray-600">Lat: {{ savedLocation.latitude }}</p>
               <p class="text-sm text-gray-600">Lng: {{ savedLocation.longitude }}</p>
