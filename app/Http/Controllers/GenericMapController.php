@@ -26,6 +26,7 @@ class GenericMapController extends Controller
 
         $defaultLatitude = 42.3601;
         $defaultLongitude = -71.0589;
+        $defaultAddress = 'Boston, MA';
 
         //check if user is logged in, and if it is, get the user's first saved location
         if (Auth::check()) {
@@ -34,12 +35,14 @@ class GenericMapController extends Controller
             if ($locations->count() > 0) {
                 $defaultLatitude = $locations->first()->latitude;
                 $defaultLongitude = $locations->first()->longitude;
+                $defaultAddress = $locations->first()->address;
             }
         }
 
         $centralLocation = $request->input('centralLocation', [
             'latitude' => $defaultLatitude,
-            'longitude' => $defaultLongitude
+            'longitude' => $defaultLongitude,
+            'address' => $defaultAddress
         ]);
 
         Log::info('Central location determined.', ['centralLocation' => $centralLocation]);
