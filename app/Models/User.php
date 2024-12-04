@@ -65,5 +65,10 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function locations()
+    {
+        return $this->hasMany(Location::class);
+    }
+
 
 }

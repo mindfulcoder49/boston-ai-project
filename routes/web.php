@@ -12,43 +12,23 @@ use App\Http\Controllers\GenericMapController;
 use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\TrashScheduleByAddressController;
 
+use App\Http\Controllers\LocationController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('locations', LocationController::class);
+});
+
 Route::get('/search-address', [TrashScheduleByAddressController::class, 'search']);
 
 
 // Route to display the generic map interface
 Route::get('/', [GenericMapController::class, 'getRadialMap'])->name('map.index');
-Route::post('/map', [GenericMapController::class, 'getRadialMap'])->name('map.update');
+Route::post('/', [GenericMapController::class, 'getRadialMap'])->name('map.update');
 
 // Route to fetch data for the map based on filters
 Route::post('/api/map-data', [GenericMapController::class, 'getData'])->name('map.data');
 
 Route::post('/api/ai-chat', [AiAssistantController::class, 'handleRequest'])->name('ai.assistant');
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-/*
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-})->name('home');
-*/
-
-/* Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');  */
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -57,8 +37,6 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/profile', [RoleController::class, 'update'])->name('role.update');
 
-
-    //Route::get('/api/AI', [AIController::class, 'handle']);
 });
 
 

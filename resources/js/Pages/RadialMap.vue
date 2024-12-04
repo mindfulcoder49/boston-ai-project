@@ -44,8 +44,21 @@
       :disabled="!centerSelected" 
       class="px-4 py-2 text-white bg-green-500 rounded-lg disabled:bg-gray-400 hover:bg-green-600 transition-colors w-1/2"
     >
-      Save New Center
+      Select New Center
     </button>
+  </div>
+  <div class="flex space-x-4" v-if="isAuthenticated">
+    <!-- SaveLocation Component -->
+    <SaveLocation
+      :location="form.centralLocation"
+      @load-location="handleLoadLocation"
+    />
+
+  </div>
+  <div class="flex space-x-4" :v-else>
+    <p class="text-gray-700 mt-4 mt-8 text-lg leading-relaxed text-center">
+      Log in to save locations
+    </p>
   </div>
 </form>
 
@@ -179,11 +192,23 @@ import { map } from 'leaflet';
 import AddressSearch from '@/Components/AddressSearch.vue'; // Import the new component
 import { Head, Link } from '@inertiajs/vue3';
 import DataPointDetails from '@/Components/DataPointDetails.vue';
+import SaveLocation from '@/Components/SaveLocation.vue';
+import { usePage } from "@inertiajs/vue3"; 
 
 export default {
   name: 'RadialMap',
-  components: { BostonMap, PageTemplate, AiAssistant, GenericDataList, JsonTree, AddressSearch, Head, Link, DataPointDetails },
-  props: ['dataPoints', 'centralLocation'],
+  components: { 
+    BostonMap, 
+    PageTemplate, 
+    AiAssistant, 
+    GenericDataList, 
+    JsonTree, 
+    AddressSearch, 
+    Head, 
+    Link, 
+    DataPointDetails, 
+    SaveLocation },
+  props: ['dataPoints', 'centralLocation', 'auth'],
   
   setup(props) {
     const filters = ref({});
@@ -191,7 +216,7 @@ export default {
     const centerSelected = ref(false);
     const newCenter = ref(null);
     const newMarker = ref(null); // Track the new center marker
-    const mapCenter = ref([42.3601, -71.0589]); // Initial map center
+    const mapCenter = ref([props.centralLocation.latitude, props.centralLocation.longitude]);
     const cancelNewMarker = ref(false);
     const showMap = ref(true);
 
@@ -201,6 +226,8 @@ export default {
     const dayOffset = ref(0);
     const showAllDates = ref(true);
     const selectedDataPoint = ref(null);
+
+    const isAuthenticated = props.auth.user !== null;
 
     const displayDataPoint = (dataPoint) => {
       selectedDataPoint.value = dataPoint;
@@ -252,6 +279,7 @@ export default {
       centralLocation: {
         latitude: props.centralLocation.latitude,
         longitude: props.centralLocation.longitude,
+        address: props.centralLocation.address || 'Address not found',
       },
     });
 
@@ -319,26 +347,41 @@ export default {
 
     // Submit the new center to the backend
     const submitNewCenter = () => {
-      form.post('/map', {
+      form.post('/', {
         preserveScroll: true,
         onSuccess: () => {
           centerSelectionActive.value = false;
           centerSelected.value = false;
+          console.log('props.centralLocation:', props.centralLocation);
+          mapCenter.value = [form.centralLocation.latitude, form.centralLocation.longitude];
           // Optionally clear the marker here if necessary
         }
       });
     };
 
-    const updateCenterCoordinates = (coords) => {
-      // Use the existing setNewCenter function to update the map center
-      const latlng = { lat: coords.lat, lng: coords.lng };
-      console.log('Updating center coordinates:', latlng);
-      centerSelectionActive.value = true;
-      setNewCenter(latlng); 
+    const updateCenterCoordinates = ({ lat, lng, address }) => {
+      console.log('Updating center coordinates:', { lat, lng, address });
 
-      // Automatically submit the new center after it's set
-      submitNewCenter(); 
+      // Update the form's central location
+      form.centralLocation.latitude = lat;
+      form.centralLocation.longitude = lng;
+      form.centralLocation.address = address || 'Address not found';
+
+      // Call setNewCenter to update the map's center and state
+      setNewCenter({ lat, lng });
+
+      // Call submitNewCenter to persist the changes
+      submitNewCenter();
     };
+
+    const handleLoadLocation = (location) => {
+      console.log("Loaded location:", location);
+      // Update the center or perform any other action with the loaded location
+
+      // call updateCenterCoordinates to update the map's center and state
+      updateCenterCoordinates({ lat: location.latitude, lng: location.longitude, address: location.address });
+    };
+
 
 
     return {
@@ -368,6 +411,8 @@ export default {
       updateCenterCoordinates,
       displayDataPoint,
       selectedDataPoint,
+      handleLoadLocation,
+      isAuthenticated,
     };
   },
 };

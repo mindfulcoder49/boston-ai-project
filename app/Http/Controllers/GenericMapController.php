@@ -10,6 +10,7 @@ use App\Models\BuildingPermit;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 
 class GenericMapController extends Controller
 {
@@ -25,6 +26,16 @@ class GenericMapController extends Controller
 
         $defaultLatitude = 42.3601;
         $defaultLongitude = -71.0589;
+
+        //check if user is logged in, and if it is, get the user's first saved location
+        if (Auth::check()) {
+            $user = Auth::user();
+            $locations = $user->locations;
+            if ($locations->count() > 0) {
+                $defaultLatitude = $locations->first()->latitude;
+                $defaultLongitude = $locations->first()->longitude;
+            }
+        }
 
         $centralLocation = $request->input('centralLocation', [
             'latitude' => $defaultLatitude,
