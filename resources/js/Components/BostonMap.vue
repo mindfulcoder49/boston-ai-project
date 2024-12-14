@@ -121,13 +121,25 @@ const updateMarkers = (dataPoints) => {
 
       //display date in popup like Nov 1, 2021 12:00:00 AM, and then display more details below
       //get date from dataPoint.date and convert to string
-      const popupContent = `
+      const popupContentStart = `
 
          <div><strong>${new Date(dataPoint.date).toLocaleString()}</strong>
-          <strong>More Details Below</strong> <br></div>
+      `;
 
 
-      `; 
+      // Add more details to the popup depending on dataPoint.type
+      // for Crime, 311 Case, and Building Permit
+      // crime - info.offense_description 
+      // case - info.case_title
+      // permit - info.worktype
+
+      const popupContent = `
+        ${popupContentStart}
+        ${dataPoint.type === 'Crime' ? dataPoint.info.offense_description : ''}
+        ${dataPoint.type === '311 Case' ? dataPoint.info.case_title : ''}
+        ${dataPoint.type === 'Building Permit' ? dataPoint.info.description : ''}
+        </div>
+      `;
 
       const marker = markRaw(L.marker([dataPoint.latitude, dataPoint.longitude], {
         icon: getDivIcon(dataPoint.type),

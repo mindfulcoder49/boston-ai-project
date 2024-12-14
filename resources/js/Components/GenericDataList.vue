@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- Pagination Controls -->
     <div class="flex justify-between items-center mt-4 mb-4">
       <button
         @click="prevPage"
@@ -29,66 +30,34 @@
       </button>
     </div>
 
+    <!-- No Results Message -->
     <div v-if="paginatedData.length === 0" class="text-center text-gray-500">
       No results found
     </div>
-    <div v-else class="overflow-x-auto">
-      <div class="text-center text-gray-500 mb-4">
-        Number of results: {{ totalData.length }}
+
+    <!-- Data List -->
+    <div v-else class="space-y-4">
+      <div v-for="(item, index) in paginatedData" :key="index" class="p-4 bg-gray-100 rounded-lg shadow">
+        <ServiceCase v-if="item.type === '311 Case'" :data="item" />
+        <Crime v-if="item.type === 'Crime'" :data="item" />
+        <BuildingPermit v-if="item.type === 'Building Permit'" :data="item" />
       </div>
-      <table class="table-auto w-full border-collapse border border-gray-200"> 
-        <thead class="bg-gray-100">
-          <tr>
-            <th @click="sortBy('latitude')" class="px-4 py-2 border border-gray-300 cursor-pointer">
-              Latitude
-              <span v-if="sortKey === 'latitude'">
-                {{ sortOrder === 'desc' ? '↓' : '↑' }}
-              </span>
-            </th>
-            <th @click="sortBy('longitude')" class="px-4 py-2 border border-gray-300 cursor-pointer">
-              Longitude
-              <span v-if="sortKey === 'longitude'">
-                {{ sortOrder === 'desc' ? '↓' : '↑' }}
-              </span>
-            </th>
-            <th @click="sortBy('date')" class="px-4 py-2 border border-gray-300 cursor-pointer">
-              Date
-              <span v-if="sortKey === 'date'">
-                {{ sortOrder === 'desc' ? '↓' : '↑' }}
-              </span>
-            </th>
-            <th @click="sortBy('type')" class="px-4 py-2 border border-gray-300 cursor-pointer">
-              Type
-              <span v-if="sortKey === 'type'">
-                {{ sortOrder === 'desc' ? '↓' : '↑' }}
-              </span>
-            </th>
-            <th class="px-4 py-2 border border-gray-300">Info</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, index) in paginatedData" :key="index">
-            <td class="border px-4 py-2 text-center">{{ item.latitude }}</td>
-            <td class="border px-4 py-2 text-center">{{ item.longitude }}</td>
-            <td class="border px-4 py-2 text-center">{{ new Date(item.date).toLocaleString() }}</td>
-            <td class="border px-4 py-2 text-center">{{ item.type }}</td>
-            <td class="border px-4 py-2">
-              <ul class=" max-h-32 overflow-y-auto">
-                <li v-for="(value, key) in item.info" :key="key">
-                  <span class="font-semibold">{{ key }}:</span> {{ value }}
-                </li>
-              </ul>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 </template>
 
 <script>
+import ServiceCase from "@/Components/ServiceCase.vue";
+import Crime from "@/Components/Crime.vue";
+import BuildingPermit from "@/Components/BuildingPermit.vue";
+
 export default {
   name: "GenericDataList",
+  components: {
+    ServiceCase,
+    Crime,
+    BuildingPermit,
+  },
   props: {
     totalData: {
       type: Array,
@@ -103,8 +72,8 @@ export default {
     return {
       currentPage: 1,
       inputPage: 1,
-      sortKey: 'date',  // Default sort by date
-      sortOrder: 'desc' // Default to descending order
+      sortKey: "date", // Default sort by date
+      sortOrder: "desc", // Default to descending order
     };
   },
   computed: {
@@ -119,7 +88,7 @@ export default {
         } else if (a[this.sortKey] > b[this.sortKey]) {
           result = 1;
         }
-        return this.sortOrder === 'asc' ? result : -result;
+        return this.sortOrder === "asc" ? result : -result;
       });
     },
     paginatedData() {
@@ -154,17 +123,17 @@ export default {
     sortBy(key) {
       if (this.sortKey === key) {
         // If the same column is clicked, toggle the sort order
-        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+        this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
       } else {
         // If a new column is clicked, set it as the sort key and default to descending order
         this.sortKey = key;
-        this.sortOrder = 'desc';
+        this.sortOrder = "desc";
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped>
-/* Add necessary styles */
+/* Add any additional styling */
 </style>

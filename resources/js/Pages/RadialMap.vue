@@ -166,15 +166,17 @@
       Filter by data type by clicking the filter buttons above
     </p>
     </div>
-        <!-- DataPointDetails Component -->
-        <DataPointDetails :dataPoint="selectedDataPoint" />
+         <!-- check the selectedDataPoint type and display the appropriate component -->
+          <ServiceCase v-if="selectedDataPoint && selectedDataPoint.type === '311 Case'" :data="selectedDataPoint" />
+          <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" />
+          <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" />
     <div>
     <!-- AiAssistant Component -->
 
       <AiAssistant :context="filteredDataPoints" />
 
-    <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="5" />
-  </div>
+      <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="5" />
+    </div>
     <!-- Pass filteredDataPoints as context to AiAssistant -->
     
   </PageTemplate>
@@ -194,6 +196,9 @@ import { Head, Link } from '@inertiajs/vue3';
 import DataPointDetails from '@/Components/DataPointDetails.vue';
 import SaveLocation from '@/Components/SaveLocation.vue';
 import { usePage } from "@inertiajs/vue3"; 
+import ServiceCase from '@/Components/ServiceCase.vue';
+import Crime from '@/Components/Crime.vue';
+import BuildingPermit from '@/Components/BuildingPermit.vue';
 
 export default {
   name: 'RadialMap',
@@ -207,7 +212,11 @@ export default {
     Head, 
     Link, 
     DataPointDetails, 
-    SaveLocation },
+    SaveLocation,
+    ServiceCase,
+    Crime,
+    BuildingPermit,
+   },
   props: ['dataPoints', 'centralLocation', 'auth', 'codes'],
   
   setup(props) {
