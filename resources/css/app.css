@@ -13,9 +13,6 @@
 /* style all main, section, heading, and paragraph elements in separate but similar ways */
 main, section {
     background-color: var(--section-color);
-    padding: 1rem;
-    margin: 1rem;
-    border-radius: 0.25rem;
 }
 
 
@@ -193,11 +190,6 @@ a {
   }
 
   .leaflet-popup-content > div {
-    margin: 5px;
-    border: 2px solid #9fe1ff;
-    border-radius: 5px;
-    background-color: rgb(243, 251, 255);
-    padding: 5px;
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;

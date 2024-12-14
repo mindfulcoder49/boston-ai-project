@@ -19,11 +19,11 @@
   
 
   <!-- Selected Center Coordinates display -->
-  <div v-if="newCenter" class="p-4 bg-gray-100 rounded-lg shadow text-center">
+  <div v-if="newCenter" class="p-4 bg-gray-100  shadow text-center">
     <p class="font-bold text-gray-800">Selected Center Coordinates:</p>
     <p class="text-gray-700">{{ newCenter.lat }}, {{ newCenter.lng }}</p>
   </div>
-  <div v-else class="p-4 bg-gray-100 rounded-lg shadow text-center">
+  <div v-else class="p-4 bg-gray-100  shadow text-center">
     <p class="font-bold text-gray-800">Current Center Coordinates:</p>
     <p class="text-gray-700">{{ centralLocation.latitude }}, {{ centralLocation.longitude }}</p>
   </div>
@@ -33,7 +33,7 @@
     <button 
       type="button"
       @click="toggleCenterSelection" 
-      class="px-4 py-2 text-white bg-blue-500 rounded-lg shadow-lg disabled:bg-gray-400 hover:bg-blue-600 transition-colors w-1/2"
+      class="px-4 py-2 text-white bg-blue-500  shadow-lg disabled:bg-gray-400 hover:bg-blue-600 transition-colors w-1/2"
     >
       {{ centerSelectionActive ? 'Cancel' : 'Choose New Center' }}
     </button>
@@ -42,7 +42,7 @@
     <button 
       type="submit" 
       :disabled="!centerSelected" 
-      class="px-4 py-2 text-white bg-green-500 rounded-lg disabled:bg-gray-400 hover:bg-green-600 transition-colors w-1/2"
+      class="px-4 py-2 text-white bg-green-500 disabled:bg-gray-400 hover:bg-green-600 transition-colors w-1/2"
     >
       Select New Center
     </button>
@@ -122,7 +122,7 @@
         v-model="selectedDate"
         :disabled="showAllDates"
         @change="updateSliderFromInput"
-        class="border rounded-lg w-full min-[400px]:max-w-[200px] p-2"
+        class="border  w-full min-[400px]:max-w-[200px] p-2"
         placeholder="YYYY-MM-DD"
       />
     </div>
@@ -131,7 +131,7 @@
     <div class="min-[400px]:w-1/3 w-full">
       <button
         @click="showAllDates = !showAllDates"
-        class="px-4 py-2 text-white bg-blue-500 rounded-lg shadow-lg hover:bg-blue-600 transition-colors w-full"
+        class="px-4 py-2 text-white bg-blue-500  shadow-lg hover:bg-blue-600 transition-colors w-full"
       >
         {{ showAllDates ? 'Filter by Date' : 'Show All Dates' }}
       </button>
@@ -149,14 +149,14 @@
         :key="type" 
         @click="toggleFilter(type)"
         :class="{'active': isActive, 'inactive': !isActive, [`${type.toLowerCase().replace(' ', '-').replace(/\d/g, 'a')}-filter-button`]: true}"
-        class="filter-button px-2 py-2 rounded-lg shadow-lg disabled:bg-gray-400 transition-colors w-1/4 text-base"
+        class="filter-button px-2 py-2  shadow-lg disabled:bg-gray-400 transition-colors w-1/4 text-base"
       >
         <span class="invisible md:visible">{{ type }} </span>
       </button>
             <!-- Reload Button -->
             <button 
         @click="reloadMap" 
-        class="px-4 py-2 text-white bg-red-500 rounded-lg shadow-lg hover:bg-red-600 transition-colors w-1/4"
+        class="px-4 py-2 text-white bg-red-500  shadow-lg hover:bg-red-600 transition-colors w-1/4"
       >
         Reload Map
       </button>
@@ -208,7 +208,7 @@ export default {
     Link, 
     DataPointDetails, 
     SaveLocation },
-  props: ['dataPoints', 'centralLocation', 'auth'],
+  props: ['dataPoints', 'centralLocation', 'auth', 'codes'],
   
   setup(props) {
     const filters = ref({});
@@ -353,7 +353,7 @@ export default {
           centerSelectionActive.value = false;
           centerSelected.value = false;
           console.log('props.centralLocation:', props.centralLocation);
-          mapCenter.value = [form.centralLocation.latitude, form.centralLocation.longitude];
+          mapCenter.value = [props.centralLocation.latitude, props.centralLocation.longitude];
           // Optionally clear the marker here if necessary
         }
       });
