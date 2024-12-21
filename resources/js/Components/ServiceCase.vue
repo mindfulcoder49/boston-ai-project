@@ -16,6 +16,9 @@
         <li><strong>Department:</strong> {{ data.info.department }}</li>
         <li><strong>Closure Date:</strong> {{ formatDate(data.info.closed_dt) }}</li>
       </ul>
+      <div v-if="data.info.closed_photo" class="mt-4">
+      <img :src="data.info.closed_photo" alt="Closed Case Photo" class="w-full rounded-lg shadow">
+    </div>
     </div>
   </template>
   

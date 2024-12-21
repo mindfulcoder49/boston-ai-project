@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 class GenericMapController extends Controller
 {
@@ -40,13 +41,18 @@ class GenericMapController extends Controller
 
         $boundingBox = $this->getBoundingBox($centralLocation['latitude'], $centralLocation['longitude'], $radius);
 
-        // Fetch data concurrently
-        $crimeData = $this->fetchCrimeData($boundingBox, $days);
-        $caseData = $this->fetch311CaseData($boundingBox, $days);
-        $buildingPermits = $this->fetchBuildingPermits($boundingBox, $days);
+        $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $days));
+        Log::info('Crime data fetched.', ['crimeDataCount' => $crimeData->count()]);
 
-        // Combine results
-        $dataPoints = array_merge($crimeData, $caseData, $buildingPermits);
+        $caseData = collect($this->getThreeOneOneCaseDataForBoundingBox($boundingBox, $days));
+        Log::info('311 case data fetched.', ['caseDataCount' => $caseData->count()]);
+
+        $buildingPermits = collect($this->getBuildingPermitsForBoundingBox($boundingBox, $days));
+        Log::info('Building permits data fetched.', ['buildingPermitsCount' => $buildingPermits->count()]);
+
+        $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits);
+        Log::info('Data points merged.', ['totalDataPointsCount' => $dataPoints->count()]);
+
 
         return response()->json([
             'dataPoints' => $dataPoints,
@@ -69,68 +75,91 @@ class GenericMapController extends Controller
         ];
     }
 
-    private function fetchCrimeData($boundingBox, $days)
+    public function getCrimeDataForBoundingBox($boundingBox, $days)
     {
+        Log::info('Fetching crime data within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
+
         $startDate = Carbon::now()->subDays($days)->toDateString();
 
-        return CrimeData::select('lat', 'long', 'occurred_on_date', 'offense_description')
-            ->whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
-            ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
-            ->where('occurred_on_date', '>=', $startDate)
-            ->get()
-            ->map(function ($crime) {
-                return [
-                    'latitude' => $crime->lat,
-                    'longitude' => $crime->long,
-                    'date' => $crime->occurred_on_date,
-                    'type' => 'Crime',
-                    'info' => ['offense_description' => $crime->offense_description],
-                ];
-            })
-            ->toArray();
+        $query = CrimeData::whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
+                          ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
+                          ->where('occurred_on_date', '>=', $startDate);
+
+        $crimeData = $query->get();
+
+        Log::info('Crime data query executed.', ['rowsFetched' => $crimeData->count()]);
+
+        // Transform data for the map
+        return $crimeData->map(function ($crime) {
+            // Convert crime object to an array and exclude the latitude, longitude, and date fields
+            $info = Arr::except($crime->toArray(), ['lat', 'long', 'occurred_on_date', 'created_at', 'updated_at', 'location', 'offense_code_group']);
+        
+            return [
+                'latitude' => $crime->lat,
+                'longitude' => $crime->long,
+                'date' => $crime->occurred_on_date,
+                'type' => 'Crime',
+                'info' => $info,
+            ];
+        });
     }
 
-    private function fetch311CaseData($boundingBox, $days)
+    public function getThreeOneOneCaseDataForBoundingBox($boundingBox, $days)
     {
+        Log::info('Fetching 311 case data within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
+
         $startDate = Carbon::now()->subDays($days)->toDateString();
 
-        return ThreeOneOneCase::select('latitude', 'longitude', 'open_dt', 'case_title')
-            ->whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-            ->where('open_dt', '>=', $startDate)
-            ->get()
-            ->map(function ($case) {
-                return [
-                    'latitude' => $case->latitude,
-                    'longitude' => $case->longitude,
-                    'date' => $case->open_dt,
-                    'type' => '311 Case',
-                    'info' => ['case_title' => $case->case_title],
-                ];
-            })
-            ->toArray();
+        $query = ThreeOneOneCase::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+                                ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+                                ->where('open_dt', '>=', $startDate);
+
+        $cases = $query->get();
+
+        Log::info('311 case data query executed.', ['rowsFetched' => $cases->count()]);
+
+        // Transform data for the map
+        return $cases->map(function ($case) {
+            // Convert case object to an array and exclude the latitude, longitude, and date fields
+            $info = Arr::except($case->toArray(), ['latitude', 'longitude', 'open_dt','checksum']);
+        
+            return [
+                'latitude' => $case->latitude,
+                'longitude' => $case->longitude,
+                'date' => $case->open_dt,
+                'type' => '311 Case',
+                'info' => $info,
+            ];
+        });
     }
 
-    private function fetchBuildingPermits($boundingBox, $days)
+    public function getBuildingPermitsForBoundingBox($boundingBox, $days)
     {
+        Log::info('Fetching building permits within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
+
         $startDate = Carbon::now()->subDays($days)->toDateString();
 
-        return BuildingPermit::select('y_latitude', 'x_longitude', 'issued_date', 'description')
-            ->whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-            ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-            ->where('issued_date', '>=', $startDate)
-            ->limit(150)
-            ->get()
-            ->map(function ($permit) {
-                return [
-                    'latitude' => $permit->y_latitude,
-                    'longitude' => $permit->x_longitude,
-                    'date' => $permit->issued_date,
-                    'type' => 'Building Permit',
-                    'info' => ['description' => $permit->description],
-                ];
-            })
-            ->toArray();
+        $buildingPermits = BuildingPermit::whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+                                         ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+                                         ->where('issued_date', '>=', $startDate)
+                                         ->limit(150)
+                                         ->get();
+
+        Log::info('Building permits data query executed.', ['rowsFetched' => $buildingPermits->count()]);
+
+        // Transform data for the map
+        return $buildingPermits->map(function ($permit) {
+            // Convert permit object to an array and exclude the latitude, longitude, and date fields
+            $info = Arr::except($permit->toArray(), ['y_latitude', 'x_longitude', 'issued_date', 'applicant']);
+
+            return [
+                'latitude' => $permit->y_latitude,
+                'longitude' => $permit->x_longitude,
+                'date' => $permit->issued_date,
+                'type' => 'Building Permit',
+                'info' => $info,
+            ];
+        });
+
     }
 }
-
