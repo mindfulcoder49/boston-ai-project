@@ -37,13 +37,14 @@
             </div>
 
             <div class="carousel-indicators">
-                <button
-                    v-for="(data, index) in filteredDataPoints"
-                    :key="index"
-                    @click="goToSlideGroup(index)"
-                    :class="{ 'indicator-button': true, 'active': isIndicatorActive(index) }"
-                ></button>
+            <button
+                v-for="(data, index) in visibleIndicators"
+                :key="index"
+                @click="goToSlideGroup(index)"
+                :class="{ 'indicator-button': true, 'active': isIndicatorActive(index) }"
+            ></button>
             </div>
+
         </div>
     </div>
      <div v-else class="no-image-container">
@@ -104,9 +105,10 @@ const nextSlide = () => {
 };
 
 const goToSlideGroup = (index) => {
-    currentIndex.value = Math.floor(index/visibleSlides);
-    scrollToSlideGroup();
-}
+  // Adjust `currentIndex` based on the full index
+  currentIndex.value = Math.floor(index / visibleSlides);
+  scrollToSlideGroup();
+};
 
 const isSlideActive = (index) => {
   const start = currentIndex.value * visibleSlides;
@@ -117,6 +119,34 @@ const isSlideActive = (index) => {
 const isIndicatorActive = (index) => {
     return Math.floor(index/visibleSlides) === currentIndex.value;
 }
+
+const visibleRange = 10; // Number of indicators to show at a time
+
+const visibleIndicators = computed(() => {
+  const totalIndicators = filteredDataPoints.value.length;
+  const halfRange = Math.floor(visibleRange / 2);
+
+  if (totalIndicators <= visibleRange) {
+    // Show all indicators if the total is less than the visible range
+    return filteredDataPoints.value.map((_, index) => index);
+  }
+
+  // Calculate the start and end of the visible range
+  let start = Math.max(0, currentIndex.value - halfRange);
+  let end = Math.min(totalIndicators, currentIndex.value + halfRange + 1);
+
+  // Adjust range if near edges
+  if (start === 0) {
+    end = visibleRange;
+  } else if (end === totalIndicators) {
+    start = totalIndicators - visibleRange;
+  }
+
+  // Return the indexes for the visible indicators
+  return Array.from({ length: end - start }, (_, i) => start + i);
+});
+
+
 
 const scrollToSlideGroup = () => {
       if (carouselWrapper.value) {
@@ -241,6 +271,22 @@ watch(
     display: flex;
     justify-content: center;
     margin-top: 10px;
+}
+
+
+@media screen and (max-width: 768px) {
+
+}
+
+@media screen and (max-width: 600px) {
+    .carousel-indicators {
+        overflow: hidden;
+    }
+
+    .data-type-label {
+        font-size: .5rem;
+    }
+    
 }
 
 .indicator-button {
