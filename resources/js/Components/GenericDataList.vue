@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div className="w-full">
     <!-- Pagination Controls -->
-    <div class="flex justify-between items-center mt-4 mb-4">
+    <div class="flex justify-between items-center mt-4 mb-4 ">
       <button
         @click="prevPage"
         :disabled="currentPage === 1"
@@ -36,11 +36,19 @@
     </div>
 
     <!-- Data List -->
-    <div v-else class="space-y-4">
-      <div v-for="(item, index) in paginatedData" :key="index" class="p-4 bg-gray-100 rounded-lg shadow">
+    <div v-else class="flex flex-wrap">
+      <div v-for="(item, index) in paginatedData" :key="index" class="p-4 bg-white w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
         <ServiceCase v-if="item.type === '311 Case'" :data="item" />
         <Crime v-if="item.type === 'Crime'" :data="item" />
         <BuildingPermit v-if="item.type === 'Building Permit'" :data="item" />
+
+        <!-- Button to emit datapoint for goto marker on map function -->
+        <button
+          @click="$emit('handle-goto-marker', item)"
+          class="p-2 bg-blue-500 text-white hover:bg-blue-600"
+        >
+          Find on Map
+        </button>
       </div>
     </div>
   </div>

@@ -4,8 +4,8 @@
             <div
                 v-for="(data, index) in filteredDataPoints"
                 :key="index"
-                :class="{ 'carousel-slide': true, 'active': isSlideActive(index) }"
-                @click="onImageClick(data)"
+                :class="{ 'carousel-slide': true, 'active': currentIndex === index }"
+                @click="openModal(data)"
             >
                 <div class="carousel-slide-inner">
                     <img
@@ -26,7 +26,7 @@
                 </div>
             </div>
         </div>
-        <div class="carousel-decoration">
+        <div class="carousel-decoration" v-if="filteredDataPoints.length > 1">
             <div class="carousel-controls">
                 <button @click="prevSlide" :disabled="currentIndex === 0" class="control-button prev-button">
                     <
@@ -40,19 +40,38 @@
                 <button
                     v-for="(data, index) in filteredDataPoints"
                     :key="index"
-                    @click="goToSlideGroup(index)"
-                    :class="{ 'indicator-button': true, 'active': isIndicatorActive(index) }"
+                    @click="goToSlide(index)"
+                    :class="{ 'indicator-button': true, 'active': currentIndex === index }"
                 ></button>
             </div>
         </div>
+
+         <!-- Modal Component -->
+        <Modal :show="modalOpen" @close="closeModal" maxWidth="xl">
+            <div v-if="modalData" class="flex justify-center">
+                <img
+                    v-if="modalData.info.closed_photo"
+                    :src="modalData.info.closed_photo"
+                    alt="Full Image"
+                    class="modal-image"
+                />
+                <img
+                    v-else-if="modalData.info.submitted_photo"
+                    :src="modalData.info.submitted_photo"
+                    alt="Full Image"
+                    class="modal-image"
+                />
+            </div>
+        </Modal>
     </div>
-     <div v-else class="no-image-container">
-       No Images Available
+    <div v-else class="no-image-container">
+        No Images Available
     </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import Modal from './Modal.vue';
 
 const props = defineProps({
     dataPoints: {
@@ -62,8 +81,11 @@ const props = defineProps({
 });
 
 const carouselWrapper = ref(null);
-const currentIndex = ref(0); // Current slide index (group of 3)
-const visibleSlides = 3;
+const currentIndex = ref(0);
+const modalOpen = ref(false);
+const modalData = ref(null);
+
+
 
 const emit = defineEmits(['on-image-click']);
 
@@ -84,59 +106,53 @@ const hasImages = computed(() => {
 });
 
 const isLastSlide = computed(() => {
-    return currentIndex.value >= Math.floor((filteredDataPoints.value.length -1) / visibleSlides);
+    return currentIndex.value === filteredDataPoints.value.length -1;
 });
-
 
 const prevSlide = () => {
     if (currentIndex.value > 0) {
         currentIndex.value--;
-         scrollToSlideGroup();
-
     }
 };
 
 const nextSlide = () => {
-   if (!isLastSlide.value) {
-       currentIndex.value++;
-       scrollToSlideGroup();
-   }
+    if (!isLastSlide.value) {
+         currentIndex.value++;
+    }
 };
 
-const goToSlideGroup = (index) => {
-    currentIndex.value = Math.floor(index/visibleSlides);
-    scrollToSlideGroup();
-}
-
-const isSlideActive = (index) => {
-  const start = currentIndex.value * visibleSlides;
-  return index >= start && index < start + visibleSlides;
-
+const goToSlide = (index) => {
+    currentIndex.value = index;
 };
-
-const isIndicatorActive = (index) => {
-    return Math.floor(index/visibleSlides) === currentIndex.value;
+const openModal = (data) => {
+    modalOpen.value = true;
+    modalData.value = data
 }
-
-const scrollToSlideGroup = () => {
-      if (carouselWrapper.value) {
-            carouselWrapper.value.scrollTo({
-                left: carouselWrapper.value.offsetWidth * currentIndex.value,
-                behavior: 'smooth',
-            });
-      }
+const closeModal = () => {
+    modalOpen.value = false;
+    modalData.value = null;
 }
 watch(
     () => currentIndex.value,
-  () => {
-        scrollToSlideGroup();
-  });
+    () => {
+         if (carouselWrapper.value) {
+            carouselWrapper.value.scrollTo({
+                left: carouselWrapper.value.offsetWidth * currentIndex.value,
+                behavior: 'smooth',
+           });
+      }
+    }
+);
+
 </script>
 
 <style scoped>
 .carousel-container {
     position: relative;
     width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column; /* Ensure content stays within container */
 }
 
 .carousel-wrapper {
@@ -152,19 +168,15 @@ watch(
     display: none; /* Hide scrollbar in Chrome, Safari, and Opera */
 }
 
-
 .carousel-slide {
-    flex: 0 0 calc(100% / 3); /* Three slides per row */
+    flex: 0 0 100%;
     scroll-snap-align: start;
-    padding: 10px;
     cursor: pointer;
      position: relative;
-    height: auto;
      display: flex;
      align-items: center;
      justify-content: center;
-  transition: opacity 0.3s ease;
-
+    transition: opacity 0.3s ease;
 }
 
 .carousel-slide-inner {
@@ -174,7 +186,6 @@ watch(
     display: flex;
      align-items: center;
      justify-content: center;
-
 }
 
 .carousel-slide.active {
@@ -182,11 +193,10 @@ watch(
 }
 
 .carousel-image {
-      width: 100%;
-    height: 100%;
-    object-fit: cover; /* or contain depending on desired look */
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
     border-radius: 8px;
-     aspect-ratio: 1/1;
 }
 
 .data-type-label {
@@ -206,18 +216,17 @@ watch(
   font-style: italic;
   color: #aaa;
 }
-
 .carousel-decoration {
-    position: absolute;
-    bottom: 15px;
-    pointer-events: none;
+    position: relative;
     width: 100%;
-    
+    display: flex;
+    flex-direction: column;
 }
 
 .carousel-controls {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    width: 100%;
     padding: 0 10px;
 }
 
@@ -229,7 +238,6 @@ watch(
     cursor: pointer;
     font-size: 1.2rem;
     border-radius: 4px;
-    pointer-events: auto;
 }
 
 .control-button:disabled {
@@ -255,5 +263,11 @@ watch(
 
 .indicator-button.active {
     background-color: #555;
+}
+.modal-image {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+
 }
 </style>

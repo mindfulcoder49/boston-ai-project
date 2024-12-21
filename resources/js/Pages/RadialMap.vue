@@ -125,7 +125,7 @@
 
       <!-- AiAssistant Component -->
       <AiAssistant :context="filteredDataPoints" />
-      <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="5" />
+      <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" />
 
     <!-- Pass filteredDataPoints as context to AiAssistant -->
     </div>
@@ -209,12 +209,16 @@ const getDivIcon = (dataPoint) => {
   if (type === "311 Case") {
     // Add classes and set the background image if photos are present
     if (dataPoint.info?.submitted_photo) {
+      //get the first valid URL, there may be multiple separated by " | "
+      const photoURL = dataPoint.info.submitted_photo.split(' | ')[0];
+
       className += ' submitted-photo';
-      backgroundImage = `background-image: url(${dataPoint.info.submitted_photo});`;
+      backgroundImage = `background-image: url(${photoURL});`;
     }
     if (dataPoint.info?.closed_photo) {
+      const photoURL = dataPoint.info.closed_photo.split(' | ')[0];
       className += ' closed-photo';
-      backgroundImage = `background-image: url(${dataPoint.info.closed_photo});`;
+      backgroundImage = `background-image: url(${photoURL});`;
     }
     if (!dataPoint.info?.submitted_photo && !dataPoint.info?.closed_photo) {
       className += ' no-photo';
@@ -258,6 +262,21 @@ const handleImageClick = (data) => {
     console.log('marker', marker);
     if (marker.options.icon.options.className.includes('id'+data.info.id)) {
       marker.openPopup();
+    } 
+  });
+
+  console.log('Selected Data Point:', data);
+};
+
+const handleListClick = (data) => {
+  selectedDataPoint.value = data;
+  // find the marker with the classname that matches id + data.info.id and open the popup
+  markers.value.forEach((marker) => {
+    console.log('marker', marker);
+    if (marker.options.icon.options.className.includes('id'+data.info.id)) {
+      marker.openPopup();
+      //scroll to marker using class name
+      document.querySelector('.leaflet-popup-content-wrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } 
   });
 
