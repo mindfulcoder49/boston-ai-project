@@ -70,7 +70,7 @@ const newMarker = ref(null); // Ref for dynamically added marker
 
 onMounted(() => {
   nextTick(() => {
-    // Initialize the map with the provided center or default to Boston if not available
+    // Initialize the map
     initialMap.value = markRaw(L.map('map').setView(props.center || [42.3601, -71.0589], 16));
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -78,32 +78,75 @@ onMounted(() => {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(initialMap.value);
 
-    // Handle map clicks to set a new center only if centerSelectionActive is true
+    // Ensure the map has been initialized correctly
+    if (!initialMap.value) {
+      console.error('Map initialization failed');
+      return;
+    }
+
+    // Debug: Check if the map has zoom capabilities
+    console.log('Map initialized with center:', props.center);
+    console.log('Initial zoom level:', initialMap.value.getZoom());
+
+    // Update CSS variable on zoomend
+    const updateZoomVariables = () => {
+      if (!initialMap.value) {
+        console.error('Map not defined during zoomend');
+        return;
+      }
+
+      const zoom = initialMap.value.getZoom();
+
+      // Icon size calculation
+      const minSize = 2; // Icon size at minZoom
+      const maxSize = 50; // Icon size at maxZoom
+      const minZoom = 10;
+      const maxZoom = 19;
+
+      // Linear interpolation for icon size
+      const newSize = minSize + (maxSize - minSize) * (zoom - minZoom) / (maxZoom - minZoom);
+
+      // Debugging outputs
+      console.log('Zoom level:', zoom);
+      console.log('Calculated icon size:', newSize);
+
+      // Update CSS variable
+      document.documentElement.style.setProperty('--icon-size', `${newSize}px`);
+    };
+
+
+    // Attach zoomend event listener
+    initialMap.value.on('zoomend', updateZoomVariables);
+
+    // Debug: Ensure the listener is attached
+    console.log('Zoomend listener attached');
+
+    // Initialize CSS variable with the current zoom level
+    updateZoomVariables();
+
+    // Add other map-related listeners and markers
     initialMap.value.on('click', (e) => {
       if (props.centerSelectionActive) {
         emit('map-click', e.latlng);
 
-        // Add a new marker for the clicked location
         if (newMarker.value) {
-          initialMap.value.removeLayer(newMarker.value); // Remove old marker if exists
+          initialMap.value.removeLayer(newMarker.value); // Remove old marker
         }
 
-        // Add new center marker dynamically
         newMarker.value = markRaw(L.marker([e.latlng.lat, e.latlng.lng], {
           icon: getDivIcon('Center'),
         })).addTo(initialMap.value);
       }
     });
 
-    // Add the center marker
     markerCenter.value = markRaw(L.marker(props.center, {
       icon: getDivIcon('Center'),
-    })).addTo(initialMap.value); 
+    })).addTo(initialMap.value);
 
-    // Initialize the markers for the dataPoints
     updateMarkers(props.dataPoints);
   });
 });
+
 
 // Update the markers for dataPoints and add the new center
 const markers = ref([]);
@@ -199,42 +242,4 @@ watch(() => props.cancelNewMarker, (cancel) => {
 #map {
   height: 70vh;
 }
-
-/* Define your custom DivIcons */
-.default-div-icon {
-  background-color: gray;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.crime-div-icon {
-  background-color: red;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.case-div-icon {
-  background-color: blue;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.permit-div-icon {
-  background-color: green;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.center-div-icon {
-  background-color: yellow;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-
 </style>

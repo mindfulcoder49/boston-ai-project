@@ -4,183 +4,133 @@ namespace App\Http\Controllers;
 
 use App\Models\CrimeData;
 use App\Models\ThreeOneOneCase;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use App\Models\BuildingPermit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class GenericMapController extends Controller
 {
-    public function index(Request $request)
+    public function getRadialMapData(Request $request)
     {
-        Log::info('Index method accessed.', ['request' => $request->all()]);
-        return redirect()->route('map.radial'); // Redirect to the radial map
-    }
-
-    public function getRadialMap(Request $request)
-    {
-        Log::info('getRadialMap accessed.', ['request' => $request->all()]);
-
         $defaultLatitude = 42.3601;
         $defaultLongitude = -71.0589;
         $defaultAddress = 'Boston, MA';
 
-        //check if user is logged in, and if it is, get the user's first saved location
+        // Set defaults if user is not logged in
         if (Auth::check()) {
             $user = Auth::user();
-            $locations = $user->locations;
-            if ($locations->count() > 0) {
-                $defaultLatitude = $locations->first()->latitude;
-                $defaultLongitude = $locations->first()->longitude;
-                $defaultAddress = $locations->first()->address;
+            $location = $user->locations->first();
+            if ($location) {
+                $defaultLatitude = $location->latitude;
+                $defaultLongitude = $location->longitude;
+                $defaultAddress = $location->address;
             }
         }
 
         $centralLocation = $request->input('centralLocation', [
             'latitude' => $defaultLatitude,
             'longitude' => $defaultLongitude,
-            'address' => $defaultAddress
+            'address' => $defaultAddress,
         ]);
 
-        Log::info('Central location determined.', ['centralLocation' => $centralLocation]);
-
-        $radius = 0.25;
+        $radius = $request->input('radius', 0.25);
+        $days = $request->input('days', 14);
 
         $boundingBox = $this->getBoundingBox($centralLocation['latitude'], $centralLocation['longitude'], $radius);
 
-        Log::info('Bounding box calculated.', ['boundingBox' => $boundingBox]);
+        // Fetch data concurrently
+        $crimeData = $this->fetchCrimeData($boundingBox, $days);
+        $caseData = $this->fetch311CaseData($boundingBox, $days);
+        $buildingPermits = $this->fetchBuildingPermits($boundingBox, $days);
 
-        // Get the 'days' parameter from the request, default to 7 days if not provided
-        $days = $request->input('days', 14);
+        // Combine results
+        $dataPoints = array_merge($crimeData, $caseData, $buildingPermits);
 
-        $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $days));
-        Log::info('Crime data fetched.', ['crimeDataCount' => $crimeData->count()]);
-
-        $caseData = collect($this->getThreeOneOneCaseDataForBoundingBox($boundingBox, $days));
-        Log::info('311 case data fetched.', ['caseDataCount' => $caseData->count()]);
-
-        $buildingPermits = collect($this->getBuildingPermitsForBoundingBox($boundingBox, $days));
-        Log::info('Building permits data fetched.', ['buildingPermitsCount' => $buildingPermits->count()]);
-
-        $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits);
-        Log::info('Data points merged.', ['totalDataPointsCount' => $dataPoints->count()]);
-
-        return Inertia::render('RadialMap', [
+        return response()->json([
             'dataPoints' => $dataPoints,
             'centralLocation' => $centralLocation,
         ]);
     }
 
-    // Function to calculate a bounding box (latitude and longitude range)
     private function getBoundingBox($lat, $lon, $radius)
     {
-        Log::info('Calculating bounding box.', ['latitude' => $lat, 'longitude' => $lon, 'radius' => $radius]);
-
-        $earthRadius = 3959; // Radius of Earth in miles
+        $earthRadius = 3959;
 
         $latDelta = rad2deg($radius / $earthRadius);
         $lonDelta = rad2deg($radius / ($earthRadius * cos(deg2rad($lat))));
 
-        $boundingBox = [
+        return [
             'minLat' => $lat - $latDelta,
             'maxLat' => $lat + $latDelta,
             'minLon' => $lon - $lonDelta,
             'maxLon' => $lon + $lonDelta,
         ];
-
-        Log::info('Bounding box calculated.', ['boundingBox' => $boundingBox]);
-
-        return $boundingBox;
     }
 
-    public function getCrimeDataForBoundingBox($boundingBox, $days)
+    private function fetchCrimeData($boundingBox, $days)
     {
-        Log::info('Fetching crime data within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
-
         $startDate = Carbon::now()->subDays($days)->toDateString();
 
-        $query = CrimeData::whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
-                          ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                          ->where('occurred_on_date', '>=', $startDate);
-
-        $crimeData = $query->get();
-
-        Log::info('Crime data query executed.', ['rowsFetched' => $crimeData->count()]);
-
-        // Transform data for the map
-        return $crimeData->map(function ($crime) {
-            // Convert crime object to an array and exclude the latitude, longitude, and date fields
-            $info = Arr::except($crime->toArray(), ['lat', 'long', 'occurred_on_date', 'created_at', 'updated_at', 'location', 'offense_code_group']);
-        
-            return [
-                'latitude' => $crime->lat,
-                'longitude' => $crime->long,
-                'date' => $crime->occurred_on_date,
-                'type' => 'Crime',
-                'info' => $info,
-            ];
-        });
+        return CrimeData::select('lat', 'long', 'occurred_on_date', 'offense_description')
+            ->whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
+            ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
+            ->where('occurred_on_date', '>=', $startDate)
+            ->get()
+            ->map(function ($crime) {
+                return [
+                    'latitude' => $crime->lat,
+                    'longitude' => $crime->long,
+                    'date' => $crime->occurred_on_date,
+                    'type' => 'Crime',
+                    'info' => ['offense_description' => $crime->offense_description],
+                ];
+            })
+            ->toArray();
     }
 
-    public function getThreeOneOneCaseDataForBoundingBox($boundingBox, $days)
+    private function fetch311CaseData($boundingBox, $days)
     {
-        Log::info('Fetching 311 case data within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
-
         $startDate = Carbon::now()->subDays($days)->toDateString();
 
-        $query = ThreeOneOneCase::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-                                ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                                ->where('open_dt', '>=', $startDate);
-
-        $cases = $query->get();
-
-        Log::info('311 case data query executed.', ['rowsFetched' => $cases->count()]);
-
-        // Transform data for the map
-        return $cases->map(function ($case) {
-            // Convert case object to an array and exclude the latitude, longitude, and date fields
-            $info = Arr::except($case->toArray(), ['latitude', 'longitude', 'open_dt','checksum']);
-        
-            return [
-                'latitude' => $case->latitude,
-                'longitude' => $case->longitude,
-                'date' => $case->open_dt,
-                'type' => '311 Case',
-                'info' => $info,
-            ];
-        });
+        return ThreeOneOneCase::select('latitude', 'longitude', 'open_dt', 'case_title')
+            ->whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+            ->where('open_dt', '>=', $startDate)
+            ->get()
+            ->map(function ($case) {
+                return [
+                    'latitude' => $case->latitude,
+                    'longitude' => $case->longitude,
+                    'date' => $case->open_dt,
+                    'type' => '311 Case',
+                    'info' => ['case_title' => $case->case_title],
+                ];
+            })
+            ->toArray();
     }
 
-    public function getBuildingPermitsForBoundingBox($boundingBox, $days)
+    private function fetchBuildingPermits($boundingBox, $days)
     {
-        Log::info('Fetching building permits within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
-
         $startDate = Carbon::now()->subDays($days)->toDateString();
 
-        $buildingPermits = BuildingPermit::whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-                                         ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                                         ->where('issued_date', '>=', $startDate)
-                                         ->limit(150)
-                                         ->get();
-
-        Log::info('Building permits data query executed.', ['rowsFetched' => $buildingPermits->count()]);
-
-        // Transform data for the map
-        return $buildingPermits->map(function ($permit) {
-            // Convert permit object to an array and exclude the latitude, longitude, and date fields
-            $info = Arr::except($permit->toArray(), ['y_latitude', 'x_longitude', 'issued_date', 'applicant']);
-
-            return [
-                'latitude' => $permit->y_latitude,
-                'longitude' => $permit->x_longitude,
-                'date' => $permit->issued_date,
-                'type' => 'Building Permit',
-                'info' => $info,
-            ];
-        });
-
+        return BuildingPermit::select('y_latitude', 'x_longitude', 'issued_date', 'description')
+            ->whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+            ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+            ->where('issued_date', '>=', $startDate)
+            ->limit(150)
+            ->get()
+            ->map(function ($permit) {
+                return [
+                    'latitude' => $permit->y_latitude,
+                    'longitude' => $permit->x_longitude,
+                    'date' => $permit->issued_date,
+                    'type' => 'Building Permit',
+                    'info' => ['description' => $permit->description],
+                ];
+            })
+            ->toArray();
     }
 }
+

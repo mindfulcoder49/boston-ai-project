@@ -21,12 +21,16 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/search-address', [TrashScheduleByAddressController::class, 'search']);
 
 
-// Route to display the generic map interface
-Route::get('/', [GenericMapController::class, 'getRadialMap'])->name('map.index');
-Route::post('/', [GenericMapController::class, 'getRadialMap'])->name('map.update');
+// Serve the Vue component directly
+Route::get('/', function () {
+    return Inertia::render('RadialMap', [
+        // Optional: pass initial props if needed
+    ]);
+})->name('map.index');
 
-// Route to fetch data for the map based on filters
-Route::post('/api/map-data', [GenericMapController::class, 'getData'])->name('map.data');
+// New API endpoint for fetching map data
+Route::post('/api/map-data', [GenericMapController::class, 'getRadialMapData'])->name('map.data');
+
 
 Route::post('/api/ai-chat', [AiAssistantController::class, 'handleRequest'])->name('ai.assistant');
 

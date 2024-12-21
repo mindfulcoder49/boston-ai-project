@@ -1,0 +1,914 @@
+Contents of ./ThreeOneOneSeeder.php:
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
+class ThreeOneOneSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run(): void
+    {
+        $name = '311-service-requests'; // Specify the file naming convention to look for
+        $files = Storage::disk('local')->files('datasets'); // Fetch all files from 'datasets' directory
+
+        // Filter files to match the specified naming convention
+        $files = array_filter($files, function ($file) use ($name) {
+            return strpos($file, $name) !== false;
+        });
+
+        // Only proceed if there are any files to process
+        if (!empty($files)) {
+            $file = end($files); // Process the most recent file
+            echo "Processing file: " . $file . "\n";
+            $this->processFile(Storage::path($file));
+        } else {
+            echo "No files found to process for name: " . $name . "\n";
+        }
+    }
+
+    /**
+     * Process the file and insert data into the database.
+     *
+     * @param string $filePath
+     * @return void
+     */
+    private function processFile(string $filePath): void
+    {
+        if (!file_exists($filePath)) {
+            echo "File not found: $filePath\n";
+            return;
+        }
+
+        // Read and decode the file content (assuming CSV)
+        $rows = array_map('str_getcsv', file($filePath));
+        $header = array_shift($rows); // Extract header row
+
+        foreach ($rows as $index => $row) {
+            try {
+                // Combine header and row data into an associative array
+                $rowData = array_combine($header, $row);
+
+                // Validate and clean the data
+                $cleanedData = $this->validateAndCleanData($rowData);
+
+                // Insert cleaned data into the database
+                DB::table('three_one_one_cases')->insert($cleanedData);
+            } catch (\Exception $e) {
+                // Log errors without interrupting the seeding process
+                Log::error("Error processing row $index in file $filePath: " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Validate and clean data for insertion.
+     *
+     * @param array $row
+     * @return array
+     * @throws \Exception
+     */
+    private function validateAndCleanData(array $row): array
+    {
+        return [
+            'case_enquiry_id' => $this->validateInteger($row['case_enquiry_id'] ?? null, 'case_enquiry_id'),
+            'open_dt' => $this->validateDateTime($row['open_dt'] ?? null),
+            'sla_target_dt' => $row['sla_target_dt'] ?? null,
+            'closed_dt' => $this->validateDateTime($row['closed_dt'] ?? null),
+            'on_time' => $row['on_time'] ?? null,
+            'case_status' => $row['case_status'] ?? null,
+            'closure_reason' => $row['closure_reason'] ?? null,
+            'case_title' => $row['case_title'] ?? null,
+            'subject' => $row['subject'] ?? null,
+            'reason' => $row['reason'] ?? null,
+            'type' => $row['type'] ?? null,
+            'queue' => $row['queue'] ?? null,
+            'department' => $row['department'] ?? null,
+            'submitted_photo' => $row['submitted_photo'] ?? null,
+            'closed_photo' => $row['closed_photo'] ?? null,
+            'location' => $row['location'] ?? null,
+            'fire_district' => $row['fire_district'] ?? null,
+            'pwd_district' => $row['pwd_district'] ?? null,
+            'city_council_district' => $row['city_council_district'] ?? null,
+            'police_district' => $row['police_district'] ?? null,
+            'neighborhood' => $row['neighborhood'] ?? null,
+            'neighborhood_services_district' => $row['neighborhood_services_district'] ?? null,
+            'ward' => $row['ward'] ?? null,
+            'precinct' => $row['precinct'] ?? null,
+            'location_street_name' => $row['location_street_name'] ?? null,
+            'location_zipcode' => $this->validateDouble($row['location_zipcode'] ?? null),
+            'latitude' => $this->validateDouble($row['latitude'] ?? null),
+            'longitude' => $this->validateDouble($row['longitude'] ?? null),
+            'source' => $row['source'] ?? null,
+            'checksum' => $row['checksum'] ?? null,
+            'ward_number' => $row['ward_number'] ?? null,
+        ];
+    }
+
+    /**
+     * Validation helpers for integer, double, and datetime remain the same.
+     */
+    private function validateInteger($value, string $field): ?int
+    {
+        if (is_null($value)) {
+            return null;
+        }
+        if (!is_numeric($value) || intval($value) != $value) {
+            throw new \Exception("Invalid integer for $field: $value");
+        }
+        return intval($value);
+    }
+
+    private function validateDouble($value): ?float
+    {
+        if (is_null($value)) {
+            return null;
+        }
+        if (!is_numeric($value)) {
+            throw new \Exception("Invalid double value: $value");
+        }
+        return floatval($value);
+    }
+
+    private function validateDateTime($value): ?string
+    {
+        if (is_null($value)) {
+            return null;
+        }
+        $date = date_create($value);
+        if (!$date) {
+            throw new \Exception("Invalid datetime value: $value");
+        }
+        return $date->format('Y-m-d H:i:s');
+    }
+}
+
+Contents of ./ConstructionOffHoursSeeder.php:
+<?php
+
+// database/seeders/ConstructionOffHoursSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\ConstructionOffHour;
+use Illuminate\Support\Facades\File;
+use League\Csv\Reader;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+class ConstructionOffHoursSeeder extends Seeder
+{
+    private const BATCH_SIZE = 500;
+
+    public function run()
+    {
+        $name = 'construction-off-hours';
+        // get most recent file from Storage::disk('local'), filename is name with date appended
+        $files = Storage::disk('local')->files($name);
+        $file = end($files);
+
+        foreach ($files as $file) {
+            $this->processFile($file);
+        }
+    }
+
+    private function processFile($file)
+    {
+        print_r("Processing file: " . $file . "\n");
+        $csv = Reader::createFromPath($file);
+        $csv->setHeaderOffset(0); // The header is on the first row
+
+        $records = $csv->getRecords();
+
+        $dataBatch = [];
+        $progress = 0;
+        $fileCount = count(file($file));
+        $skipped = 0;
+
+        foreach ($records as $offHour) {
+            $progress++;
+
+            // Add data to batch array
+            $dataBatch[] = [
+                'app_no' => $offHour['app_no'],
+                'start_datetime' => $offHour['start_datetime'],
+                'stop_datetime' => $offHour['stop_datetime'],
+                'address' => $offHour['address'],
+                'ward' => $offHour['ward'],
+            ];
+
+            if ($progress % self::BATCH_SIZE == 0) {
+                $this->insertOrUpdateBatch($dataBatch);
+                $dataBatch = []; // Reset the batch
+            }
+        }
+
+        // Process any remaining data
+        if (!empty($dataBatch)) {
+            $this->insertOrUpdateBatch($dataBatch);
+        }
+
+        print_r("File processed: " . $file . "\n");
+    }
+
+    private function insertOrUpdateBatch(array $dataBatch): void
+    {
+        DB::table((new ConstructionOffHour)->getTable())->upsert($dataBatch, ['app_no'], [
+            'start_datetime', 'stop_datetime', 'address', 'ward'
+        ]);
+    }
+}
+
+Contents of ./DatabaseSeeder.php:
+<?php
+
+namespace Database\Seeders;
+
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    /**
+     * Seed the application's database.
+     */
+    public function run(): void
+    {
+        $this->call([
+            TrashSchedulesByAddressSeeder::class,
+            CrimeDataSeeder::class,
+            ThreeOneOneSeeder::class,
+            BuildingPermitsSeeder::class,
+        ]);
+    }
+}
+
+Contents of ./BuildingPermitsSeeder.php:
+<?php
+
+// database/seeders/BuildingPermitsSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\BuildingPermit;
+use Illuminate\Support\Facades\File;
+use League\Csv\Reader;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+class BuildingPermitsSeeder extends Seeder
+{
+    private const BATCH_SIZE = 500;
+
+    public function run()
+    {
+        $name = 'building-permits';
+        // Get all files from the datasets folder in Storage
+        $files = Storage::disk('local')->files('datasets');
+
+        // Filter files to only include those with the specified name in the filename
+        $files = array_filter($files, function ($file) use ($name) {
+            return strpos($file, $name) !== false;
+        });
+
+        // Only proceed if there are any files to process
+        if (!empty($files)) {
+            // Get the most recent file
+            $file = end($files);
+            echo "Processing file: " . $file . "\n";
+
+            // Process the most recent file
+            $this->processFile(Storage::path($file));
+        } else {
+            echo "No files found to process for name: " . $name . "\n";
+        }
+    }
+
+    private function processFile($filePath)
+    {
+        try {
+            $csv = Reader::createFromPath($filePath, 'r');
+            $csv->setHeaderOffset(0); // The header is on the first row
+            //set the escape character to null
+            $csv->setEscape('');
+
+            $records = $csv->getRecords();
+
+            $dataBatch = [];
+            $progress = 0;
+
+            foreach ($records as $permit) {
+                $progress++;
+                //echo $date, permit number, etc, on one line
+                echo "SqFt contains: " . $permit['sq_feet'] . " Permit number: " . $permit['permitnumber'] . "\n";
+                // Check and format datetime fields
+                $issuedDate = $this->formatDate($permit['issued_date']);
+                $expirationDate = $this->formatDate($permit['expiration_date']);
+
+                //check sq_feet and convert to integer if it is a number, otherwise set to 0
+                $sqfeet = is_numeric($permit['sq_feet']) ? (int)$permit['sq_feet'] : 0;
+
+                //set it to a maximum of one billion
+                if ($sqfeet > 1000000000) {
+                    $sqfeet = 1000000000;
+                }
+
+
+
+                //convert empty strings to null
+                foreach ($permit as $key => $value) {
+                    if ($value === '') {
+                        $permit[$key] = null;
+                    }
+                }
+
+                // Add data to batch array
+                $dataBatch[] = [
+                    'permitnumber' => $permit['permitnumber'],
+                    'worktype' => $permit['worktype'],
+                    'permittypedescr' => $permit['permittypedescr'],
+                    'description' => $permit['description'],
+                    'comments' => $permit['comments'],
+                    'applicant' => $permit['applicant'],
+                    'declared_valuation' => $permit['declared_valuation'],
+                    'total_fees' => $permit['total_fees'],
+                    'issued_date' => $issuedDate,
+                    'expiration_date' => $expirationDate,
+                    'status' => $permit['status'],
+                    'occupancytype' => $permit['occupancytype'],
+                    'sq_feet' => $sqfeet,
+                    'address' => $permit['address'],
+                    'city' => $permit['city'],
+                    'state' => $permit['state'],
+                    'zip' => $permit['zip'],
+                    'property_id' => $permit['property_id'],
+                    'parcel_id' => $permit['parcel_id'],
+                    'gpsy' => $permit['gpsy'],
+                    'gpsx' => $permit['gpsx'],
+                    'y_latitude' => $permit['y_latitude'],
+                    'x_longitude' => $permit['x_longitude'],
+                ];
+
+                if ($progress % self::BATCH_SIZE == 0) {
+                    $this->insertOrUpdateBatch($dataBatch);
+                    $dataBatch = []; // Reset the batch
+                }
+            }
+
+            // Process any remaining data
+            if (!empty($dataBatch)) {
+                $this->insertOrUpdateBatch($dataBatch);
+            }
+
+            echo "File processed: " . basename($filePath) . "\n";
+        } catch (\Exception $e) {
+            echo "Error processing file: " . basename($filePath) . " - " . $e->getMessage() . "\n";
+        }
+    }
+
+    private function formatDate($date)
+    {
+
+        if (empty($date)) {
+            // Set to null or a default value that makes sense for your application
+            return null;
+        }
+
+        if ( $date == '1970-01-01 00:00:00') {
+            echo "Date is 1970-01-01 00:00:00\n";
+            return null;
+        }
+
+        //if date is before epoch time, set to null
+        if (strtotime($date) < 0) {
+            echo "Date is before epoch time\n";
+            return null;
+        }
+
+        
+        // Ensure date is in the correct format
+        $formattedDate = date('Y-m-d H:i:s', strtotime($date));
+
+        return $formattedDate;
+    }
+        
+
+    private function insertOrUpdateBatch(array $dataBatch): void
+    {
+        DB::table((new BuildingPermit)->getTable())->upsert($dataBatch, ['permitnumber'], [
+            'worktype', 'permittypedescr', 'description', 'comments', 'applicant', 
+            'declared_valuation', 'total_fees', 'issued_date', 'expiration_date', 
+            'status', 'occupancytype', 'sq_feet', 'address', 'city', 'state', 'zip', 
+            'property_id', 'parcel_id', 'gpsy', 'gpsx', 'y_latitude', 'x_longitude'
+        ]);
+    }
+
+    private function parseFloat($value)
+    {
+        // Return float value or null if the value is not numeric
+        return is_numeric($value) ? (float)$value : null;
+    }
+}
+
+Contents of ./output.txt:
+
+Contents of ./LabelsSeeder.php:
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Log;
+use App\Models\Label;
+use App\Services\OpenAIService;
+
+class LabelTranslationSeeder extends Seeder
+{
+    protected $aiService;
+
+    public function __construct()
+    {
+        $this->aiService = app(OpenAIService::class); // Inject your AI service
+    }
+
+    public function run()
+    {
+        Log::info('Starting LabelTranslationSeeder...');
+
+        try {
+            // Fetch all English labels
+            $englishLabels = Label::where('language_code', 'en')->get();
+
+            if ($englishLabels->isEmpty()) {
+                Log::warning('No English labels found to translate.');
+                return;
+            }
+
+            Log::info('Fetched English labels', ['count' => $englishLabels->count()]);
+
+            // Prepare the AI function definition
+            $functionDefinition = [
+                "name" => "store_translated_labels",
+                "description" => "Translates a set of labels into the specified language.",
+                "parameters" => [
+                    "type" => "object",
+                    "properties" => [
+                        "labels" => [
+                            "type" => "array",
+                            "items" => [
+                                "type" => "object",
+                                "properties" => [
+                                    "code_name" => ["type" => "string", "description" => "The label's code name."],
+                                    "text" => ["type" => "string", "description" => "The label's text in English."],
+                                    "language_code" => ["type" => "string", "description" => "The target language code for translation."],
+                                ],
+                                "required" => ["code_name", "text", "language_code"]
+                            ]
+                        ]
+                    ],
+                    "required" => ["labels"]
+                ]
+            ];
+
+            // Iterate over chunks of 10 labels for translation
+            foreach ($englishLabels->chunk(10) as $chunk) {
+                $labelsToTranslate = $chunk->map(function ($label) {
+                    return [
+                        "code_name" => $label->code_name,
+                        "text" => $label->text,
+                        "language_code" => 'es', // Example: translating to Spanish
+                    ];
+                })->toArray();
+
+                // Prompt the AI
+                $prompt = "Translate these English labels into Spanish (language code 'es'):\n" . json_encode($labelsToTranslate, JSON_PRETTY_PRINT);
+
+                $systemMessage = "You are a translation assistant responsible for translating application labels into different languages.";
+
+                $translatedLabels = $this->aiService->callFunction($functionDefinition, $prompt, $systemMessage);
+
+                // Insert translated labels into the database
+                foreach ($translatedLabels['labels'] as $translatedLabel) {
+                    Label::create([
+                        'code_name' => $translatedLabel['code_name'],
+                        'text' => $translatedLabel['text'],
+                        'language_code' => $translatedLabel['language_code'],
+                    ]);
+
+                    Log::info("Inserted translated label", ['code_name' => $translatedLabel['code_name'], 'language_code' => $translatedLabel['language_code']]);
+                }
+            }
+
+            Log::info('LabelTranslationSeeder completed.');
+        } catch (\Exception $e) {
+            Log::error('Failed to seed translated labels', ['exception' => $e]);
+        }
+    }
+}
+
+Contents of ./Api311Seeder.php:
+<?php
+
+use Illuminate\Database\Seeder;
+use App\Models\Boston311Data;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use Carbon\Carbon;
+use Carbon\CarbonInterval;
+
+class Api311Seeder extends Seeder
+{
+    public function run()
+    {
+        $client = new Client();
+        $startDate = $this->getLastDateInDB() ?? Carbon::create(2023, 1, 1, 0, 0, 0, 'UTC');
+        $endDate = Carbon::create(2023, 9, 20, 0, 0, 0, 'UTC');
+        $dayDelta = CarbonInterval::days(1);
+        $minuteDelta = CarbonInterval::minutes(1);
+
+        while ($startDate->lessThanOrEqualTo($endDate)) {
+            $formattedStartDate = $startDate->toIso8601String();
+            $formattedEndDate = $startDate->copy()->add($dayDelta)->toIso8601String();
+
+            try {
+                $response = $client->get("https://311.boston.gov/open311/v2/requests.json?start_date=$formattedStartDate&end_date=$formattedEndDate");
+
+                if ($response->getStatusCode() === 200) {
+                    $data = json_decode($response->getBody(), true);
+                    echo "Number of requests: " . count($data) . "\n";
+
+                    foreach ($data as $record) {
+                        Boston311Data::updateOrInsert(
+                            ['service_request_id' => $record['service_request_id']],
+                            $record
+                        );
+                    }
+
+                    if (count($data) > 0) {
+                        $lastDate = Carbon::parse($data[array_key_last($data)]['requested_datetime']);
+                        if ($lastDate->greaterThan($startDate)) {
+                            $startDate = $lastDate;
+                        } else {
+                            $startDate->add($minuteDelta);
+                        }
+                    } else {
+                        $startDate->add($dayDelta);
+                    }
+                }
+            } catch (RequestException $e) {
+                echo "Failed to fetch data for $formattedStartDate to $formattedEndDate\n";
+            } catch (JsonException $e) {
+                echo "Failed to decode JSON for $formattedStartDate to $formattedEndDate\n";
+            }
+
+            sleep(6);  // Rate limiting
+        }
+    }
+
+    private function getLastDateInDB()
+    {
+        $record = Boston311Data::latest('requested_datetime')->first();
+        return $record ? Carbon::parse($record->requested_datetime) : null;
+    }
+}
+
+Contents of ./CrimeDataSeeder.php:
+<?php
+
+// database/seeders/CrimeDataSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\CrimeData;
+use Illuminate\Support\Facades\File;
+use League\Csv\Reader;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+class CrimeDataSeeder extends Seeder
+{
+    private const BATCH_SIZE = 500;
+
+    public function run()
+    {
+        $name = 'crime-incident-reports';
+        // Get all files from the datasets folder in Storage
+        $files = Storage::disk('local')->files('datasets');
+
+        // Filter files to only include those with the specified name in the filename
+        $files = array_filter($files, function ($file) use ($name) {
+            return strpos($file, $name) !== false;
+        });
+
+        // Only proceed if there are any files to process
+        if (!empty($files)) {
+            // Get the most recent file
+            $file = end($files);
+            echo "Processing file: " . $file . "\n";
+
+            // Process the most recent file
+            $this->processFile(Storage::path($file));
+        } else {
+            echo "No files found to process for name: " . $name . "\n";
+        }
+    }
+
+    private function processFile($file)
+    {
+        print_r("Processing file: " . $file . "\n");
+        $csv = Reader::createFromPath($file);
+        $csv->setHeaderOffset(0); // The header is on the first row
+
+        $records = $csv->getRecords();
+
+        $dataBatch = [];
+        $progress = 0;
+        $startTime = microtime(true);
+        $fileCount = count(file($file));
+        $skipped = 0;
+
+        foreach ($records as $crime) {
+            $progress++;
+
+            if (!is_numeric($crime['Lat']) || !is_numeric($crime['Long'])) {
+                print_r("Skipping record with invalid lat/long: " . $crime['Lat'] . ", " . $crime['Long'] . "\n");
+                $skipped++;
+                continue;
+            } else {
+                print_r("Processing record with lat/long: " . $crime['Lat'] . ", " . $crime['Long'] . "\n");
+            }
+
+            $occurred_on_date = $this->formatDate($crime['OCCURRED_ON_DATE']);
+
+            $dataBatch[] = [
+                'incident_number' => $crime['INCIDENT_NUMBER'],
+                'offense_code' => $crime['OFFENSE_CODE'],
+                'offense_code_group' => $crime['OFFENSE_CODE_GROUP'],
+                'offense_description' => $crime['OFFENSE_DESCRIPTION'],
+                'district' => $crime['DISTRICT'],
+                'reporting_area' => $crime['REPORTING_AREA'],
+                'shooting' => $crime['SHOOTING'] == 'Y',
+                'occurred_on_date' => $occurred_on_date,
+                'year' => $crime['YEAR'],
+                'month' => $crime['MONTH'],
+                'day_of_week' => $crime['DAY_OF_WEEK'],
+                'hour' => $crime['HOUR'],
+                'ucr_part' => $crime['UCR_PART'],
+                'street' => $crime['STREET'],
+                'lat' => $crime['Lat'],
+                'long' => $crime['Long'],
+                'location' => $crime['Location'],
+                'offense_category' => $this->categorizeOffense($crime['OFFENSE_CODE']),
+            ];
+
+            if ($progress % self::BATCH_SIZE == 0) {
+                $this->insertOrUpdateBatch($dataBatch);
+                $dataBatch = []; // Reset the batch
+
+                // Progress reporting
+                $endTime = microtime(true);
+                $timeTaken = $endTime - $startTime;
+                $this->reportProgress($progress, $fileCount, $timeTaken);
+                $startTime = microtime(true);
+            }
+        }
+
+        // Process any remaining data
+        if (!empty($dataBatch)) {
+            $this->insertOrUpdateBatch($dataBatch);
+        }
+
+        print_r("File processed: " . $file . "\n");
+    }
+
+    private function insertOrUpdateBatch(array $dataBatch): void
+    {
+        DB::table((new CrimeData)->getTable())->upsert($dataBatch, ['incident_number'], [
+            'offense_code',
+            'offense_code_group',
+            'offense_description',
+            'district',
+            'reporting_area',
+            'shooting',
+            'occurred_on_date',
+            'year',
+            'month',
+            'day_of_week',
+            'hour',
+            'ucr_part',
+            'street',
+            'lat',
+            'long',
+            'location',
+            'offense_category'
+        ]);
+    }
+
+    private function reportProgress($progress, $fileCount, $timeTaken)
+    {
+        $estimatedTimePerRecord = $timeTaken / self::BATCH_SIZE;
+        $estimatedTimeRemainingFile = $estimatedTimePerRecord * ($fileCount - $progress);
+        
+        // Clear the previous 5 lines
+        echo "\033[5A";  // Move 5 lines up
+        echo "\033[K";   // Clear current line
+        echo $progress . " records processed.\n";
+        echo "\033[K";   // Clear current line
+        echo "Records remaining in this file: " . ($fileCount - $progress) . ".\n";
+        echo "\033[K";   // Clear current line
+        echo "Time for last " . self::BATCH_SIZE . " records: " . round($timeTaken, 2) . " seconds.\n";
+        echo "\033[K";   // Clear current line
+        echo "Estimated time remaining for this file: " . $this->formatTime($estimatedTimeRemainingFile) . ".\n";
+    }
+
+    private function formatTime(float $timeInSeconds): string
+    {
+        $hours = floor($timeInSeconds / 3600);
+        $minutes = floor(($timeInSeconds % 3600) / 60);
+        $seconds = $timeInSeconds % 60;
+
+        $formattedTime = [];
+        if ($hours > 0) {
+            $formattedTime[] = $hours . ' hour' . ($hours > 1 ? 's' : '');
+        }
+        if ($minutes > 0 || $hours > 0) {
+            $formattedTime[] = $minutes . ' minute' . ($minutes > 1 ? 's' : '');
+        }
+        $formattedTime[] = round($seconds, 2) . ' second' . ($seconds != 1 ? 's' : '');
+
+        return implode(', ', $formattedTime);
+    }
+
+    private function formatDate($date)
+    {
+        // Strip timezone offset
+        if (strpos($date, '+') !== false) {
+            $date = explode('+', $date)[0];
+        } elseif (strpos($date, '-') !== false) {
+            $date = explode('-', $date)[0];
+        }
+
+        // Convert to datetime
+        return date('Y-m-d H:i:s', strtotime($date));
+    }
+
+    private function categorizeOffense($code)
+    {
+        $categories = [
+            'murder_and_manslaughter' => [111, 112, 113, 114, 121, 122, 123, 124, 125],
+            'rape' => [
+                211, 212, 213, 222, 223, 224, 230, 231, 232, 233, 234, 235, 236, 237,
+                241, 242, 243, 244, 251, 252, 253, 254, 261, 271
+            ],
+            'robbery' => range(301, 382),
+            'assault' => range(401, 434),
+            'burglary' => range(510, 563),
+            'larceny' => range(611, 670),
+            'auto_theft' => range(701, 791),
+            'simple_assault' => range(801, 805),
+            'arson' => range(900, 931),
+            'forgery_counterfeiting' => range(1001, 1003),
+            'fraud' => range(1101, 1110),
+            'embezzlement' => [1201],
+            'stolen_property' => range(1300, 1305),
+            'vandalism' => range(1401, 1416),
+            'weapons_violations' => range(1501, 1511),
+            'prostitution' => range(1601, 1621),
+            'sex_offenses' => range(1702, 1732),
+            'drug_violations' => range(1805, 1876),
+            'gambling' => range(1901, 1922),
+            'child_offenses' => range(2003, 2011),
+            'alcohol_violations' => range(2101, 2205),
+            'disorderly_conduct' => range(2401, 2408),
+            'kidnapping' => range(2511, 2625),
+            'miscellaneous_offenses' => range(2628, 2673),
+            'vehicle_laws' => range(2801, 2918),
+            'investigations' => range(3001, 3041),
+            'other_services' => range(3102, 3171),
+            'property' => range(3201, 3211),
+            'disputes' => range(3301, 3306),
+            'animal_incidents' => range(3402, 3415),
+            'missing_persons' => range(3501, 3504),
+            'other_reports' => range(3612, 3626),
+            'accidents' => range(3701, 3832)
+        ];
+
+        foreach ($categories as $category => $codes) {
+            if (in_array($code, $codes)) {
+                return $category;
+            }
+        }
+
+        return 'other_offenses';
+    }
+}
+
+Contents of ./TrashSchedulesByAddressSeeder.php:
+<?php
+
+// database/seeders/TrashSchedulesByAddressSeeder.php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\TrashScheduleByAddress;
+use Illuminate\Support\Facades\File;
+use League\Csv\Reader;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+class TrashSchedulesByAddressSeeder extends Seeder
+{
+    private const BATCH_SIZE = 500;
+
+    public function run()
+    {
+
+        $name = 'trash-schedules-by-address';
+        // Get all files from the datasets folder in Storage
+        $files = Storage::disk('local')->files('datasets');
+
+        // Filter files to only include those with the specified name in the filename
+        $files = array_filter($files, function ($file) use ($name) {
+            return strpos($file, $name) !== false;
+        });
+
+        // Only proceed if there are any files to process
+        if (!empty($files)) {
+            // Get the most recent file
+            $file = end($files);
+            echo "Processing file: " . $file . "\n";
+
+            // Process the most recent file
+            $this->processFile(Storage::path($file));
+        } else {
+            echo "No files found to process for name: " . $name . "\n";
+        }
+    }
+
+    private function processFile($file)
+    {
+        print_r("Processing file: " . $file . "\n");
+        $csv = Reader::createFromPath($file);
+        $csv->setHeaderOffset(0); // The header is on the first row
+
+        $records = $csv->getRecords();
+
+        $dataBatch = [];
+        $progress = 0;
+        $fileCount = count(file($file));
+        $skipped = 0;
+
+        foreach ($records as $trashSchedule) {
+            $progress++;
+
+            print_r("Processing record: " . $progress . " of " . $fileCount . "\n");
+
+            // Add data to batch array
+            $dataBatch[] = [
+                'sam_address_id' => $trashSchedule['sam_address_id'],
+                'full_address' => $trashSchedule['full_address'],
+                'mailing_neighborhood' => $trashSchedule['mailing_neighborhood'],
+                'state' => $trashSchedule['state'],
+                'zip_code' => $trashSchedule['zip_code'],
+                'x_coord' => $trashSchedule['x_coord'],
+                'y_coord' => $trashSchedule['y_coord'],
+                'recollect' => $trashSchedule['recollect'] == 'T',
+                'trashday' => $trashSchedule['trashday'],
+                'pwd_district' => $trashSchedule['pwd_district'],
+            ];
+
+            if ($progress % self::BATCH_SIZE == 0) {
+                $this->insertOrUpdateBatch($dataBatch);
+                $dataBatch = []; // Reset the batch
+            }
+        }
+
+        // Process any remaining data
+        if (!empty($dataBatch)) {
+            $this->insertOrUpdateBatch($dataBatch);
+        }
+
+        print_r("File processed: " . $file . "\n");
+    }
+
+    private function insertOrUpdateBatch(array $dataBatch): void
+    {
+        DB::table((new TrashScheduleByAddress)->getTable())->upsert($dataBatch, ['sam_address_id'], [
+            'full_address', 'mailing_neighborhood', 'state', 'zip_code', 'x_coord', 
+            'y_coord', 'recollect', 'trashday', 'pwd_district'
+        ]);
+    }
+}
+
