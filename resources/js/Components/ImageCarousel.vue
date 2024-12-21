@@ -26,22 +26,24 @@
                 </div>
             </div>
         </div>
-         <div class="carousel-controls">
-            <button @click="prevSlide" :disabled="currentIndex === 0" class="control-button prev-button">
-                <
-            </button>
-            <button @click="nextSlide" :disabled="isLastSlide" class="control-button next-button">
-                >
-            </button>
-        </div>
+        <div class="carousel-decoration">
+            <div class="carousel-controls">
+                <button @click="prevSlide" :disabled="currentIndex === 0" class="control-button prev-button">
+                    <
+                </button>
+                <button @click="nextSlide" :disabled="isLastSlide" class="control-button next-button">
+                    >
+                </button>
+            </div>
 
-        <div class="carousel-indicators">
-            <button
-                v-for="(data, index) in filteredDataPoints"
-                :key="index"
-                @click="goToSlideGroup(index)"
-                :class="{ 'indicator-button': true, 'active': isIndicatorActive(index) }"
-            ></button>
+            <div class="carousel-indicators">
+                <button
+                    v-for="(data, index) in filteredDataPoints"
+                    :key="index"
+                    @click="goToSlideGroup(index)"
+                    :class="{ 'indicator-button': true, 'active': isIndicatorActive(index) }"
+                ></button>
+            </div>
         </div>
     </div>
      <div v-else class="no-image-container">
@@ -157,7 +159,7 @@ watch(
     padding: 10px;
     cursor: pointer;
      position: relative;
-    height: 300px;
+    height: auto;
      display: flex;
      align-items: center;
      justify-content: center;
@@ -205,15 +207,24 @@ watch(
   color: #aaa;
 }
 
+.carousel-decoration {
+    position: absolute;
+    bottom: 15px;
+    text-align: center;
+    width: 100%;
+    
+}
+
 .carousel-controls {
     display: flex;
-    justify-content: center;
-    margin-top: 10px;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 10px;
 }
 
 .control-button {
     background-color: #f0f0f0;
-    border: none;
+    border: 1px solid #555;
     padding: 8px 12px;
     margin: 0 5px;
     cursor: pointer;
@@ -234,7 +245,7 @@ watch(
 
 .indicator-button {
     background-color: #ddd;
-    border: none;
+    border: 1px solid black;
     width: 10px;
     height: 10px;
     border-radius: 50%;
@@ -243,6 +254,6 @@ watch(
 }
 
 .indicator-button.active {
-    background-color: #aaa;
+    background-color: #555;
 }
 </style>
