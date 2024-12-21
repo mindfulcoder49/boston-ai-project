@@ -36,7 +36,7 @@ a {
 
 
 /* Icon styles */
-.crime-div-icon {
+.crime-div-icon div {
   background-color: var(--crime-icon-color);
   background-image: url("/images/crimeicon.svg");
   background-size: cover;
@@ -49,9 +49,8 @@ a {
   position: relative;
 }
 
-.case-div-icon {
+.case-div-icon div {
   background-color: var(--case-icon-color);
-  background-image: url("/images/boston311icon.svg");
   background-size: contain;
   background-position: center;
   color: white;
@@ -62,7 +61,21 @@ a {
   position: relative;
 }
 
-.permit-div-icon {
+.case-div-icon.no-photo div {
+  background-image: url("/images/boston311icon.svg");
+}
+
+.case-div-icon.submitted-photo div, .case-div-icon.closed-photo div {
+ border: 2px solid var(--case-icon-color);
+}
+
+.case-div-icon.submitted-photo, .case-div-icon.closed-photo {
+  border: 1px solid black;
+
+  border-radius: 50%;
+}
+
+.permit-div-icon div {
   background-color: var(--permit-icon-color);
   background-image: url("/images/permiticon.svg");
   background-size: cover;
@@ -75,7 +88,7 @@ a {
   position: relative;
 }
 
-.center-div-icon {
+.center-div-icon div {
   background-color: transparent;
   background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbD0iYmxhY2siPjxwYXRoIGQ9Ik0xMiAyMXYtM2ExIDEgMCAwIDEgMiAwIHYgM3oiPjxwYXRoIGQ9Ik0yIDBsNiAxOGwgNi04IGx2LTZhIGEgMyAyIDEgMCAwIDAgMHYgMmwtN3YgMGgwbDcgNWkgYyIvPjwvc3ZnPg==');
   background-size: cover;

@@ -186,8 +186,10 @@ const page = usePage();
 const isAuthenticated = page.props.auth.user;
 
 // Define the icons for different types of markers
-const getDivIcon = (type) => {
+const getDivIcon = (dataPoint) => {
   let className = 'default-div-icon'; // Fallback class
+  let type = dataPoint.type;
+  let backgroundImage = '';
 
   switch (type) {
     case 'Crime':
@@ -199,12 +201,40 @@ const getDivIcon = (type) => {
     case 'Building Permit':
       className = 'permit-div-icon';
       break;
-    case 'Center':
-      className = 'center-div-icon';
-      break;
+
     default:
       break;
   }
+
+  if (type === "311 Case") {
+    // Add classes and set the background image if photos are present
+    if (dataPoint.info?.submitted_photo) {
+      className += ' submitted-photo';
+      backgroundImage = `background-image: url(${dataPoint.info.submitted_photo});`;
+    }
+    if (dataPoint.info?.closed_photo) {
+      className += ' closed-photo';
+      backgroundImage = `background-image: url(${dataPoint.info.closed_photo});`;
+    }
+    if (!dataPoint.info?.submitted_photo && !dataPoint.info?.closed_photo) {
+      className += ' no-photo';
+    }
+  }
+
+  className += ' id'+ dataPoint.info?.id; // Add the base class
+
+  return L.divIcon({
+    className,
+    html: `<div style="${backgroundImage}"></div>`, // Apply inline background-image
+    iconSize: null,
+    popupAnchor: [15, 0],
+  });
+};
+
+
+
+const getCenterIcon = (type) => {
+  let className = 'center-div-icon'; // Fallback class
 
   return L.divIcon({
     className,
@@ -213,6 +243,8 @@ const getDivIcon = (type) => {
     popupAnchor: [0, -15],
   });
 };
+
+
 const clearDateSelections = () => {
   selectedDates.value = [];
   applyFilters();
@@ -221,6 +253,14 @@ const clearDateSelections = () => {
 
 const handleImageClick = (data) => {
   selectedDataPoint.value = data;
+  // find the marker with the classname that matches id + data.info.id and open the popup
+  markers.value.forEach((marker) => {
+    console.log('marker', marker);
+    if (marker.options.icon.options.className.includes('id'+data.info.id)) {
+      marker.openPopup();
+    } 
+  });
+
   console.log('Selected Data Point:', data);
 };
 
@@ -435,7 +475,7 @@ const initializeMap = () => {
 
         newMarker.value = markRaw(
           L.marker([e.latlng.lat, e.latlng.lng], {
-            icon: getDivIcon('Center'),
+            icon: getCenterIcon('Center'),
           })
         ).addTo(initialMap.value);
       }
@@ -443,7 +483,7 @@ const initializeMap = () => {
 
     markerCenter.value = markRaw(
       L.marker(mapCenter.value, {
-        icon: getDivIcon('Center'),
+        icon: getCenterIcon('Center'),
       })
     ).addTo(initialMap.value);
 
@@ -493,7 +533,8 @@ const updateMarkers = (dataPoints) => {
 
       const marker = markRaw(
         L.marker([dataPoint.latitude, dataPoint.longitude], {
-          icon: getDivIcon(dataPoint.type),
+          icon: getDivIcon(dataPoint),
+          //title: dataPoint.
         })
       );
 
@@ -532,7 +573,7 @@ watch(
     // Add new center marker
     if (initialMap.value) {
         markerCenter.value = L.marker([centralLocation.latitude, centralLocation.longitude], {
-        icon: getDivIcon('Center'),
+        icon: getCenterIcon('Center'),
       }).addTo(initialMap.value);
     }
   },
