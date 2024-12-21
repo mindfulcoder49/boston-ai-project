@@ -24,10 +24,6 @@
   --pulse-center-color: rgba(0, 0, 0, 0.7);
 }
 
-/* Global styles */
-main, section {
-  background-color: var(--section-color);
-}
 
 p {
   color: var(--primary-color);
@@ -128,6 +124,15 @@ a {
   background-repeat: no-repeat;
 }
 
+/* when screen is less than 768, center the background image on the filter buttons */
+@media (max-width: 768px) {
+  .building-permit-filter-button,
+  .crime-filter-button,
+  .aaa-case-filter-button {
+    background-position: center;
+  }
+}
+
 .building-permit-filter-button.active {
   background-color: var(--permit-icon-color);
   color: black;
@@ -176,6 +181,10 @@ a {
 
 .leaflet-popup-content div div.infoname {
   font-weight: bold;
+}
+
+.leaflet-control-attribution {
+  display: none;
 }
 
 /* Pulse animations */

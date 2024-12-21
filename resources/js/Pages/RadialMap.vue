@@ -4,144 +4,123 @@
       <title>Home</title>
     </Head>
 
-    <!-- Page Title -->
-    <h1 class="text-2xl font-bold text-gray-800 text-center">The Boston App</h1>
+    <div class="m-5 ">
 
-    <!-- Form to submit new center coordinates -->
-    <p class="text-gray-700 mt-4 mt-8 text-lg leading-relaxed text-center">
-      This map displays crime, 311 cases, and building permits located within a half mile from the center point. You can choose a new center point by clicking the "Choose New Center" button and then clicking on the map. Click "Save New Center" to update the map.
-    </p>
+    <!-- Page Title -->
+    <h1 class="text-2xl font-bold text-gray-800 text-center my-4">Boston City Govt Activity</h1>
 
     <AddressSearch @address-selected="updateCenterCoordinates" />
 
-    <form @submit.prevent="submitNewCenter" class="space-y-4 mb-4">
+    <form @submit.prevent="submitNewCenter" class="">
       <!-- Selected Center Coordinates display -->
       <div v-if="newCenter" class="p-4 bg-gray-100  shadow text-center">
         <p class="font-bold text-gray-800">Selected Center Coordinates:</p>
         <p class="text-gray-700">{{ newCenter.lat }}, {{ newCenter.lng }}</p>
       </div>
+      <!--
       <div v-else class="p-4 bg-gray-100  shadow text-center">
         <p class="font-bold text-gray-800">Current Center Coordinates:</p>
         <p class="text-gray-700">{{ centralLocation.latitude }}, {{ centralLocation.longitude }}</p>
       </div>
-      <!-- Button container -->
-      <div class="flex space-x-4">
-        <!-- Choose New Center button -->
-        <button
-          type="button"
-          @click="toggleCenterSelection"
-          class="px-4 py-2 text-white bg-blue-500  shadow-lg disabled:bg-gray-400 hover:bg-blue-600 transition-colors w-1/2"
-        >
-          {{ centerSelectionActive ? 'Cancel' : 'Choose New Center' }}
-        </button>
-      </div>
-      <div class="flex space-x-4" v-if="isAuthenticated">
-        <!-- SaveLocation Component -->
-        <SaveLocation
-          :location="centralLocation"
-          @load-location="handleLoadLocation"
-        />
-      </div>
-      <div class="flex space-x-4" v-else>
-        <p class="text-gray-700 mt-4 mt-8 text-lg leading-relaxed text-center">
-          Log in to save locations
-        </p>
-      </div>
+
+      -->
+
+
     </form>
 
-    <div class="boston-map">
-      <div id="map" class="h-[70vh] mb-6 rounded-lg shadow-lg"></div>
+    <!-- Button container -->
+    <div class="flex space-x-4">
+    <!-- Choose New Center button -->
+    <button
+        type="button"
+        @click="toggleCenterSelection"
+        class="px-4 py-2 text-white bg-blue-500  shadow-lg disabled:bg-gray-400 hover:bg-blue-600 transition-colors w-1/2 m-auto"
+      >
+        {{ centerSelectionActive ? 'Cancel' : 'Choose New Center' }}
+      </button>
     </div>
 
-    <div>
-      <!-- Date Slider and Manual Input -->
-      <div class="date-filter-container mt-4 mb-4 flex flex-col w-full">
-        <div class="flex items-center w-full space-x-4">
-          <label for="date-range" class="text-m font-bold w-1/5">Filter by Date:</label>
-          <div class=" w-1/5">
-            <p class="text-sm p-2 text-left">{{ minDate }}</p>
-          </div>
+    <div class="boston-map">
+      <div id="map" class="h-[70vh]"></div>
+    </div>
 
-          <!-- Date Slider -->
-          <input
-            id="date-range"
-            type="range"
-            :min="0"
-            :max="daysBetweenMinAndMax"
-            v-model="dayOffset"
-            :disabled="showAllDates"
-            @input="updateDateFromSlider"
-            class="w-4/5"
-          />
-
-          <div class="w-1/5">
-            <p class="text-sm p-2 text-right ">{{ maxDate }}</p>
-          </div>
-        </div>
-
-        <div class="flex justify-between items-center w-full mt-4 min-[400px]:flex-row flex-col">
-          <!-- Display Selected Date -->
-          <div class="flex items-center space-x-1 min-[400px]:w-1/3 w-full min-[400px]:justify-end pr-2">
-            <p class="text-sm text-center w-full min-[400px]:text-right">Selected:</p>
-          </div>
-
-          <!-- Manual Date Input -->
-          <div class="min-[400px]:w-1/3 w-full">
-            <input
-              type="date"
-              v-model="selectedDate"
-              :disabled="showAllDates"
-              @change="updateSliderFromInput"
-              class="border  w-full min-[400px]:max-w-[200px] p-2"
-              placeholder="YYYY-MM-DD"
-            />
-          </div>
-
-          <!-- Show All Dates button-->
-          <div class="min-[400px]:w-1/3 w-full">
-            <button
-              @click="showAllDates = !showAllDates"
-              class="px-4 py-2 text-white bg-blue-500  shadow-lg hover:bg-blue-600 transition-colors w-full"
-            >
-              {{ showAllDates ? 'Filter by Date' : 'Show All Dates' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filter Buttons -->
-      <div class="filter-container flex sm:space-x-4 space-x-0">
+          <!-- Filter Buttons -->
+    <div class="filter-container flex space-x-0 justify-center">
         <button
           v-for="(isActive, type) in filters"
           :key="type"
           @click="toggleFilter(type)"
-          :class="{'active': isActive, 'inactive': !isActive, [`${type.toLowerCase().replace(' ', '-').replace(/\d/g, 'a')}-filter-button`]: true}"
-          class="filter-button px-2 py-2  shadow-lg disabled:bg-gray-400 transition-colors w-1/4 text-base"
+          :class="{'active': isActive, 'inactive': !isActive, [`${type.toLowerCase().replace(' ', '-').replace(/\d/g, 'a')}-filter-button`]: true,
+          //set the width based on the number of filters
+          'w-1/12': Object.keys(filters).length > 6,
+          'w-1/6': Object.keys(filters).length === 6,
+          'w-1/5': Object.keys(filters).length === 5,
+          'w-1/4': Object.keys(filters).length === 4,
+          'w-1/3': Object.keys(filters).length === 3,
+          'w-1/2': Object.keys(filters).length === 2,
+          'w-full': Object.keys(filters).length === 1}"
+
+          class="filter-button px-2 py-2 shadow-lg disabled:bg-gray-400 transition-colors text-base"
+
         >
           <span class="invisible md:visible">{{ type }} </span>
         </button>
-        <!-- Reload Button -->
+        <!-- Reload Button 
         <button
           @click="reloadMap"
           class="px-4 py-2 text-white bg-red-500  shadow-lg hover:bg-red-600 transition-colors w-1/4"
         >
           Reload Map
+        </button> -->
+    </div>
+ 
+    <div class="date-filter-container flex flex-col w-full">
+      <div class="flex flex-wrap justify-between">
+        <button
+          v-for="(date, index) in getDates()"
+          :key="index"
+          @click="toggleDateSelection(date)"
+          :class="{
+            'bg-blue-500 text-white': selectedDates.includes(date),
+            'bg-gray-200 hover:bg-gray-300': !selectedDates.includes(date),
+          }"
+          class="px-4 py-2 shadow transition-colors w-1/5"
+        >
+          {{ new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) }}
         </button>
       </div>
-      <p class="text-gray-700 mt-4 mb-4 text-lg leading-relaxed">
-        Filter by data type by clicking the filter buttons above
-      </p>
+      <div class="flex justify-center ">
+        <button
+          @click="clearDateSelections"
+          class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors w-1/2 mx-auto"
+        >
+          Show All Dates
+        </button>
+      </div>
+
+
     </div>
+
+
+
+    
     <!-- check the selectedDataPoint type and display the appropriate component -->
     <ServiceCase v-if="selectedDataPoint && selectedDataPoint.type === '311 Case'" :data="selectedDataPoint" />
     <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" />
     <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" />
+
+            <!-- SaveLocation Component -->
+            <SaveLocation
+          :location="centralLocation"
+          @load-location="handleLoadLocation"
+        />
     <div>
       <!-- AiAssistant Component -->
       <AiAssistant :context="filteredDataPoints" />
       <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="5" />
     </div>
     <!-- Pass filteredDataPoints as context to AiAssistant -->
+    </div>
   </PageTemplate>
 </template>
 
@@ -174,13 +153,12 @@ const centerSelected = ref(false);
 const newCenter = ref(null);
 const mapCenter = ref([centralLocation.value.latitude, centralLocation.value.longitude]);
 const cancelNewMarker = ref(false);
-const selectedDate = ref('');
+const selectedDates = ref([]); // Stores selected dates
 const minDate = ref('');
 const maxDate = ref('');
 const dayOffset = ref(0);
 const showAllDates = ref(true);
 const selectedDataPoint = ref(null);
-const isAuthenticated = ref(false);
 const isMapInitialized = ref(false);
 // default is Boston, MA
 const currentMapViewport = ref({ center: [42.3601, -71.0589], zoom: 16 });
@@ -195,7 +173,7 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 
 // get auth prop
 const page = usePage();
-isAuthenticated.value = page.props.auth;
+const isAuthenticated = page.props.auth.user;
 
 // Define the icons for different types of markers
 const getDivIcon = (type) => {
@@ -225,6 +203,23 @@ const getDivIcon = (type) => {
     popupAnchor: [0, -15],
   });
 };
+const clearDateSelections = () => {
+  selectedDates.value = [];
+  applyFilters();
+};
+
+//function to get the dates included in the dataPoints to create a button for each day that can be used to filter the dataPoints
+const getDates = () => {
+  //use minDate and maxDate to create an array of dates
+  const dates = [];
+  const currentDate = new Date(minDate.value);
+  const endDate = new Date(maxDate.value);
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate).toISOString().split('T')[0]);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return dates;
+};
 
 const fetchData = async () => {
   try {
@@ -247,16 +242,10 @@ const fetchData = async () => {
 };
 
 const updateDateRange = () => {
-  if (allDataPoints.value.length > 0) {
-    const dates = allDataPoints.value.map((point) => new Date(point.date));
-    minDate.value = dates.reduce((a, b) => (a < b ? a : b)).toISOString().split('T')[0];
-    maxDate.value = dates.reduce((a, b) => (a > b ? a : b)).toISOString().split('T')[0];
-    selectedDate.value = minDate.value;
+  const dates = allDataPoints.value.map((point) => new Date(point.date));
+  minDate.value = new Date(Math.min(...dates)).toISOString().split('T')[0];
+  maxDate.value = new Date(Math.max(...dates)).toISOString().split('T')[0];
 
-    const minDateObj = new Date(minDate.value);
-    const maxDateObj = new Date(maxDate.value);
-    dayOffset.value = Math.ceil((maxDateObj - minDateObj) / (1000 * 60 * 60 * 24));
-  }
 };
 
 const populateFilters = () => {
@@ -293,20 +282,45 @@ const setNewCenter = (latlng) => {
   }
 };
 
-// Apply the filters and update the dataPoints ref
-const applyFilters = () => {
-  if (showAllDates.value) {
-    dataPoints.value = allDataPoints.value.filter((point) => filters.value[point.type]);
+const toggleDateSelection = (date) => {
+  const index = selectedDates.value.indexOf(date);
+  if (index > -1) {
+    // If the date is already selected, remove it
+    selectedDates.value.splice(index, 1);
   } else {
-    const filteredByDate = allDataPoints.value.filter((point) => {
-      return new Date(point.date).toISOString().split('T')[0] === selectedDate.value;
-    });
-    dataPoints.value = filteredByDate.filter((point) => filters.value[point.type]);
+    // Otherwise, add it
+    selectedDates.value.push(date);
   }
-  if (initialMap.value) {
-    updateMarkers(dataPoints.value);
-  }
+  applyFilters(); // Update the filtered data
 };
+
+
+const applyFilters = () => {
+  // Check if allDataPoints is loaded
+  if (allDataPoints.value.length === 0) {
+    return;
+  }
+
+  // If no dates are selected, show all data points based on type filter
+  if (selectedDates.value.length === 0) {
+      dataPoints.value = allDataPoints.value.filter(point => filters.value[point.type]);
+  } else {
+    const filteredByDate = allDataPoints.value.filter(point => {
+      // Convert point.date to YYYY-MM-DD format
+       const pointDate = new Date(point.date).toISOString().split('T')[0]
+
+        //check if the current dataPoint is included in the list of selectedDates
+      return selectedDates.value.includes(pointDate);
+    });
+    // Filter by type in addition to the dates selected
+    dataPoints.value = filteredByDate.filter(point => filters.value[point.type]);
+  }
+  
+    if (initialMap.value) {
+      updateMarkers(dataPoints.value);
+    }
+};
+
 
 const filteredDataPoints = computed(() => {
   return dataPoints.value;
@@ -510,32 +524,6 @@ watch(() => cancelNewMarker.value, (cancel) => {
   }
 });
 
-// Date Handling
-
-const daysBetweenMinAndMax = computed(() => {
-  if (!minDate.value || !maxDate.value) {
-    return 0;
-  }
-  const minDateObj = new Date(minDate.value);
-  const maxDateObj = new Date(maxDate.value);
-  return Math.ceil((maxDateObj - minDateObj) / (1000 * 60 * 60 * 24));
-});
-
-const updateDateFromSlider = () => {
-  if (!minDate.value) return;
-  const minDateObj = new Date(minDate.value);
-  const newDate = new Date(minDateObj.getTime() + dayOffset.value * (1000 * 60 * 60 * 24));
-  selectedDate.value = newDate.toISOString().split('T')[0];
-  applyFilters();
-};
-
-const updateSliderFromInput = () => {
-  if (!minDate.value || !selectedDate.value) return;
-  const minDateObj = new Date(minDate.value);
-  const selectedDateObj = new Date(selectedDate.value);
-  dayOffset.value = Math.round((selectedDateObj - minDateObj) / (1000 * 60 * 60 * 24));
-  applyFilters();
-};
 
 const updateCenterCoordinates = (coordinates) => {
     centralLocation.value.latitude = coordinates.lat;
@@ -572,35 +560,9 @@ const handleLoadLocation = (location) => {
   height: 70vh;
 }
 
-.filter-container {
-  display: flex;
-  margin-bottom: 15px;
-}
-
-.filter-button {
-  border: 1px solid transparent;
-}
-
-.center-filter-button {
-  display: none;
-}
-
-.filter-button.inactive {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.filter-button:hover {
-  border: 1px solid black;
-}
-
-.center-control {
-  margin-bottom: 15px;
-  display: flex;
-  gap: 10px;
-}
-
-.center-form {
-  margin-bottom: 15px;
+.boston-map {
+  height: auto; /* Let the container grow with its content */
+  max-height: 70vh;
+  overflow: hidden;
 }
 </style>

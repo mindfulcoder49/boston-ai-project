@@ -17,7 +17,7 @@ class TrashScheduleByAddressController extends Controller
     {
         // Validate the request
         $validated = $request->validate([
-            'address' => 'required|string|min:3',
+            'address' => 'required|string',
         ]);
 
         // Extract the address from the validated request

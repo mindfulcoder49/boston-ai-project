@@ -1,14 +1,14 @@
 <template>
-  <div>
+  <div class="">
     <input
       type="text"
       v-model="searchQuery"
       @input="searchAddresses"
-      placeholder="Enter address"
-      class="border p-2 rounded w-full"
+      placeholder="Enter address to change location or just click Choose New Center"
+      class="border w-full"
     />
 
-    <ul v-if="results.length" class="mt-2 border rounded p-2 bg-white shadow">
+    <ul v-if="results.length" class="border p-2 bg-white shadow">
       <li 
         v-for="(result, index) in results" 
         :key="index" 
@@ -36,7 +36,7 @@ export default {
   },
   methods: {
     async searchAddresses() {
-      if (this.searchQuery.length >= 3) {
+      if (this.searchQuery.length >= 1) {
         try {
           const response = await axios.get("/search-address", {
             params: { address: this.searchQuery },
