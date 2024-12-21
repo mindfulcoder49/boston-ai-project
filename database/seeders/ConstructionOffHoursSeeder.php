@@ -22,6 +22,7 @@ class ConstructionOffHoursSeeder extends Seeder
         'te' => 'ter',
         'pz' => 'plz',
         'hw' => 'hwy',
+        'ci' => 'cir',
     ];
 
     public function run()
