@@ -13,7 +13,6 @@ class ConstructionOffHoursSeeder extends Seeder
 {
     private const BATCH_SIZE = 500;
 
-    private $addressCache = [];
     private $suffixMap = [
         'av' => 'ave',
         'bl' => 'blvd',
@@ -31,9 +30,6 @@ class ConstructionOffHoursSeeder extends Seeder
 
         Log::info('Starting ConstructionOffHoursSeeder.');
 
-        // Load all addresses into memory for matching
-        $this->addressCache = $this->loadAddressCache();
-
         // Get files with the specified name in the filename
         $files = Storage::disk('local')->files('datasets');
         $files = array_filter($files, fn($file) => strpos($file, $name) !== false);
@@ -47,20 +43,6 @@ class ConstructionOffHoursSeeder extends Seeder
         }
 
         Log::info('ConstructionOffHoursSeeder completed.');
-    }
-
-    private function loadAddressCache()
-    {
-        Log::info("Loading addresses from 'trash_schedules_by_address' table...");
-        $addresses = DB::table('trash_schedules_by_address')
-            ->select('full_address', 'y_coord as latitude', 'x_coord as longitude')
-            ->get();
-
-        Log::info("Loaded " . $addresses->count() . " addresses into memory.");
-
-        return $addresses->mapWithKeys(function ($item) {
-            return [strtolower($item->full_address) => $item];
-        })->toArray();
     }
 
     private function processFile($file)
@@ -92,14 +74,14 @@ class ConstructionOffHoursSeeder extends Seeder
                 // Extract and normalize the base address
                 $baseAddress = $this->normalizeAddress($offHour['address']);
 
-                // Find the best matching address
-                $bestMatch = $this->findMatch($baseAddress);
+                // Find the best matching address dynamically
+                $bestMatch = $this->findMatchDynamically($baseAddress);
 
                 // Fallback: Try substring after hyphen if no match found
                 if (!$bestMatch && str_contains($baseAddress, '-')) {
                     $afterHyphen = $this->getSubstringAfterHyphen($baseAddress);
                     Log::info("No match found for normalized address: '{$baseAddress}'. Trying after hyphen: '{$afterHyphen}'");
-                    $bestMatch = $this->findMatch($afterHyphen);
+                    $bestMatch = $this->findMatchDynamically($afterHyphen);
 
                     if ($bestMatch) {
                         Log::info("Fallback match for row {$progress}: '{$baseAddress}' -> '{$afterHyphen}' -> '{$bestMatch->full_address}'");
@@ -162,9 +144,12 @@ class ConstructionOffHoursSeeder extends Seeder
         return isset($parts[1]) ? trim($parts[1]) : $address;
     }
 
-    private function findMatch($normalizedAddress)
+    private function findMatchDynamically($normalizedAddress)
     {
-        return $this->addressCache[$normalizedAddress] ?? null;
+        return DB::table('trash_schedules_by_address')
+            ->whereRaw('LOWER(full_address) = ?', [$normalizedAddress])
+            ->select('full_address', 'y_coord as latitude', 'x_coord as longitude')
+            ->first();
     }
 
     private function insertOrUpdateBatch(array $dataBatch): void
