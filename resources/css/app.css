@@ -11,6 +11,8 @@
   --crime-icon-color: rgb(255, 78, 78);
   --case-icon-color: rgb(128, 128, 255);
   --permit-icon-color: rgb(114, 209, 114);
+  /* add a yellow icon for property violations */
+  --property-violation-icon-color: rgb(255, 255, 0);
   --center-icon-border-color: black;
 
   /* Icon Sizes */
@@ -33,12 +35,27 @@ a {
   color: var(--secondary-color);
 }
 
+.property-violation-div-icon div {
+  background-color: var(--case-icon-color);
+  /* Use an X icon as the background image */
+  background-image: url("/images/propertyviolationicon.svg");
+  background-size: cover;
+  background-position: center;
+  background-color: var(--property-violation-icon-color);
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  position: relative;
+}
+
 
 
 /* Icon styles */
 .crime-div-icon div {
   background-color: var(--crime-icon-color);
-  background-image: url("/images/crimeicon.svg");
+  background-image: url("/images/crimeshieldicon.svg");
   background-size: cover;
   background-position: center;
   color: white;
@@ -90,7 +107,6 @@ a {
 
 .center-div-icon div {
   background-color: transparent;
-  background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbD0iYmxhY2siPjxwYXRoIGQ9Ik0xMiAyMXYtM2ExIDEgMCAwIDEgMiAwIHYgM3oiPjxwYXRoIGQ9Ik0yIDBsNiAxOGwgNi04IGx2LTZhIGEgMyAyIDEgMCAwIDAgMHYgMmwtN3YgMGgwbDcgNWkgYyIvPjwvc3ZnPg==');
   background-size: cover;
   background-position: center;
   color: black;
@@ -113,7 +129,7 @@ a {
 }
 
 .crime-filter-button {
-  background-image: url("/images/crimeicon.svg");
+  background-image: url("/images/crimeshieldicon.svg");
   background-position: left;
   background-size: contain;
   background-repeat: no-repeat;
@@ -125,6 +141,14 @@ a {
   background-size: contain;
   background-repeat: no-repeat;
 }
+
+.property-violation-filter-button {
+  background-image: url("/images/propertyviolationicon.svg");
+  background-position: left;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 
 /* when screen is less than 768, center the background image on the filter buttons */
 @media (max-width: 768px) {
@@ -149,6 +173,12 @@ a {
   background-color: var(--crime-icon-color);
   color: black;
 }
+
+.property-violation-filter-button.active {
+  background-color: var(--property-violation-icon-color);
+  color: black;
+}
+
 
 :root {
   --icon-size: 5px; /* Default size */

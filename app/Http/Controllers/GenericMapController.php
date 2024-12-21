@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CrimeData;
 use App\Models\ThreeOneOneCase;
 use App\Models\BuildingPermit;
+use App\Models\PropertyViolation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -50,8 +51,13 @@ class GenericMapController extends Controller
         $buildingPermits = collect($this->getBuildingPermitsForBoundingBox($boundingBox, $days));
         Log::info('Building permits data fetched.', ['buildingPermitsCount' => $buildingPermits->count()]);
 
-        $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits);
+        $propertyViolations = collect($this->getPropertyViolationsForBoundingBox($boundingBox, $days));
+        Log::info('Property violations data fetched.', ['propertyViolationsCount' => $propertyViolations->count()]);
+
+        $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits)->merge($propertyViolations);
         Log::info('Data points merged.', ['totalDataPointsCount' => $dataPoints->count()]);
+
+
 
 
         return response()->json([
@@ -142,7 +148,6 @@ class GenericMapController extends Controller
         $buildingPermits = BuildingPermit::whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                          ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
                                          ->where('issued_date', '>=', $startDate)
-                                         ->limit(150)
                                          ->get();
 
         Log::info('Building permits data query executed.', ['rowsFetched' => $buildingPermits->count()]);
@@ -157,6 +162,35 @@ class GenericMapController extends Controller
                 'longitude' => $permit->x_longitude,
                 'date' => $permit->issued_date,
                 'type' => 'Building Permit',
+                'info' => $info,
+            ];
+        });
+
+    }
+
+    public function getPropertyViolationsForBoundingBox($boundingBox, $days)
+    {
+        Log::info('Fetching property violations within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
+
+        $startDate = Carbon::now()->subDays($days)->toDateString();
+
+        $violations = PropertyViolation::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+                                         ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+                                         ->where('status_dttm', '>=', $startDate)
+                                          ->get();
+
+        Log::info('Property violations data query executed.', ['rowsFetched' => $violations->count()]);
+
+        // Transform data for the map
+        return $violations->map(function ($violation) {
+            // Convert violation object to an array and exclude the latitude, longitude, and date fields
+            $info = Arr::except($violation->toArray(), ['latitude', 'longitude', 'status_dttm', 'created_at', 'updated_at']);
+
+            return [
+                'latitude' => $violation->latitude,
+                'longitude' => $violation->longitude,
+                'date' => $violation->status_dttm,
+                'type' => 'Property Violation',
                 'info' => $info,
             ];
         });

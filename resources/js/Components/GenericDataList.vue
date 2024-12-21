@@ -41,6 +41,7 @@
         <ServiceCase v-if="item.type === '311 Case'" :data="item" />
         <Crime v-if="item.type === 'Crime'" :data="item" />
         <BuildingPermit v-if="item.type === 'Building Permit'" :data="item" />
+        <PropertyViolation v-if="item.type === 'Property Violation'" :data="item" />
 
         <!-- Button to emit datapoint for goto marker on map function -->
         <button
@@ -58,6 +59,7 @@
 import ServiceCase from "@/Components/ServiceCase.vue";
 import Crime from "@/Components/Crime.vue";
 import BuildingPermit from "@/Components/BuildingPermit.vue";
+import PropertyViolation from "@/Components/PropertyViolation.vue";
 
 export default {
   name: "GenericDataList",
@@ -65,6 +67,7 @@ export default {
     ServiceCase,
     Crime,
     BuildingPermit,
+    PropertyViolation,
   },
   props: {
     totalData: {

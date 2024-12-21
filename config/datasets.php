@@ -32,5 +32,11 @@ return [
             'resource_id' => 'fee8ee07-b8b5-4ee5-b540-5162590ba5c1',
             'format' => 'csv',
         ],
+        // Add a dataset for property violations
+        [
+            'name' => 'property-violations',
+            'resource_id' => '800a2663-1d6a-46e7-9356-bedb70f5332c',
+            'format' => 'csv',
+        ],
     ],
 ];

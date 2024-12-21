@@ -121,6 +121,7 @@
     <ServiceCase v-if="selectedDataPoint && selectedDataPoint.type === '311 Case'" :data="selectedDataPoint" />
     <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" />
     <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" />
+    <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.type === 'Property Violation'" :data="selectedDataPoint" />
     </div>
 
       <!-- AiAssistant Component -->
@@ -149,6 +150,7 @@ import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import ImageCarousel from '@/Components/ImageCarousel.vue';
 import { data } from 'autoprefixer';
+import PropertyViolation from '@/Components/PropertyViolation.vue';
 
 const filters = ref({});
 const allDataPoints = ref([]); // Store all fetched data points here
@@ -201,7 +203,9 @@ const getDivIcon = (dataPoint) => {
     case 'Building Permit':
       className = 'permit-div-icon';
       break;
-
+    case 'Property Violation':
+      className = 'property-violation-div-icon';
+      break;
     default:
       break;
   }
@@ -547,13 +551,13 @@ const updateMarkers = (dataPoints) => {
           ${dataPoint.type === 'Crime' ? dataPoint.info.offense_description : ''}
           ${dataPoint.type === '311 Case' ? dataPoint.info.case_title : ''}
           ${dataPoint.type === 'Building Permit' ? dataPoint.info.description : ''}
+          ${dataPoint.type === 'Property Violation' ? dataPoint.info.description : ''}
           </div>
         `;
 
       const marker = markRaw(
         L.marker([dataPoint.latitude, dataPoint.longitude], {
           icon: getDivIcon(dataPoint),
-          //title: dataPoint.
         })
       );
 
@@ -670,7 +674,6 @@ const handleLoadLocation = (location) => {
   }
 
   .filter-container button {
-    background-size:50px;
     /* put text to right of icon */
     background-position: 10px center;
     padding-left: 60px;
