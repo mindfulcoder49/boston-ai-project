@@ -33,18 +33,7 @@ a {
   color: var(--secondary-color);
 }
 
-/* Responsive font sizes */
-@media (min-width: 768px) {
-  html {
-    font-size: 125%;
-  }
-}
 
-@media (min-width: 1024px) {
-  html {
-    font-size: 150%;
-  }
-}
 
 /* Icon styles */
 .crime-div-icon {

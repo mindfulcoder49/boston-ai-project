@@ -169,3 +169,14 @@ watch(() => props.context, (newContext) => {
   context.value = newContext;
 });
 </script>
+
+<style scoped>
+
+@media screen and (min-width: 768px) {
+
+  .ai-assistant {
+    width: 50%;
+  }
+}
+
+</style>

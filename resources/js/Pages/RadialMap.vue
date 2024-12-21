@@ -4,8 +4,7 @@
       <title>Home</title>
     </Head>
 
-    <div class="m-5 ">
-
+    <div class="before-map">
     <!-- Page Title -->
     <h1 class="text-2xl font-bold text-gray-800 text-center my-4">Boston City Govt Activity</h1>
 
@@ -39,12 +38,18 @@
         {{ centerSelectionActive ? 'Cancel' : 'Choose New Center' }}
       </button>
     </div>
+  </div>
+
+    <div class="m-5 page-div">
+
+      
 
     <div class="boston-map">
       <div id="map" class="h-[70vh]"></div>
     </div>
 
           <!-- Filter Buttons -->
+  <div class="map-controls">
     <div class="filter-container flex space-x-0 justify-center">
         <button
           v-for="(isActive, type) in filters"
@@ -88,37 +93,40 @@
         >
           {{ new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) }}
         </button>
-      </div>
-      <div class="flex justify-center ">
         <button
           @click="clearDateSelections"
-          class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors w-1/2 mx-auto"
+          class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors w-1/2 show-all-dates"
         >
-          Show All Dates
+          All Dates
         </button>
       </div>
+          <!-- check the selectedDataPoint type and display the appropriate component -->
 
-
-    </div>
-
-
-
-    
-    <!-- check the selectedDataPoint type and display the appropriate component -->
-    <ServiceCase v-if="selectedDataPoint && selectedDataPoint.type === '311 Case'" :data="selectedDataPoint" />
-    <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" />
-    <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" />
-
-            <!-- SaveLocation Component -->
-            <SaveLocation
+    <SaveLocation
           :location="centralLocation"
           @load-location="handleLoadLocation"
         />
-    <div>
+
+        <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick"  />
+
+    </div>
+
+
+  </div>
+    
+
+
+     <div class="case-details">
+
+    <ServiceCase v-if="selectedDataPoint && selectedDataPoint.type === '311 Case'" :data="selectedDataPoint" />
+    <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" />
+    <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" />
+    </div>
+
       <!-- AiAssistant Component -->
       <AiAssistant :context="filteredDataPoints" />
       <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="5" />
-    </div>
+
     <!-- Pass filteredDataPoints as context to AiAssistant -->
     </div>
   </PageTemplate>
@@ -139,6 +147,8 @@ import { Head } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
+import ImageCarousel from '@/Components/ImageCarousel.vue';
+import { data } from 'autoprefixer';
 
 const filters = ref({});
 const allDataPoints = ref([]); // Store all fetched data points here
@@ -208,6 +218,12 @@ const clearDateSelections = () => {
   applyFilters();
 };
 
+
+const handleImageClick = (data) => {
+  selectedDataPoint.value = data;
+  console.log('Selected Data Point:', data);
+};
+
 //function to get the dates included in the dataPoints to create a button for each day that can be used to filter the dataPoints
 const getDates = () => {
   //use minDate and maxDate to create an array of dates
@@ -236,6 +252,12 @@ const fetchData = async () => {
     updateDateRange();
     populateFilters();
     applyFilters();
+    // pick the most recent data point to assign to selectedDataPoint 
+    if (allDataPoints.value.length > 0) {
+      selectedDataPoint.value = allDataPoints.value[0];
+    }
+
+
   } catch (error) {
     console.error('Error fetching data:', error);
   }
@@ -564,5 +586,55 @@ const handleLoadLocation = (location) => {
   height: auto; /* Let the container grow with its content */
   max-height: 70vh;
   overflow: hidden;
+}
+
+/* on screens bigger than 768 px, make the map 600px wide, and flow everything else to the right */
+@media (min-width: 768px) {
+  #map {
+  height: 100vh;
+}
+
+.boston-map {
+  height: auto; /* Let the container grow with its content */
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+  .boston-map {
+    width: 50%;
+  }
+  .page-div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .filter-container button {
+    background-size:50px;
+    /* put text to right of icon */
+    background-position: 10px center;
+    padding-left: 60px;
+  }
+  
+  .date-filter-container {
+    width:auto;
+  }
+
+  .date-filter-container button {
+    width: 33%;
+    font-size: 0.8rem;
+  }
+
+  .map-controls {
+    width: 50%;
+  }
+
+  .show-all-dates {
+    width:auto;
+  }
+
+  .case-details {
+    width: 50%;
+  }
 }
 </style>
