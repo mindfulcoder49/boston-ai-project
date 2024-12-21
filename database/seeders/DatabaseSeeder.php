@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             ThreeOneOneSeeder::class,
             BuildingPermitsSeeder::class,
             PropertyViolationsSeeder::class,
+            ConstructionOffHoursSeeder::class,
         ]);
     }
 }

@@ -17,5 +17,7 @@ class ConstructionOffHour extends Model
         'stop_datetime',
         'address',
         'ward',
+        'latitude',
+        'longitude',
     ];
 }

@@ -42,6 +42,7 @@
         <Crime v-if="item.type === 'Crime'" :data="item" />
         <BuildingPermit v-if="item.type === 'Building Permit'" :data="item" />
         <PropertyViolation v-if="item.type === 'Property Violation'" :data="item" />
+        <OffHours v-if="item.type === 'Construction Off Hour'" :data="item" />
 
         <!-- Button to emit datapoint for goto marker on map function -->
         <button
@@ -60,6 +61,7 @@ import ServiceCase from "@/Components/ServiceCase.vue";
 import Crime from "@/Components/Crime.vue";
 import BuildingPermit from "@/Components/BuildingPermit.vue";
 import PropertyViolation from "@/Components/PropertyViolation.vue";
+import OffHours from "@/Components/OffHours.vue";
 
 export default {
   name: "GenericDataList",
@@ -68,6 +70,7 @@ export default {
     Crime,
     BuildingPermit,
     PropertyViolation,
+    OffHours,
   },
   props: {
     totalData: {

@@ -55,7 +55,7 @@
           v-for="(isActive, type) in filters"
           :key="type"
           @click="toggleFilter(type)"
-          :class="{'active': isActive, 'inactive': !isActive, [`${type.toLowerCase().replace(' ', '-').replace(/\d/g, 'a')}-filter-button`]: true,
+          :class="{'active': isActive, 'inactive': !isActive, [`${type.toLowerCase().replace(/\s/g, '-').replace(/\d/g, 'a')}-filter-button`]: true,
           //set the width based on the number of filters
           'w-1/12': Object.keys(filters).length > 6,
           'w-1/6': Object.keys(filters).length === 6,
@@ -122,6 +122,7 @@
     <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" />
     <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" />
     <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.type === 'Property Violation'" :data="selectedDataPoint" />
+    <OffHours v-if="selectedDataPoint && selectedDataPoint.type === 'Construction Off Hour'" :data="selectedDataPoint" />
     </div>
 
       <!-- AiAssistant Component -->
@@ -151,6 +152,7 @@ import * as L from 'leaflet';
 import ImageCarousel from '@/Components/ImageCarousel.vue';
 import { data } from 'autoprefixer';
 import PropertyViolation from '@/Components/PropertyViolation.vue';
+import OffHours from '@/Components/OffHours.vue';
 
 const filters = ref({});
 const allDataPoints = ref([]); // Store all fetched data points here
@@ -205,6 +207,9 @@ const getDivIcon = (dataPoint) => {
       break;
     case 'Property Violation':
       className = 'property-violation-div-icon';
+      break;
+    case 'Construction Off Hour':
+      className = 'construction-off-hour-div-icon';
       break;
     default:
       break;
@@ -304,7 +309,6 @@ const fetchData = async () => {
   try {
     const response = await axios.post('/api/map-data', {
       centralLocation: centralLocation.value,
-      days: 14, // Default days
     }, {
       headers: {
         'X-CSRF-TOKEN': csrfToken,
@@ -552,6 +556,7 @@ const updateMarkers = (dataPoints) => {
           ${dataPoint.type === '311 Case' ? dataPoint.info.case_title : ''}
           ${dataPoint.type === 'Building Permit' ? dataPoint.info.description : ''}
           ${dataPoint.type === 'Property Violation' ? dataPoint.info.description : ''}
+          ${dataPoint.type === 'Construction Off Hour' ? dataPoint.info.address : ''}
           </div>
         `;
 

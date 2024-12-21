@@ -13,6 +13,7 @@
   --permit-icon-color: rgb(114, 209, 114);
   /* add a yellow icon for property violations */
   --property-violation-icon-color: rgb(255, 255, 0);
+  --construction-off-hour-icon-color: rgb(114, 203, 209);
   --center-icon-border-color: black;
 
   /* Icon Sizes */
@@ -33,6 +34,19 @@ p {
 
 a {
   color: var(--secondary-color);
+}
+
+.construction-off-hour-div-icon div {
+  background-color: var(--construction-off-hour-icon-color);
+  background-image: url("/images/constructionoffhouricon.svg");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  position: relative;
 }
 
 .property-violation-div-icon div {
@@ -149,6 +163,13 @@ a {
   background-repeat: no-repeat;
 }
 
+.construction-off-hour-filter-button {
+  background-image: url("/images/constructionoffhouricon.svg");
+  background-position: left;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 
 /* when screen is less than 768, center the background image on the filter buttons */
 @media (max-width: 768px) {
@@ -176,6 +197,11 @@ a {
 
 .property-violation-filter-button.active {
   background-color: var(--property-violation-icon-color);
+  color: black;
+}
+
+.construction-off-hour-filter-button.active {
+  background-color: var(--construction-off-hour-icon-color);
   color: black;
 }
 

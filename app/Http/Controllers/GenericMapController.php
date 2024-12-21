@@ -6,6 +6,7 @@ use App\Models\CrimeData;
 use App\Models\ThreeOneOneCase;
 use App\Models\BuildingPermit;
 use App\Models\PropertyViolation;
+use App\Models\ConstructionOffHour;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -37,24 +38,31 @@ class GenericMapController extends Controller
             'address' => $defaultAddress,
         ]);
 
-        $radius = $request->input('radius', 0.25);
-        $days = $request->input('days', 14);
+        $radius = $request->input('radius', .25);
+        $crimeDays = 14;
+        $caseDays = 14;
+        $permitDays = 14;
+        $violationDays = 14;
+        $offHourDays = 14;
 
         $boundingBox = $this->getBoundingBox($centralLocation['latitude'], $centralLocation['longitude'], $radius);
 
-        $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $days));
+        $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $crimeDays));
         Log::info('Crime data fetched.', ['crimeDataCount' => $crimeData->count()]);
 
-        $caseData = collect($this->getThreeOneOneCaseDataForBoundingBox($boundingBox, $days));
+        $caseData = collect($this->getThreeOneOneCaseDataForBoundingBox($boundingBox, $caseDays));
         Log::info('311 case data fetched.', ['caseDataCount' => $caseData->count()]);
 
-        $buildingPermits = collect($this->getBuildingPermitsForBoundingBox($boundingBox, $days));
+        $buildingPermits = collect($this->getBuildingPermitsForBoundingBox($boundingBox, $permitDays));
         Log::info('Building permits data fetched.', ['buildingPermitsCount' => $buildingPermits->count()]);
 
-        $propertyViolations = collect($this->getPropertyViolationsForBoundingBox($boundingBox, $days));
+        $propertyViolations = collect($this->getPropertyViolationsForBoundingBox($boundingBox, $violationDays));
         Log::info('Property violations data fetched.', ['propertyViolationsCount' => $propertyViolations->count()]);
 
-        $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits)->merge($propertyViolations);
+        $offHours = collect($this->getConstructionOffHoursForBoundingBox($boundingBox, $offHourDays));
+        Log::info('Construction off hours data fetched.', ['offHoursCount' => $offHours->count()]);
+
+        $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits)->merge($propertyViolations)->merge($offHours);
         Log::info('Data points merged.', ['totalDataPointsCount' => $dataPoints->count()]);
 
 
@@ -191,6 +199,39 @@ class GenericMapController extends Controller
                 'longitude' => $violation->longitude,
                 'date' => $violation->status_dttm,
                 'type' => 'Property Violation',
+                'info' => $info,
+            ];
+        });
+
+    }
+
+
+    
+    public function getConstructionOffHoursForBoundingBox($boundingBox, $days)
+    {
+        Log::info('Fetching construction off hours within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
+
+        $startDate = Carbon::now()->subDays($days)->toDateString();
+
+        $offHours = ConstructionOffHour::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+                                            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+                                            ->where('start_datetime', '>=', $startDate)->where('start_datetime', '<', Carbon::now())
+                                            ->get();
+
+        Log::info('Construction off hours data query executed.', ['rowsFetched' => $offHours->count()]);
+
+        // Transform data for the map
+        return $offHours->map(function ($offHour) {
+            // Convert offHour object to an array and exclude the latitude, longitude, and date fields
+            $info = Arr::except($offHour->toArray(), ['latitude', 'longitude', 'created_at', 'updated_at']);
+            //convert start datetime to date
+            $start_date = Carbon::parse($offHour->start_datetime)->toDateString();
+
+            return [
+                'latitude' => $offHour->latitude,
+                'longitude' => $offHour->longitude,
+                'date' => $start_date,
+                'type' => 'Construction Off Hour',
                 'info' => $info,
             ];
         });
