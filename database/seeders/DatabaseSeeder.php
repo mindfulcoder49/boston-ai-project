@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             CrimeDataSeeder::class,
             ThreeOneOneSeeder::class,
             BuildingPermitsSeeder::class,
+            PropertyViolationsSeeder::class,
         ]);
     }
 }
