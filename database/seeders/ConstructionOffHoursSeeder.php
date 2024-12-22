@@ -57,6 +57,14 @@ class ConstructionOffHoursSeeder extends Seeder
             $progress = 0;
             $skipped = 0;
 
+            //sort the records by date
+            $records = collect(iterator_to_array($records))->sortBy('start_datetime');
+
+            //remove any older than 60 days ago
+            $records = $records->filter(function ($record) {
+                return strtotime($record['start_datetime']) > strtotime('-60 days');
+            });
+
             foreach ($records as $offHour) {
                 $progress++;
 
