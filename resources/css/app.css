@@ -27,6 +27,17 @@
   --pulse-center-color: rgba(0, 0, 0, 0.7);
 }
 
+#map, [class*="filter-button"], .logo {
+  filter: saturate(.6) hue-rotate(-5deg) brightness(1.1) contrast(01.5) grayscale(0.1);
+}
+
+nav {
+  font-size: 1.5rem;
+}
+
+button {
+  filter: grayscale(0.7);
+}
 
 p {
   color: var(--primary-color);
@@ -175,7 +186,9 @@ a {
 @media (max-width: 768px) {
   .building-permit-filter-button,
   .crime-filter-button,
-  .aaa-case-filter-button {
+  .aaa-case-filter-button,
+  .property-violation-filter-button,
+  .construction-off-hour-filter-button {
     background-position: center;
   }
 }
@@ -213,7 +226,9 @@ a {
 .crime-div-icon,
 .case-div-icon,
 .permit-div-icon,
-.center-div-icon {
+.center-div-icon,
+.property-violation-div-icon,
+.construction-off-hour-div-icon {
   transition: width 0.3s ease, height 0.3s ease; /* Smooth resizing */
 }
 
