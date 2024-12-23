@@ -124,8 +124,7 @@ class CrimeDataSeeder extends Seeder
             'street',
             'lat',
             'long',
-            'location',
-            'offense_category'
+            'location'
         ]);
     }
 
