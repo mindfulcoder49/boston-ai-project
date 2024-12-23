@@ -38,6 +38,15 @@ class GenericMapController extends Controller
             'address' => $defaultAddress,
         ]);
 
+
+
+        $language_codes = $request->input('language_codes', ['es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR', 'en-US']);
+        //remove any invalid language codes
+        $language_codes = array_intersect($language_codes, ['es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR', 'en-US']);
+
+
+        Log::info('Language codes to include.', ['language_codes' => $language_codes]);
+
         $radius = $request->input('radius', .25);
         $crimeDays = 14;
         $caseDays = 14;
@@ -47,19 +56,19 @@ class GenericMapController extends Controller
 
         $boundingBox = $this->getBoundingBox($centralLocation['latitude'], $centralLocation['longitude'], $radius);
 
-        $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $crimeDays));
+        $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $crimeDays, $language_codes));
         Log::info('Crime data fetched.', ['crimeDataCount' => $crimeData->count()]);
 
-        $caseData = collect($this->getThreeOneOneCaseDataForBoundingBox($boundingBox, $caseDays));
+        $caseData = collect($this->getThreeOneOneCaseDataForBoundingBox($boundingBox, $caseDays, $language_codes));
         Log::info('311 case data fetched.', ['caseDataCount' => $caseData->count()]);
 
-        $buildingPermits = collect($this->getBuildingPermitsForBoundingBox($boundingBox, $permitDays));
+        $buildingPermits = collect($this->getBuildingPermitsForBoundingBox($boundingBox, $permitDays, $language_codes));
         Log::info('Building permits data fetched.', ['buildingPermitsCount' => $buildingPermits->count()]);
 
-        $propertyViolations = collect($this->getPropertyViolationsForBoundingBox($boundingBox, $violationDays));
+        $propertyViolations = collect($this->getPropertyViolationsForBoundingBox($boundingBox, $violationDays, $language_codes));
         Log::info('Property violations data fetched.', ['propertyViolationsCount' => $propertyViolations->count()]);
 
-        $offHours = collect($this->getConstructionOffHoursForBoundingBox($boundingBox, $offHourDays));
+        $offHours = collect($this->getConstructionOffHoursForBoundingBox($boundingBox, $offHourDays, $language_codes));
         Log::info('Construction off hours data fetched.', ['offHoursCount' => $offHours->count()]);
 
         $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits)->merge($propertyViolations)->merge($offHours);
@@ -89,7 +98,7 @@ class GenericMapController extends Controller
         ];
     }
 
-    public function getCrimeDataForBoundingBox($boundingBox, $days)
+    public function getCrimeDataForBoundingBox($boundingBox, $days, $language_codes)
     {
         Log::info('Fetching crime data within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
 
@@ -97,7 +106,14 @@ class GenericMapController extends Controller
 
         $query = CrimeData::whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
                           ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                          ->where('occurred_on_date', '>=', $startDate);
+                          ->where('occurred_on_date', '>=', $startDate)
+                            ->where(function ($query) use ($language_codes) {
+                                $query->whereIn('language_code', $language_codes);
+                        
+                                if (in_array('en-US', $language_codes)) {
+                                    $query->orWhereNull('language_code');
+                                }
+                            });
 
         $crimeData = $query->get();
 
@@ -118,16 +134,25 @@ class GenericMapController extends Controller
         });
     }
 
-    public function getThreeOneOneCaseDataForBoundingBox($boundingBox, $days)
+    public function getThreeOneOneCaseDataForBoundingBox($boundingBox, $days, $language_codes)
     {
         Log::info('Fetching 311 case data within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
 
         $startDate = Carbon::now()->subDays($days)->toDateString();
 
-        $query = ThreeOneOneCase::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-                                ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                                ->where('open_dt', '>=', $startDate);
 
+
+        $query = ThreeOneOneCase::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+            ->where('open_dt', '>=', $startDate)
+            ->where(function ($query) use ($language_codes) {
+                $query->whereIn('language_code', $language_codes);
+        
+                if (in_array('en-US', $language_codes)) {
+                    $query->orWhereNull('language_code');
+                }
+            });
+    
         $cases = $query->get();
 
         Log::info('311 case data query executed.', ['rowsFetched' => $cases->count()]);
@@ -147,7 +172,7 @@ class GenericMapController extends Controller
         });
     }
 
-    public function getBuildingPermitsForBoundingBox($boundingBox, $days)
+    public function getBuildingPermitsForBoundingBox($boundingBox, $days, $language_codes)
     {
         Log::info('Fetching building permits within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
 
@@ -156,7 +181,14 @@ class GenericMapController extends Controller
         $buildingPermits = BuildingPermit::whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                          ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
                                          ->where('issued_date', '>=', $startDate)
-                                         ->get();
+                                            ->where(function ($query) use ($language_codes) {
+                                                $query->whereIn('language_code', $language_codes);
+                                        
+                                                if (in_array('en-US', $language_codes)) {
+                                                    $query->orWhereNull('language_code');
+                                                }
+                                            })
+                                            ->get();
 
         Log::info('Building permits data query executed.', ['rowsFetched' => $buildingPermits->count()]);
 
@@ -176,7 +208,7 @@ class GenericMapController extends Controller
 
     }
 
-    public function getPropertyViolationsForBoundingBox($boundingBox, $days)
+    public function getPropertyViolationsForBoundingBox($boundingBox, $days, $language_codes)
     {
         Log::info('Fetching property violations within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
 
@@ -185,6 +217,13 @@ class GenericMapController extends Controller
         $violations = PropertyViolation::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                          ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
                                          ->where('status_dttm', '>=', $startDate)
+                                            ->where(function ($query) use ($language_codes) {
+                                                $query->whereIn('language_code', $language_codes);
+                                        
+                                                if (in_array('en-US', $language_codes)) {
+                                                    $query->orWhereNull('language_code');
+                                                }
+                                            })
                                           ->get();
 
         Log::info('Property violations data query executed.', ['rowsFetched' => $violations->count()]);
@@ -207,7 +246,7 @@ class GenericMapController extends Controller
 
 
     
-    public function getConstructionOffHoursForBoundingBox($boundingBox, $days)
+    public function getConstructionOffHoursForBoundingBox($boundingBox, $days, $language_codes)
     {
         Log::info('Fetching construction off hours within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
 
@@ -216,6 +255,13 @@ class GenericMapController extends Controller
         $offHours = ConstructionOffHour::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                             ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
                                             ->where('start_datetime', '>=', $startDate)->where('start_datetime', '<', Carbon::now())
+                                            ->where(function ($query) use ($language_codes) {
+                                                $query->whereIn('language_code', $language_codes);
+                                        
+                                                if (in_array('en-US', $language_codes)) {
+                                                    $query->orWhereNull('language_code');
+                                                }
+                                            })
                                             ->get();
 
         Log::info('Construction off hours data query executed.', ['rowsFetched' => $offHours->count()]);

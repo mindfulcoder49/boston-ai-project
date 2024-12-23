@@ -2,7 +2,7 @@
   <div class="ai-assistant border border-gray-700  shadow-lg p-4 bg-gray-900/25 relative z-2">
       <div ref="chatHistory" class="p-2 bg-transparent chat-history max-h-[69vh]  overflow-y-auto mb-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800">
           <div class="assistant-message text-gray-800 bg-gradient-to-r from-gray-200 to-gray-300 p-4 mr-1  inline-block max-w-[95%] float-left mb-2 text-left">
-              <p>Hi! I'm the Boston App AI Assistant, based on OpenAI's GPT-4o-mini model. I can see all the data points in the map and answer questions about them in many languages. How can I help you today?</p>
+              <p>{{ welcomeMessage }}</p>
           </div>
           <div v-for="(message, index) in messages" :key="index" class="message-item mb-2 clear-both">
               <p v-if="message.role === 'user'" class="user-message text-gray-800 bg-gradient-to-r from-blue-100 to-blue-200 p-4 ml-2  inline-block max-w-[95%] float-right mb-2 text-right">
@@ -60,6 +60,10 @@ context: {
   type: Array,
   default: () => [],
 },
+language_codes: {
+  type: Array,
+  default: () => ['en-US'],
+},
 });
 
 const md = markdownit({
@@ -87,18 +91,95 @@ const context = ref(props.context); // Store context
 
 const suggestedPrompts = ref([
   "Summarize all the events on this report for me",
-  "¿Cómo funciona esto?",               // Spanish
-  "这怎么运作？",                       // Chinese (Simplified)
-  "Kijan sa a fonksyone?",               // Haitian Creole
-  "Cách này hoạt động như thế nào?",     // Vietnamese
-  "Como isso funciona?",                 // Portuguese
-  "Comment ça marche ?",                 // French
-  "كيف يعمل هذا؟",                      // Arabic
-  "Как это работает?",                  // Russian
-  "Come funziona?",                      // Italian
-  "이것은 어떻게 작동합니까?"             // Korean
+  "Write a daily report of all the events",
 ]);
 
+const languageButtonLabels = {
+  'en-US': {
+    select: '✓ English',
+    deselect: '✕ English',
+  },
+  'es-MX': {
+    select: '✓ Español',
+    deselect: '✕ Español',
+  },
+  'zh-CN': {
+    select: '✓ 中文',
+    deselect: '✕ 中文',
+  },
+  'ht-HT': {
+    select: '✓ Kreyòl Ayisyen',
+    deselect: '✕ Kreyòl Ayisyen',
+  },
+  'vi-VN': {
+    select: '✓ Tiếng Việt',
+    deselect: '✕ Tiếng Việt',
+  },
+  'pt-BR': {
+    select: '✓ Português',
+    deselect: '✕ Português',
+  },
+};
+
+const setSuggestedPrompts = () => {
+  // get the language codes from the props
+  const languageCodes = props.language_codes;
+  //could be one of six languages. Define translations of the two suggested prompts for each lanaguge code
+  const translations = {
+    'en-US': [
+      "Summarize all the events on this report for me",
+      "Write a daily story of all the events",
+    ],
+    'es-MX': [
+      "Resuma todos los eventos de este informe para mí",
+      "Escribe una historia diaria de todos los eventos",
+    ],
+    'zh-CN': [
+      "为我总结此报告中的所有事件",
+      "写一篇关于所有事件的日常故事",
+    ],
+    'ht-HT': [
+      "Resime tout evènman nan rapò sa a pou mwen",
+      "Ekri yon istwa chak jou sou tout evènman yo",
+    ],
+    'vi-VN': [
+      "Tóm tắt tất cả các sự kiện trong báo cáo này cho tôi",
+      "Viết một câu chuyện hàng ngày về tất cả các sự kiện",
+    ],
+    'pt-BR': [
+      "Resuma todos os eventos deste relatório para mim",
+      "Escreva uma história diária de todos os eventos",
+    ],
+  };
+
+  // get the translations for the current language code
+  const currentTranslations = translations[languageCodes[0]];
+
+  // set the suggested prompts to the translations
+  suggestedPrompts.value = currentTranslations;
+};
+
+const welcomeMessage = ref("Hi! I'm the Boston App AI Assistant, based on OpenAI's GPT-4o-mini model. I can see all the data points in the map and answer questions about them in many languages. How can I help you today?")
+
+const welcomeMessageTranslations = {
+  'en-US': "Hi! I'm the Boston App AI Assistant, based on OpenAI's GPT-4o-mini model. I can see all the data points in the map and answer questions about them in many languages. How can I help you today?",
+  'es-MX': "¡Hola! Soy el asistente de IA de la aplicación de Boston, basado en el modelo GPT-4o-mini de OpenAI. Puedo ver todos los puntos de datos en el mapa y responder preguntas sobre ellos en muchos idiomas. ¿Cómo puedo ayudarte hoy?",
+  'zh-CN': "你好！我是波士顿应用程序的AI助手，基于OpenAI的GPT-4o-mini模型。我可以查看地图中的所有数据点并用多种语言回答有关它们的问题。我今天能帮你什么？",
+  'ht-HT': "Bonjou! Mwen se asistan AI nan aplikasyon Boston an, ki baze sou modèl GPT-4o-mini nan OpenAI. Mwen ka wè tout pwen done nan kat la ak reponn kesyon sou yo nan anpil lang. Kijan mwen ka ede ou jodi a?",
+  'vi-VN': "Chào bạn! Tôi là trợ lý trí tuệ nhân tạo của ứng dụng Boston, dựa trên mô hình GPT-4o-mini của OpenAI. Tôi có thể xem tất cả các điểm dữ liệu trên bản đồ và trả lời câu hỏi về chúng bằng nhiều ngôn ngữ. Hôm nay tôi có thể giúp gì cho bạn?",
+  'pt-BR': "Oi! Eu sou o assistente de IA do aplicativo Boston, baseado no modelo GPT-4o-mini da OpenAI. Eu posso ver todos os pontos de dados no mapa e responder perguntas sobre eles em muitos idiomas. Como posso te ajudar hoje?",
+}
+
+const setWelcomeMessage = () => {
+  // get the language codes from the props
+  const languageCodes = props.language_codes;
+  // get the welcome message translations
+  const translations = welcomeMessageTranslations;
+  // get the translations for the current language code
+  const currentTranslation = translations[languageCodes[0]];
+  // set the welcome message to the current translation
+  welcomeMessage.value = currentTranslation;
+};
 
 const scrollToBottom = () => {
 nextTick(() => {
@@ -167,6 +248,11 @@ return md.render(content);
 //watch for changes in the context and update the context
 watch(() => props.context, (newContext) => {
   context.value = newContext;
+});
+
+watch(() => props.language_codes, (newLanguageCodes) => {
+  setSuggestedPrompts();
+  setWelcomeMessage();
 });
 </script>
 

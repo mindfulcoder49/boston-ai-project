@@ -84,7 +84,6 @@ class CrimeDataSeeder extends Seeder
                 'lat' => $crime['Lat'],
                 'long' => $crime['Long'],
                 'location' => $crime['Location'],
-                'offense_category' => $this->categorizeOffense($crime['OFFENSE_CODE']),
             ];
 
             if ($progress % self::BATCH_SIZE == 0) {
@@ -176,55 +175,5 @@ class CrimeDataSeeder extends Seeder
 
         // Convert to datetime
         return date('Y-m-d H:i:s', strtotime($date));
-    }
-
-    private function categorizeOffense($code)
-    {
-        $categories = [
-            'murder_and_manslaughter' => [111, 112, 113, 114, 121, 122, 123, 124, 125],
-            'rape' => [
-                211, 212, 213, 222, 223, 224, 230, 231, 232, 233, 234, 235, 236, 237,
-                241, 242, 243, 244, 251, 252, 253, 254, 261, 271
-            ],
-            'robbery' => range(301, 382),
-            'assault' => range(401, 434),
-            'burglary' => range(510, 563),
-            'larceny' => range(611, 670),
-            'auto_theft' => range(701, 791),
-            'simple_assault' => range(801, 805),
-            'arson' => range(900, 931),
-            'forgery_counterfeiting' => range(1001, 1003),
-            'fraud' => range(1101, 1110),
-            'embezzlement' => [1201],
-            'stolen_property' => range(1300, 1305),
-            'vandalism' => range(1401, 1416),
-            'weapons_violations' => range(1501, 1511),
-            'prostitution' => range(1601, 1621),
-            'sex_offenses' => range(1702, 1732),
-            'drug_violations' => range(1805, 1876),
-            'gambling' => range(1901, 1922),
-            'child_offenses' => range(2003, 2011),
-            'alcohol_violations' => range(2101, 2205),
-            'disorderly_conduct' => range(2401, 2408),
-            'kidnapping' => range(2511, 2625),
-            'miscellaneous_offenses' => range(2628, 2673),
-            'vehicle_laws' => range(2801, 2918),
-            'investigations' => range(3001, 3041),
-            'other_services' => range(3102, 3171),
-            'property' => range(3201, 3211),
-            'disputes' => range(3301, 3306),
-            'animal_incidents' => range(3402, 3415),
-            'missing_persons' => range(3501, 3504),
-            'other_reports' => range(3612, 3626),
-            'accidents' => range(3701, 3832)
-        ];
-
-        foreach ($categories as $category => $codes) {
-            if (in_array($code, $codes)) {
-                return $category;
-            }
-        }
-
-        return 'other_offenses';
     }
 }

@@ -34,11 +34,6 @@ class CrimeMapController extends Controller
         $query->whereIn('offense_code', $offenseCodes);
     }
 
-    // Offense Category filter
-    if (isset($filters['offense_category']) && !empty($filters['offense_category']) && $filters['offense_category'] !== [null]) {
-        $query->whereIn('offense_category', $filters['offense_category']);
-    }
-
     // District filter
     if (isset($filters['district']) && !empty($filters['district']) && $filters['district'] !== [null]) {
         $query->whereIn('district', $filters['district']);
@@ -93,7 +88,6 @@ class CrimeMapController extends Controller
         $apiKey = config('services.openai.api_key');
 
         $description = 'offense_codes: Array of integers (examples: [3115, 3301, 423]).
-        offense_category: Array of strings describing the offense category (examples: "INVESTIGATE PERSON", "ASSAULT - AGGRAVATED").
         district: Array of strings representing district codes (examples: "B3", "A1", "D4").
         start_date: String in "yyyy-MM-dd" format (example: "2023-01-27").
         end_date: String in "yyyy-MM-dd" format (example: "2023-02-15").
@@ -124,7 +118,6 @@ class CrimeMapController extends Controller
                                     'type' => 'object',
                                     'properties' => [
                                         'offense_codes' => ['type' => 'array', 'items' => ['type' => 'integer']],
-                                        'offense_category' => ['type' => 'array', 'items' => ['type' => 'string']],
                                         'district' => ['type' => 'array', 'items' => ['type' => 'string']],
                                         'start_date' => ['type' => 'string', 'format' => 'date-time'],
                                         'end_date' => ['type' => 'string', 'format' => 'date-time'],

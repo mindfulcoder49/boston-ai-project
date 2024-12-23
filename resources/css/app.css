@@ -14,6 +14,14 @@
   /* add a yellow icon for property violations */
   --property-violation-icon-color: rgb(255, 255, 0);
   --construction-off-hour-icon-color: rgb(114, 203, 209);
+  /* add transparent versions of each color */
+  --crime-icon-color-transparent: rgba(255, 78, 78, 0.9);
+  --case-icon-color-transparent: rgba(128, 128, 255, 0.9);
+  --permit-icon-color-transparent: rgba(114, 209, 114, 0.8);
+  --property-violation-icon-color-transparent: rgba(255, 255, 0, 0.8);
+  --construction-off-hour-icon-color-transparent: rgba(114, 203, 209, 0.8);
+
+
   --center-icon-border-color: black;
 
   /* Icon Sizes */
@@ -27,7 +35,7 @@
   --pulse-center-color: rgba(0, 0, 0, 0.7);
 }
 
-#map, [class*="filter-button"], .logo {
+#map, [class*="filter-button"], .logo, [class*="div-icon"] {
   filter: saturate(.6) hue-rotate(-5deg) brightness(1.1) contrast(01.5) grayscale(0.1);
 }
 
@@ -148,6 +156,7 @@ a {
 /* Filter button styles */
 .building-permit-filter-button {
   background-image: url("/images/permiticon.svg");
+  border: 10px solid var(--permit-icon-color-transparent);
   background-position: left;
   background-size: contain;
   background-repeat: no-repeat;
@@ -155,6 +164,7 @@ a {
 
 .crime-filter-button {
   background-image: url("/images/crimeshieldicon.svg");
+  border: 10px solid var(--crime-icon-color-transparent);
   background-position: left;
   background-size: contain;
   background-repeat: no-repeat;
@@ -162,6 +172,7 @@ a {
 
 .aaa-case-filter-button {
   background-image: url("/images/boston311icon.svg");
+  border: 10px solid var(--case-icon-color-transparent);
   background-position: left;
   background-size: contain;
   background-repeat: no-repeat;
@@ -169,6 +180,7 @@ a {
 
 .property-violation-filter-button {
   background-image: url("/images/propertyviolationicon.svg");
+  border: 10px solid var(--property-violation-icon-color-transparent);
   background-position: left;
   background-size: contain;
   background-repeat: no-repeat;
@@ -176,6 +188,7 @@ a {
 
 .construction-off-hour-filter-button {
   background-image: url("/images/constructionoffhouricon.svg");
+  border: 10px solid var(--construction-off-hour-icon-color-transparent);
   background-position: left;
   background-size: contain;
   background-repeat: no-repeat;
@@ -217,6 +230,28 @@ a {
   background-color: var(--construction-off-hour-icon-color);
   color: black;
 }
+
+.aaa-case-filter-button .filter-button-text {
+  background-color: var(--case-icon-color-transparent);
+}
+
+.crime-filter-button .filter-button-text {
+  background-color: var(--crime-icon-color-transparent);
+}
+
+.building-permit-filter-button .filter-button-text {
+  background-color: var(--permit-icon-color-transparent);
+}
+
+.property-violation-filter-button .filter-button-text {
+  background-color: var(--property-violation-icon-color-transparent);
+}
+
+.construction-off-hour-filter-button .filter-button-text {
+  background-color: var(--construction-off-hour-icon-color-transparent);
+}
+
+
 
 
 :root {

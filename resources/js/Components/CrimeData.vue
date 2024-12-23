@@ -17,7 +17,6 @@
         <p>Shooting: {{ crimeData.shooting ? 'Yes' : 'No' }}</p>
         <p>Street: {{ crimeData.street }}</p>
         <p>Location: {{ crimeData.location }}</p>
-        <p>Offense Category: {{ crimeData.offense_category }}</p>
       </div>
     </div>
   </template>

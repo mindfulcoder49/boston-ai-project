@@ -18,13 +18,6 @@
     <p class="mb-4">Use the manual filters below to filter the crime data:</p>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div class="flex flex-col">
-        <label for="offenseCategory" class="font-medium mb-1">Choose Offense Categories:</label>
-        <select v-model="filters.offense_category" multiple class="p-2 border rounded-md">
-          <option value="">All</option>
-          <option v-for="category in offenseCategories" :key="category.value" :value="category.value">{{ category.label }}</option>
-        </select>
-      </div>
-      <div class="flex flex-col">
         <label for="district" class="font-medium mb-1">Choose Districts:</label>
         <select v-model="filters.district" multiple class="p-2 border rounded-md">
           <option value="">All</option>
@@ -89,7 +82,6 @@ const crimeData = ref(props.crimeData || []);
 const filteredCrimeData = ref([]);
 const filters = ref({
   offense_codes: '',
-  offense_category: [],
   district: [],
   start_date: '',
   end_date: '',
@@ -176,8 +168,7 @@ const updateMarkers = async () => {
             <strong>Hour:</strong> ${crime.hour}<br>
             <strong>UCR Part:</strong> ${crime.ucr_part}<br>
             <strong>Street:</strong> ${crime.street}<br>
-            <strong>Location:</strong> ${crime.location}<br>
-            <strong>Offense Category:</strong> ${crime.offense_category}
+            <strong>Location:</strong> ${crime.location}
           </div>
         `;
         const marker = markRaw(L.marker([crime.lat, crime.long]));
@@ -236,12 +227,11 @@ const downloadCSV = () => {
         'lat',
         'long',
         'location',
-        'offense_category',
     ];
   */
   //like above but full data, using escapeCSVField
   const csvContent = [
-    ['Incident Number', 'Offense Code', 'Offense Code Group', 'Offense Description', 'District', 'Reporting Area', 'Shooting', 'Occurred On Date', 'Year', 'Month', 'Day of Week', 'Hour', 'UCR Part', 'Street', 'Lat', 'Long', 'Location', 'Offense Category']
+    ['Incident Number', 'Offense Code', 'Offense Code Group', 'Offense Description', 'District', 'Reporting Area', 'Shooting', 'Occurred On Date', 'Year', 'Month', 'Day of Week', 'Hour', 'UCR Part', 'Street', 'Lat', 'Long', 'Location']
     .map(escapeCSVField)
     .join(','), // header row
     ...filteredCrimeData.value.map(crime => [
@@ -262,7 +252,6 @@ const downloadCSV = () => {
       crime.lat,
       crime.long,
       crime.location,
-      crime.offense_category
     ].map(escapeCSVField)
     .join(',')) // data rows
   ].join('\n');
@@ -325,7 +314,7 @@ const submitQuery = async () => {
 
 const clearFilters = () => {
   Object.keys(filters.value).forEach(key => {
-    if (key === 'offense_category' || key === 'district' || key === 'year') {
+    if ( key === 'district' || key === 'year') {
       filters.value[key] = [];
     } else if (key === 'shooting') {
       filters.value[key] = false;

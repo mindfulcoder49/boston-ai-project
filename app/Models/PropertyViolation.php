@@ -36,5 +36,29 @@ class PropertyViolation extends Model
         'latitude',
         'longitude',
         'location',
+        'language_code',
     ];
+
+    public function getDateField(): string
+    {
+        return 'status_dttm';
+    }
+
+    public function getDate(): string
+    {
+        if ($this->status_dttm === null) {
+            return '';
+        }
+        return $this->status_dttm;
+    }
+
+    public function getExternalIdName(): string
+    {
+        return 'case_no';
+    }
+
+    public function getExternalId(): string
+    {
+        return $this->case_no;
+    }
 }

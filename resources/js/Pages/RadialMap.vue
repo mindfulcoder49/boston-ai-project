@@ -8,7 +8,27 @@
     <!-- Page Title -->
     <h1 class="text-2xl font-bold text-gray-800 text-center my-4">Boston City Govt Activity</h1>
 
-    <AddressSearch @address-selected="updateCenterCoordinates" />
+    <!--Language buttons navbar to include or remove lanagueg codes from the array          $languageCodes = [
+            'es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR',
+        ];
+        -->
+    <div class="flex justify-center space-x-4">
+      <button
+        v-for="code in Object.keys(languageButtonLabels)"
+        :key="code"
+        @click="toggleLanguageCode(code)"
+        class="px-4 py-2"
+        :class="{
+          'bg-blue-500 text-white': language_codes.includes(code),
+          'bg-gray-200 hover:bg-gray-300': !language_codes.includes(code),
+        }"
+      >
+        {{ language_codes.includes(code) ? languageButtonLabels[code].deselect : languageButtonLabels[code].select }}
+      </button>
+    </div>
+
+
+    <AddressSearch @address-selected="updateCenterCoordinates" :language_codes="language_codes" />
 
     <form @submit.prevent="submitNewCenter" class="">
       <!-- Selected Center Coordinates display -->
@@ -44,14 +64,14 @@
 
       
 
-    <div class="boston-map">
+    <div class="boston-map" :class="{ 'map-loading': mapLoading }">
       <div id="map" class="h-[70vh]"></div>
     </div>
 
           <!-- Filter Buttons -->
   <div class="map-controls">
-    <div class="filter-container flex space-x-0 justify-center">
-        <button
+    <div class="filter-container flex justify-center">
+        <div
           v-for="(isActive, type) in filters"
           :key="type"
           @click="toggleFilter(type)"
@@ -65,11 +85,11 @@
           'w-1/2': Object.keys(filters).length === 2,
           'w-full': Object.keys(filters).length === 1}"
 
-          class="filter-button px-2 py-2 shadow-lg disabled:bg-gray-400 transition-colors text-base"
+          class="filter-button shadow-lg disabled:bg-gray-400 transition-colors text-base"
 
         >
-          <span class="invisible md:visible">{{ type }} </span>
-        </button>
+          <div class="invisible filter-button-text lg:visible">{{ getDataTypeTranslation(type) }}</div>
+    </div>
         <!-- Reload Button 
         <button
           @click="reloadMap"
@@ -126,7 +146,7 @@
     </div>
 
       <!-- AiAssistant Component -->
-      <AiAssistant :context="filteredDataPoints" />
+      <AiAssistant :context="filteredDataPoints" :language_codes="language_codes"></AiAssistant>
       <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" />
 
     <!-- Pass filteredDataPoints as context to AiAssistant -->
@@ -153,6 +173,7 @@ import ImageCarousel from '@/Components/ImageCarousel.vue';
 import { data } from 'autoprefixer';
 import PropertyViolation from '@/Components/PropertyViolation.vue';
 import OffHours from '@/Components/OffHours.vue';
+import { map } from 'leaflet';
 
 const filters = ref({});
 const allDataPoints = ref([]); // Store all fetched data points here
@@ -182,12 +203,66 @@ const initialMap = ref(null);
 const markerCenter = ref(null);
 const newMarker = ref(null);
 const markers = ref([]);
+const mapLoading = ref(false);
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 // get auth prop
 const page = usePage();
 const isAuthenticated = page.props.auth.user;
+
+const language_codes = ref(['en-US']);
+
+const addLanguageCode = (code) => {
+  language_codes.value.push(code);
+  fetchData();
+};
+
+const removeLanguageCode = (code) => {
+  const index = language_codes.value.indexOf(code);
+  if (index > -1) {
+    language_codes.value.splice(index, 1);
+  }
+  fetchData();
+};
+
+const toggleLanguageCode = (code) => {
+  if (language_codes.value.includes(code)) {
+    //removeLanguageCode(code);
+  } else {
+    //make it the only language code
+    language_codes.value = [code];
+    fetchData();
+  }
+};
+
+//make an array with lanague codes and their corresponding labels which shoudl be int he language of the user targeted, and have an add and remove label for each language code
+const languageButtonLabels = {
+  'en-US': {
+    select: '✓ English',
+    deselect: '✕ English',
+  },
+  'es-MX': {
+    select: '✓ Español',
+    deselect: '✕ Español',
+  },
+  'zh-CN': {
+    select: '✓ 中文',
+    deselect: '✕ 中文',
+  },
+  'ht-HT': {
+    select: '✓ Kreyòl Ayisyen',
+    deselect: '✕ Kreyòl Ayisyen',
+  },
+  'vi-VN': {
+    select: '✓ Tiếng Việt',
+    deselect: '✕ Tiếng Việt',
+  },
+  'pt-BR': {
+    select: '✓ Português',
+    deselect: '✕ Português',
+  },
+};
 
 // Define the icons for different types of markers
 const getDivIcon = (dataPoint) => {
@@ -307,8 +382,10 @@ const getDates = () => {
 
 const fetchData = async () => {
   try {
+    mapLoading.value = true;
     const response = await axios.post('/api/map-data', {
       centralLocation: centralLocation.value,
+      language_codes: language_codes.value,
     }, {
       headers: {
         'X-CSRF-TOKEN': csrfToken,
@@ -323,10 +400,12 @@ const fetchData = async () => {
     if (allDataPoints.value.length > 0) {
       selectedDataPoint.value = allDataPoints.value[0];
     }
+    mapLoading.value = false;
 
 
   } catch (error) {
     console.error('Error fetching data:', error);
+    mapLoading.value = false;
   }
 };
 
@@ -338,9 +417,9 @@ const updateDateRange = () => {
 };
 
 const populateFilters = () => {
-  filters.value = {};
+  //filters.value = {};
   allDataPoints.value.forEach((dataPoint) => {
-    if (!filters.value[dataPoint.type]) {
+    if (filters.value[dataPoint.type] === undefined) {
       filters.value[dataPoint.type] = true;
     }
   });
@@ -410,6 +489,55 @@ const applyFilters = () => {
     }
 };
 
+const dataTypeMapByLanguageCode = {
+  'en-US': {
+    'Crime': 'Crime',
+    '311 Case': '311 Case',
+    'Building Permit': 'Building Permit',
+    'Property Violation': 'Property Violation',
+    'Construction Off Hour': 'Constr Off Hour',
+  },
+  'es-MX': {
+    'Crime': 'Crimen',
+    '311 Case': 'Caso 311',
+    'Building Permit': 'Permiso de Constr',
+    'Property Violation': 'Violación de Prop',
+    'Construction Off Hour': 'Constr Fuera'
+  },
+  'zh-CN': {
+    'Crime': '犯罪',
+    '311 Case': '311案例',
+    'Building Permit': '建筑许可',
+    'Property Violation': '财产违规',
+    'Construction Off Hour': '非工作时间施工',
+  },
+  'ht-HT': {
+    'Crime': 'Krim',
+    '311 Case': 'Ka 311',
+    'Building Permit': 'Pèmi Bati',
+    'Property Violation': 'Vyolasyon Pwopriyete',
+    'Construction Off Hour': 'Konstr Moun Ki Pa Travay',
+  },
+  'vi-VN': {
+    'Crime': 'Tội phạm',
+    '311 Case': 'Trường hợp 311',
+    'Building Permit': 'Giấy phép Xây dựng',
+    'Property Violation': 'Vi phạm Tài sản',
+    'Construction Off Hour': 'Xây dựng Ngoài giờ',
+  },
+  'pt-BR': {
+    'Crime': 'Crime',
+    '311 Case': 'Caso 311',
+    'Building Permit': 'Licença de Constr',
+    'Property Violation': 'Violação de Prop',
+    'Construction Off Hour': 'Constr Fora'
+  },
+};
+
+const getDataTypeTranslation = (type) => {
+  return dataTypeMapByLanguageCode[language_codes.value[0]][type];
+};
+
 
 const filteredDataPoints = computed(() => {
   return dataPoints.value;
@@ -434,12 +562,16 @@ const destroyMap = () => {
   }
 };
 
-const initializeMap = () => {
+const initializeMap = ( center = null) => {
   nextTick(() => {
     if (initialMap.value) return;
 
     // Initialize the map
+    if ( center == null ) {
     initialMap.value = markRaw(L.map('map').setView(currentMapViewport.value.center || mapCenter.value || [42.3601, -71.0589], currentMapViewport.value.zoom || 16));
+    } else {
+      initialMap.value = markRaw(L.map('map').setView(center, 16));
+    }
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -520,6 +652,8 @@ const initializeMap = () => {
     }
   });
 };
+
+
 
 // Leaflet Map Functionality
 onMounted(() => {
@@ -623,7 +757,7 @@ const updateCenterCoordinates = (coordinates) => {
     mapCenter.value = [coordinates.lat, coordinates.lng];
     destroyMap();
     fetchData();
-    initializeMap();
+    initializeMap( [coordinates.lat, coordinates.lng] );
 };
 
 const submitNewCenter = () => {
@@ -657,6 +791,19 @@ const handleLoadLocation = (location) => {
   overflow: hidden;
 }
 
+.map-loading {
+  filter: blur(2px);
+}
+
+.filter-button-text {
+  width:100%;
+  height: 100%;
+  font-weight: 800;
+  font-size: 1.5rem;
+  align-content: center;
+  border-radius: 50%;
+}
+
 /* on screens bigger than 768 px, make the map 600px wide, and flow everything else to the right */
 @media (min-width: 768px) {
   #map {
@@ -678,10 +825,12 @@ const handleLoadLocation = (location) => {
     justify-content: space-between;
   }
 
-  .filter-container button {
+  .filter-container div {
     /* put text to right of icon */
-    background-position: 10px center;
-    padding-left: 60px;
+    background-position: center;
+    text-align: center;
+    padding: 0.5rem;
+    
   }
   
   .date-filter-container {

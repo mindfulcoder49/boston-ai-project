@@ -37,5 +37,26 @@ class BuildingPermit extends Model
         'gpsx',
         'y_latitude',
         'x_longitude',
+        'language_code',
     ];
+
+    public function getDateField(): string
+    {
+        return 'issued_date';
+    }
+
+    public function getDate(): string
+    {
+        return $this->issued_date;
+    }
+
+    public function getExternalIdName(): string
+    {
+        return 'permitnumber';
+    }
+
+    public function getExternalId(): string
+    {
+        return $this->permitnumber;
+    }
 }

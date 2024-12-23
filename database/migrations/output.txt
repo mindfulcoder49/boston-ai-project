@@ -397,3 +397,144 @@ class CreateLabelsTable extends Migration
     }
 }
 
+
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up(): void
+    {
+        // Add indexes to the three_one_one_cases table
+        Schema::table('three_one_one_cases', function (Blueprint $table) {
+            $table->index('latitude', 'three_one_one_cases_lat_idx');
+            $table->index('longitude', 'three_one_one_cases_long_idx');
+        });
+
+        // Add indexes to the crime_data table
+        Schema::table('crime_data', function (Blueprint $table) {
+            $table->index('lat', 'crime_data_lat_idx');
+            $table->index('long', 'crime_data_long_idx');
+        });
+
+        // Add indexes to the building_permits table
+        Schema::table('building_permits', function (Blueprint $table) {
+            $table->index('y_latitude', 'building_permits_y_lat_idx');
+            $table->index('x_longitude', 'building_permits_x_long_idx');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down(): void
+    {
+        // Drop indexes from the three_one_one_cases table
+        Schema::table('three_one_one_cases', function (Blueprint $table) {
+            $table->dropIndex('three_one_one_cases_lat_idx');
+            $table->dropIndex('three_one_one_cases_long_idx');
+        });
+
+        // Drop indexes from the crime_data table
+        Schema::table('crime_data', function (Blueprint $table) {
+            $table->dropIndex('crime_data_lat_idx');
+            $table->dropIndex('crime_data_long_idx');
+        });
+
+        // Drop indexes from the building_permits table
+        Schema::table('building_permits', function (Blueprint $table) {
+            $table->dropIndex('building_permits_y_lat_idx');
+            $table->dropIndex('building_permits_x_long_idx');
+        });
+    }
+};
+
+
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreatePropertyViolationsTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('property_violations', function (Blueprint $table) {
+            $table->id();
+            $table->string('case_no')->nullable();
+             $table->string('ap_case_defn_key')->nullable();
+            $table->dateTime('status_dttm')->nullable();
+            $table->string('status')->nullable();
+            $table->string('code')->nullable();
+            $table->string('value')->nullable();
+            $table->text('description')->nullable();
+            $table->string('violation_stno')->nullable();
+            $table->string('violation_sthigh')->nullable();
+            $table->string('violation_street')->nullable();
+            $table->string('violation_suffix')->nullable();
+            $table->string('violation_city')->nullable();
+            $table->string('violation_state')->nullable();
+            $table->string('violation_zip')->nullable();
+            $table->string('ward')->nullable();
+            $table->string('contact_addr1')->nullable();
+            $table->string('contact_addr2')->nullable();
+            $table->string('contact_city')->nullable();
+            $table->string('contact_state')->nullable();
+            $table->string('contact_zip')->nullable();
+            $table->string('sam_id')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('location')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('property_violations');
+    }
+}
+
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AddLatitudeLongitudeToConstructionOffHoursTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('construction_off_hours', function (Blueprint $table) {
+            $table->decimal('latitude', 15, 13)->nullable()->after('ward');
+            $table->decimal('longitude', 15, 13)->nullable()->after('latitude');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('construction_off_hours', function (Blueprint $table) {
+            $table->dropColumn(['latitude', 'longitude']);
+        });
+    }
+}

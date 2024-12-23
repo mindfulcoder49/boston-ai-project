@@ -30,7 +30,37 @@ class ThreeOneOneCase extends Model
 
     //add fillable
     protected $fillable = [
-        'case_enquiry_id', 'open_dt', 'sla_target_dt', 'closed_dt', 'on_time', 'case_status', 'closure_reason', 'case_title', 'subject', 'reason', 'type', 'queue', 'department', 'submitted_photo', 'closed_photo', 'location', 'fire_district', 'pwd_district', 'city_council_district', 'police_district', 'neighborhood', 'neighborhood_services_district', 'ward', 'precinct', 'location_street_name', 'location_zipcode', 'latitude', 'longitude', 'source', 'ward_number',
+        'case_enquiry_id', 
+        'open_dt', 
+        'sla_target_dt', 
+        'closed_dt', 
+        'on_time', 
+        'case_status', 
+        'closure_reason', 
+        'case_title', 
+        'subject', 
+        'reason', 
+        'type', 
+        'queue', 
+        'department', 
+        'submitted_photo', 
+        'closed_photo', 
+        'location', 
+        'fire_district', 
+        'pwd_district', 
+        'city_council_district', 
+        'police_district', 
+        'neighborhood', 
+        'neighborhood_services_district', 
+        'ward', 
+        'precinct', 
+        'location_street_name', 
+        'location_zipcode', 
+        'latitude', 
+        'longitude', 
+        'source', 
+        'ward_number', 
+        'language_code',
     ];
 
     const SEARCHABLE_COLUMNS = [
@@ -54,5 +84,25 @@ class ThreeOneOneCase extends Model
         
         //return in hours
         return $diff / (60 * 60);
+    }
+
+    public function getDateField(): string
+    {
+        return 'open_dt';
+    }
+
+    public function getDate(): string
+    {
+        return $this->open_dt;
+    }
+
+    public function getExternalIdName(): string
+    {
+        return 'case_enquiry_id';
+    }
+
+    public function getExternalId(): string
+    {
+        return $this->case_enquiry_id;
     }
 }

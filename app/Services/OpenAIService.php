@@ -33,6 +33,8 @@ class OpenAIService
                 ]],
             ];
 
+            Log::info("OpenAI Request Sent", ['payload' => $payload]);
+
             // Send the request
             $response = $this->openaiChatCompletionsCreate($payload);
 
@@ -43,8 +45,18 @@ class OpenAIService
             $message = $response['choices'][0]['message'] ?? null;
 
             if (isset($message['tool_calls'])) {
-                $toolCall = $message['tool_calls'][0];
-                $arguments = json_decode($toolCall['function']['arguments'], true);
+                //$toolCall = $message['tool_calls'][0];
+                //$arguments = json_decode($toolCall['function']['arguments'], true);
+
+                foreach ($message['tool_calls'] as $toolCall) {
+                    $arguments = json_decode($toolCall['function']['arguments'], true);
+
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        throw new Exception("Failed to decode function call arguments: " . json_last_error_msg());
+                    }
+
+                    return $arguments;
+                }
             }
 
             if (json_last_error() !== JSON_ERROR_NONE) {

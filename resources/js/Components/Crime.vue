@@ -7,7 +7,6 @@
       <ul class="space-y-2">
         <li><strong>Incident Number:</strong> {{ data.info.incident_number }}</li>
         <li><strong>Offense:</strong> {{ data.info.offense_description }}</li>
-        <li><strong>Category:</strong> {{ data.info.offense_category }}</li>
         <li><strong>District:</strong> {{ data.info.district }}</li>
         <li><strong>Street:</strong> {{ data.info.street }}</li>
         <li><strong>Day:</strong> {{ data.info.day_of_week }}</li>
