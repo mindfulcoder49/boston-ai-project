@@ -39,7 +39,7 @@ class PropertyViolation extends Model
         'language_code',
     ];
 
-    public function getDateField(): string
+    public static function getDateField(): string
     {
         return 'status_dttm';
     }
@@ -52,7 +52,7 @@ class PropertyViolation extends Model
         return $this->status_dttm;
     }
 
-    public function getExternalIdName(): string
+    public static function getExternalIdName(): string
     {
         return 'case_no';
     }

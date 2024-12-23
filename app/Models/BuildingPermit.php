@@ -40,7 +40,7 @@ class BuildingPermit extends Model
         'language_code',
     ];
 
-    public function getDateField(): string
+    public static function getDateField(): string
     {
         return 'issued_date';
     }
@@ -50,7 +50,7 @@ class BuildingPermit extends Model
         return $this->issued_date;
     }
 
-    public function getExternalIdName(): string
+    public static function getExternalIdName(): string
     {
         return 'permitnumber';
     }

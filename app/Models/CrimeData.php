@@ -39,7 +39,7 @@ class CrimeData extends Model
         'occurred_on_date' => 'datetime',
     ];
 
-    public function getDateField(): string
+    public static function getDateField(): string
     {
         return 'occurred_on_date';
     }
@@ -49,7 +49,7 @@ class CrimeData extends Model
         return $this->occurred_on_date;
     }
 
-    public function getExternalIdName(): string
+    public static function getExternalIdName(): string
     {
         return 'incident_number';
     }

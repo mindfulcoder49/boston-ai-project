@@ -85,43 +85,51 @@ class TranslationSeeder extends Seeder
             }
 
             try {
-                $modelInstance = $modelClass::find($recordId);
-
-                if (!$modelInstance) {
-                    Log::error("Record not found: Model {$modelClass}, ID {$recordId}");
+                // Use static methods to get external ID name and value
+                $externalIdName = $modelClass::getExternalIdName();
+                $externalId = $translationData[$externalIdName] ?? null;
+            
+                if (!$externalId) {
+                    Log::error("Missing external ID for Model {$modelClass}");
                     continue;
                 }
 
-                $externalIdName = $modelInstance->getExternalIdName();
-                $externalId = $modelInstance->getExternalId();
+                // Parse date field
+                $dateField = $modelClass::getDateField();
 
-                // Parse date fields if available
-                if (method_exists($modelInstance, 'getDateField') && method_exists($modelInstance, 'getDate')) {
-                    $dateField = $modelInstance->getDateField();
-                    if (isset($translationData[$dateField])) {
-                        $translationData[$dateField] = $this->parseDate($translationData[$dateField]);
-                    }
+                if ($dateField && isset($translationData[$dateField])) {
+                    $translationData[$dateField] = $this->parseDate($translationData[$dateField]);
                 }
 
-                //Also parse the closed_dt if it exists
+                // also parse closed_dt if it exists
                 if (isset($translationData['closed_dt'])) {
                     $translationData['closed_dt'] = $this->parseDate($translationData['closed_dt']);
                 }
-
+            
+                // Add the language code to the data
                 $translationData['language_code'] = $languageCode;
-
-                // Remove created_at and updated_at if they exist in the translation data
-                unset($translationData['created_at'], $translationData['updated_at']);
-
+            
+                // Ensure `translationData` only includes fillable attributes
+                $fillableAttributes = array_intersect_key(
+                    $translationData,
+                    array_flip((new $modelClass)->getFillable())
+                );
+            
+                if (empty($fillableAttributes)) {
+                    Log::error("No valid attributes for Model {$modelClass}");
+                    continue;
+                }
+            
+                // Update or insert the translation data
                 $modelClass::updateOrCreate(
                     [$externalIdName => $externalId, 'language_code' => $languageCode],
-                    $translationData
+                    $fillableAttributes
                 );
-
-                Log::info("Inserted/updated translation for Model {$modelClass}, ID {$recordId}, Language {$languageCode}");
+            
+                Log::info("Inserted/updated translation for Model {$modelClass}, External ID {$externalId}, Language {$languageCode}");
             } catch (\Exception $e) {
                 Log::error("Failed to insert/update translation: " . $e->getMessage());
-            }
+            }            
         }
     }
 

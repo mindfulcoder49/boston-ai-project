@@ -86,7 +86,7 @@ class ThreeOneOneCase extends Model
         return $diff / (60 * 60);
     }
 
-    public function getDateField(): string
+    public static function getDateField(): string
     {
         return 'open_dt';
     }
@@ -96,7 +96,7 @@ class ThreeOneOneCase extends Model
         return $this->open_dt;
     }
 
-    public function getExternalIdName(): string
+    public static function getExternalIdName(): string
     {
         return 'case_enquiry_id';
     }
