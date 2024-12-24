@@ -12,12 +12,12 @@
             'es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR',
         ];
         -->
-    <div class="flex justify-center space-x-4">
+    <div class="flex flex-wrap justify-center">
       <button
         v-for="code in Object.keys(languageButtonLabels)"
         :key="code"
         @click="toggleLanguageCode(code)"
-        class="px-4 py-2"
+        class="px-4 py-2 border-white border"
         :class="{
           'bg-blue-500 text-white': language_codes.includes(code),
           'bg-gray-200 hover:bg-gray-300': !language_codes.includes(code),
