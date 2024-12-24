@@ -102,6 +102,7 @@ class BuildingPermitsSeeder extends Seeder
                     'gpsx' => $permit['gpsx'],
                     'y_latitude' => $permit['y_latitude'],
                     'x_longitude' => $permit['x_longitude'],
+                    'language_code' => 'en-US',
                 ];
 
                 if ($progress % self::BATCH_SIZE == 0) {
@@ -154,7 +155,7 @@ class BuildingPermitsSeeder extends Seeder
             'worktype', 'permittypedescr', 'description', 'comments', 'applicant', 
             'declared_valuation', 'total_fees', 'issued_date', 'expiration_date', 
             'status', 'occupancytype', 'sq_feet', 'address', 'city', 'state', 'zip', 
-            'property_id', 'parcel_id', 'gpsy', 'gpsx', 'y_latitude', 'x_longitude'
+            'property_id', 'parcel_id', 'gpsy', 'gpsx', 'y_latitude', 'x_longitude', 'language_code'
         ]);
     }
 

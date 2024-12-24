@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('three_one_one_cases', function (Blueprint $table) {
             $table->id(); // New auto-incrementing ID column
-            $table->bigInteger('case_enquiry_id')->unique(); // Removed primary()
+            $table->bigInteger('case_enquiry_id');
             $table->dateTime('open_dt')->nullable();
             $table->text('sla_target_dt')->nullable();
             $table->dateTime('closed_dt')->nullable();
@@ -46,6 +46,7 @@ return new class extends Migration
             $table->text('source')->nullable();
             $table->text('checksum')->nullable();
             $table->text('ward_number')->nullable();
+            $table->timestamps();
         });
 
     }

@@ -91,6 +91,7 @@ class PropertyViolationsSeeder extends Seeder
                     'latitude' => $violation['latitude'],
                     'longitude' => $violation['longitude'],
                     'location' => $violation['location'],
+                    'language_code' => 'en-US',
                 ];
                 
                 if ($progress % self::BATCH_SIZE == 0) {
@@ -141,7 +142,7 @@ class PropertyViolationsSeeder extends Seeder
             'violation_stno', 'violation_sthigh', 'violation_street', 'violation_suffix',
             'violation_city', 'violation_state', 'violation_zip', 'ward', 'contact_addr1',
             'contact_addr2', 'contact_city', 'contact_state', 'contact_zip', 'sam_id',
-             'latitude', 'longitude', 'location'
+             'latitude', 'longitude', 'location', 'language_code'
         ]);
     }
 }

@@ -10,10 +10,10 @@ class CreateCrimeDataTable extends Migration
     {
         Schema::create('crime_data', function (Blueprint $table) {
             $table->id();
-            $table->string('incident_number')->unique();
-            $table->integer('offense_code');
-            $table->string('offense_code_group');
-            $table->string('offense_description');
+            $table->string('incident_number');
+            $table->integer('offense_code')->nullable();
+            $table->string('offense_code_group')->nullable();
+            $table->string('offense_description')->nullable();
             $table->string('district')->nullable();
             $table->string('reporting_area')->nullable();
             $table->boolean('shooting')->nullable();
@@ -27,7 +27,6 @@ class CreateCrimeDataTable extends Migration
             $table->decimal('lat', 10, 7)->nullable();
             $table->decimal('long', 10, 7)->nullable();
             $table->string('location')->nullable();
-            $table->string('offense_category')->nullable();
             $table->timestamps();
         });
     }

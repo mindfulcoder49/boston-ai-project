@@ -84,6 +84,7 @@ class CrimeDataSeeder extends Seeder
                 'lat' => $crime['Lat'],
                 'long' => $crime['Long'],
                 'location' => $crime['Location'],
+                'language_code' => 'en-US'
             ];
 
             if ($progress % self::BATCH_SIZE == 0) {
@@ -124,7 +125,8 @@ class CrimeDataSeeder extends Seeder
             'street',
             'lat',
             'long',
-            'location'
+            'location',
+            'language_code'
         ]);
     }
 

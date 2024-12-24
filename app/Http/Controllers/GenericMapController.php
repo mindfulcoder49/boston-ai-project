@@ -107,13 +107,7 @@ class GenericMapController extends Controller
         $query = CrimeData::whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
                           ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
                           ->where('occurred_on_date', '>=', $startDate)
-                            ->where(function ($query) use ($language_codes) {
-                                $query->whereIn('language_code', $language_codes);
-                        
-                                if (in_array('en-US', $language_codes)) {
-                                    $query->orWhereNull('language_code');
-                                }
-                            });
+                            ->whereIn('language_code', $language_codes);
 
         $crimeData = $query->get();
 
@@ -145,13 +139,7 @@ class GenericMapController extends Controller
         $query = ThreeOneOneCase::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
             ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
             ->where('open_dt', '>=', $startDate)
-            ->where(function ($query) use ($language_codes) {
-                $query->whereIn('language_code', $language_codes);
-        
-                if (in_array('en-US', $language_codes)) {
-                    $query->orWhereNull('language_code');
-                }
-            });
+            ->whereIn('language_code', $language_codes);
     
         $cases = $query->get();
 
@@ -181,13 +169,7 @@ class GenericMapController extends Controller
         $buildingPermits = BuildingPermit::whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                          ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
                                          ->where('issued_date', '>=', $startDate)
-                                            ->where(function ($query) use ($language_codes) {
-                                                $query->whereIn('language_code', $language_codes);
-                                        
-                                                if (in_array('en-US', $language_codes)) {
-                                                    $query->orWhereNull('language_code');
-                                                }
-                                            })
+                                            ->whereIn('language_code', $language_codes)
                                             ->get();
 
         Log::info('Building permits data query executed.', ['rowsFetched' => $buildingPermits->count()]);
@@ -217,13 +199,7 @@ class GenericMapController extends Controller
         $violations = PropertyViolation::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                          ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
                                          ->where('status_dttm', '>=', $startDate)
-                                            ->where(function ($query) use ($language_codes) {
-                                                $query->whereIn('language_code', $language_codes);
-                                        
-                                                if (in_array('en-US', $language_codes)) {
-                                                    $query->orWhereNull('language_code');
-                                                }
-                                            })
+                                            ->whereIn('language_code', $language_codes)
                                           ->get();
 
         Log::info('Property violations data query executed.', ['rowsFetched' => $violations->count()]);
@@ -255,13 +231,7 @@ class GenericMapController extends Controller
         $offHours = ConstructionOffHour::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                             ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
                                             ->where('start_datetime', '>=', $startDate)->where('start_datetime', '<', Carbon::now())
-                                            ->where(function ($query) use ($language_codes) {
-                                                $query->whereIn('language_code', $language_codes);
-                                        
-                                                if (in_array('en-US', $language_codes)) {
-                                                    $query->orWhereNull('language_code');
-                                                }
-                                            })
+                                            ->whereIn('language_code', $language_codes)
                                             ->get();
 
         Log::info('Construction off hours data query executed.', ['rowsFetched' => $offHours->count()]);

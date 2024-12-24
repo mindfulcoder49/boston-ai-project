@@ -114,6 +114,7 @@ class ConstructionOffHoursSeeder extends Seeder
                     'ward' => $offHour['ward'],
                     'latitude' => $bestMatch->latitude,
                     'longitude' => $bestMatch->longitude,
+                    'language_code' => 'en-US',
                 ];
 
                 if ($progress % self::BATCH_SIZE == 0) {
@@ -165,7 +166,7 @@ class ConstructionOffHoursSeeder extends Seeder
     {
         try {
             DB::table((new ConstructionOffHour)->getTable())->upsert($dataBatch, ['app_no'], [
-                'start_datetime', 'stop_datetime', 'address', 'ward', 'latitude', 'longitude',
+                'start_datetime', 'stop_datetime', 'address', 'ward', 'latitude', 'longitude', 'language_code'
             ]);
             Log::info("Batch upsert completed with " . count($dataBatch) . " records.");
         } catch (\Exception $e) {

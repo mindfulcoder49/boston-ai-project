@@ -109,6 +109,7 @@ class ThreeOneOneSeeder extends Seeder
             'source' => $row['source'] ?? null,
             'checksum' => $row['checksum'] ?? null,
             'ward_number' => $row['ward_number'] ?? null,
+            'language_code' => 'en-US',
         ];
     }
 

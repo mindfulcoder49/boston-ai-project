@@ -19,7 +19,7 @@ return new class extends Migration {
 
         // Add language_code column to crime_data table
         Schema::table('crime_data', function (Blueprint $table) {
-            $table->string('language_code', 5)->nullable()->after('offense_category');
+            $table->string('language_code', 5)->nullable()->after('offense_code');
         });
 
         // Add language_code column to building_permits table
