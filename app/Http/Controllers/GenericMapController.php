@@ -227,10 +227,11 @@ class GenericMapController extends Controller
         Log::info('Fetching construction off hours within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
 
         $startDate = Carbon::now()->subDays($days)->toDateString();
+        $endDate = Carbon::now()->addDays($days)->toDateString();
 
         $offHours = ConstructionOffHour::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                             ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                                            ->where('start_datetime', '>=', $startDate)->where('start_datetime', '<', Carbon::now())
+                                            ->where('start_datetime', '>=', $startDate)->where('start_datetime', '<', $endDate)
                                             ->whereIn('language_code', $language_codes)
                                             ->get();
 

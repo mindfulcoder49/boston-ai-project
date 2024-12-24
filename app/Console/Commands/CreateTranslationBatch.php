@@ -29,8 +29,7 @@ class CreateTranslationBatch extends Command
         $batchRequests = [];
 
         foreach ($models as $modelClass) {
-            $instances = $modelClass::whereNull('language_code')
-                ->orWhere('language_code', 'en-US')
+            $instances = $modelClass::where('language_code', 'en-US')
                 ->get();
 
             //$limit = 0;

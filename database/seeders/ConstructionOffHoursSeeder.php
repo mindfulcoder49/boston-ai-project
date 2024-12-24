@@ -106,6 +106,11 @@ class ConstructionOffHoursSeeder extends Seeder
                 // Log matched address details
                 Log::info("Matched address for row {$progress}: '{$offHour['address']}' -> '{$bestMatch->full_address}'");
 
+                //if stop_datetime is empty, set it to start_datetime
+                if (empty($offHour['stop_datetime'])) {
+                    $offHour['stop_datetime'] = $offHour['start_datetime'];
+                }
+
                 $dataBatch[] = [
                     'app_no' => $offHour['app_no'],
                     'start_datetime' => $offHour['start_datetime'],
@@ -165,8 +170,8 @@ class ConstructionOffHoursSeeder extends Seeder
     private function insertOrUpdateBatch(array $dataBatch): void
     {
         try {
-            DB::table((new ConstructionOffHour)->getTable())->upsert($dataBatch, ['app_no'], [
-                'start_datetime', 'stop_datetime', 'address', 'ward', 'latitude', 'longitude', 'language_code'
+            DB::table((new ConstructionOffHour)->getTable())->upsert($dataBatch, ['app_no', 'start_datetime', 'stop_datetime', 'language_code'], [
+                'address', 'ward', 'latitude', 'longitude'
             ]);
             Log::info("Batch upsert completed with " . count($dataBatch) . " records.");
         } catch (\Exception $e) {
