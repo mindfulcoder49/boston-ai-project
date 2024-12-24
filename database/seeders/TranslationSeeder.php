@@ -15,6 +15,8 @@ use App\Models\PropertyViolation;
 
 class TranslationSeeder extends Seeder
 {
+    private const BATCH_SIZE = 500;
+
     public function run()
     {
         $resultsPath = 'batches/batch_results.jsonl';
@@ -40,6 +42,9 @@ class TranslationSeeder extends Seeder
             ConstructionOffHour::class,
             PropertyViolation::class,
         ];
+
+        $batchData = []; // To store data for batch upserts
+        $progress = 0;
 
         foreach (explode("\n", $results) as $line) {
             if (empty($line)) {
@@ -98,7 +103,6 @@ class TranslationSeeder extends Seeder
             }
 
             try {
-                // Use static methods to get external ID name and value
                 $externalIdName = $modelClass::getExternalIdName();
                 $externalId = $translationData[$externalIdName] ?? null;
 
@@ -107,14 +111,11 @@ class TranslationSeeder extends Seeder
                     continue;
                 }
 
-                // Parse date field
+                // Parse date fields
                 $dateField = $modelClass::getDateField();
-
                 if ($dateField && isset($translationData[$dateField])) {
                     $translationData[$dateField] = $this->parseDate($translationData[$dateField]);
                 }
-
-                // Parse closed_dt if it exists
                 if (isset($translationData['closed_dt'])) {
                     $translationData['closed_dt'] = $this->parseDate($translationData['closed_dt']);
                 }
@@ -133,21 +134,29 @@ class TranslationSeeder extends Seeder
                     continue;
                 }
 
-                // Update or insert the translation data
-                $modelClass::updateOrCreate(
-                    [$externalIdName => $externalId, 'language_code' => $languageCode],
-                    $fillableAttributes
-                );
-
-                Log::info("Inserted/updated translation for Model {$modelClass}, External ID {$externalId}, Language {$languageCode}");
+                // Add the data to the batch array
+                $fillableAttributes[$externalIdName] = $externalId; // Include the external ID for upsert keys
+                $batchData[$modelClass][] = $fillableAttributes;
 
                 // Add this custom ID to the processed list
                 $processedIds[] = $customId;
 
-                // Save the processed IDs after every successful operation
-                Storage::disk('local')->put($processedIdsPath, json_encode($processedIds));
+                // Process batch if it reaches the batch size
+                if (count($batchData[$modelClass]) >= self::BATCH_SIZE) {
+                    $this->upsertBatch($modelClass, $batchData[$modelClass]);
+                    $batchData[$modelClass] = []; // Reset batch data for this model
+                    Storage::disk('local')->put($processedIdsPath, json_encode($processedIds));
+                }
             } catch (\Exception $e) {
                 Log::error("Failed to insert/update translation: " . $e->getMessage());
+            }
+        }
+
+        // Upsert any remaining data
+        foreach ($batchData as $modelClass => $data) {
+            if (!empty($data)) {
+                $this->upsertBatch($modelClass, $data);
+                Storage::disk('local')->put($processedIdsPath, json_encode($processedIds));
             }
         }
     }
@@ -159,7 +168,7 @@ class TranslationSeeder extends Seeder
             'Y年m月d日 H:i:s',    // Chinese format
             'd de F de Y H:i:s',  // Portuguese format
         ];
-
+    
         foreach ($formats as $format) {
             try {
                 $date = Carbon::createFromFormat($format, $dateString);
@@ -167,12 +176,27 @@ class TranslationSeeder extends Seeder
                     return $date->format('Y-m-d H:i:s');
                 }
             } catch (\Exception $e) {
+                // Suppress individual format errors, continue to next format
                 continue;
             }
         }
-
+    
+        // Log the failure if no format matches
         Log::error("Failed to parse date: {$dateString}");
+    
+        return null; // Return null if no formats match
+    }
 
-        return null;
+    private function upsertBatch(string $modelClass, array $dataBatch): void
+    {
+        try {
+            $tableName = (new $modelClass)->getTable();
+            $uniqueKey = $modelClass::getExternalIdName();
+
+            DB::table($tableName)->upsert($dataBatch, [$uniqueKey, 'language_code'], array_keys($dataBatch[0]));
+            Log::info("Batch upsert successful for {$modelClass}", ['count' => count($dataBatch)]);
+        } catch (\Exception $e) {
+            Log::error("Failed batch upsert for {$modelClass}: " . $e->getMessage());
+        }
     }
 }
