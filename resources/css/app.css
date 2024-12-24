@@ -36,7 +36,7 @@
 }
 
 #map, [class*="filter-button"], .logo, [class*="div-icon"] {
-  filter: saturate(.7) contrast(1.2) grayscale(0.1);
+  filter: saturate(.7) brightness(1.1) contrast(1.2) grayscale(0.1);
   font-size: 125%;
 }
 
