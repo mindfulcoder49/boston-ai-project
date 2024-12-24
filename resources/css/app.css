@@ -36,7 +36,8 @@
 }
 
 #map, [class*="filter-button"], .logo, [class*="div-icon"] {
-  filter: saturate(.6) hue-rotate(-5deg) brightness(1.1) contrast(01.5) grayscale(0.1);
+  filter: saturate(.7) contrast(1.2) grayscale(0.1);
+  font-size: 125%;
 }
 
 nav {
