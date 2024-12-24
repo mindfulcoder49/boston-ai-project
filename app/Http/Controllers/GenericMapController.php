@@ -68,7 +68,7 @@ class GenericMapController extends Controller
         $propertyViolations = collect($this->getPropertyViolationsForBoundingBox($boundingBox, $violationDays, $language_codes));
         Log::info('Property violations data fetched.', ['propertyViolationsCount' => $propertyViolations->count()]);
 
-        $offHours = collect($this->getConstructionOffHoursForBoundingBox($boundingBox, $offHourDays, $language_codes));
+        $offHours = collect($this->getConstructionOffHoursForBoundingBox($boundingBox, $offHourDays));
         Log::info('Construction off hours data fetched.', ['offHoursCount' => $offHours->count()]);
 
         $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits)->merge($propertyViolations)->merge($offHours);
@@ -222,7 +222,7 @@ class GenericMapController extends Controller
 
 
     
-    public function getConstructionOffHoursForBoundingBox($boundingBox, $days, $language_codes)
+    public function getConstructionOffHoursForBoundingBox($boundingBox, $days)
     {
         Log::info('Fetching construction off hours within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
 
@@ -232,7 +232,6 @@ class GenericMapController extends Controller
         $offHours = ConstructionOffHour::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
                                             ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
                                             ->where('start_datetime', '>=', $startDate)->where('start_datetime', '<', $endDate)
-                                            ->whereIn('language_code', $language_codes)
                                             ->get();
 
         Log::info('Construction off hours data query executed.', ['rowsFetched' => $offHours->count()]);

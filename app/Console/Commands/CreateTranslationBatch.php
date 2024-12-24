@@ -18,7 +18,6 @@ class CreateTranslationBatch extends Command
             \App\Models\ThreeOneOneCase::class,
             \App\Models\CrimeData::class,
             \App\Models\BuildingPermit::class,
-            \App\Models\ConstructionOffHour::class,
             \App\Models\PropertyViolation::class,
         ];
 

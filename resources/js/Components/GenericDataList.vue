@@ -38,11 +38,11 @@
     <!-- Data List -->
     <div v-else class="flex flex-wrap">
       <div v-for="(item, index) in paginatedData" :key="index" class="p-4 bg-white w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-        <ServiceCase v-if="item.type === '311 Case'" :data="item" />
-        <Crime v-if="item.type === 'Crime'" :data="item" />
-        <BuildingPermit v-if="item.type === 'Building Permit'" :data="item" />
-        <PropertyViolation v-if="item.type === 'Property Violation'" :data="item" />
-        <OffHours v-if="item.type === 'Construction Off Hour'" :data="item" />
+        <ServiceCase v-if="item.type === '311 Case'" :data="item" :language_codes="language_codes" />
+        <Crime v-if="item.type === 'Crime'" :data="item" :language_codes="language_codes" />
+        <BuildingPermit v-if="item.type === 'Building Permit'" :data="item" :language_codes="language_codes" />
+        <PropertyViolation v-if="item.type === 'Property Violation'" :data="item" :language_codes="language_codes" />
+        <OffHours v-if="item.type === 'Construction Off Hour'" :data="item" :language_codes="language_codes" />
 
         <!-- Button to emit datapoint for goto marker on map function -->
         <button
@@ -81,6 +81,10 @@ export default {
       type: Number,
       default: 10,
     },
+    language_codes: {
+      type: Array,
+      default: () => ["en-US"],
+    },
   },
   data() {
     return {
@@ -109,6 +113,9 @@ export default {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
       return this.sortedData.slice(start, end);
+    },
+    getSingleLanguageCode() {
+      return this.language_codes[0];
     },
   },
   watch: {

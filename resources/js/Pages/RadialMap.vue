@@ -6,7 +6,7 @@
 
     <div class="before-map">
     <!-- Page Title -->
-    <h1 class="text-2xl font-bold text-gray-800 text-center my-4">Boston City Govt Activity</h1>
+    <h1 class="text-2xl font-bold text-gray-800 text-center my-4">{{ LabelsByLanguageCode[getSingleLanguageCode]?.pageTitle }}</h1>
 
     <!--Language buttons navbar to include or remove lanagueg codes from the array          $languageCodes = [
             'es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR',
@@ -122,10 +122,7 @@
       </div>
           <!-- check the selectedDataPoint type and display the appropriate component -->
 
-    <SaveLocation
-          :location="centralLocation"
-          @load-location="handleLoadLocation"
-        />
+    <SaveLocation :location="centralLocation" :language_codes="language_codes"  @load-location="handleLoadLocation"  />
 
         <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick"  />
 
@@ -138,16 +135,16 @@
 
      <div class="case-details">
 
-    <ServiceCase v-if="selectedDataPoint && selectedDataPoint.type === '311 Case'" :data="selectedDataPoint" />
-    <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" />
-    <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" />
-    <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.type === 'Property Violation'" :data="selectedDataPoint" />
-    <OffHours v-if="selectedDataPoint && selectedDataPoint.type === 'Construction Off Hour'" :data="selectedDataPoint" />
+    <ServiceCase v-if="selectedDataPoint && selectedDataPoint.type === '311 Case'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.type === 'Property Violation'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <OffHours v-if="selectedDataPoint && selectedDataPoint.type === 'Construction Off Hour'" :data="selectedDataPoint" :language_codes="language_codes" />
     </div>
 
       <!-- AiAssistant Component -->
       <AiAssistant :context="filteredDataPoints" :language_codes="language_codes"></AiAssistant>
-      <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" />
+      <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" :language_codes="language_codes" />
 
     <!-- Pass filteredDataPoints as context to AiAssistant -->
     </div>
@@ -212,6 +209,32 @@ const page = usePage();
 const isAuthenticated = page.props.auth.user;
 
 const language_codes = ref(['en-US']);
+
+const LabelsByLanguageCode = {
+  'en-US': {
+    pageTitle: 'Boston City Govt Activity Map',
+  },
+  'es-MX': {
+    pageTitle: 'Mapa de Actividades del Gobierno de la Ciudad de Boston',
+  },
+  'zh-CN': {
+    pageTitle: '波士顿市政府活动地图',
+  },
+  'ht-HT': {
+    pageTitle: 'Kat Aktivite Gouvènman Vil Boston',
+  },
+  'vi-VN': {
+    pageTitle: 'Bản đồ Hoạt động Chính phủ Thành phố Boston',
+  },
+  'pt-BR': {
+    pageTitle: 'Mapa de Atividades do Governo da Cidade de Boston',
+  },
+};
+
+const getSingleLanguageCode = computed(() => {
+  return language_codes.value[0];
+});
+
 
 const addLanguageCode = (code) => {
   language_codes.value.push(code);

@@ -52,14 +52,6 @@ class TransformTranslationsCommand extends Command
                 'description', 'comments', 'status', 'address', 'city', 'worktype', 'permittypedescr'
             ],
         ],
-        ConstructionOffHour::class => [
-            'originalFields' => [
-                'app_no', 'start_datetime', 'stop_datetime'
-            ],
-            'translatedFields' => [
-                'address', 'ward'
-            ],
-        ],
         PropertyViolation::class => [
             'originalFields' => [
                 'case_no', 'ap_case_defn_key', 'status_dttm', 'latitude', 'longitude',
@@ -167,66 +159,66 @@ class TransformTranslationsCommand extends Command
 
 
     private function processModel(string $modelClass, array $fields, array $translations): int
-{
-    $this->info("Processing {$modelClass}...");
-    
-    $externalIdName = $modelClass::getExternalIdName();
-    $dateField = $modelClass::getDateField();
-    $days = 14;
+    {
+        $this->info("Processing {$modelClass}...");
+        
+        $externalIdName = $modelClass::getExternalIdName();
+        $dateField = $modelClass::getDateField();
+        $days = 14;
 
-    $startDate = now()->subDays($days)->startOfDay();
-    $query = $modelClass::whereDate($dateField, '>=', $startDate)->where('language_code', 'en-US');
+        $startDate = now()->subDays($days)->startOfDay();
+        $query = $modelClass::whereDate($dateField, '>=', $startDate)->where('language_code', 'en-US');
 
-    $totalProcessed = 0;
+        $totalProcessed = 0;
 
-    $query->chunk(self::CHUNK_SIZE, function ($records) use ($fields, $translations, $externalIdName, &$totalProcessed, $modelClass) {
-        $batchData = [];
+        $query->chunk(self::CHUNK_SIZE, function ($records) use ($fields, $translations, $externalIdName, &$totalProcessed, $modelClass) {
+            $batchData = [];
 
-        foreach ($records as $record) {
-            $externalId = $record->{$externalIdName};
+            foreach ($records as $record) {
+                $externalId = $record->{$externalIdName};
 
-            if (!isset($translations[$externalId])) {
-                Log::debug("No translation found for external ID: {$externalId}");
-                continue;
+                if (!isset($translations[$externalId])) {
+                    Log::debug("No translation found for external ID: {$externalId}");
+                    continue;
+                }
+
+                foreach ($translations[$externalId] as $languageCode => $translationResult) {
+                    $toolCalls = $translationResult['response']['body']['choices'][0]['message']['tool_calls'] ?? null;
+                    if (!$toolCalls) {
+                        Log::debug("No tool calls in translation for external ID: {$externalId}, Language: {$languageCode}");
+                        continue;
+                    }
+
+                    $storeTranslationCall = collect($toolCalls)->firstWhere('function.name', 'store_translation');
+                    if (!$storeTranslationCall || empty($storeTranslationCall['function']['arguments'])) {
+                        Log::debug("No store_translation call or arguments for external ID: {$externalId}, Language: {$languageCode}");
+                        continue;
+                    }
+
+                    $translationData = json_decode($storeTranslationCall['function']['arguments'], true);
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        Log::debug("Failed to decode translation arguments for external ID: {$externalId}, Language: {$languageCode}");
+                        continue;
+                    }
+
+                    $transformedRecord = $this->createTransformedRecord($record, $translationData, $fields, $languageCode);
+                    if ($transformedRecord) {
+                        Log::debug("Transformed record created for external ID: {$externalId}, Language: {$languageCode}", $transformedRecord);
+                        $batchData[] = json_encode($transformedRecord);
+                        $totalProcessed++;
+                    }
+                }
             }
 
-            foreach ($translations[$externalId] as $languageCode => $translationResult) {
-                $toolCalls = $translationResult['response']['body']['choices'][0]['message']['tool_calls'] ?? null;
-                if (!$toolCalls) {
-                    Log::debug("No tool calls in translation for external ID: {$externalId}, Language: {$languageCode}");
-                    continue;
-                }
-
-                $storeTranslationCall = collect($toolCalls)->firstWhere('function.name', 'store_translation');
-                if (!$storeTranslationCall || empty($storeTranslationCall['function']['arguments'])) {
-                    Log::debug("No store_translation call or arguments for external ID: {$externalId}, Language: {$languageCode}");
-                    continue;
-                }
-
-                $translationData = json_decode($storeTranslationCall['function']['arguments'], true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    Log::debug("Failed to decode translation arguments for external ID: {$externalId}, Language: {$languageCode}");
-                    continue;
-                }
-
-                $transformedRecord = $this->createTransformedRecord($record, $translationData, $fields, $languageCode);
-                if ($transformedRecord) {
-                    Log::debug("Transformed record created for external ID: {$externalId}, Language: {$languageCode}", $transformedRecord);
-                    $batchData[] = json_encode($transformedRecord);
-                    $totalProcessed++;
-                }
+            if (!empty($batchData)) {
+                Storage::disk('local')->append(self::OUTPUT_FILE, implode("\n", $batchData));
             }
-        }
 
-        if (!empty($batchData)) {
-            Storage::disk('local')->append(self::OUTPUT_FILE, implode("\n", $batchData));
-        }
+            $this->info("Processed " . count($records) . " records for {$modelClass}. Total so far: {$totalProcessed}");
+        });
 
-        $this->info("Processed " . count($records) . " records for {$modelClass}. Total so far: {$totalProcessed}");
-    });
-
-    return $totalProcessed;
-}
+        return $totalProcessed;
+    }
 
 
     private function createTransformedRecord($originalRecord, array $translationData, array $fields, string $languageCode): ?array
