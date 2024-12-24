@@ -55,7 +55,7 @@
         @click="toggleCenterSelection"
         class="px-4 py-2 text-white bg-blue-500  shadow-lg disabled:bg-gray-400 hover:bg-blue-600 transition-colors w-1/2 m-auto"
       >
-        {{ centerSelectionActive ? 'Cancel' : 'Choose New Center' }}
+        {{ centerSelectionActive ? localizationLabelsByLanguageCode[getSingleLanguageCode].cancelNewCenter : localizationLabelsByLanguageCode[getSingleLanguageCode].chooseNewCenter }}
       </button>
     </div>
   </div>
@@ -111,13 +111,14 @@
           }"
           class="px-4 py-2 shadow transition-colors w-1/5"
         >
-          {{ new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) }}
+          {{ new Date(date).toLocaleDateString( getSingleLanguageCode
+            , { weekday: 'short', month: 'short', day: 'numeric' }) }}
         </button>
         <button
           @click="clearDateSelections"
           class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors w-1/2 show-all-dates"
         >
-          All Dates
+          {{ localizationLabelsByLanguageCode[getSingleLanguageCode].allDatesButton }}
         </button>
       </div>
           <!-- check the selectedDataPoint type and display the appropriate component -->
@@ -801,6 +802,40 @@ const handleLoadLocation = (location) => {
     initializeMap();
   console.log('location loaded: ', location);
 };
+
+const localizationLabelsByLanguageCode = {
+  'en-US': {
+    allDatesButton: 'All Dates',
+    chooseNewCenter: 'Choose New Center',
+    cancel: 'Cancel',
+  },
+  'es-MX': {
+    allDatesButton: 'Todas las fechas',
+    chooseNewCenter: 'Elegir nuevo centro',
+    cancel: 'Cancelar',
+  },
+  'zh-CN': {
+    allDatesButton: '所有日期',
+    chooseNewCenter: '选择新中心',
+    cancel: '取消',
+  },
+  'ht-HT': {
+    allDatesButton: 'Tout dat',
+    chooseNewCenter: 'Chwazi Nouvo Sant',
+    cancel: 'Anile',
+  },
+  'vi-VN': {
+    allDatesButton: 'Tất cả các ngày',
+    chooseNewCenter: 'Chọn Trung tâm Mới',
+    cancel: 'Hủy',
+  },
+  'pt-BR': {
+    allDatesButton: 'Todas as datas',
+    chooseNewCenter: 'Escolher Novo Centro',
+    cancel: 'Cancelar',
+  },
+};
+
 </script>
 
 <style scoped>

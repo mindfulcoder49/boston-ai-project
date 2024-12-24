@@ -34,7 +34,7 @@
           ></textarea>
 
           <button type="submit" class="send-button cursor-pointer  border border-white bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 p-4 mt-4 w-full">
-              Send
+              {{ languageButtonLabels[getSingleLanguageCode].sendText }}
           </button>
       </form>
   </div>
@@ -50,7 +50,7 @@ scrollbar-color: #6b7280 #1f2937;
 </style>
 
 <script setup>
-import { reactive, ref, nextTick, watch } from 'vue';
+import { reactive, ref, nextTick, watch, computed, defineProps } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import markdownit from 'markdown-it';
 import markdownItLinkAttributes from 'markdown-it-link-attributes';
@@ -96,28 +96,22 @@ const suggestedPrompts = ref([
 
 const languageButtonLabels = {
   'en-US': {
-    select: '✓ English',
-    deselect: '✕ English',
+    sendText: 'Send',
   },
   'es-MX': {
-    select: '✓ Español',
-    deselect: '✕ Español',
+    sendText: 'Enviar',
   },
   'zh-CN': {
-    select: '✓ 中文',
-    deselect: '✕ 中文',
+    sendText: '发送',
   },
   'ht-HT': {
-    select: '✓ Kreyòl Ayisyen',
-    deselect: '✕ Kreyòl Ayisyen',
+    sendText: 'Voye',
   },
   'vi-VN': {
-    select: '✓ Tiếng Việt',
-    deselect: '✕ Tiếng Việt',
+    sendText: 'Gửi',
   },
   'pt-BR': {
-    select: '✓ Português',
-    deselect: '✕ Português',
+    sendText: 'Enviar',
   },
 };
 
@@ -180,6 +174,8 @@ const setWelcomeMessage = () => {
   // set the welcome message to the current translation
   welcomeMessage.value = currentTranslation;
 };
+
+const getSingleLanguageCode = computed(() => props.language_codes[0]);
 
 const scrollToBottom = () => {
 nextTick(() => {
