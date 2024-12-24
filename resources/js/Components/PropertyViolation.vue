@@ -32,7 +32,7 @@
   </template>
   
   <script setup>
-  defineProps({
+  props = defineProps({
     data: {
       type: Object,
       required: true,
@@ -192,5 +192,5 @@
     },
   };
   
-  const getSingleLanguageCode = computed(() => language_codes[0]);
+  const getSingleLanguageCode = computed(() => props.language_codes[0]);
   </script>
