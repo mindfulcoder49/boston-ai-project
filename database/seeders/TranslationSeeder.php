@@ -18,10 +18,17 @@ class TranslationSeeder extends Seeder
     public function run()
     {
         $resultsPath = 'batches/batch_results.jsonl';
+        $processedIdsPath = 'batches/processed_ids.json';
 
         if (!Storage::disk('local')->exists($resultsPath)) {
             Log::error("Batch results file not found: {$resultsPath}");
             return;
+        }
+
+        // Load already processed IDs
+        $processedIds = [];
+        if (Storage::disk('local')->exists($processedIdsPath)) {
+            $processedIds = json_decode(Storage::disk('local')->get($processedIdsPath), true) ?? [];
         }
 
         $results = Storage::disk('local')->get($resultsPath);
@@ -47,10 +54,16 @@ class TranslationSeeder extends Seeder
             }
 
             $customId = $result['custom_id'] ?? null;
+
+            // Skip if already processed
+            if (!$customId || in_array($customId, $processedIds)) {
+                continue;
+            }
+
             $toolCalls = $result['response']['body']['choices'][0]['message']['tool_calls'] ?? null;
 
-            if (!$customId || !$toolCalls) {
-                Log::error("Invalid result format, missing custom_id or tool_calls: {$line}");
+            if (!$toolCalls) {
+                Log::error("Invalid result format, missing tool_calls: {$line}");
                 continue;
             }
 
@@ -88,7 +101,7 @@ class TranslationSeeder extends Seeder
                 // Use static methods to get external ID name and value
                 $externalIdName = $modelClass::getExternalIdName();
                 $externalId = $translationData[$externalIdName] ?? null;
-            
+
                 if (!$externalId) {
                     Log::error("Missing external ID for Model {$modelClass}");
                     continue;
@@ -101,35 +114,41 @@ class TranslationSeeder extends Seeder
                     $translationData[$dateField] = $this->parseDate($translationData[$dateField]);
                 }
 
-                // also parse closed_dt if it exists
+                // Parse closed_dt if it exists
                 if (isset($translationData['closed_dt'])) {
                     $translationData['closed_dt'] = $this->parseDate($translationData['closed_dt']);
                 }
-            
+
                 // Add the language code to the data
                 $translationData['language_code'] = $languageCode;
-            
+
                 // Ensure `translationData` only includes fillable attributes
                 $fillableAttributes = array_intersect_key(
                     $translationData,
                     array_flip((new $modelClass)->getFillable())
                 );
-            
+
                 if (empty($fillableAttributes)) {
                     Log::error("No valid attributes for Model {$modelClass}");
                     continue;
                 }
-            
+
                 // Update or insert the translation data
                 $modelClass::updateOrCreate(
                     [$externalIdName => $externalId, 'language_code' => $languageCode],
                     $fillableAttributes
                 );
-            
+
                 Log::info("Inserted/updated translation for Model {$modelClass}, External ID {$externalId}, Language {$languageCode}");
+
+                // Add this custom ID to the processed list
+                $processedIds[] = $customId;
+
+                // Save the processed IDs after every successful operation
+                Storage::disk('local')->put($processedIdsPath, json_encode($processedIds));
             } catch (\Exception $e) {
                 Log::error("Failed to insert/update translation: " . $e->getMessage());
-            }            
+            }
         }
     }
 
@@ -140,7 +159,7 @@ class TranslationSeeder extends Seeder
             'Y年m月d日 H:i:s',    // Chinese format
             'd de F de Y H:i:s',  // Portuguese format
         ];
-    
+
         foreach ($formats as $format) {
             try {
                 $date = Carbon::createFromFormat($format, $dateString);
@@ -148,15 +167,12 @@ class TranslationSeeder extends Seeder
                     return $date->format('Y-m-d H:i:s');
                 }
             } catch (\Exception $e) {
-                // Suppress individual format errors, continue to next format
                 continue;
             }
         }
-    
-        // Log the failure if no format matches
+
         Log::error("Failed to parse date: {$dateString}");
-    
-        return null; // Return null if no formats match
+
+        return null;
     }
-    
 }
