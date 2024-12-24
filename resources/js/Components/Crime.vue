@@ -18,6 +18,9 @@
 </template>
 
 <script setup>
+import { computed, defineProps } from 'vue';
+
+
 const props = defineProps({
   data: {
     type: Object,
@@ -29,7 +32,6 @@ const props = defineProps({
   },
 });
 
-import { computed } from 'vue';
 
 const LabelsByLanguageCode = {
   'en-US': {
