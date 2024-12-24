@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-defineProps({
+props = defineProps({
   data: {
     type: Object,
     required: true,
@@ -96,7 +96,7 @@ const LabelsByLanguageCode = {
   },
 };
 
-const getSingleLanguageCode = computed(() => language_codes[0]);
+const getSingleLanguageCode = computed(() => props.language_codes[0]);
 
 function formatDate(date) {
   return date ? new Date(date).toLocaleString() : 'N/A';
