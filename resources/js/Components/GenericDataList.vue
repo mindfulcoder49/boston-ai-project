@@ -1,16 +1,16 @@
 <template>
   <div className="w-full">
     <!-- Pagination Controls -->
-    <div class="flex justify-between items-center mt-4 mb-4 ">
+    <div class="flex justify-between items-center mt-4 mb-4">
       <button
         @click="prevPage"
         :disabled="currentPage === 1"
         class="p-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 w-1/4 sm:w-1/6 disabled:bg-gray-300"
       >
-        Previous
+        {{ localizedLabels.previousButton }}
       </button>
       <div class="flex items-center">
-        <span class="mr-2">Page</span>
+        <span class="mr-2">{{ localizedLabels.pageLabel }}</span>
         <input
           v-model.number="inputPage"
           @change="goToPage"
@@ -19,20 +19,20 @@
           :max="totalPages"
           class="w-16 p-1 border rounded-md text-center"
         />
-        <span class="ml-2">of {{ totalPages }}</span>
+        <span class="ml-2">{{ localizedLabels.ofLabel }} {{ totalPages }}</span>
       </div>
       <button
         @click="nextPage"
         :disabled="currentPage === totalPages"
         class="p-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 w-1/4 sm:w-1/6 disabled:bg-gray-300"
       >
-        Next
+        {{ localizedLabels.nextButton }}
       </button>
     </div>
 
     <!-- No Results Message -->
     <div v-if="paginatedData.length === 0" class="text-center text-gray-500">
-      No results found
+      {{ localizedLabels.noResultsMessage }}
     </div>
 
     <!-- Data List -->
@@ -50,7 +50,6 @@
             @click="$emit('handle-goto-marker', item)"
             class="p-2 bg-blue-500 text-white hover:bg-blue-600 find-button mb-4 ml-4"
           >
-            <!-- add svg image from imagees/find_on_map.svg -->
             <img src="/images/find_on_map.svg" alt="Find on Map" class="w-10 h-10" />
           </button>
         </div>
@@ -65,6 +64,52 @@ import Crime from "@/Components/Crime.vue";
 import BuildingPermit from "@/Components/BuildingPermit.vue";
 import PropertyViolation from "@/Components/PropertyViolation.vue";
 import OffHours from "@/Components/OffHours.vue";
+
+const localizationLabelsByLanguageCode = {
+  'en-US': {
+    previousButton: 'Previous',
+    nextButton: 'Next',
+    noResultsMessage: 'No results found',
+    pageLabel: 'Page',
+    ofLabel: 'of',
+  },
+  'es-MX': {
+    previousButton: 'Anterior',
+    nextButton: 'Siguiente',
+    noResultsMessage: 'No se encontraron resultados',
+    pageLabel: 'Página',
+    ofLabel: 'de',
+  },
+  'zh-CN': {
+    previousButton: '上一页',
+    nextButton: '下一页',
+    noResultsMessage: '未找到结果',
+    pageLabel: '页',
+    ofLabel: '的',
+  },
+  'ht-HT': {
+    previousButton: 'Anvan',
+    nextButton: 'Pwochen',
+    noResultsMessage: 'Pa gen rezilta jwenn',
+    pageLabel: 'Paj',
+    ofLabel: 'nan',
+  },
+  'vi-VN': {
+    previousButton: 'Trước',
+    nextButton: 'Kế tiếp',
+    noResultsMessage: 'Không tìm thấy kết quả',
+    pageLabel: 'Trang',
+    ofLabel: 'của',
+  },
+  'pt-BR': {
+    previousButton: 'Anterior',
+    nextButton: 'Próximo',
+    noResultsMessage: 'Nenhum resultado encontrado',
+    pageLabel: 'Página',
+    ofLabel: 'de',
+  },
+};
+
 
 export default {
   name: "GenericDataList",
@@ -93,37 +138,20 @@ export default {
     return {
       currentPage: 1,
       inputPage: 1,
-      sortKey: "date", // Default sort by date
-      sortOrder: "desc", // Default to descending order
     };
   },
   computed: {
+    localizedLabels() {
+      const languageCode = this.language_codes[0] || "en-US";
+      return localizationLabelsByLanguageCode[languageCode] || localizationLabelsByLanguageCode["en-US"];
+    },
     totalPages() {
       return Math.ceil(this.totalData.length / this.itemsPerPage);
-    },
-    sortedData() {
-      return [...this.totalData].sort((a, b) => {
-        let result = 0;
-        if (a[this.sortKey] < b[this.sortKey]) {
-          result = -1;
-        } else if (a[this.sortKey] > b[this.sortKey]) {
-          result = 1;
-        }
-        return this.sortOrder === "asc" ? result : -result;
-      });
     },
     paginatedData() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
-      return this.sortedData.slice(start, end);
-    },
-    getSingleLanguageCode() {
-      return this.language_codes[0];
-    },
-  },
-  watch: {
-    currentPage(newPage) {
-      this.inputPage = newPage;
+      return this.totalData.slice(start, end);
     },
   },
   methods: {
@@ -142,16 +170,6 @@ export default {
         this.currentPage = this.inputPage;
       } else {
         this.inputPage = this.currentPage;
-      }
-    },
-    sortBy(key) {
-      if (this.sortKey === key) {
-        // If the same column is clicked, toggle the sort order
-        this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
-      } else {
-        // If a new column is clicked, set it as the sort key and default to descending order
-        this.sortKey = key;
-        this.sortOrder = "desc";
       }
     },
   },
