@@ -55,7 +55,7 @@
         @click="toggleCenterSelection"
         class="px-4 py-2 text-white bg-blue-500  shadow-lg disabled:bg-gray-400 hover:bg-blue-600 transition-colors w-1/2 m-auto"
       >
-        {{ centerSelectionActive ? localizationLabelsByLanguageCode[getSingleLanguageCode].cancelNewCenter : localizationLabelsByLanguageCode[getSingleLanguageCode].chooseNewCenter }}
+        {{ centerSelectionActive ? localizationLabelsByLanguageCode[getSingleLanguageCode].cancelText : localizationLabelsByLanguageCode[getSingleLanguageCode].chooseNewCenter }}
       </button>
     </div>
   </div>
@@ -807,32 +807,32 @@ const localizationLabelsByLanguageCode = {
   'en-US': {
     allDatesButton: 'All Dates',
     chooseNewCenter: 'Choose New Center',
-    cancel: 'Cancel',
+    cancelText: 'Cancel',
   },
   'es-MX': {
     allDatesButton: 'Todas las fechas',
     chooseNewCenter: 'Elegir nuevo centro',
-    cancel: 'Cancelar',
+    cancelText: 'Cancelar',
   },
   'zh-CN': {
     allDatesButton: '所有日期',
     chooseNewCenter: '选择新中心',
-    cancel: '取消',
+    cancelText: '取消',
   },
   'ht-HT': {
     allDatesButton: 'Tout dat',
     chooseNewCenter: 'Chwazi Nouvo Sant',
-    cancel: 'Anile',
+    cancelText: 'Anile',
   },
   'vi-VN': {
     allDatesButton: 'Tất cả các ngày',
     chooseNewCenter: 'Chọn Trung tâm Mới',
-    cancel: 'Hủy',
+    cancelText: 'Hủy',
   },
   'pt-BR': {
     allDatesButton: 'Todas as datas',
     chooseNewCenter: 'Escolher Novo Centro',
-    cancel: 'Cancelar',
+    cancelText: 'Cancelar',
   },
 };
 
