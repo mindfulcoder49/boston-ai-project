@@ -6,7 +6,7 @@
 
     <div class="before-map">
     <!-- Page Title -->
-    <h1 class="text-2xl font-bold text-gray-800 text-center my-4">{{ LabelsByLanguageCode[getSingleLanguageCode]?.pageTitle }}</h1>
+    <h1 class="text-2xl font-bold text-gray-800 text-center my-4">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.pageTitle }}</h1>
 
     <!--Language buttons navbar to include or remove lanagueg codes from the array          $languageCodes = [
             'es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR',
@@ -55,7 +55,7 @@
         @click="toggleCenterSelection"
         class="px-4 py-2 text-white bg-blue-500  shadow-lg disabled:bg-gray-400 hover:bg-blue-600 transition-colors w-1/2 m-auto"
       >
-        {{ centerSelectionActive ? localizationLabelsByLanguageCode[getSingleLanguageCode].cancelText : localizationLabelsByLanguageCode[getSingleLanguageCode].chooseNewCenter }}
+        {{ centerSelectionActive ? translations.localizationLabelsByLanguageCode[getSingleLanguageCode].cancelText : translations.localizationLabelsByLanguageCode[getSingleLanguageCode].chooseNewCenter }}
       </button>
     </div>
   </div>
@@ -118,7 +118,7 @@
           @click="clearDateSelections"
           class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors w-1/2 show-all-dates"
         >
-          {{ localizationLabelsByLanguageCode[getSingleLanguageCode].allDatesButton }}
+          {{ translations.localizationLabelsByLanguageCode[getSingleLanguageCode].allDatesButton }}
         </button>
       </div>
           <!-- check the selectedDataPoint type and display the appropriate component -->
@@ -153,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick, markRaw } from 'vue';
+import { ref, computed, onMounted, watch, nextTick, markRaw, inject } from 'vue';
 import axios from 'axios';
 import PageTemplate from '@/Components/PageTemplate.vue';
 import AiAssistant from '@/Components/AiAssistant.vue';
@@ -210,6 +210,8 @@ const page = usePage();
 const isAuthenticated = page.props.auth.user;
 
 const language_codes = ref(['en-US']);
+
+const translations = inject('translations');
 
 const LabelsByLanguageCode = {
   'en-US': {
@@ -556,7 +558,7 @@ const dataTypeMapByLanguageCode = {
     'Property Violation': 'Violação de Prop',
     'Construction Off Hour': 'Constr Fora'
   },
-};
+}; 
 
 const getDataTypeTranslation = (type) => {
   return dataTypeMapByLanguageCode[language_codes.value[0]][type];
