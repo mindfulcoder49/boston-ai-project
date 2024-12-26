@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 class CreateTranslationBatch extends Command
 {
     protected $signature = 'batch:create-translation-batch';
-    protected $description = 'Prepare batch translation requests with function calls and save to file.';
+    protected $description = 'Prepare batch translation requests with function calls and save to file incrementally.';
 
     public function handle()
     {
@@ -25,12 +25,24 @@ class CreateTranslationBatch extends Command
             'es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR',
         ];
 
-        $batchRequests = [];
         $chunkSize = 100; // Process records in chunks of 100
+        $filePath = 'batches/translation_requests_with_functions.jsonl';
+
+        // Create or clear the file before appending data
+        Storage::disk('local')->put($filePath, '');
 
         foreach ($models as $modelClass) {
-            $modelClass::where('language_code', 'en-US')->chunk($chunkSize, function ($instances) use ($modelClass, $languageCodes, &$batchRequests) {
+            $modelClass::where('language_code', 'en-US')->chunk($chunkSize, function ($instances) use ($modelClass, $languageCodes, $filePath) {
+                $batchData = '';
+
                 foreach ($instances as $instance) {
+                    $entryDate = Carbon::parse($instance->getDate());
+
+                    // Skip records older than 14 days
+                    if ($entryDate->lt(Carbon::now()->subDays(14))) {
+                        continue;
+                    }
+
                     $fillableFields = $instance->getFillable();
                     $fieldsToTranslate = array_combine(
                         $fillableFields,
@@ -50,7 +62,7 @@ class CreateTranslationBatch extends Command
 
                     foreach ($missingLanguages as $languageCode) {
                         Log::info("Adding translation request for {$modelClass} with {$externalIdName} {$externalId} to {$languageCode}.");
-                        $batchRequests[] = [
+                        $batchData .= json_encode([
                             "custom_id" => "{$modelClass}_{$instance->id}_{$languageCode}",
                             "method" => "POST",
                             "url" => "/v1/chat/completions",
@@ -76,15 +88,17 @@ class CreateTranslationBatch extends Command
                                     ],
                                 ]],
                             ],
-                        ];
+                        ]) . "\n";
                     }
+                }
+
+                // Write batch data to the file incrementally
+                if (!empty($batchData)) {
+                    Storage::disk('local')->append($filePath, $batchData);
                 }
             });
         }
 
-        $filePath = 'batches/translation_requests_with_functions.jsonl';
-        Storage::disk('local')->put($filePath, collect($batchRequests)->map(fn($r) => json_encode($r))->implode("\n"));
-
-        $this->info("Batch file with function calls created: {$filePath}");
+        $this->info("Batch file with function calls created incrementally: {$filePath}");
     }
 }
