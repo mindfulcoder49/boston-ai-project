@@ -127,7 +127,7 @@ class TransformTranslationsCommand extends Command
         }
 
         // Extract the model class and external ID
-        if (preg_match('(\w+)_\d+_(\w+-\w+)/', $result['custom_id'], $matches)) {
+        if (preg_match('/(\w+)_\d+_(\w+-\w+)/', $result['custom_id'], $matches)) {
             [$fullId, $modelName, $languageCode] = $matches;
             $modelClass = "App\\Models\\{$modelName}";
 
