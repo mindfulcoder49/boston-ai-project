@@ -22,7 +22,7 @@ class CreateTranslationBatch extends Command
         ];
 
         $languageCodes = [
-            'es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR',
+            'es-MX', /* 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR', */
         ];
 
         $filePath = 'batches/translation_requests_with_functions.jsonl';
