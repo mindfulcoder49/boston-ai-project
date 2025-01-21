@@ -412,9 +412,11 @@ const getDates = () => {
 const fetchData = async () => {
   try {
     mapLoading.value = true;
+    // set language_codes here to en-US for all languages except for es-MX
+    const requestLanguageCodes = language_codes.value.map((code) => (code === 'es-MX' ? code : 'en-US'));
     const response = await axios.post('/api/map-data', {
       centralLocation: centralLocation.value,
-      language_codes: language_codes.value,
+      language_codes: requestLanguageCodes,
     }, {
       headers: {
         'X-CSRF-TOKEN': csrfToken,
