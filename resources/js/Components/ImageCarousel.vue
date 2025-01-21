@@ -186,7 +186,6 @@ watch(
 .carousel-slide {
     flex: 0 0 calc(100% / 3); /* Three slides per row */
     scroll-snap-align: start;
-    padding: 10px;
     cursor: pointer;
      position: relative;
     height: auto;
@@ -215,7 +214,6 @@ watch(
       width: 100%;
     height: 100%;
     object-fit: cover; /* or contain depending on desired look */
-    border-radius: 8px;
      aspect-ratio: 1/1;
 }
 

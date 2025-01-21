@@ -1,6 +1,6 @@
 <template>
   <div class="boston-map">
-    <div id="map" class="h-[70vh] mb-6 rounded-lg shadow-lg"></div>
+    <div id="map" class="h-full mb-6 rounded-lg shadow-lg"></div>
   </div>
 </template>
 
