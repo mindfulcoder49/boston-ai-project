@@ -65,7 +65,7 @@
       
 
     <div class="boston-map" :class="{ 'map-loading': mapLoading }">
-      <div id="map" class="h-[70vh]"></div>
+      <div id="map" class="h-full"></div>
     </div>
 
           <!-- Filter Buttons -->
