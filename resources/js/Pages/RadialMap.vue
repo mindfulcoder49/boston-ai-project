@@ -433,7 +433,7 @@ const fetchData = async () => {
     }
     setTimeout(() => {
       initialMap.value.invalidateSize();
-    }, 10);
+    }, 100);
     mapLoading.value = false;
 
 
@@ -630,6 +630,7 @@ const initializeMap = ( center = null) => {
       }
 
       const zoom = initialMap.value.getZoom();
+      initialMap.value.invalidateSize();
 
       // Icon size calculation
       const minSize = 2; // Icon size at minZoom
