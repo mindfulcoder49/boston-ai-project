@@ -72,7 +72,7 @@ class GenericMapController extends Controller
 
         $boundingBox = $this->getBoundingBox($centralLocation['latitude'], $centralLocation['longitude'], $radius);
 
-        /*
+        
         $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $crimeDays, $language_codes));
         Log::info('Crime data fetched.', ['crimeDataCount' => $crimeData->count()]);
 
@@ -90,8 +90,8 @@ class GenericMapController extends Controller
 
         $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits)->merge($propertyViolations)->merge($offHours);
         Log::info('Data points merged.', ['totalDataPointsCount' => $dataPoints->count()]);
-        */
-
+        
+        /*
         $crimeDataJson = $this->generateJsonObjectFromModel(CrimeData::class);
         $threeOneOneJson = $this->generateJsonObjectFromModel(ThreeOneOneCase::class);
         $buildingPermitJson = $this->generateJsonObjectFromModel(BuildingPermit::class);
@@ -169,7 +169,7 @@ class GenericMapController extends Controller
     ->get();
     
 
-
+        */
 
         return response()->json([
             'dataPoints' => $dataPoints,
