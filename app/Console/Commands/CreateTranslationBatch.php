@@ -133,10 +133,10 @@ class CreateTranslationBatch extends Command
 
                 }
 
+                /* Fix for BAP-16 */
                 if (!empty($batchData)) {
-                    Storage::disk('local')->append($filePath, $batchData);
+                    Storage::disk('local')->append($filePath, rtrim($batchData, "\n"));
                     Log::info("Batch data appended for {$modelName} on {$dateString}.");
-
                 } else {
                      Log::info("No batch data to append for {$modelName} on {$dateString}.");
                 }
