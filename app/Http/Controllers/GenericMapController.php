@@ -12,9 +12,24 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class GenericMapController extends Controller
 {
+
+    public function generateJsonObjectFromModel($modelClass)
+    {
+        $fillable = (new $modelClass)->getFillable();
+    
+        // Escape reserved keywords with backticks for MySQL
+        $jsonObject = implode(', ', array_map(function ($field) {
+            $escapedField = "`$field`"; // Add backticks around the field name
+            return "'$field', $escapedField";
+        }, $fillable));
+    
+        return "JSON_OBJECT($jsonObject)";
+    }
+
     public function getRadialMapData(Request $request)
     {
         $defaultLatitude = 42.3601;
@@ -48,6 +63,7 @@ class GenericMapController extends Controller
         Log::info('Language codes to include.', ['language_codes' => $language_codes]);
 
         $radius = $request->input('radius', .25);
+        $days = 14;
         $crimeDays = 14;
         $caseDays = 14;
         $permitDays = 14;
@@ -56,6 +72,7 @@ class GenericMapController extends Controller
 
         $boundingBox = $this->getBoundingBox($centralLocation['latitude'], $centralLocation['longitude'], $radius);
 
+        /*
         $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $crimeDays, $language_codes));
         Log::info('Crime data fetched.', ['crimeDataCount' => $crimeData->count()]);
 
@@ -73,7 +90,84 @@ class GenericMapController extends Controller
 
         $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits)->merge($propertyViolations)->merge($offHours);
         Log::info('Data points merged.', ['totalDataPointsCount' => $dataPoints->count()]);
+        */
 
+        $crimeDataJson = $this->generateJsonObjectFromModel(CrimeData::class);
+        $threeOneOneJson = $this->generateJsonObjectFromModel(ThreeOneOneCase::class);
+        $buildingPermitJson = $this->generateJsonObjectFromModel(BuildingPermit::class);
+        $propertyViolationsJson = $this->generateJsonObjectFromModel(PropertyViolation::class);
+        $constructionOffHoursJson = $this->generateJsonObjectFromModel(ConstructionOffHour::class);
+ 
+
+        $dataPoints = DB::table('crime_data')
+    ->select(
+        'lat as latitude',
+        'long as longitude',
+        'occurred_on_date as date',
+        DB::raw("'Crime' as type"),
+        DB::raw("$crimeDataJson as info")
+    )
+    ->whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
+    ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
+    ->where('occurred_on_date', '>=', Carbon::now()->subDays($days)->toDateString())
+
+    ->union(
+        DB::table('three_one_one_cases')
+            ->select(
+                'latitude',
+                'longitude',
+                'open_dt as date',
+                DB::raw("'311 Case' as type"),
+                DB::raw("$threeOneOneJson as info")
+            )
+            ->whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+            ->where('open_dt', '>=', Carbon::now()->subDays($days)->toDateString())
+    )
+
+    ->union(
+        DB::table('building_permits')
+            ->select(
+                'y_latitude as latitude',
+                'x_longitude as longitude',
+                'issued_date as date',
+                DB::raw("'Building Permit' as type"),
+                DB::raw("$buildingPermitJson as info")
+            )
+            ->whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+            ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+            ->where('issued_date', '>=', Carbon::now()->subDays($days)->toDateString())
+    )
+
+    ->union(
+        DB::table('property_violations')
+            ->select(
+                'latitude',
+                'longitude',
+                'status_dttm as date',
+                DB::raw("'Property Violation' as type"),
+                DB::raw("$propertyViolationsJson as info")
+            )
+            ->whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+            ->where('status_dttm', '>=', Carbon::now()->subDays($days)->toDateString())
+    )
+
+    ->union(
+        DB::table('construction_off_hours')
+            ->select(
+                'latitude',
+                'longitude',
+                'start_datetime as date',
+                DB::raw("'Construction Off Hour' as type"),
+                DB::raw("$constructionOffHoursJson as info")
+            )
+            ->whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
+            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
+            ->where('start_datetime', '>=', Carbon::now()->subDays($days)->toDateString())
+    )
+    ->get();
+    
 
 
 
