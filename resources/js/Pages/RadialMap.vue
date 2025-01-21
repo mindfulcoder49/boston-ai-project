@@ -842,7 +842,6 @@ const localizationLabelsByLanguageCode = {
 
 <style scoped>
 #map {
-  height: 70vh;
 }
 
 .boston-map {
@@ -863,10 +862,11 @@ const localizationLabelsByLanguageCode = {
   border-radius: 50%;
 }
 
+
 /* on screens bigger than 768 px, make the map 600px wide, and flow everything else to the right */
 @media (min-width: 768px) {
   #map {
-  height: 100vh;
+  height: auto;
 }
 
 .boston-map {
