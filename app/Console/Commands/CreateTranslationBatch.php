@@ -25,8 +25,8 @@ class CreateTranslationBatch extends Command
             'es-MX', /* 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR', */
         ];
 
-        $filePath = 'batches/translation_requests_with_functions.jsonl';
-        Storage::disk('local')->put($filePath, ''); // Create/clear the file
+        $dateToday = Carbon::now()->toDateString();
+        $filePath = 'batches/translation_requests_with_functions_' . $dateToday . '.jsonl';
 
         $startDate = Carbon::now()->subDays(14)->startOfDay();
         $endDate = Carbon::now()->endOfDay();
@@ -135,8 +135,14 @@ class CreateTranslationBatch extends Command
 
                 /* Fix for BAP-16 */
                 if (!empty($batchData)) {
-                    Storage::disk('local')->append($filePath, rtrim($batchData, "\n"));
-                    Log::info("Batch data appended for {$modelName} on {$dateString}.");
+                    //if filePath does not exist, put the batchData in the file
+                    if (!Storage::disk('local')->exists($filePath)) {
+                        Storage::disk('local')->put($filePath, $batchData);
+                        Log::info("Batch data created for {$modelName} on {$dateString}.");
+                    } else {
+                        Storage::disk('local')->append($filePath, rtrim($batchData, "\n"));
+                        Log::info("Batch data appended for {$modelName} on {$dateString}.");
+                    }
                 } else {
                      Log::info("No batch data to append for {$modelName} on {$dateString}.");
                 }
