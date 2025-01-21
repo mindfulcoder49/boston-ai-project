@@ -847,7 +847,6 @@ const localizationLabelsByLanguageCode = {
 
 .boston-map {
   height: auto; /* Let the container grow with its content */
-  max-height: 70vh;
   overflow: hidden;
 }
 
@@ -872,7 +871,6 @@ const localizationLabelsByLanguageCode = {
 
 .boston-map {
   height: auto; /* Let the container grow with its content */
-  max-height: 100vh;
   overflow: hidden;
 }
 
