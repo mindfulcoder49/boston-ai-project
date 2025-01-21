@@ -20,6 +20,7 @@ class UploadAndExecuteBatchFile extends Command
             return strpos($file, 'translation_requests_with_functions') !== false;
         });
         $filePath = end($files);
+        $this->info("Processing file: " . $filePath);
 
         if (!Storage::disk('local')->exists($filePath)) {
             $this->error("Batch file does not exist: {$filePath}");
