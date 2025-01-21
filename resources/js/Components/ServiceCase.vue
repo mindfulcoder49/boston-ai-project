@@ -1,7 +1,7 @@
 <template>
     <div
       v-if="data"
-      class="p-4 bg-gray-100 rounded-lg flex w-full"
+      class="p-4 bg-gray-100 flex w-full h-full"
       :class="{ 'w-1/2': hasPhoto }"
     >
       <div class="case-info">

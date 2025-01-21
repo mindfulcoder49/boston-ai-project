@@ -426,7 +426,9 @@ const fetchData = async () => {
     if (allDataPoints.value.length > 0) {
       selectedDataPoint.value = allDataPoints.value[0];
     }
-    initialMap.value.invalidateSize();
+    setTimeout(() => {
+      initialMap.value.invalidateSize();
+    }, 10);
     mapLoading.value = false;
 
 
