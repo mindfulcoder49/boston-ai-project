@@ -13,14 +13,13 @@ class UploadAndExecuteBatchFile extends Command
 
     public function handle()
     {
-        $folderPath = 'batches';
-        //get latest file that begins with 'translation_requests_with_functions_'
-        $latestFile = collect(Storage::disk('local')->files($folderPath))
-            ->filter(fn($file) => strpos($file, 'translation_requests_with_functions_') === 0)
-            ->sort()
-            ->last();
-
-        $filePath = $latestFile;
+        //get list of all files in the batches folder in the storage directory
+        $files = Storage::disk('local')->files('batches');
+        //get the files that have translation_requests_with_functions in the file name
+        $files = array_filter($files, function ($file) {
+            return strpos($file, 'translation_requests_with_functions') !== false;
+        });
+        $filePath = end($files);
 
         if (!Storage::disk('local')->exists($filePath)) {
             $this->error("Batch file does not exist: {$filePath}");
