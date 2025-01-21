@@ -13,7 +13,7 @@ class UploadAndExecuteBatchFile extends Command
 
     public function handle()
     {
-        $folderPath = 'batches/';
+        $folderPath = 'batches';
         //get latest file that begins with 'translation_requests_with_functions_'
         $latestFile = collect(Storage::disk('local')->files($folderPath))
             ->filter(fn($file) => strpos($file, 'translation_requests_with_functions_') === 0)
@@ -21,7 +21,7 @@ class UploadAndExecuteBatchFile extends Command
             ->last();
 
         $filePath = $latestFile;
-        
+
         if (!Storage::disk('local')->exists($filePath)) {
             $this->error("Batch file does not exist: {$filePath}");
             return;
