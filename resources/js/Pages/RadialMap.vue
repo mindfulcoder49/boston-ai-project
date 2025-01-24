@@ -259,7 +259,7 @@ const toggleLanguageCode = (code) => {
     //make it the only language code
     language_codes.value = [code];
     //only fetch data if the code is english or spanish
-    if (code === 'en-US' || code === 'es-MX') {
+    if (code === 'en-US') {
       fetchData();
     }
   }
@@ -413,7 +413,10 @@ const fetchData = async () => {
   try {
     mapLoading.value = true;
     // set language_codes here to en-US for all languages except for es-MX
-    const requestLanguageCodes = language_codes.value.map((code) => (code === 'es-MX' ? code : 'en-US'));
+    // actually we are hardcoding the language codes to en-US for now
+    //const requestLanguageCodes = language_codes.value.map((code) => (code === 'es-MX' ? code : 'en-US'));
+
+    const requestLanguageCodes = ['en-US'];
     const response = await axios.post('/api/map-data', {
       centralLocation: centralLocation.value,
       language_codes: requestLanguageCodes,
