@@ -260,7 +260,7 @@ const toggleLanguageCode = (code) => {
     language_codes.value = [code];
     //only fetch data if the code is english or spanish
     if (code === 'en-US') {
-      fetchData();
+      //fetchData();
     }
   }
 };
