@@ -924,4 +924,14 @@ const localizationLabelsByLanguageCode = {
     width: 50%;
   }
 }
+
+@media (max-width: 768px) {
+  #map {
+  height: 100%;
+  }
+
+  .boston-map {
+    height: 70vh;
+  }
+}
 </style>
