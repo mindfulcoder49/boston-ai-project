@@ -4,29 +4,29 @@
         {{ LabelsByLanguageCode[getSingleLanguageCode].propertyViolationTitle }}
       </h2>
       <p class="text-gray-700 mb-4">
-        <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.date).toLocaleString() }}
+        <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.alcivartech_date).toLocaleString() }}
       </p>
       <ul class="space-y-2">
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].caseNumber }}:</strong> {{ data.info.case_no }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].caseDefinitionKey }}:</strong> {{ data.info.ap_case_defn_key }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.info.status }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].code }}:</strong> {{ data.info.code }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].value }}:</strong> {{ data.info.value }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].description }}:</strong> {{ data.info.description }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationStreetNumber }}:</strong> {{ data.info.violation_stno }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationStreetHigh }}:</strong> {{ data.info.violation_sthigh }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationStreet }}:</strong> {{ data.info.violation_street }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationSuffix }}:</strong> {{ data.info.violation_suffix }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationCity }}:</strong> {{ data.info.violation_city }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationState }}:</strong> {{ data.info.violation_state }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationZip }}:</strong> {{ data.info.violation_zip }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].ward }}:</strong> {{ data.info.ward }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactAddress1 }}:</strong> {{ data.info.contact_addr1 }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactAddress2 }}:</strong> {{ data.info.contact_addr2 }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactCity }}:</strong> {{ data.info.contact_city }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactState }}:</strong> {{ data.info.contact_state }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactZip }}:</strong> {{ data.info.contact_zip }}</li>
-        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].samId }}:</strong> {{ data.info.sam_id }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].caseNumber }}:</strong> {{ data.case_no }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].caseDefinitionKey }}:</strong> {{ data.ap_case_defn_key }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.status }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].code }}:</strong> {{ data.code }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].value }}:</strong> {{ data.value }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].description }}:</strong> {{ data.description }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationStreetNumber }}:</strong> {{ data.violation_stno }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationStreetHigh }}:</strong> {{ data.violation_sthigh }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationStreet }}:</strong> {{ data.violation_street }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationSuffix }}:</strong> {{ data.violation_suffix }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationCity }}:</strong> {{ data.violation_city }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationState }}:</strong> {{ data.violation_state }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationZip }}:</strong> {{ data.violation_zip }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].ward }}:</strong> {{ data.ward }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactAddress1 }}:</strong> {{ data.contact_addr1 }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactAddress2 }}:</strong> {{ data.contact_addr2 }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactCity }}:</strong> {{ data.contact_city }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactState }}:</strong> {{ data.contact_state }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].contactZip }}:</strong> {{ data.contact_zip }}</li>
+        <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].samId }}:</strong> {{ data.sam_id }}</li>
       </ul>
     </div>
   </template>

@@ -4,15 +4,15 @@
       {{ LabelsByLanguageCode[getSingleLanguageCode].crimeReportTitle }}
     </h2>
     <p class="text-gray-700 mb-4">
-      <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.date).toLocaleString() }}
+      <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.alcivartech_date).toLocaleString() }}
     </p>
     <ul class="space-y-2">
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].incidentNumber }}:</strong> {{ data.info.incident_number }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].offense }}:</strong> {{ data.info.offense_description }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].district }}:</strong> {{ data.info.district }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].street }}:</strong> {{ data.info.street }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].day }}:</strong> {{ data.info.day_of_week }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].time }}:</strong> {{ formatTime(data.info.hour) }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].incidentNumber }}:</strong> {{ data.incident_number }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].offense }}:</strong> {{ data.offense_description }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].district }}:</strong> {{ data.district }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].street }}:</strong> {{ data.street }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].day }}:</strong> {{ data.day_of_week }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].time }}:</strong> {{ formatTime(data.hour) }}</li>
     </ul>
   </div>
 </template>

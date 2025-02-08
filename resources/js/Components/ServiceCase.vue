@@ -9,19 +9,19 @@
           {{ LabelsByLanguageCode[getSingleLanguageCode].caseTitle }}
         </h2>
         <p class="text-gray-700 mb-4">
-          <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.date).toLocaleString() }}
+          <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.alcivartech_date).toLocaleString() }}
         </p>
         <ul class="space-y-2">
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].caseId }}:</strong> {{ data.info.case_enquiry_id }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.info.case_status }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].title }}:</strong> {{ data.info.case_title }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].reason }}:</strong> {{ data.info.reason }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].subject }}:</strong> {{ data.info.subject }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].location }}:</strong> {{ data.info.location }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].neighborhood }}:</strong> {{ data.info.neighborhood }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].source }}:</strong> {{ data.info.source }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].department }}:</strong> {{ data.info.department }}</li>
-          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].closureDate }}:</strong> {{ formatDate(data.info.closed_dt) }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].caseId }}:</strong> {{ data.case_enquiry_id }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.case_status }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].title }}:</strong> {{ data.case_title }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].reason }}:</strong> {{ data.reason }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].subject }}:</strong> {{ data.subject }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].location }}:</strong> {{ data.location }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].neighborhood }}:</strong> {{ data.neighborhood }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].source }}:</strong> {{ data.source }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].department }}:</strong> {{ data.department }}</li>
+          <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].closureDate }}:</strong> {{ formatDate(data.closed_dt) }}</li>
         </ul>
       </div>
   
@@ -139,20 +139,20 @@
   
   const parsedPhotos = computed(() => {
     const photos = [];
-    if (props.data.info?.closed_photo) {
-      props.data.info.closed_photo.split('|').forEach(photoUrl => {
+    if (props.data?.closed_photo) {
+      props.data.closed_photo.split('|').forEach(photoUrl => {
         photos.push({ info: { closed_photo: photoUrl, type: '311 Case' } });
       });
     }
-    if (props.data.info?.submitted_photo) {
-      props.data.info.submitted_photo.split('|').forEach(photoUrl => {
+    if (props.data?.submitted_photo) {
+      props.data.submitted_photo.split('|').forEach(photoUrl => {
         photos.push({ info: { submitted_photo: photoUrl, type: '311 Case' } });
       });
     }
     return photos;
   });
   
-  const hasPhoto = computed(() => props.data.info?.closed_photo || props.data.info?.submitted_photo);
+  const hasPhoto = computed(() => props.data?.closed_photo || props.data?.submitted_photo);
   const emit = defineEmits(['on-image-click']);
   const onImageClick = (photo) => {
     emit('on-image-click', photo);

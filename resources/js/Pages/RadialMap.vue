@@ -136,11 +136,11 @@
 
      <div class="case-details">
 
-    <ServiceCase v-if="selectedDataPoint && selectedDataPoint.type === '311 Case'" :data="selectedDataPoint" :language_codes="language_codes" />
-    <Crime v-if="selectedDataPoint && selectedDataPoint.type === 'Crime'" :data="selectedDataPoint" :language_codes="language_codes" />
-    <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.type === 'Building Permit'" :data="selectedDataPoint" :language_codes="language_codes" />
-    <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.type === 'Property Violation'" :data="selectedDataPoint" :language_codes="language_codes" />
-    <OffHours v-if="selectedDataPoint && selectedDataPoint.type === 'Construction Off Hour'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <ServiceCase v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === '311 Case'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <Crime v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Crime'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Building Permit'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Property Violation'" :data="selectedDataPoint" :language_codes="language_codes" />
+    <OffHours v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Construction Off Hour'" :data="selectedDataPoint" :language_codes="language_codes" />
     </div>
 
       <!-- AiAssistant Component -->
@@ -296,7 +296,7 @@ const languageButtonLabels = {
 // Define the icons for different types of markers
 const getDivIcon = (dataPoint) => {
   let className = 'default-div-icon'; // Fallback class
-  let type = dataPoint.type;
+  let type = dataPoint.alcivartech_type;
   let backgroundImage = '';
 
   switch (type) {
@@ -321,24 +321,24 @@ const getDivIcon = (dataPoint) => {
 
   if (type === "311 Case") {
     // Add classes and set the background image if photos are present
-    if (dataPoint.info?.submitted_photo) {
+    if (dataPoint?.submitted_photo) {
       //get the first valid URL, there may be multiple separated by " | "
-      const photoURL = dataPoint.info.submitted_photo.split(' | ')[0];
+      const photoURL = dataPoint.submitted_photo.split(' | ')[0];
 
       className += ' submitted-photo';
       backgroundImage = `background-image: url(${photoURL});`;
     }
-    if (dataPoint.info?.closed_photo) {
-      const photoURL = dataPoint.info.closed_photo.split(' | ')[0];
+    if (dataPoint?.closed_photo) {
+      const photoURL = dataPoint.closed_photo.split(' | ')[0];
       className += ' closed-photo';
       backgroundImage = `background-image: url(${photoURL});`;
     }
-    if (!dataPoint.info?.submitted_photo && !dataPoint.info?.closed_photo) {
+    if (!dataPoint?.submitted_photo && !dataPoint?.closed_photo) {
       className += ' no-photo';
     }
   }
 
-  className += ' id'+ dataPoint.info?.id; // Add the base class
+  className += ' id'+ dataPoint?.id; // Add the base class
 
   return L.divIcon({
     className,
@@ -447,7 +447,7 @@ const fetchData = async () => {
 };
 
 const updateDateRange = () => {
-  const dates = allDataPoints.value.map((point) => new Date(point.date));
+  const dates = allDataPoints.value.map((point) => new Date(point.alcivartech_date));
   minDate.value = new Date(Math.min(...dates)).toISOString().split('T')[0];
   maxDate.value = new Date(Math.max(...dates)).toISOString().split('T')[0];
 
@@ -456,8 +456,8 @@ const updateDateRange = () => {
 const populateFilters = () => {
   //filters.value = {};
   allDataPoints.value.forEach((dataPoint) => {
-    if (filters.value[dataPoint.type] === undefined) {
-      filters.value[dataPoint.type] = true;
+    if (filters.value[dataPoint.alcivartech_type] === undefined) {
+      filters.value[dataPoint.alcivartech_type] = true;
     }
   });
 };
@@ -508,17 +508,17 @@ const applyFilters = () => {
 
   // If no dates are selected, show all data points based on type filter
   if (selectedDates.value.length === 0) {
-      dataPoints.value = allDataPoints.value.filter(point => filters.value[point.type]);
+      dataPoints.value = allDataPoints.value.filter(point => filters.value[point.alcivartech_type]);
   } else {
     const filteredByDate = allDataPoints.value.filter(point => {
       // Convert point.date to YYYY-MM-DD format
-       const pointDate = new Date(point.date).toISOString().split('T')[0]
+       const pointDate = new Date(point.alcivartech_date).toISOString().split('T')[0]
 
         //check if the current dataPoint is included in the list of selectedDates
       return selectedDates.value.includes(pointDate);
     });
     // Filter by type in addition to the dates selected
-    dataPoints.value = filteredByDate.filter(point => filters.value[point.type]);
+    dataPoints.value = filteredByDate.filter(point => filters.value[point.alcivartech_type]);
   }
   
     if (initialMap.value) {
@@ -709,14 +709,15 @@ const updateMarkers = (dataPoints) => {
 
   // Add new markers with DivIcons
   dataPoints.forEach((dataPoint) => {
+    console.log('dataPoint', dataPoint);
     if (dataPoint.latitude && dataPoint.longitude) {
       //display date in popup like Nov 1, 2021 12:00:00 AM, and then display more details below
-      //get date from dataPoint.date and convert to string
+      //get date from dataPoint.alcivartech_date and convert to string
       const popupContentStart = `
-            <div><strong>${new Date(dataPoint.date).toLocaleString()}</strong>
+            <div><strong>${new Date(dataPoint.alcivartech_date).toLocaleString()}</strong>
         `;
 
-      // Add more details to the popup depending on dataPoint.type
+      // Add more details to the popup depending on dataPoint.alcivartech_type
       // for Crime, 311 Case, and Building Permit
       // crime - info.offense_description
       // case - info.case_title
@@ -724,11 +725,11 @@ const updateMarkers = (dataPoints) => {
 
       const popupContent = `
           ${popupContentStart}
-          ${dataPoint.type === 'Crime' ? dataPoint.info.offense_description : ''}
-          ${dataPoint.type === '311 Case' ? dataPoint.info.case_title : ''}
-          ${dataPoint.type === 'Building Permit' ? dataPoint.info.description : ''}
-          ${dataPoint.type === 'Property Violation' ? dataPoint.info.description : ''}
-          ${dataPoint.type === 'Construction Off Hour' ? dataPoint.info.address : ''}
+          ${dataPoint.alcivartech_type === 'Crime' ? dataPoint.offense_description : ''}
+          ${dataPoint.alcivartech_type === '311 Case' ? dataPoint.case_title : ''}
+          ${dataPoint.alcivartech_type === 'Building Permit' ? dataPoint.description : ''}
+          ${dataPoint.alcivartech_type === 'Property Violation' ? dataPoint.description : ''}
+          ${dataPoint.alcivartech_type === 'Construction Off Hour' ? dataPoint.address : ''}
           </div>
         `;
 

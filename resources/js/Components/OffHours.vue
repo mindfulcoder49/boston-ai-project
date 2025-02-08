@@ -4,15 +4,15 @@
       {{ LabelsByLanguageCode[getSingleLanguageCode].constructionOffHourTitle }}
     </h2>
     <p class="text-gray-700 mb-4">
-      <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].startDateLabel }}:</strong> {{ new Date(data.info.start_datetime).toLocaleString() }}
+      <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].startDateLabel }}:</strong> {{ new Date(data.start_datetime).toLocaleString() }}
     </p>
     <p class="text-gray-700 mb-4">
-      <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].endDateLabel }}:</strong> {{ formatDate(data.info.stop_datetime) }}
+      <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].endDateLabel }}:</strong> {{ formatDate(data.stop_datetime) }}
     </p>
     <ul class="space-y-2">
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].applicationNumber }}:</strong> {{ data.info.app_no }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].address }}:</strong> {{ data.info.address }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].ward }}:</strong> {{ data.info.ward }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].applicationNumber }}:</strong> {{ data.app_no }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].address }}:</strong> {{ data.address }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].ward }}:</strong> {{ data.ward }}</li>
       <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].latitude }}:</strong> {{ data.latitude }}</li>
       <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].longitude }}:</strong> {{ data.longitude }}</li>
     </ul>

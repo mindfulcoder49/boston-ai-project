@@ -110,6 +110,7 @@ class ThreeOneOneSeeder extends Seeder
             'source' => $row['source'] ?? null,
             'checksum' => $row['checksum'] ?? null,
             'ward_number' => $row['ward_number'] ?? null,
+            'language_code' => 'en-US',
         ];
     }
 
@@ -151,80 +152,335 @@ class ThreeOneOneSeeder extends Seeder
     }
 }
 
-Contents of ./ConstructionOffHoursSeeder.php:
+Contents of ./PropertyViolationsSeeder.php:
 <?php
-
-// database/seeders/ConstructionOffHoursSeeder.php
 
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\ConstructionOffHour;
-use Illuminate\Support\Facades\File;
-use League\Csv\Reader;
+use App\Models\PropertyViolation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\Reader;
 
-class ConstructionOffHoursSeeder extends Seeder
+
+class PropertyViolationsSeeder extends Seeder
 {
     private const BATCH_SIZE = 500;
 
     public function run()
     {
-        $name = 'construction-off-hours';
-        // get most recent file from Storage::disk('local'), filename is name with date appended
-        $files = Storage::disk('local')->files($name);
-        $file = end($files);
+        $name = 'property-violations';
+        // Get all files from the datasets folder in Storage
+        $files = Storage::disk('local')->files('datasets');
 
-        foreach ($files as $file) {
-            $this->processFile($file);
+        // Filter files to only include those with the specified name in the filename
+        $files = array_filter($files, function ($file) use ($name) {
+            return strpos($file, $name) !== false;
+        });
+
+        // Only proceed if there are any files to process
+        if (!empty($files)) {
+            // Get the most recent file
+            $file = end($files);
+            echo "Processing file: " . $file . "\n";
+
+            // Process the most recent file
+            $this->processFile(Storage::path($file));
+        } else {
+            echo "No files found to process for name: " . $name . "\n";
         }
     }
 
-    private function processFile($file)
+    private function processFile($filePath)
     {
-        print_r("Processing file: " . $file . "\n");
-        $csv = Reader::createFromPath($file);
-        $csv->setHeaderOffset(0); // The header is on the first row
+        try {
+            $csv = Reader::createFromPath($filePath, 'r');
+            $csv->setHeaderOffset(0); // The header is on the first row
+             //set the escape character to null
+             $csv->setEscape('');
 
-        $records = $csv->getRecords();
+            $records = $csv->getRecords();
 
-        $dataBatch = [];
-        $progress = 0;
-        $fileCount = count(file($file));
-        $skipped = 0;
+            $dataBatch = [];
+            $progress = 0;
+            
+            foreach ($records as $violation) {
+                $progress++;
+                 //echo $case_no, description etc, on one line
+                echo "Case No: " . $violation['case_no'] . " Description: " . $violation['description'] . "\n";
 
-        foreach ($records as $offHour) {
-            $progress++;
+                // Check and format datetime fields
+                $statusDttm = $this->formatDate($violation['status_dttm']);
 
-            // Add data to batch array
-            $dataBatch[] = [
-                'app_no' => $offHour['app_no'],
-                'start_datetime' => $offHour['start_datetime'],
-                'stop_datetime' => $offHour['stop_datetime'],
-                'address' => $offHour['address'],
-                'ward' => $offHour['ward'],
-            ];
+                //convert empty strings to null
+                foreach ($violation as $key => $value) {
+                    if ($value === '') {
+                        $violation[$key] = null;
+                    }
+                }
 
-            if ($progress % self::BATCH_SIZE == 0) {
-                $this->insertOrUpdateBatch($dataBatch);
-                $dataBatch = []; // Reset the batch
+                // Add data to batch array
+                $dataBatch[] = [
+                    'case_no' => $violation['case_no'],
+                    'ap_case_defn_key' => $violation['ap_case_defn_key'],
+                    'status_dttm' => $statusDttm,
+                    'status' => $violation['status'],
+                    'code' => $violation['code'],
+                    'value' => $violation['value'],
+                    'description' => $violation['description'],
+                    'violation_stno' => $violation['violation_stno'],
+                    'violation_sthigh' => $violation['violation_sthigh'],
+                    'violation_street' => $violation['violation_street'],
+                    'violation_suffix' => $violation['violation_suffix'],
+                    'violation_city' => $violation['violation_city'],
+                    'violation_state' => $violation['violation_state'],
+                    'violation_zip' => $violation['violation_zip'],
+                    'ward' => $violation['ward'],
+                    'contact_addr1' => $violation['contact_addr1'],
+                    'contact_addr2' => $violation['contact_addr2'],
+                    'contact_city' => $violation['contact_city'],
+                    'contact_state' => $violation['contact_state'],
+                    'contact_zip' => $violation['contact_zip'],
+                    'sam_id' => $violation['sam_id'],
+                    'latitude' => $violation['latitude'],
+                    'longitude' => $violation['longitude'],
+                    'location' => $violation['location'],
+                    'language_code' => 'en-US',
+                ];
+                
+                if ($progress % self::BATCH_SIZE == 0) {
+                    $this->insertOrUpdateBatch($dataBatch);
+                    $dataBatch = []; // Reset the batch
+                }
             }
+
+            // Process any remaining data
+            if (!empty($dataBatch)) {
+                $this->insertOrUpdateBatch($dataBatch);
+            }
+
+            echo "File processed: " . basename($filePath) . "\n";
+        } catch (\Exception $e) {
+            echo "Error processing file: " . basename($filePath) . " - " . $e->getMessage() . "\n";
+        }
+    }
+
+    private function formatDate($date)
+    {
+           if (empty($date)) {
+            // Set to null or a default value that makes sense for your application
+            return null;
         }
 
-        // Process any remaining data
-        if (!empty($dataBatch)) {
-            $this->insertOrUpdateBatch($dataBatch);
+         if ( $date == '1970-01-01 00:00:00') {
+            echo "Date is 1970-01-01 00:00:00\n";
+            return null;
         }
+        
+        //if date is before epoch time, set to null
+        if (strtotime($date) < 0) {
+            echo "Date is before epoch time\n";
+            return null;
+        }
+        
+         // Ensure date is in the correct format
+        $formattedDate = date('Y-m-d H:i:s', strtotime($date));
 
-        print_r("File processed: " . $file . "\n");
+        return $formattedDate;
     }
 
     private function insertOrUpdateBatch(array $dataBatch): void
     {
-        DB::table((new ConstructionOffHour)->getTable())->upsert($dataBatch, ['app_no'], [
-            'start_datetime', 'stop_datetime', 'address', 'ward'
+        DB::table((new PropertyViolation)->getTable())->upsert($dataBatch, ['case_no'], [
+            'ap_case_defn_key', 'status_dttm', 'status', 'code', 'value', 'description',
+            'violation_stno', 'violation_sthigh', 'violation_street', 'violation_suffix',
+            'violation_city', 'violation_state', 'violation_zip', 'ward', 'contact_addr1',
+            'contact_addr2', 'contact_city', 'contact_state', 'contact_zip', 'sam_id',
+             'latitude', 'longitude', 'location', 'language_code'
         ]);
+    }
+}
+Contents of ./ConstructionOffHoursSeeder.php:
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\ConstructionOffHour;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use League\Csv\Reader;
+
+class ConstructionOffHoursSeeder extends Seeder
+{
+    private const BATCH_SIZE = 500;
+
+    private $suffixMap = [
+        'av' => 'ave',
+        'bl' => 'blvd',
+        'pk' => 'park',
+        'pw' => 'pkwy',
+        'wy' => 'way',
+        'te' => 'ter',
+        'pz' => 'plz',
+        'hw' => 'hwy',
+        'ci' => 'cir',
+    ];
+
+    public function run()
+    {
+        $name = 'construction-off-hours';
+
+        Log::info('Starting ConstructionOffHoursSeeder.');
+
+        // Get files with the specified name in the filename
+        $files = Storage::disk('local')->files('datasets');
+        $files = array_filter($files, fn($file) => strpos($file, $name) !== false);
+
+        if (!empty($files)) {
+            $file = end($files); // Get the most recent file
+            Log::info("Found " . count($files) . " files. Processing the most recent file: {$file}");
+            $this->processFile(Storage::path($file));
+        } else {
+            Log::warning("No files found matching the name: '{$name}'.");
+        }
+
+        Log::info('ConstructionOffHoursSeeder completed.');
+    }
+
+    private function processFile($file)
+    {
+        try {
+            $csv = Reader::createFromPath($file);
+            $csv->setHeaderOffset(0);
+
+            $records = $csv->getRecords();
+            $dataBatch = [];
+            $progress = 0;
+            $skipped = 0;
+
+            //sort the records by date
+            $records = collect(iterator_to_array($records))->sortBy('start_datetime');
+
+            //remove any older than 60 days ago
+            $records = $records->filter(function ($record) {
+                return strtotime($record['start_datetime']) > strtotime('-30 days');
+            });
+
+            foreach ($records as $offHour) {
+                $progress++;
+
+                // Log progress at intervals
+                if ($progress % 100 === 0) {
+                    Log::info("Progress: {$progress} records processed.");
+                }
+
+                // Validate record
+                if (empty($offHour['app_no']) || empty($offHour['start_datetime']) || empty($offHour['address'])) {
+                    $skipped++;
+                    Log::warning("Skipping invalid record at row {$progress}: " . json_encode($offHour));
+                    continue;
+                }
+
+                // Extract and normalize the base address
+                $baseAddress = $this->normalizeAddress($offHour['address']);
+
+                // Find the best matching address dynamically
+                $bestMatch = $this->findMatchDynamically($baseAddress);
+
+                // Fallback: Try substring after hyphen if no match found
+                if (!$bestMatch && str_contains($baseAddress, '-')) {
+                    $afterHyphen = $this->getSubstringAfterHyphen($baseAddress);
+                    Log::info("No match found for normalized address: '{$baseAddress}'. Trying after hyphen: '{$afterHyphen}'");
+                    $bestMatch = $this->findMatchDynamically($afterHyphen);
+
+                    if ($bestMatch) {
+                        Log::info("Fallback match for row {$progress}: '{$baseAddress}' -> '{$afterHyphen}' -> '{$bestMatch->full_address}'");
+                    }
+                }
+
+                if (!$bestMatch) {
+                    $skipped++;
+                    Log::warning("No match found for normalized address: '{$baseAddress}' (original: '{$offHour['address']}')");
+                    continue;
+                }
+
+                // Log matched address details
+                Log::info("Matched address for row {$progress}: '{$offHour['address']}' -> '{$bestMatch->full_address}'");
+
+                //if stop_datetime is empty, set it to start_datetime
+                if (empty($offHour['stop_datetime'])) {
+                    $offHour['stop_datetime'] = $offHour['start_datetime'];
+                }
+
+                $dataBatch[] = [
+                    'app_no' => $offHour['app_no'],
+                    'start_datetime' => $offHour['start_datetime'],
+                    'stop_datetime' => $offHour['stop_datetime'],
+                    'address' => $offHour['address'],
+                    'ward' => $offHour['ward'],
+                    'latitude' => $bestMatch->latitude,
+                    'longitude' => $bestMatch->longitude,
+                    'language_code' => 'en-US',
+                ];
+
+                if ($progress % self::BATCH_SIZE == 0) {
+                    $this->insertOrUpdateBatch($dataBatch);
+                    $dataBatch = [];
+                    Log::info("Inserted batch of " . self::BATCH_SIZE . " records. Progress: {$progress}");
+                }
+            }
+
+            if (!empty($dataBatch)) {
+                $this->insertOrUpdateBatch($dataBatch);
+                Log::info("Inserted final batch of " . count($dataBatch) . " records.");
+            }
+
+            Log::info("Finished processing file: {$file}. Total processed: {$progress}, Skipped: {$skipped}");
+        } catch (\Exception $e) {
+            Log::error("Error processing file: {$file}. Exception: " . $e->getMessage());
+        }
+    }
+
+    private function normalizeAddress($address)
+    {
+        $parts = explode(',', $address, 2);
+        $baseAddress = strtolower(trim($parts[0]));
+
+        // Replace suffixes using the suffix map
+        foreach ($this->suffixMap as $short => $full) {
+            $baseAddress = preg_replace('/\b' . $short . '\b/', $full, $baseAddress);
+        }
+
+        return $baseAddress;
+    }
+
+    private function getSubstringAfterHyphen($address)
+    {
+        $parts = explode('-', $address, 2);
+        return isset($parts[1]) ? trim($parts[1]) : $address;
+    }
+
+    private function findMatchDynamically($normalizedAddress)
+    {
+        return DB::table('trash_schedules_by_address')
+            ->whereRaw('LOWER(full_address) = ?', [$normalizedAddress])
+            ->select('full_address', 'y_coord as latitude', 'x_coord as longitude')
+            ->first();
+    }
+
+    private function insertOrUpdateBatch(array $dataBatch): void
+    {
+        try {
+            DB::table((new ConstructionOffHour)->getTable())->upsert($dataBatch, ['app_no', 'start_datetime', 'stop_datetime', 'language_code'], [
+                'address', 'ward', 'latitude', 'longitude'
+            ]);
+            Log::info("Batch upsert completed with " . count($dataBatch) . " records.");
+        } catch (\Exception $e) {
+            Log::error("Error during batch upsert: " . $e->getMessage());
+        }
     }
 }
 
@@ -248,6 +504,8 @@ class DatabaseSeeder extends Seeder
             CrimeDataSeeder::class,
             ThreeOneOneSeeder::class,
             BuildingPermitsSeeder::class,
+            PropertyViolationsSeeder::class,
+            ConstructionOffHoursSeeder::class,
         ]);
     }
 }
@@ -357,6 +615,7 @@ class BuildingPermitsSeeder extends Seeder
                     'gpsx' => $permit['gpsx'],
                     'y_latitude' => $permit['y_latitude'],
                     'x_longitude' => $permit['x_longitude'],
+                    'language_code' => 'en-US',
                 ];
 
                 if ($progress % self::BATCH_SIZE == 0) {
@@ -409,7 +668,7 @@ class BuildingPermitsSeeder extends Seeder
             'worktype', 'permittypedescr', 'description', 'comments', 'applicant', 
             'declared_valuation', 'total_fees', 'issued_date', 'expiration_date', 
             'status', 'occupancytype', 'sq_feet', 'address', 'city', 'state', 'zip', 
-            'property_id', 'parcel_id', 'gpsy', 'gpsx', 'y_latitude', 'x_longitude'
+            'property_id', 'parcel_id', 'gpsy', 'gpsx', 'y_latitude', 'x_longitude', 'language_code'
         ]);
     }
 
@@ -669,7 +928,7 @@ class CrimeDataSeeder extends Seeder
                 'lat' => $crime['Lat'],
                 'long' => $crime['Long'],
                 'location' => $crime['Location'],
-                'offense_category' => $this->categorizeOffense($crime['OFFENSE_CODE']),
+                'language_code' => 'en-US'
             ];
 
             if ($progress % self::BATCH_SIZE == 0) {
@@ -711,7 +970,7 @@ class CrimeDataSeeder extends Seeder
             'lat',
             'long',
             'location',
-            'offense_category'
+            'language_code'
         ]);
     }
 
@@ -762,56 +1021,126 @@ class CrimeDataSeeder extends Seeder
         // Convert to datetime
         return date('Y-m-d H:i:s', strtotime($date));
     }
+}
 
-    private function categorizeOffense($code)
+Contents of ./TransformedTranslationsSeeder.php:
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Models\ThreeOneOneCase;
+use App\Models\CrimeData;
+use App\Models\BuildingPermit;
+use App\Models\ConstructionOffHour;
+use App\Models\PropertyViolation;
+
+class TransformedTranslationsSeeder extends Seeder
+{
+    private const BATCH_SIZE = 500;
+
+    public function run()
     {
-        $categories = [
-            'murder_and_manslaughter' => [111, 112, 113, 114, 121, 122, 123, 124, 125],
-            'rape' => [
-                211, 212, 213, 222, 223, 224, 230, 231, 232, 233, 234, 235, 236, 237,
-                241, 242, 243, 244, 251, 252, 253, 254, 261, 271
-            ],
-            'robbery' => range(301, 382),
-            'assault' => range(401, 434),
-            'burglary' => range(510, 563),
-            'larceny' => range(611, 670),
-            'auto_theft' => range(701, 791),
-            'simple_assault' => range(801, 805),
-            'arson' => range(900, 931),
-            'forgery_counterfeiting' => range(1001, 1003),
-            'fraud' => range(1101, 1110),
-            'embezzlement' => [1201],
-            'stolen_property' => range(1300, 1305),
-            'vandalism' => range(1401, 1416),
-            'weapons_violations' => range(1501, 1511),
-            'prostitution' => range(1601, 1621),
-            'sex_offenses' => range(1702, 1732),
-            'drug_violations' => range(1805, 1876),
-            'gambling' => range(1901, 1922),
-            'child_offenses' => range(2003, 2011),
-            'alcohol_violations' => range(2101, 2205),
-            'disorderly_conduct' => range(2401, 2408),
-            'kidnapping' => range(2511, 2625),
-            'miscellaneous_offenses' => range(2628, 2673),
-            'vehicle_laws' => range(2801, 2918),
-            'investigations' => range(3001, 3041),
-            'other_services' => range(3102, 3171),
-            'property' => range(3201, 3211),
-            'disputes' => range(3301, 3306),
-            'animal_incidents' => range(3402, 3415),
-            'missing_persons' => range(3501, 3504),
-            'other_reports' => range(3612, 3626),
-            'accidents' => range(3701, 3832)
-        ];
+        $filePath = 'batches/transformed_translations.jsonl';
 
-        foreach ($categories as $category => $codes) {
-            if (in_array($code, $codes)) {
-                return $category;
+        if (!Storage::disk('local')->exists($filePath)) {
+            Log::error("Transformed translations file not found: {$filePath}");
+            return;
+        }
+
+        $lines = explode("\n", Storage::disk('local')->get($filePath));
+        $batchData = [];
+        $progress = 0;
+
+        foreach ($lines as $line) {
+            if (empty($line)) {
+                continue;
+            }
+
+            $record = json_decode($line, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error("Failed to parse line: {$line}");
+                continue;
+            }
+
+            $modelClass = $this->getModelClass($record);
+            if (!$modelClass) {
+                Log::error("Unknown model for record: " . json_encode($record));
+                continue;
+            }
+
+            if (isset($record['occurred_on_date'])) {
+                $record['occurred_on_date'] = $this->formatDate($record['occurred_on_date']);
+            }
+
+            $batchData[$modelClass][] = $record;
+
+            if (count($batchData[$modelClass]) >= self::BATCH_SIZE) {
+                $this->insertBatch($modelClass, $batchData[$modelClass]);
+                $batchData[$modelClass] = [];
+                $progress += self::BATCH_SIZE;
+                echo "Processed {$progress} records...\n"; // Replaced $this->info with echo
             }
         }
 
-        return 'other_offenses';
+        // Insert remaining records
+        foreach ($batchData as $modelClass => $data) {
+            if (!empty($data)) {
+                $this->insertBatch($modelClass, $data);
+            }
+        }
+
+        echo "All records processed and inserted.\n"; // Replaced $this->info with echo
     }
+
+    private function insertBatch(string $modelClass, array $dataBatch): void
+    {
+        try {
+            $tableName = (new $modelClass)->getTable();
+            $uniqueKeys = [$modelClass::getExternalIdName(), 'language_code'];
+
+            DB::table($tableName)->upsert(
+                $dataBatch,
+                $uniqueKeys,
+                array_keys($dataBatch[0]) // Update all columns except unique keys
+            );
+
+            Log::info("Batch inserted successfully for {$modelClass}.", ['count' => count($dataBatch)]);
+        } catch (\Exception $e) {
+            Log::error("Failed batch insert for {$modelClass}: " . $e->getMessage());
+        }
+    }
+
+    private function getModelClass(array $record): ?string
+    {
+        if (isset($record['case_enquiry_id'])) {
+            return ThreeOneOneCase::class;
+        } elseif (isset($record['incident_number'])) {
+            return CrimeData::class;
+        } elseif (isset($record['permitnumber'])) {
+            return BuildingPermit::class;
+        } elseif (isset($record['app_no'])) {
+            return ConstructionOffHour::class;
+        } elseif (isset($record['case_no'])) {
+            return PropertyViolation::class;
+        }
+
+        return null; // Unknown model
+    }
+
+    private function formatDate(string $date): ?string
+    {
+        try {
+            return \Carbon\Carbon::parse($date)->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            Log::error("Invalid date format: {$date}");
+            return null;
+        }
+    }
+
 }
 
 Contents of ./TrashSchedulesByAddressSeeder.php:

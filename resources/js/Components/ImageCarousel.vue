@@ -9,19 +9,19 @@
             >
                 <div class="carousel-slide-inner">
                     <img
-                        v-if="data.info.closed_photo"
-                        :src="data.info.closed_photo"
+                        v-if="data.closed_photo"
+                        :src="data.closed_photo"
                         alt="Data Point Image"
                         class="carousel-image"
                     />
                     <img
-                        v-else-if="data.info.submitted_photo"
-                        :src="data.info.submitted_photo"
+                        v-else-if="data.submitted_photo"
+                        :src="data.submitted_photo"
                         alt="Data Point Image"
                         class="carousel-image"
                     />
                     <div class="data-type-label">
-                        {{ data.info.type }}
+                        {{ data.type }}
                     </div>
                 </div>
             </div>
@@ -69,7 +69,7 @@ const visibleSlides = 3;
 const emit = defineEmits(['on-image-click']);
 
 const hasImage = (data) => {
-    return data.info?.closed_photo || data.info?.submitted_photo;
+    return data?.closed_photo || data?.submitted_photo;
 };
 
 const onImageClick = (data) => {

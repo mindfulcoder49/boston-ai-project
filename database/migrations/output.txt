@@ -32,6 +32,87 @@ return new class extends Migration
     }
 };
 
+Contents of ./2024_12_21_184821_create_property_violations_table.php:
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreatePropertyViolationsTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('property_violations', function (Blueprint $table) {
+            $table->id();
+            $table->string('case_no')->nullable();
+             $table->string('ap_case_defn_key')->nullable();
+            $table->dateTime('status_dttm')->nullable();
+            $table->string('status')->nullable();
+            $table->string('code')->nullable();
+            $table->string('value')->nullable();
+            $table->text('description')->nullable();
+            $table->string('violation_stno')->nullable();
+            $table->string('violation_sthigh')->nullable();
+            $table->string('violation_street')->nullable();
+            $table->string('violation_suffix')->nullable();
+            $table->string('violation_city')->nullable();
+            $table->string('violation_state')->nullable();
+            $table->string('violation_zip')->nullable();
+            $table->string('ward')->nullable();
+            $table->string('contact_addr1')->nullable();
+            $table->string('contact_addr2')->nullable();
+            $table->string('contact_city')->nullable();
+            $table->string('contact_state')->nullable();
+            $table->string('contact_zip')->nullable();
+            $table->string('sam_id')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->string('location')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('property_violations');
+    }
+}
+Contents of ./2024_12_21_212309_add_latitude_longitude_to_construction_off_hours_table.php:
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AddLatitudeLongitudeToConstructionOffHoursTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('construction_off_hours', function (Blueprint $table) {
+            $table->decimal('latitude', 15, 13)->nullable()->after('ward');
+            $table->decimal('longitude', 15, 13)->nullable()->after('latitude');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('construction_off_hours', function (Blueprint $table) {
+            $table->dropColumn(['latitude', 'longitude']);
+        });
+    }
+}
+
 Contents of ./2014_10_12_000000_create_users_table.php:
 <?php
 
@@ -79,10 +160,10 @@ class CreateCrimeDataTable extends Migration
     {
         Schema::create('crime_data', function (Blueprint $table) {
             $table->id();
-            $table->string('incident_number')->unique();
-            $table->integer('offense_code');
-            $table->string('offense_code_group');
-            $table->string('offense_description');
+            $table->string('incident_number');
+            $table->integer('offense_code')->nullable();
+            $table->string('offense_code_group')->nullable();
+            $table->string('offense_description')->nullable();
             $table->string('district')->nullable();
             $table->string('reporting_area')->nullable();
             $table->boolean('shooting')->nullable();
@@ -96,7 +177,6 @@ class CreateCrimeDataTable extends Migration
             $table->decimal('lat', 10, 7)->nullable();
             $table->decimal('long', 10, 7)->nullable();
             $table->string('location')->nullable();
-            $table->string('offense_category')->nullable();
             $table->timestamps();
         });
     }
@@ -163,7 +243,7 @@ return new class extends Migration
     {
         Schema::create('three_one_one_cases', function (Blueprint $table) {
             $table->id(); // New auto-incrementing ID column
-            $table->bigInteger('case_enquiry_id')->unique(); // Removed primary()
+            $table->bigInteger('case_enquiry_id');
             $table->dateTime('open_dt')->nullable();
             $table->text('sla_target_dt')->nullable();
             $table->dateTime('closed_dt')->nullable();
@@ -194,6 +274,7 @@ return new class extends Migration
             $table->text('source')->nullable();
             $table->text('checksum')->nullable();
             $table->text('ward_number')->nullable();
+            $table->timestamps();
         });
 
     }
@@ -275,6 +356,81 @@ return new class extends Migration
     }
 };
 
+Contents of ./2024_12_22_151724_add_language_code_to_city_data_tables.php:
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up(): void
+    {
+        // Add language_code column to three_one_one_cases table
+        Schema::table('three_one_one_cases', function (Blueprint $table) {
+            $table->string('language_code', 5)->nullable()->after('checksum');
+        });
+
+        // Add language_code column to crime_data table
+        Schema::table('crime_data', function (Blueprint $table) {
+            $table->string('language_code', 5)->nullable()->after('offense_code');
+        });
+
+        // Add language_code column to building_permits table
+        Schema::table('building_permits', function (Blueprint $table) {
+            $table->string('language_code', 5)->nullable()->after('status');
+        });
+
+        // Add language_code column to construction_off_hours table
+        Schema::table('construction_off_hours', function (Blueprint $table) {
+            $table->string('language_code', 5)->nullable()->after('ward');
+        });
+
+        // Add language_code column to property_violations table
+        Schema::table('property_violations', function (Blueprint $table) {
+            $table->string('language_code', 5)->nullable()->after('location');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down(): void
+    {
+        // Remove language_code column from three_one_one_cases table
+        Schema::table('three_one_one_cases', function (Blueprint $table) {
+            $table->dropColumn('language_code');
+        });
+
+        // Remove language_code column from crime_data table
+        Schema::table('crime_data', function (Blueprint $table) {
+            $table->dropColumn('language_code');
+        });
+
+        // Remove language_code column from building_permits table
+        Schema::table('building_permits', function (Blueprint $table) {
+            $table->dropColumn('language_code');
+        });
+
+        // Remove language_code column from construction_off_hours table
+        Schema::table('construction_off_hours', function (Blueprint $table) {
+            $table->dropColumn('language_code');
+        });
+
+        // Remove language_code column from property_violations table
+        Schema::table('property_violations', function (Blueprint $table) {
+            $table->dropColumn('language_code');
+        });
+    }
+};
+
 Contents of ./2024_09_04_005046_create_datasets_tables.php:
 <?php
 
@@ -294,7 +450,7 @@ class CreateDatasetsTables extends Migration
         // Building Permits Table
         Schema::create('building_permits', function (Blueprint $table) {
             $table->id();
-            $table->string('permitnumber')->nullable()->unique();
+            $table->string('permitnumber')->nullable();
             $table->string('worktype')->nullable();
             $table->string('permittypedescr')->nullable();
             $table->text('description')->nullable();
@@ -361,43 +517,7 @@ class CreateDatasetsTables extends Migration
     }
 }
 
-Contents of ./2024_12_06_212312_create_labels_table.php:
-<?php
-
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
-class CreateLabelsTable extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
-    {
-        Schema::create('labels', function (Blueprint $table) {
-            $table->id();
-            $table->string('code_name')->unique(); // Identifier for the label
-            $table->string('language_code', 5); // ISO language code (e.g., 'en', 'fr')
-            $table->string('text'); // Actual label text
-            $table->timestamps();
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::dropIfExists('labels');
-    }
-}
-
-
+Contents of ./2024_12_20_000000_add_lat_long_indexes.php:
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -458,83 +578,3 @@ return new class extends Migration {
     }
 };
 
-
-<?php
-
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
-class CreatePropertyViolationsTable extends Migration
-{
-    public function up()
-    {
-        Schema::create('property_violations', function (Blueprint $table) {
-            $table->id();
-            $table->string('case_no')->nullable();
-             $table->string('ap_case_defn_key')->nullable();
-            $table->dateTime('status_dttm')->nullable();
-            $table->string('status')->nullable();
-            $table->string('code')->nullable();
-            $table->string('value')->nullable();
-            $table->text('description')->nullable();
-            $table->string('violation_stno')->nullable();
-            $table->string('violation_sthigh')->nullable();
-            $table->string('violation_street')->nullable();
-            $table->string('violation_suffix')->nullable();
-            $table->string('violation_city')->nullable();
-            $table->string('violation_state')->nullable();
-            $table->string('violation_zip')->nullable();
-            $table->string('ward')->nullable();
-            $table->string('contact_addr1')->nullable();
-            $table->string('contact_addr2')->nullable();
-            $table->string('contact_city')->nullable();
-            $table->string('contact_state')->nullable();
-            $table->string('contact_zip')->nullable();
-            $table->string('sam_id')->nullable();
-            $table->decimal('latitude', 10, 7)->nullable();
-            $table->decimal('longitude', 10, 7)->nullable();
-            $table->string('location')->nullable();
-            $table->timestamps();
-        });
-    }
-
-    public function down()
-    {
-        Schema::dropIfExists('property_violations');
-    }
-}
-
-<?php
-
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
-class AddLatitudeLongitudeToConstructionOffHoursTable extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
-    {
-        Schema::table('construction_off_hours', function (Blueprint $table) {
-            $table->decimal('latitude', 15, 13)->nullable()->after('ward');
-            $table->decimal('longitude', 15, 13)->nullable()->after('latitude');
-        });
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        Schema::table('construction_off_hours', function (Blueprint $table) {
-            $table->dropColumn(['latitude', 'longitude']);
-        });
-    }
-}

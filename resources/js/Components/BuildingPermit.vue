@@ -4,17 +4,17 @@
       {{ LabelsByLanguageCode[getSingleLanguageCode].buildingPermitTitle }}
     </h2>
     <p class="text-gray-700 mb-4">
-      <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.date).toLocaleString() }}
+      <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.alcivartech_date).toLocaleString() }}
     </p>
     <ul class="space-y-2">
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].permitNumber }}:</strong> {{ data.info.permitnumber }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].workType }}:</strong> {{ data.info.worktype }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].description }}:</strong> {{ data.info.description }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.info.status }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].declaredValue }}:</strong> {{ data.info.declared_valuation }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].totalFees }}:</strong> {{ data.info.total_fees }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].expirationDate }}:</strong> {{ formatDate(data.info.expiration_date) }}</li>
-      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].address }}:</strong> {{ data.info.address }}, {{ data.info.city }}, {{ data.info.state }} {{ data.info.zip }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].permitNumber }}:</strong> {{ data.permitnumber }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].workType }}:</strong> {{ data.worktype }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].description }}:</strong> {{ data.description }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.status }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].declaredValue }}:</strong> {{ data.declared_valuation }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].totalFees }}:</strong> {{ data.total_fees }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].expirationDate }}:</strong> {{ formatDate(data.expiration_date) }}</li>
+      <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].address }}:</strong> {{ data.address }}, {{ data.city }}, {{ data.state }} {{ data.zip }}</li>
     </ul>
   </div>
 </template>
