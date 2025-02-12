@@ -170,7 +170,7 @@ class ConstructionOffHoursSeeder extends Seeder
     private function insertOrUpdateBatch(array $dataBatch): void
     {
         try {
-            DB::table((new ConstructionOffHour)->getTable())->upsert($dataBatch, ['app_no', 'start_datetime', 'stop_datetime', 'language_code'], [
+            DB::table((new ConstructionOffHour)->getTable())->upsert($dataBatch, ['app_no'], [
                 'address', 'ward', 'latitude', 'longitude'
             ]);
             Log::info("Batch upsert completed with " . count($dataBatch) . " records.");

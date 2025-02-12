@@ -59,8 +59,9 @@ class ThreeOneOneSeeder extends Seeder
                 // Validate and clean the data
                 $cleanedData = $this->validateAndCleanData($rowData);
 
-                // Insert cleaned data into the database
-                DB::table('three_one_one_cases')->insert($cleanedData);
+                // upsert the data into the database matching on case_enquiry_id
+                DB::table('three_one_one_cases')->upsert($cleanedData, ['case_enquiry_id']);
+                
             } catch (\Exception $e) {
                 // Log errors without interrupting the seeding process
                 Log::error("Error processing row $index in file $filePath: " . $e->getMessage());

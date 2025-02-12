@@ -10,7 +10,7 @@ class CreateCrimeDataTable extends Migration
     {
         Schema::create('crime_data', function (Blueprint $table) {
             $table->id();
-            $table->string('incident_number');
+            $table->string('incident_number')->unique();
             $table->integer('offense_code')->nullable();
             $table->string('offense_code_group')->nullable();
             $table->string('offense_description')->nullable();

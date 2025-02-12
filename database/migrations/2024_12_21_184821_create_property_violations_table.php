@@ -10,8 +10,8 @@ class CreatePropertyViolationsTable extends Migration
     {
         Schema::create('property_violations', function (Blueprint $table) {
             $table->id();
-            $table->string('case_no')->nullable();
-             $table->string('ap_case_defn_key')->nullable();
+            $table->string('case_no')->unique();
+            $table->string('ap_case_defn_key')->nullable();
             $table->dateTime('status_dttm')->nullable();
             $table->string('status')->nullable();
             $table->string('code')->nullable();

@@ -16,7 +16,7 @@ class CreateDatasetsTables extends Migration
         // Building Permits Table
         Schema::create('building_permits', function (Blueprint $table) {
             $table->id();
-            $table->string('permitnumber')->nullable();
+            $table->string('permitnumber')->unique();
             $table->string('worktype')->nullable();
             $table->string('permittypedescr')->nullable();
             $table->text('description')->nullable();
@@ -45,7 +45,7 @@ class CreateDatasetsTables extends Migration
         // Construction Off Hours Table
         Schema::create('construction_off_hours', function (Blueprint $table) {
             $table->id();
-            $table->string('app_no')->nullable();
+            $table->string('app_no')->unique();
             $table->timestamp('start_datetime')->nullable();
             $table->timestamp('stop_datetime')->nullable();
             $table->string('address')->nullable();
@@ -56,7 +56,7 @@ class CreateDatasetsTables extends Migration
         // Trash Schedules by Address Table
         Schema::create('trash_schedules_by_address', function (Blueprint $table) {
             $table->id();
-            $table->string('sam_address_id')->nullable();
+            $table->string('sam_address_id')->unique();
             $table->string('full_address')->nullable();
             $table->string('mailing_neighborhood')->nullable();
             $table->string('state')->nullable();
