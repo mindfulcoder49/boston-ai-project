@@ -386,7 +386,7 @@ const handleListClick = (data) => {
   // find the marker with the classname that matches id + data.info.id and open the popup
   markers.value.forEach((marker) => {
     console.log('marker', marker);
-    if (marker.options.icon.options.className.includes('id'+data.info.id)) {
+    if (marker.options.icon.options.className.includes('id'+data.id)) {
       marker.openPopup();
       //scroll to marker using class name
       document.querySelector('.leaflet-popup-content-wrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
