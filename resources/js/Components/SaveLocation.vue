@@ -146,11 +146,16 @@ const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
 
-const fetchUserLocations = async () => {
+const fetchUserLocations = async (mode) => {
   try {
     const response = await axios.get('/locations');
     userLocations.value = response.data;
     checkIfSaved();
+    if (mode === 'set') {
+      emitLocation(userLocations.value[0]);
+      //set the active tab to the first location
+      setActiveTab(userLocations.value[0].id);
+    }
   } catch (error) {
     console.error('Error fetching locations:', error);
   }
@@ -164,15 +169,17 @@ const checkIfSaved = () => {
 };
 
 const saveLocation = async () => {
+  
+
   if (isSaved.value || saving.value) return;
 
   saving.value = true;
   try {
     const payload = {
       name: selectedName.value,
-      latitude: location.latitude,
-      longitude: location.longitude,
-      address: location.address || null,
+      latitude: props.location.latitude,
+      longitude: props.location.longitude,
+      address: props.location.address || null,
     };
     const response = await axios.post('/locations', payload);
     userLocations.value.push(response.data);
@@ -182,6 +189,7 @@ const saveLocation = async () => {
     if (error.response.status === 401) {
       window.location.href = '/login';
     }
+    saving.value = false;
   }
 };
 
@@ -297,8 +305,10 @@ const getSingleLanguageCode = computed(() => props.language_codes[0]);
 // Watchers
 watch(() => location, checkIfSaved);
 
-// Lifecycle Hooks
-onMounted(fetchUserLocations);
+// Lifecycle Hooks, onmounted fetchUserLocation and emit the first location
+onMounted(() => {
+  fetchUserLocations('set');
+});
 </script>
 
 <style scoped>

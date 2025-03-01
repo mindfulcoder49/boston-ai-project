@@ -153,15 +153,15 @@ const setSuggestedPrompts = () => {
   suggestedPrompts.value = currentTranslations;
 };
 
-const welcomeMessage = ref("Hi! I'm the Boston App AI Assistant, based on OpenAI's GPT-4o-mini model. I can see all the data points in the map and answer questions about them in many languages. How can I help you today?")
+const welcomeMessage = ref("Hi! I'm the Boston App AI Assistant, based on Gemini's model. I can see all the data points in the map and answer questions about them in many languages. How can I help you today?")
 
 const welcomeMessageTranslations = {
-  'en-US': "Hi! I'm the Boston App AI Assistant, based on OpenAI's GPT-4o-mini model. I can see all the data points in the map and answer questions about them in many languages. How can I help you today?",
-  'es-MX': "¡Hola! Soy el asistente de IA de la aplicación de Boston, basado en el modelo GPT-4o-mini de OpenAI. Puedo ver todos los puntos de datos en el mapa y responder preguntas sobre ellos en muchos idiomas. ¿Cómo puedo ayudarte hoy?",
-  'zh-CN': "你好！我是波士顿应用程序的AI助手，基于OpenAI的GPT-4o-mini模型。我可以查看地图中的所有数据点并用多种语言回答有关它们的问题。我今天能帮你什么？",
-  'ht-HT': "Bonjou! Mwen se asistan AI nan aplikasyon Boston an, ki baze sou modèl GPT-4o-mini nan OpenAI. Mwen ka wè tout pwen done nan kat la ak reponn kesyon sou yo nan anpil lang. Kijan mwen ka ede ou jodi a?",
-  'vi-VN': "Chào bạn! Tôi là trợ lý trí tuệ nhân tạo của ứng dụng Boston, dựa trên mô hình GPT-4o-mini của OpenAI. Tôi có thể xem tất cả các điểm dữ liệu trên bản đồ và trả lời câu hỏi về chúng bằng nhiều ngôn ngữ. Hôm nay tôi có thể giúp gì cho bạn?",
-  'pt-BR': "Oi! Eu sou o assistente de IA do aplicativo Boston, baseado no modelo GPT-4o-mini da OpenAI. Eu posso ver todos os pontos de dados no mapa e responder perguntas sobre eles em muitos idiomas. Como posso te ajudar hoje?",
+  'en-US': "Hi! I'm the Boston App AI Assistant, based on Gemini's model. I can see all the data points in the map and answer questions about them in many languages. How can I help you today?",
+  'es-MX': "¡Hola! Soy el asistente de IA de la aplicación de Boston, basado en el modelo de Gemini. Puedo ver todos los puntos de datos en el mapa y responder preguntas sobre ellos en muchos idiomas. ¿Cómo puedo ayudarte hoy?",
+  'zh-CN': "你好！我是波士顿应用程序的AI助手，基于Gemini的模型。我可以查看地图中的所有数据点并用多种语言回答有关它们的问题。我今天能帮你什么？",
+  'ht-HT': "Bonjou! Mwen se asistan AI nan aplikasyon Boston an, ki baze sou modèl Gemini. Mwen ka wè tout pwen done nan kat la ak reponn kesyon sou yo nan anpil lang. Kijan mwen ka ede ou jodi a?",
+  'vi-VN': "Chào bạn! Tôi là trợ lý trí tuệ nhân tạo của ứng dụng Boston, dựa trên mô hình Gemini. Tôi có thể xem tất cả các điểm dữ liệu trên bản đồ và trả lời câu hỏi về chúng bằng nhiều ngôn ngữ. Hôm nay tôi có thể giúp gì cho bạn?",
+  'pt-BR': "Oi! Eu sou o assistente de IA do aplicativo Boston, baseado no modelo Gemini. Eu posso ver todos os pontos de dados no mapa e responder perguntas sobre eles em muitos idiomas. Como posso te ajudar hoje?",
 }
 
 const setWelcomeMessage = () => {
@@ -206,7 +206,8 @@ scrollToBottom(); // Scroll after user message is added
 const requestBody = {
   message: userMessage,
   history: messages.value,
-  context: JSON.stringify(context.value)
+  context: JSON.stringify(context.value),
+  model: 'gemini',
 };
 
 const response = await fetch(route('ai.assistant'), {

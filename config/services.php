@@ -32,14 +32,18 @@ return [
     ],
 
     'openai' => [
-    'api_key' => env('OPENAI_API_KEY'),
+        'api_key' => env('OPENAI_API_KEY'),
     ],
 
     'anthropic' => [
-    'api_key' => env('ANTHROPIC_API_KEY'),
+        'api_key' => env('ANTHROPIC_API_KEY'),
     ],
 
     'bostongov' => [
         'api_key' => env('BOSTON_API_KEY'),
+    ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
     ],
 ];

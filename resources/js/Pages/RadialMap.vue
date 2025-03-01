@@ -814,7 +814,7 @@ const handleLoadLocation = (location) => {
     mapCenter.value = [location.latitude, location.longitude];
     destroyMap();
     fetchData();
-    initializeMap();
+    initializeMap( [location.latitude, location.longitude] );
   console.log('location loaded: ', location);
 };
 
