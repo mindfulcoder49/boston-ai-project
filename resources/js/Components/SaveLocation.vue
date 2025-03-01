@@ -37,7 +37,17 @@
         </span>
       </div>
 
+
       <div class="mt-4 flex flex-wrap justify-center items-center gap-2">
+        <select
+          id="location-report"
+          v-model="location.report"
+          class="px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm pl-2 pr-8"
+        >
+          <option value="off">{{ LabelsByLanguageCode[getSingleLanguageCode].off }}</option>
+          <option value="daily">{{ LabelsByLanguageCode[getSingleLanguageCode].daily }}</option>
+          <option value="weekly">{{ LabelsByLanguageCode[getSingleLanguageCode].weekly }}</option>
+        </select>
         <select
           id="location-name"
           v-model="selectedName"
@@ -86,6 +96,36 @@
           <p v-if="savedLocation.address" class="text-sm text-gray-600">
             {{ LabelsByLanguageCode[getSingleLanguageCode].address }}: {{ savedLocation.address }}
           </p>
+        </div>
+
+        <!--Change report dropdown-->
+        <div class="mt-4 flex flex-wrap justify-center items-center gap-2">
+          <select
+            id="location-report"
+            v-model="savedLocation.report"
+            class="px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm pl-2 pr-8"
+          >
+            <option value="off">{{ LabelsByLanguageCode[getSingleLanguageCode].off }}</option>
+            <option value="daily">{{ LabelsByLanguageCode[getSingleLanguageCode].daily }}</option>
+            <option value="weekly">{{ LabelsByLanguageCode[getSingleLanguageCode].weekly }}</option>
+          </select>
+          <select
+            id="location-name"
+            v-model="savedLocation.name"
+            class="px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm pl-2 pr-8"
+          >
+            <option value="home">{{ LabelsByLanguageCode[getSingleLanguageCode].home }}</option>
+            <option value="work">{{ LabelsByLanguageCode[getSingleLanguageCode].work }}</option>
+            <option value="other">{{ LabelsByLanguageCode[getSingleLanguageCode].other }}</option>
+          </select>
+
+          <button
+            @click="updateLocation(savedLocation.id, savedLocation)"
+            class="px-4 py-2 bg-blue-500 text-white shadow-sm hover:bg-blue-600 transition-colors"
+          >
+            {{ LabelsByLanguageCode[getSingleLanguageCode].update }}
+          </button>
+
         </div>
 
         <div class="mt-4 flex justify-center gap-2">
@@ -151,7 +191,7 @@ const fetchUserLocations = async (mode) => {
     const response = await axios.get('/locations');
     userLocations.value = response.data;
     checkIfSaved();
-    if (mode === 'set') {
+    if (mode === 'set' && userLocations.value.length) {
       emitLocation(userLocations.value[0]);
       //set the active tab to the first location
       setActiveTab(userLocations.value[0].id);
@@ -180,6 +220,7 @@ const saveLocation = async () => {
       latitude: props.location.latitude,
       longitude: props.location.longitude,
       address: props.location.address || null,
+      report: props.location.report || 'off',
     };
     const response = await axios.post('/locations', payload);
     userLocations.value.push(response.data);
@@ -190,6 +231,14 @@ const saveLocation = async () => {
       window.location.href = '/login';
     }
     saving.value = false;
+  }
+};
+
+const updateLocation = async (id, payload) => {
+  try {
+    await axios.put(`/locations/${id}`, payload);
+  } catch (error) {
+    console.error('Error updating location:', error);
   }
 };
 
@@ -226,6 +275,11 @@ const LabelsByLanguageCode = {
     home: 'Home',
     work: 'Work',
     other: 'Other',
+    off: 'Off',
+    daily: 'Daily',
+    weekly: 'Weekly',
+    address: 'Address',
+    update: 'Update',
   },
   'es-MX': {
     currentLocation: 'Ubicación Actual',
@@ -240,6 +294,11 @@ const LabelsByLanguageCode = {
     home: 'Casa',
     work: 'Trabajo',
     other: 'Otro',
+    off: 'Apagado',
+    daily: 'Diario',
+    weekly: 'Semanal',
+    address: 'Dirección',
+    update: 'Actualizar',
   },
   'zh-CN': {
     currentLocation: '当前位置',
@@ -254,6 +313,11 @@ const LabelsByLanguageCode = {
     home: '家',
     work: '工作',
     other: '其他',
+    off: '关闭',
+    daily: '每日',
+    weekly: '每周',
+    address: '地址',
+    update: '更新',
   },
   'ht-HT': {
     currentLocation: 'Kote Kounye a',
@@ -268,6 +332,11 @@ const LabelsByLanguageCode = {
     home: 'Kay',
     work: 'Travay',
     other: 'Lòt',
+    off: 'Fèmen',
+    daily: 'Chak jou',
+    weekly: 'Chak semèn',
+    address: 'Adrès',
+    update: 'Mizajou',
   },
   'vi-VN': {
     currentLocation: 'Vị Trí Hiện Tại',
@@ -282,6 +351,11 @@ const LabelsByLanguageCode = {
     home: 'Nhà',
     work: 'Công việc',
     other: 'Khác',
+    off: 'Tắt',
+    daily: 'Hàng ngày',
+    weekly: 'Hàng tuần',
+    address: 'Địa chỉ',
+    update: 'Cập nhật',
   },
   'pt-BR': {
     currentLocation: 'Localização Atual',
@@ -296,6 +370,11 @@ const LabelsByLanguageCode = {
     home: 'Casa',
     work: 'Trabalho',
     other: 'Outro',
+    off: 'Desligado',
+    daily: 'Diário',
+    weekly: 'Semanal',
+    address: 'Endereço',
+    update: 'Atualizar',
   },
 };
 
@@ -308,6 +387,10 @@ watch(() => location, checkIfSaved);
 // Lifecycle Hooks, onmounted fetchUserLocation and emit the first location
 onMounted(() => {
   fetchUserLocations('set');
+  //if props.location.report is not set, set it to 'off'
+  if (!props.location.report) {
+    props.location.report = 'off';
+  }
 });
 </script>
 

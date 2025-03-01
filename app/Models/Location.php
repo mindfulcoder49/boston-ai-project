@@ -18,6 +18,7 @@ class Location extends Model
         'longitude',
         'address',
         'user_id',
+        'report',
     ];
 
     /**

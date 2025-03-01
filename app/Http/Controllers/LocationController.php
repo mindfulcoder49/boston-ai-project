@@ -28,6 +28,7 @@ class LocationController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'address' => 'nullable|string',
+            'report' => 'nullable|string',
         ]);
 
         // Associate the location with the authenticated user
@@ -64,6 +65,7 @@ class LocationController extends Controller
             'latitude' => 'numeric',
             'longitude' => 'numeric',
             'address' => 'nullable|string',
+            'report' => 'nullable|string',
         ]);
 
         $location->update($validated);
