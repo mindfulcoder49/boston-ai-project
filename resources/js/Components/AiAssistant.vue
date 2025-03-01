@@ -33,9 +33,17 @@
               rows="2"
           ></textarea>
 
+          <div class="model-selector mb-4">
           <button type="submit" class="send-button cursor-pointer  border border-white bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 p-4 mt-4 w-full">
               {{ languageButtonLabels[getSingleLanguageCode].sendText }}
           </button>
+          
+          <label for="model" class="">{{ languageButtonLabels[getSingleLanguageCode].model }}</label>
+          <select id="model" v-model="selectedModel" class="ml-2 p-2 bg-gray-700 text-white">
+              <option value="gemini">Gemini</option>
+              <option value="chatgpt">ChatGPT</option>
+          </select>
+      </div>
       </form>
   </div>
 </template>
@@ -97,21 +105,27 @@ const suggestedPrompts = ref([
 const languageButtonLabels = {
   'en-US': {
     sendText: 'Send',
+    model: 'Select AI Model',
   },
   'es-MX': {
     sendText: 'Enviar',
+    model: 'Seleccionar modelo de IA',
   },
   'zh-CN': {
     sendText: '发送',
+    model: '选择AI模型',
   },
   'ht-HT': {
     sendText: 'Voye',
+    model: 'Chwazi modèl AI',
   },
   'vi-VN': {
     sendText: 'Gửi',
+    model: 'Chọn mô hình AI',
   },
   'pt-BR': {
     sendText: 'Enviar',
+    model: 'Selecione o modelo de IA',
   },
 };
 
@@ -192,6 +206,8 @@ handleResponse();
 suggestedPrompts.value = suggestedPrompts.value.filter((item) => item !== prompt);
 };
 
+const selectedModel = ref('gemini'); // Default model
+
 const handleResponse = async () => {
 if (form.message.trim() === '') return;
 
@@ -207,7 +223,7 @@ const requestBody = {
   message: userMessage,
   history: messages.value,
   context: JSON.stringify(context.value),
-  model: 'gemini',
+  model: selectedModel.value, // Use selected model
 };
 
 const response = await fetch(route('ai.assistant'), {

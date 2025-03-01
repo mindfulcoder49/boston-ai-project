@@ -43,7 +43,7 @@ class AiAssistantController extends Controller
             if (strpos($model, 'gemini') !== false) {
                 $this->streamGeminiResponse($history, 'gemini-1.5-flash');
             } else {
-                $this->streamAiResponse($history, $model); // Assume OpenAI if not Gemini
+                $this->streamAiResponse($history); // Assume OpenAI if not Gemini
             }
         });
     }
