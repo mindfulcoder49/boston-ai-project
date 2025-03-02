@@ -10,7 +10,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
+// use Illuminate\Support\Facades\Mail; // REMOVE THIS LINE
+use Illuminate\Contracts\Mail\Mailer; // Import the Mailer contract
 use App\Http\Controllers\GenericMapController;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
@@ -35,7 +36,7 @@ class SendLocationReportEmail implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle()
+    public function handle(Mailer $mailer)
     {
         try {
             // --- 1. Get Map Data ---
@@ -82,7 +83,7 @@ class SendLocationReportEmail implements ShouldQueue
 
             // --- 5. Send Email (if there's a report to send)---
             if (!empty($combinedReport)) {
-                Mail::to($this->location->user->email)->send(new SendLocationReport($this->location, $combinedReport));
+                $mailer->to($this->location->user->email)->send(new SendLocationReport($this->location, $combinedReport));
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
                Log::info("No reports generated. No email was sent to {$this->location->user->email}");
