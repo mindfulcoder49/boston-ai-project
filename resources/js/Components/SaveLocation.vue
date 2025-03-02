@@ -213,6 +213,10 @@ const dispatchReport = async (location) => {
   try {
     await axios.post(`/locations/${location.id}/dispatch-report`);
     reportDispatched.value = true;
+    //set the reportDispatched value to false after 5 seconds
+    setTimeout(() => {
+      reportDispatched.value = false;
+    }, 3000);
   } catch (error) {
     console.error('Error dispatching report:', error);
   }
