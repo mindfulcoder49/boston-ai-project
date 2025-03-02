@@ -1,10 +1,12 @@
 @component('mail::message')
+
+<div class="prose">
 # Hello,
 
 Here's your daily report for {{ $location->address }}:
 
 {{-- Use the "prose" class for better typography. --}}
-<div class="prose">
+
 {{ $report }}
 </div>
 
