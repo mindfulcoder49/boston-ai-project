@@ -5,7 +5,7 @@ Here's your daily report for {{ $location->address }}:
 
 {{-- Use the "prose" class for better typography. --}}
 <div class="prose">
-{!! nl2br(e($report)) !!}
+{{ $report }}
 </div>
 
 @component('mail::button', ['url' => url('/profile')])
