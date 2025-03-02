@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Mail\SendLocationReport;
 use App\Models\Location;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -83,7 +82,7 @@ class SendLocationReportEmail implements ShouldQueue
 
             // --- 5. Send Email (if there's a report to send)---
             if (!empty($combinedReport)) {
-                $mailer->to($this->location->user->email)->send(new SendLocationReport($this->location, $combinedReport));
+                $mailer->to($this->location->user->email)->send(new \App\Mail\SendLocationReport($this->location, $combinedReport));
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
                Log::info("No reports generated. No email was sent to {$this->location->user->email}");
