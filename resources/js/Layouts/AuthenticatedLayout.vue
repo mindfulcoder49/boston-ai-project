@@ -18,8 +18,11 @@ function logout() {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     }).then(() => {
-        //refresh the page
-        location.reload();
+        //wait 100ms before refreshing the page
+        setTimeout(() => {
+            //refresh the page
+            location.reload();
+        }, 100);
     });
 }
 
