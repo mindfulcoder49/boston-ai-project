@@ -66,19 +66,16 @@
           placeholder="Language"
         />
         <button
-          :disabled="isSaved || saving"
           @click="saveLocation"
-          class="px-4 py-2 text-white shadow-sm transition-colors"
-          :class="isSaved ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'"
+          class="px-4 py-2 text-white shadow-sm transition-colors bg-green-500 hover:bg-green-600"
         >
           {{
-            isSaved
-              ? LabelsByLanguageCode[getSingleLanguageCode].locationSaved
-              : saving
-              ? LabelsByLanguageCode[getSingleLanguageCode].saving
-              : LabelsByLanguageCode[getSingleLanguageCode].saveLocation
+             LabelsByLanguageCode[getSingleLanguageCode].saveLocation
           }}
         </button>
+        <span v-if="maxLocationsReached" class="text-red-500">
+          {{ LabelsByLanguageCode[getSingleLanguageCode].maxLocationsReached }}
+        </span>
       </div>
     </div>
 
@@ -205,6 +202,7 @@ const saving = ref(false);
 const userLocations = ref([]);
 const activeTab = ref('current');
 const reportDispatched = ref(false);
+const maxLocationsReached = ref(false);
 
 // Methods
 /*
@@ -250,7 +248,7 @@ const checkIfSaved = () => {
 const saveLocation = async () => {
   
 
-  if (isSaved.value || saving.value) return;
+  //if (isSaved.value || saving.value) return;
 
   saving.value = true;
   try {
@@ -269,6 +267,10 @@ const saveLocation = async () => {
   } catch (error) {
     if (error.response.status === 401) {
       window.location.href = '/login';
+    } else if (error.response.status === 403) {
+      maxLocationsReached.value = true;
+    } else {
+      console.error('Error saving location:', error);
     }
     saving.value = false;
   }
@@ -322,6 +324,7 @@ const LabelsByLanguageCode = {
     update: 'Update',
     sendReport: 'Send Report',
     reportSent: 'Report Sent',
+    maxLocationsReached: 'You have reached the maximum number of saved locations.',
   },
   'es-MX': {
     currentLocation: 'Ubicación Actual',
@@ -343,6 +346,7 @@ const LabelsByLanguageCode = {
     update: 'Actualizar',
     sendReport: 'Enviar Reporte',
     reportSent: 'Reporte Enviado',
+    maxLocationsReached: 'Has alcanzado el número máximo de ubicaciones guardadas.',
   },
   'zh-CN': {
     currentLocation: '当前位置',
@@ -364,6 +368,7 @@ const LabelsByLanguageCode = {
     update: '更新',
     sendReport: '发送报告',
     reportSent: '报告已发送',
+    maxLocationsReached: '您已达到保存位置的最大数量。',
   },
   'ht-HT': {
     currentLocation: 'Kote Kounye a',
@@ -385,6 +390,7 @@ const LabelsByLanguageCode = {
     update: 'Mizajou',
     sendReport: 'Voye Rapò',
     reportSent: 'Rapò voye',
+    maxLocationsReached: 'Ou rive nan kantite maksimòm kote sove yo.',
   },
   'vi-VN': {
     currentLocation: 'Vị Trí Hiện Tại',
@@ -406,6 +412,7 @@ const LabelsByLanguageCode = {
     update: 'Cập nhật',
     sendReport: 'Gửi Báo Cáo',
     reportSent: 'Báo cáo đã gửi',
+    maxLocationsReached: 'Bạn đã đạt số lượng tối đa của vị trí đã lưu.',  
   },
   'pt-BR': {
     currentLocation: 'Localização Atual',
@@ -427,6 +434,7 @@ const LabelsByLanguageCode = {
     update: 'Atualizar',
     sendReport: 'Enviar Relatório',
     reportSent: 'Relatório Enviado',
+    maxLocationsReached: 'Você atingiu o número máximo de localizações salvas.',
   },
 };
 

@@ -33,6 +33,11 @@ class LocationController extends Controller
             'language' => 'nullable|string',
         ]);
 
+        // check if the user has reached the maximum number of locations
+        if (Auth::user()->locations()->count() >= 3) {
+            return response()->json(['error' => 'Maximum number of locations reached'], 403);
+        }
+
         // Associate the location with the authenticated user
         $location = Auth::user()->locations()->create($validated);
 
