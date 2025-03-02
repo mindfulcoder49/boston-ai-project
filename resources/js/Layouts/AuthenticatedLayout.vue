@@ -9,6 +9,20 @@ import { Link } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
 
+//function to replace :href="route('logout')" with a function that logs out the user and then refreshes the page
+function logout() {
+    //log out the user
+    fetch('/logout', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    }).then(() => {
+        //refresh the page
+        location.reload();
+    });
+}
+
 //comment 
 </script>
 
@@ -90,7 +104,7 @@ const showingNavigationDropdown = ref(false);
 
                                     <template #content>
                                         <DropdownLink :href="route('profile.edit')"> Profile </DropdownLink>
-                                        <DropdownLink :href="route('logout')" method="post" as="button">
+                                        <DropdownLink @click="logout">
                                             Log Out
                                         </DropdownLink>
                                     </template>
@@ -161,7 +175,7 @@ const showingNavigationDropdown = ref(false);
 
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.edit')"> Profile </ResponsiveNavLink>
-                            <ResponsiveNavLink :href="route('logout')" method="post" as="button">
+                            <ResponsiveNavLink @click="logout">
                                 Log Out
                             </ResponsiveNavLink>
                         </div>

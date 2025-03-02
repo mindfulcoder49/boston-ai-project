@@ -16,6 +16,8 @@ use App\Http\Controllers\LocationController;
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('locations', LocationController::class);
+
+    Route::post('/locations/{location}/dispatch-report', [LocationController::class, 'dispatchLocationReportEmail'])->name('locations.dispatch-report');
 });
 
 Route::get('/search-address', [TrashScheduleByAddressController::class, 'search']);

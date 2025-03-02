@@ -156,6 +156,15 @@
           >
             {{ LabelsByLanguageCode[getSingleLanguageCode].delete }}
           </button>
+          <button
+            @click="dispatchReport(savedLocation)"
+            class="px-4 py-2 bg-green-500 text-white shadow-sm hover:bg-green-600 transition-colors"
+          >
+            {{ LabelsByLanguageCode[getSingleLanguageCode].sendReport }}
+          </button>
+          <span v-if="reportDispatched" class="text-green-500 content-center">
+            {{ LabelsByLanguageCode[getSingleLanguageCode].reportSent }}
+          </span>
         </div>
       </div>
     </template>
@@ -195,8 +204,23 @@ const isSaved = ref(false);
 const saving = ref(false);
 const userLocations = ref([]);
 const activeTab = ref('current');
+const reportDispatched = ref(false);
 
 // Methods
+/*
+Route::post('/locations/{location}/dispatch-report', [LocationController::class, 'dispatchLocationReportEmail'])->name('locations.dispatch-report');
+*/
+
+const dispatchReport = async (location) => {
+  try {
+    await axios.post(`/locations/${location.id}/dispatch-report`);
+    reportDispatched.value = true;
+  } catch (error) {
+    console.error('Error dispatching report:', error);
+  }
+};
+
+
 const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
@@ -296,6 +320,8 @@ const LabelsByLanguageCode = {
     weekly: 'Weekly',
     address: 'Address',
     update: 'Update',
+    sendReport: 'Send Report',
+    reportSent: 'Report Sent',
   },
   'es-MX': {
     currentLocation: 'Ubicación Actual',
@@ -315,6 +341,8 @@ const LabelsByLanguageCode = {
     weekly: 'Semanal',
     address: 'Dirección',
     update: 'Actualizar',
+    sendReport: 'Enviar Reporte',
+    reportSent: 'Reporte Enviado',
   },
   'zh-CN': {
     currentLocation: '当前位置',
@@ -334,6 +362,8 @@ const LabelsByLanguageCode = {
     weekly: '每周',
     address: '地址',
     update: '更新',
+    sendReport: '发送报告',
+    reportSent: '报告已发送',
   },
   'ht-HT': {
     currentLocation: 'Kote Kounye a',
@@ -353,6 +383,8 @@ const LabelsByLanguageCode = {
     weekly: 'Chak semèn',
     address: 'Adrès',
     update: 'Mizajou',
+    sendReport: 'Voye Rapò',
+    reportSent: 'Rapò voye',
   },
   'vi-VN': {
     currentLocation: 'Vị Trí Hiện Tại',
@@ -372,6 +404,8 @@ const LabelsByLanguageCode = {
     weekly: 'Hàng tuần',
     address: 'Địa chỉ',
     update: 'Cập nhật',
+    sendReport: 'Gửi Báo Cáo',
+    reportSent: 'Báo cáo đã gửi',
   },
   'pt-BR': {
     currentLocation: 'Localização Atual',
@@ -391,6 +425,8 @@ const LabelsByLanguageCode = {
     weekly: 'Semanal',
     address: 'Endereço',
     update: 'Atualizar',
+    sendReport: 'Enviar Relatório',
+    reportSent: 'Relatório Enviado',
   },
 };
 

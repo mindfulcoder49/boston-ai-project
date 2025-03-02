@@ -16,6 +16,10 @@ const form = useForm({
 const submit = () => {
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
+        onSuccess: () => {
+                // Redirect to the home page with a hard refresh
+                window.location.href = route('map.index');
+            },
     });
 };
 </script>

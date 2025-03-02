@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendLocationReportEmail;
 
 class LocationController extends Controller
 {
@@ -88,5 +89,14 @@ class LocationController extends Controller
         $location->delete();
 
         return response()->json(null, 204);
+    }
+
+    // New method to dispatch a single location report email
+    public function dispatchLocationReportEmail(Location $location)
+    {
+        // Dispatch a job to send the location report email
+        SendLocationReportEmail::dispatch($location);
+
+        return response()->json(['message' => 'Location report email dispatched'], 200);
     }
 }

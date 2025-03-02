@@ -443,6 +443,10 @@ const fetchData = async () => {
   } catch (error) {
     console.error('Error fetching data:', error);
     mapLoading.value = false;
+    //if it's a 419 error reload the page
+    if (error.response.status === 419) {
+      window.location.reload();
+    }
   }
 };
 
