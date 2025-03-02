@@ -13,7 +13,7 @@ const showingNavigationDropdown = ref(false);
 //function to replace :href="route('logout')" with a function that logs out the user and then refreshes the page
 function logout() {
     //log out the user and wait for the response to come back
-    $response = axios.get(route('logout'));
+    $response = axios.post(route('logout'));
 
     //if the response is successful, refresh the page
     if ($response.status == 302) {
