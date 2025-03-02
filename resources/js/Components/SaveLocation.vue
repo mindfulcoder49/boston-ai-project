@@ -57,6 +57,14 @@
           <option value="work">{{ LabelsByLanguageCode[getSingleLanguageCode].work }}</option>
           <option value="other">{{ LabelsByLanguageCode[getSingleLanguageCode].other }}</option>
         </select>
+        <!-- language input, a free text field -->
+        <input
+          type="text"
+          v-model="location.language"
+          class="px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm
+          pl-2 pr-8"
+          placeholder="Language"
+        />
         <button
           :disabled="isSaved || saving"
           @click="saveLocation"
@@ -118,7 +126,14 @@
             <option value="work">{{ LabelsByLanguageCode[getSingleLanguageCode].work }}</option>
             <option value="other">{{ LabelsByLanguageCode[getSingleLanguageCode].other }}</option>
           </select>
-
+          <!-- language input, a free text field -->
+          <input
+            type="text"
+            v-model="savedLocation.language"
+            class="px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm
+            pl-2 pr-8"
+            placeholder="Language"
+          />
           <button
             @click="updateLocation(savedLocation.id, savedLocation)"
             class="px-4 py-2 bg-blue-500 text-white shadow-sm hover:bg-blue-600 transition-colors"
@@ -221,6 +236,7 @@ const saveLocation = async () => {
       longitude: props.location.longitude,
       address: props.location.address || null,
       report: props.location.report || 'off',
+      language: props.location.language || 'English',
     };
     const response = await axios.post('/locations', payload);
     userLocations.value.push(response.data);
@@ -390,6 +406,7 @@ onMounted(() => {
   //if props.location.report is not set, set it to 'off'
   if (!props.location.report) {
     props.location.report = 'off';
+    props.location.language = 'English';
   }
 });
 </script>

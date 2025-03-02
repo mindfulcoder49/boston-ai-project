@@ -166,7 +166,7 @@ class SendLocationReportEmail implements ShouldQueue
     }
     private function getSystemPrompt(string $type) {
         // Customize the system prompt based on the data type.
-        $basePrompt = "You are a helpful assistant that generates concise summaries of city operations data in markdown format. ";
+        $basePrompt = "You are a helpful assistant that generates concise summaries of city operations data in markdown format. Create the report completely in the user specified language: " . $this->location->language . ". ";
         $typePrompt = "The following data is specifically about $type. ";
         $generalInstructions = "Provide a clear and informative overview, highlighting the most significant events. The report is for residents of the area. Be factual and do not speculate. Do not generate any kind of disclaimer or note at the end of the report.";
 

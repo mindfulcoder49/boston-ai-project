@@ -19,6 +19,7 @@ class Location extends Model
         'address',
         'user_id',
         'report',
+        'language',
     ];
 
     /**
