@@ -27,8 +27,15 @@ class DispatchLocationReports extends Command
      */
     public function handle()
     {
-        // Fetch locations with 'daily' report setting.  Using ::where() with a query is much faster.
-        $locations = Location::where('report', 'daily')->get();
+
+        // If it's Sunday include weekly reports
+        if (now()->isSunday()) {
+            $locations = Location::where('report', 'daily')
+                ->orWhere('report', 'weekly')
+                ->get();
+        } else {
+            $locations = Location::where('report', 'daily')->get();
+        }
 
         foreach ($locations as $location) {
             SendLocationReportEmail::dispatch($location);
