@@ -112,7 +112,7 @@ class SendLocationReportEmail implements ShouldQueue
             ];
         }
 
-        $contents = [
+        $contents[] = [
             [
                 'role' => 'user',
                 'parts' => [
