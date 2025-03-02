@@ -56,89 +56,37 @@ class SendLocationReportEmail implements ShouldQueue
                 return;
             }
 
-            // --- 2. Generate Report with Gemini API (Non-Streaming) ---
-            $apiKey = config('services.gemini.api_key');
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey";
-
-            $client = new Client();
-
-            // Prepare the request body.  Format data points as separate user messages.
-            $contents = [
-                [
-                    'role' => 'user', // System prompt as user
-                    'parts' => [
-                        ['text' => $this->getSystemPrompt()],
-                    ],
-                ],
-            ];
-
-            // Add each data point as a separate user message.
+            // --- 2. Group Data Points by Type ---
+            $groupedDataPoints = [];
             foreach ($mapData->dataPoints as $dataPoint) {
-                $contents[] = [
-                    'role' => 'user',
-                    'parts' => [
-                        ['text' => json_encode($dataPoint)],
-                    ],
-                ];
+                $type = $dataPoint->alcivartech_type;  // Use the human-readable type.
+                if (!isset($groupedDataPoints[$type])) {
+                    $groupedDataPoints[$type] = [];
+                }
+                $groupedDataPoints[$type][] = $dataPoint;
             }
 
-            // Add the final instruction.
-            $contents[] = [
-                'role' => 'user',
-                'parts' => [
-                    ['text' => "Generate a summary report for the data provided above."],
-                ],
-            ];
-
-            $requestBody = [
-                'contents' => $contents,
-                "generationConfig" => [
-                    "temperature" => 0.7,
-                    "maxOutputTokens" => 1024,
-                ]
-            ];
-
-
-            try {
-                $response = $client->post($url, [
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => $requestBody,
-                ]);
-
-                $responseBody = json_decode($response->getBody()->getContents(), true);
-
-                // Extract the generated text.
-                $report = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? 'No report generated.';
-
-                if (empty(trim($report)) || $report === 'No report generated.') {
-                    Log::warning("Empty or default report generated for location: {$this->location->address}. Response: " . json_encode($responseBody));
-                    return;
+            // --- 3. Generate Reports for Each Group ---
+            $reports = [];
+            foreach ($groupedDataPoints as $type => $dataPoints) {
+                $report = $this->generateReportForType($type, $dataPoints);
+                if ($report !== 'No report generated.') { // Only add non-empty reports
+                   $reports[$type] = $report;
                 }
-
-            } catch (RequestException $e) {
-                Log::error("Guzzle Request Exception: " . $e->getMessage());
-                if ($e->hasResponse()) {
-                    Log::error("Response Body: " . $e->getResponse()->getBody()->getContents());
-                }
-                throw $e;
-            } catch (ClientException $e) {
-                Log::error("Guzzle Client Exception: " . $e->getMessage());
-                if ($e->hasResponse()) {
-                    Log::error("Response Body: " . $e->getResponse()->getBody()->getContents());
-                }
-                throw $e;
-            } catch (\Exception $e) {
-                Log::error("Error generating report: " . $e->getMessage());
-                Log::error("Error in file: " . $e->getFile() . " on line: " . $e->getLine());
-                throw $e;
+            }
+            // --- 4. Combine Reports into a Single String ---
+            $combinedReport = '';
+            foreach ($reports as $type => $report) {
+                $combinedReport .= "## $type Report:\n\n$report\n\n"; // Add a heading for each type.
             }
 
-
-            // --- 3. Send Email ---
-            Mail::to($this->location->user->email)->send(new SendLocationReport($this->location, $report));
-            Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
+            // --- 5. Send Email (if there's a report to send)---
+            if (!empty($combinedReport)) {
+                Mail::to($this->location->user->email)->send(new SendLocationReport($this->location, $combinedReport));
+                Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
+            } else {
+               Log::info("No reports generated. No email was sent to {$this->location->user->email}");
+            }
 
         } catch (\Exception $e) {
             Log::error("Error processing report or sending email for location {$this->location->address}: {$e->getMessage()}");
@@ -147,9 +95,81 @@ class SendLocationReportEmail implements ShouldQueue
         }
     }
 
-    private function getSystemPrompt() {
-        return <<<EOT
-You are a helpful assistant that generates concise summaries of city operations data.  The data will include events like crime reports, 311 service requests, building permits, property violations, and construction work.  Provide a clear and informative overview, highlighting the most significant events.  The report is for residents of the area. Be factual and do not speculate. Do not generate any kind of disclaimer or note at the end of the report.
-EOT;
+    private function generateReportForType(string $type, array $dataPoints): string
+    {
+        $apiKey = config('services.gemini.api_key');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey";
+        $client = new Client();
+
+        $contents = [
+            [
+                'role' => 'user',
+                'parts' => [
+                    ['text' => $this->getSystemPrompt($type)], // Pass type to system prompt
+                ],
+            ],
+        ];
+
+        foreach ($dataPoints as $dataPoint) {
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [
+                    ['text' => json_encode($dataPoint)],
+                ],
+            ];
+        }
+
+        $contents[] = [
+            'role' => 'user',
+            'parts' => [
+                ['text' => "Generate a summary report for the $type data provided above."],
+            ],
+        ];
+
+        $requestBody = [
+            'contents' => $contents,
+            "generationConfig" => [
+                "temperature" => 0.7,
+                "maxOutputTokens" => 1024,
+            ]
+        ];
+
+        try {
+            $response = $client->post($url, [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+            $report = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? 'No report generated.';
+            return $report;
+
+        } catch (RequestException $e) {
+            Log::error("Guzzle Request Exception: " . $e->getMessage());
+            if ($e->hasResponse()) {
+                Log::error("Response Body: " . $e->getResponse()->getBody()->getContents());
+            }
+            throw $e;
+        } catch (ClientException $e) {
+            Log::error("Guzzle Client Exception: " . $e->getMessage());
+            if ($e->hasResponse()) {
+                Log::error("Response Body: " . $e->getResponse()->getBody()->getContents());
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error("Error generating report: " . $e->getMessage());
+            Log::error("Error in file: " . $e->getFile() . " on line: " . $e->getLine());
+            throw $e;
+        }
+    }
+    private function getSystemPrompt(string $type) {
+        // Customize the system prompt based on the data type.
+        $basePrompt = "You are a helpful assistant that generates concise summaries of city operations data in html format for inclusion in an email. ";
+        $typePrompt = "The following data is specifically about $type. ";
+        $generalInstructions = "Provide a clear and informative overview, highlighting the most significant events. The report is for residents of the area. Be factual and do not speculate. Do not generate any kind of disclaimer or note at the end of the report.";
+
+        return $basePrompt . $typePrompt . $generalInstructions;
     }
 }
