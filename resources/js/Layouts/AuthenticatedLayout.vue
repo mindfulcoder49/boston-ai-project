@@ -6,23 +6,15 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
+import axios from 'axios';
 
 const showingNavigationDropdown = ref(false);
 
 //function to replace :href="route('logout')" with a function that logs out the user and then refreshes the page
 function logout() {
     //log out the user
-    fetch('/logout', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    }).then(() => {
-        //wait 100ms before refreshing the page
-        setTimeout(() => {
-            //refresh the page
-            location.reload();
-        }, 100);
+    axios.post('/logout').then(() => {
+        window.location.reload();
     });
 }
 
