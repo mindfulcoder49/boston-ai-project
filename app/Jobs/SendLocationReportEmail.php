@@ -101,14 +101,7 @@ class SendLocationReportEmail implements ShouldQueue
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey";
         $client = new Client();
 
-        $contents = [
-            [
-                'role' => 'user',
-                'parts' => [
-                    ['text' => $this->getSystemPrompt($type)], // Pass type to system prompt
-                ],
-            ],
-        ];
+        $contents = [];
 
         foreach ($dataPoints as $dataPoint) {
             $contents[] = [
@@ -119,10 +112,12 @@ class SendLocationReportEmail implements ShouldQueue
             ];
         }
 
-        $contents[] = [
-            'role' => 'user',
-            'parts' => [
-                ['text' => "Generate a summary report for the $type data provided above."],
+        $contents = [
+            [
+                'role' => 'user',
+                'parts' => [
+                    ['text' => $this->getSystemPrompt($type)], // Pass type to system prompt
+                ],
             ],
         ];
 
