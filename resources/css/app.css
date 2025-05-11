@@ -8,16 +8,16 @@
   --section-color: #fafafa;
 
   /* Icon Colors */
-  --crime-icon-color: rgb(255, 78, 78);
-  --case-icon-color: rgb(128, 128, 255);
-  --permit-icon-color: rgb(114, 209, 114);
+  --crime-icon-color: rgb(252, 127, 127);
+  --case-icon-color: rgba(59, 130, 246, 0.9);
+  --permit-icon-color: rgb(138, 231, 138);
   /* add a yellow icon for property violations */
   --property-violation-icon-color: rgb(255, 255, 0);
   --construction-off-hour-icon-color: rgb(114, 203, 209);
   /* add transparent versions of each color */
-  --crime-icon-color-transparent: rgba(255, 78, 78, 0.9);
-  --case-icon-color-transparent: rgba(128, 128, 255, 0.9);
-  --permit-icon-color-transparent: rgba(114, 209, 114, 0.8);
+  --crime-icon-color-transparent: rgba(252, 127, 127, 0.9);
+  --case-icon-color-transparent: rgba(59, 130, 246, 0.9);
+  --permit-icon-color-transparent: rgba(138, 231, 138, 0.9);
   --property-violation-icon-color-transparent: rgba(255, 255, 0, 0.8);
   --construction-off-hour-icon-color-transparent: rgba(114, 203, 209, 0.8);
 

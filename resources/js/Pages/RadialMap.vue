@@ -4,25 +4,7 @@
       <title>Home</title>
     </Head>
 
-    <div>
-    <h2>Basic Plan - $5/month</h2>
-    <p>Get access to all basic features.</p>
-    <!-- Use Inertia Link to trigger the server-side redirect to Stripe 
-    <Link :href="route('subscribe.checkout')" class="btn btn-primary" method="get">
-      Subscribe
-    </Link> -->
-
-    <button @click="goToRoute(route('subscribe.checkout'))" class="px-4 py-2 text-white bg-blue-500  shadow-lg hover:bg-blue-600 transition-colors m-auto">
-      Subscribe
-    </button>
-
-    <p>Already a subscriber? 
-      <button @click="goToRoute(route('billing'))" class="px-4 py-2 text-white bg-blue-500  shadow-lg hover:bg-blue-600 transition-colors m-auto">
-        Go to Billing Portal
-      </button>
-    </p>
-
-  </div>
+    <SubscriptionBanner />
 
     <div class="before-map">
     <!-- Page Title -->
@@ -192,6 +174,7 @@ import { data } from 'autoprefixer';
 import PropertyViolation from '@/Components/PropertyViolation.vue';
 import OffHours from '@/Components/OffHours.vue';
 import { map } from 'leaflet';
+import SubscriptionBanner from '@/Components/SubscriptionBanner.vue';
 
 const filters = ref({});
 const allDataPoints = ref([]); // Store all fetched data points here

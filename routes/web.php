@@ -17,6 +17,7 @@ use Laravel\Cashier\Cashier;
 //User Model for user->subscriptions()
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\SubscriptionController;
 
 
 Route::middleware(['auth'])->group(function () {
@@ -73,39 +74,34 @@ Route::post('/api/natural-language-query', [CrimeMapController::class, 'naturalL
 Route::middleware(['auth'])->group(function () {
     // ... other auth routes ...
 
-    Route::get('/subscribe', function (Request $request) {
-        $priceId = Config::get('stripe.prices.basic_plan');
+    Route::get('/subscribe/{plan}', function (Request $request, $plan) {
+        $priceId = null;
+        if ($plan === 'basic') {
+            $priceId = Config::get('stripe.prices.basic_plan'); // Ensure this is in config/stripe.php
+        } elseif ($plan === 'pro') {
+            $priceId = Config::get('stripe.prices.pro_plan');   // Add this to config/stripe.php
+        }
 
-        // Use the newSubscription builder to create the checkout session
-        // This returns a RedirectResponse, which Inertia handles by performing a full page visit
+        if (!$priceId) {
+            abort(404, 'Subscription plan not found.');
+        }
+
         return $request->user()->newSubscription('default', $priceId)
             ->checkout([
-                'success_url' => route('subscription.success') . '?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('subscription.cancel'),
+                // Pass status to the subscription index page
+                'success_url' => route('subscription.index', ['status' => 'success', 'session_id' => '{CHECKOUT_SESSION_ID}']),
+                'cancel_url' => route('subscription.index', ['status' => 'cancel']),
             ]);
+    })->name('subscribe.checkout'); // Name changed slightly to be more generic, plan is a param
 
-    })->name('subscribe.checkout'); // Give it a name so you can link to it
-
-    // Define success and cancel routes - ADAPTED FOR INERTIA
-    Route::get('/subscribe/success', function (Request $request) {
-        // Handle successful checkout - webhook is CRUCIAL here
-        // You'll typically render an Inertia component
-        return Inertia::render('SubscriptionSuccess', [
-            // You could fetch session details here if needed, but the webhook is the source of truth
-            'sessionId' => $request->get('session_id'), // Passing session ID as prop is common
-        ]);
-    })->name('subscription.success');
-
-    Route::get('/subscribe/cancel', function (Request $request) {
-        // Handle canceled checkout - render an Inertia component
-        return Inertia::render('SubscriptionCancel');
-    })->name('subscription.cancel');
+    // REMOVE OLD success and cancel routes, as they now point to subscription.index
+    // Route::get('/subscribe/success', ...)->name('subscription.success'); // REMOVE
+    // Route::get('/subscribe/cancel', ...)->name('subscription.cancel');   // REMOVE
 
     Route::get('/billing-portal', function (Request $request) {
-        // Redirect the authenticated user to the Stripe Billing Portal
-        // Optionally provide a URL for them to return to after they're done
-        return $request->user()->redirectToBillingPortal(route('map.index'), [
-            'return_url' => route('map.index'),
-        ]);
-    })->name('billing'); // Name the route for easy linkin
+        return $request->user()->redirectToBillingPortal(route('subscription.index')); // Return to subscription page
+    })->name('billing');
 });
+
+Route::get('/subscription', [SubscriptionController::class, 'index'])
+    ->name('subscription.index'); // Page to show pricing plans & success/cancel messages
