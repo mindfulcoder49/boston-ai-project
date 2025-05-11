@@ -491,6 +491,8 @@ const setNewCenter = (latlng) => {
     centerSelected.value = true;
     centralLocation.value.latitude = latlng.lat;
     centralLocation.value.longitude = latlng.lng;
+    //set address to truncated latlng to three decimal places
+    centralLocation.value.address = `${latlng.lat.toFixed(3)}, ${latlng.lng.toFixed(3)}`;
     mapCenter.value = [latlng.lat, latlng.lng];
     destroyMap();
     fetchData();
@@ -803,7 +805,12 @@ watch(() => cancelNewMarker.value, (cancel) => {
 const updateCenterCoordinates = (coordinates) => {
     centralLocation.value.latitude = coordinates.lat;
     centralLocation.value.longitude = coordinates.lng;
-    centralLocation.value.address = coordinates.address;
+    //centralLocation.value.address = coordinates.address;
+    if ( coordinates.address ) {
+      centralLocation.value.address = coordinates.address;
+    } else {
+      centralLocation.value.address = coordinates.lat + ', ' + coordinates.lng;
+    }
     mapCenter.value = [coordinates.lat, coordinates.lng];
     destroyMap();
     fetchData();
@@ -821,7 +828,13 @@ const displayDataPoint = (dataPoint) => {
 const handleLoadLocation = (location) => {
     centralLocation.value.latitude = location.latitude;
     centralLocation.value.longitude = location.longitude;
-    centralLocation.value.address = location.address;
+    //centralLocation.value.address = location.address;
+    if ( location.address ) {
+      centralLocation.value.address = location.address;
+    } else {
+      centralLocation.value.address = location.latitude + ', ' + location.longitude;
+    }
+
     mapCenter.value = [location.latitude, location.longitude];
     destroyMap();
     fetchData();
