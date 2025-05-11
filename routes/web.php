@@ -74,7 +74,7 @@ Route::middleware(['auth'])->group(function () {
     // ... other auth routes ...
 
     Route::get('/subscribe', function (Request $request) {
-        $priceId = 'price_1RNKvODAolObUp5gTKCvh5KB'; // <-- Paste the Price ID you copied from Stripe here!
+        $priceId = Config::get('stripe.prices.basic_plan');
 
         // Use the newSubscription builder to create the checkout session
         // This returns a RedirectResponse, which Inertia handles by performing a full page visit
