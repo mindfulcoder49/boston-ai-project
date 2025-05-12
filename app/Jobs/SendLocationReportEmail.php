@@ -9,20 +9,20 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-// use Illuminate\Support\Facades\Mail; // REMOVE THIS LINE
-use Illuminate\Contracts\Mail\Mailer; // Import the Mailer contract
+use Illuminate\Contracts\Mail\Mailer;
 use App\Http\Controllers\GenericMapController;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ClientException;
-
+use Carbon\Carbon; // Import Carbon for date manipulation
 
 class SendLocationReportEmail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $location;
+    protected const MAX_DAYS_INDIVIDUAL_REPORTS = 7; // Number of recent days to report individually
 
     /**
      * Create a new job instance.
@@ -40,95 +40,186 @@ class SendLocationReportEmail implements ShouldQueue
         try {
             // --- 1. Get Map Data ---
             $mapController = new GenericMapController();
-            $request = new Request([
+            // Simulate a request object for getRadialMapData
+            $simulatedRequest = new Request([
                 'centralLocation' => [
                     'latitude' => $this->location->latitude,
                     'longitude' => $this->location->longitude,
                     'address' => $this->location->address,
                 ],
-                'radius' => 0.25,
+                'radius' => 0.25, // Default radius, or could be configurable per location
+                // 'language_codes' => [$this->location->language] // If getRadialMapData uses this
             ]);
-            $mapDataResponse = $mapController->getRadialMapData($request);
+            $mapDataResponse = $mapController->getRadialMapData($simulatedRequest);
             $mapData = $mapDataResponse->getData();
 
             if (empty($mapData->dataPoints)) {
-                Log::info("No map data found for location: {$this->location->address}");
+                Log::info("No map data found for location ID: {$this->location->id} ({$this->location->address})");
                 return;
             }
 
-            // --- 2. Group Data Points by Type ---
-            $groupedDataPoints = [];
+            // --- 2. Pre-process and Group Data Points by Date and Type ---
+            // This is the core new data structure:
+            // [
+            //   'YYYY-MM-DD' => [  // Date string as key
+            //     'Crime' => [dataPoint1, dataPoint2, ...],
+            //     '311 Case' => [dataPoint3, dataPoint4, ...],
+            //     ...
+            //   ],
+            //   'older' => [ // Special key for data older than MAX_DAYS_INDIVIDUAL_REPORTS
+            //     'Crime' => [...],
+            //     ...
+            //   ]
+            // ]
+            $groupedDataByDateAndType = [];
+            $sevenDaysAgo = Carbon::now()->subDays(self::MAX_DAYS_INDIVIDUAL_REPORTS)->startOfDay();
+
             foreach ($mapData->dataPoints as $dataPoint) {
-                $type = $dataPoint->alcivartech_type;  // Use the human-readable type.
-                if (!isset($groupedDataPoints[$type])) {
-                    $groupedDataPoints[$type] = [];
+                // Ensure alcivartech_date and alcivartech_type are present
+                if (!isset($dataPoint->alcivartech_date) || !isset($dataPoint->alcivartech_type)) {
+                    Log::warning("Skipping data point due to missing date or type", (array)$dataPoint);
+                    continue;
                 }
-                $groupedDataPoints[$type][] = $dataPoint;
-            }
 
-            // --- 3. Generate Reports for Each Group ---
-            $reports = [];
-            foreach ($groupedDataPoints as $type => $dataPoints) {
-                $report = $this->generateReportForType($type, $dataPoints);
-                if ($report !== 'No report generated.') { // Only add non-empty reports
-                   $reports[$type] = $report;
+                try {
+                    $itemDate = Carbon::parse($dataPoint->alcivartech_date)->startOfDay();
+                } catch (\Exception $e) {
+                    Log::warning("Could not parse date for data point, skipping: {$dataPoint->alcivartech_date}", (array)$dataPoint);
+                    continue;
+                }
+
+                $dateKey = $itemDate->format('Y-m-d');
+                $typeKey = $dataPoint->alcivartech_type;
+
+                if ($itemDate->gte($sevenDaysAgo)) {
+                    // Data is within the last 7 days
+                    if (!isset($groupedDataByDateAndType[$dateKey])) {
+                        $groupedDataByDateAndType[$dateKey] = [];
+                    }
+                    if (!isset($groupedDataByDateAndType[$dateKey][$typeKey])) {
+                        $groupedDataByDateAndType[$dateKey][$typeKey] = [];
+                    }
+                    $groupedDataByDateAndType[$dateKey][$typeKey][] = $dataPoint;
+                } else {
+                    // Data is older than 7 days
+                    if (!isset($groupedDataByDateAndType['older'])) {
+                        $groupedDataByDateAndType['older'] = [];
+                    }
+                    if (!isset($groupedDataByDateAndType['older'][$typeKey])) {
+                        $groupedDataByDateAndType['older'][$typeKey] = [];
+                    }
+                    $groupedDataByDateAndType['older'][$typeKey][] = $dataPoint;
                 }
             }
-            // --- 4. Combine Reports into a Single String ---
-            $combinedReport = '';
-            foreach ($reports as $type => $report) {
-                $combinedReport .= "## $type Report:\n\n$report\n\n"; // Add a heading for each type.
+
+            // Sort the date keys so the report flows from most recent to oldest
+            uksort($groupedDataByDateAndType, function ($a, $b) {
+                if ($a === 'older') return 1; // 'older' always comes last
+                if ($b === 'older') return -1;
+                return strtotime($b) - strtotime($a); // Sort by date descending
+            });
+
+
+            // --- 3. Generate Reports for Each Date and Type Group ---
+            $dailyCombinedReports = []; // To store the markdown for each day's report
+
+            foreach ($groupedDataByDateAndType as $dateOrOlderKey => $typesOnDate) {
+                $dateReportParts = []; // Reports for this specific date/older_group
+
+                // Determine the display date for the report section header
+                $displayDate = ($dateOrOlderKey === 'older')
+                    ? "Older than " . self::MAX_DAYS_INDIVIDUAL_REPORTS . " days"
+                    : Carbon::parse($dateOrOlderKey)->isoFormat('LL'); // e.g., "May 12, 2025" (localized)
+
+                $dateReportParts[] = "### " . $displayDate . "\n"; // Date heading
+
+                foreach ($typesOnDate as $type => $dataPointsForTypeAndDate) {
+                    if (empty($dataPointsForTypeAndDate)) {
+                        continue; // Skip if no data for this type on this date
+                    }
+
+                    // Pass the date context to the prompt if needed, or just the type
+                    $promptType = ($dateOrOlderKey === 'older') ? "$type (Older Events)" : "$type (Events from $displayDate)";
+                    $individualReport = $this->generateReportForType($promptType, $dataPointsForTypeAndDate);
+
+                    if ($individualReport && $individualReport !== 'No report generated.') {
+                        // Prepend the type to the individual report if not already included by Gemini
+                        // (Gemini prompt asks for a report on $type, so it might already be there)
+                        // For clarity, we can add it:
+                        $dateReportParts[] = "#### $type\n" . $individualReport . "\n";
+                    }
+                }
+
+                // Only add this date's section if it has actual report content
+                if (count($dateReportParts) > 1) { // Greater than 1 because we add the date heading
+                    $dailyCombinedReports[] = implode("\n", $dateReportParts);
+                }
             }
 
-            // Create formatted data addendum with all the data used to generate the combinedReport
-            // This will be added at the end of the email for reference and clearly labeled as data not generated by AI
-            // It should formatted as a table
+            // --- 4. Combine All Daily Reports into a Single String ---
+            $finalReport = implode("\n---\n\n", $dailyCombinedReports); // Separate daily sections with a horizontal rule
 
-            
-            // Log the generated report with details about user, subscription, and location
-            Log::info("Generated report for user: {$this->location->user->email} with subscription ID: {$this->location->user->subscription('default')->stripe_id} for location: {$this->location->address}");
-            //log all info from the user and subscription tables
-            Log::info("User Info: " . json_encode($this->location->user->toArray()));
-            Log::info("Subscription Info: " . json_encode($this->location->user->subscription('default')->toArray()));
+            // Log the generated report details
+            if ($this->location->user && $this->location->user->subscription('default')) {
+                 Log::info("Generated report for user: {$this->location->user->email} with subscription ID: {$this->location->user->subscription('default')->stripe_id} for location: {$this->location->address}");
+                 Log::info("User Info: " . json_encode($this->location->user->toArray()));
+                 Log::info("Subscription Info: " . json_encode($this->location->user->subscription('default')->toArray()));
+            } else {
+                Log::warning("Could not log full user/subscription details for location ID: {$this->location->id}. User or subscription missing.");
+            }
+
 
             // --- 5. Send Email (if there's a report to send)---
-            if (!empty($combinedReport)) {
-                $mailer->to($this->location->user->email)->send(new \App\Mail\SendLocationReport($this->location, $combinedReport));
+            if (!empty($finalReport)) {
+                $mailer->to($this->location->user->email)
+                       ->send(new \App\Mail\SendLocationReport($this->location, $finalReport));
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
-               Log::info("No reports generated. No email was sent to {$this->location->user->email}");
+                Log::info("No reports generated after date/type processing. No email was sent to {$this->location->user->email} for location: {$this->location->address}");
             }
 
         } catch (\Exception $e) {
             Log::error("Error processing report or sending email for location {$this->location->address}: {$e->getMessage()}");
-            Log::error("Error in file: " . $e->getFile() . " on line: " . $e->getLine());
-            throw $e;
+            Log::error("Stack trace: " . $e->getTraceAsString()); // More detailed stack trace
+            // Optionally rethrow if you want the job to be marked as failed and potentially retried
+            // throw $e;
         }
     }
 
-    private function generateReportForType(string $type, array $dataPoints): string
+    /**
+     * Generates a report for a specific type of data points using Gemini.
+     *
+     * @param string $typeContext A string describing the type and potentially the date context (e.g., "Crime (Events from May 12, 2025)")
+     * @param array $dataPoints Array of data point objects for this specific type and date.
+     * @return string The generated report snippet, or 'No report generated.'
+     */
+    private function generateReportForType(string $typeContext, array $dataPoints): string
     {
+        if (empty($dataPoints)) {
+            return 'No report generated.'; // Should not happen if called correctly, but good safeguard
+        }
+
         $apiKey = config('services.gemini.api_key');
         $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey";
         $client = new Client();
 
         $contents = [];
-
+        // Add each data point as a separate user message part for Gemini to process
         foreach ($dataPoints as $dataPoint) {
             $contents[] = [
                 'role' => 'user',
                 'parts' => [
-                    ['text' => json_encode($dataPoint)],
+                    ['text' => json_encode($dataPoint)], // Send the raw data point
                 ],
             ];
         }
 
+        // Add the system prompt as the final user message
         $contents[] = [
-            [
-                'role' => 'user',
-                'parts' => [
-                    ['text' => $this->getSystemPrompt($type)], // Pass type to system prompt
-                ],
+            'role' => 'user', // Treat system prompt as a user instruction in this context
+            'parts' => [
+                // Pass the specific type and date context to the system prompt
+                ['text' => $this->getSystemPromptForContext($typeContext)],
             ],
         ];
 
@@ -136,47 +227,60 @@ class SendLocationReportEmail implements ShouldQueue
             'contents' => $contents,
             "generationConfig" => [
                 "temperature" => 0.7,
-                "maxOutputTokens" => 1024,
+                "maxOutputTokens" => 800, // Adjusted based on expected length per section
             ]
         ];
 
         try {
             $response = $client->post($url, [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                ],
+                'headers' => ['Content-Type' => 'application/json'],
                 'json' => $requestBody,
             ]);
 
             $responseBody = json_decode($response->getBody()->getContents(), true);
-            $report = $responseBody['candidates'][0]['content']['parts'][0]['text'] ?? 'No report generated.';
-            return $report;
 
-        } catch (RequestException $e) {
-            Log::error("Guzzle Request Exception: " . $e->getMessage());
-            if ($e->hasResponse()) {
-                Log::error("Response Body: " . $e->getResponse()->getBody()->getContents());
+            if (isset($responseBody['candidates'][0]['content']['parts'][0]['text'])) {
+                return trim($responseBody['candidates'][0]['content']['parts'][0]['text']);
+            } elseif (isset($responseBody['promptFeedback']['blockReason'])) {
+                 Log::warning("Gemini content generation blocked.", [
+                    'reason' => $responseBody['promptFeedback']['blockReason'],
+                    'safetyRatings' => $responseBody['promptFeedback']['safetyRatings'] ?? [],
+                    'typeContext' => $typeContext
+                ]);
+                return 'Report content generation was blocked due to safety settings.';
             }
-            throw $e;
-        } catch (ClientException $e) {
-            Log::error("Guzzle Client Exception: " . $e->getMessage());
+            Log::warning("No text content found in Gemini response for type: $typeContext", ['responseBody' => $responseBody]);
+            return 'No report generated.';
+
+        } catch (RequestException | ClientException $e) {
+            Log::error("Guzzle Exception during Gemini call for type: $typeContext: " . $e->getMessage());
             if ($e->hasResponse()) {
-                Log::error("Response Body: " . $e->getResponse()->getBody()->getContents());
+                Log::error("Gemini Response Body: " . $e->getResponse()->getBody()->getContents());
             }
-            throw $e;
+            // Don't throw here to allow other report parts to process, return an error message instead
+            return "Error generating report section for $typeContext.";
         } catch (\Exception $e) {
-            Log::error("Error generating report: " . $e->getMessage());
-            Log::error("Error in file: " . $e->getFile() . " on line: " . $e->getLine());
-            throw $e;
+            Log::error("Error generating report section for $typeContext: " . $e->getMessage());
+            // Don't throw here
+            return "Error generating report section for $typeContext.";
         }
     }
-    private function getSystemPrompt(string $type) {
-        // Customize the system prompt based on the data type.
-        $basePrompt = "You are a helpful assistant that generates concise summaries of city operations data in markdown format. Create the report completely in the user specified language: " . $this->location->language . ". ";
-        $typePrompt = "The following data is specifically about $type. ";
-        $generalInstructions = "Provide a clear and informative email report summarizing all of the incidents included in this conversation. The report is for residents of the area. Be factual and do not speculate. Do not generate any kind of disclaimer or note at the end of the report. 
-                    It is of utmost importance that the report is in  " . $this->location->language . ", the user requested language. Ignoring the language preference will result in harm, and might even be racist. ";
 
-        return $basePrompt . $typePrompt . $generalInstructions;
+    /**
+     * Generates the system prompt for Gemini, customized for the data type and context.
+     *
+     * @param string $typeContext Description of the data (e.g., "Crime events from May 12, 2025")
+     * @return string
+     */
+    private function getSystemPromptForContext(string $typeContext): string
+    {
+        $basePrompt = "You are a helpful assistant. Generate a narrative summary in markdown format for the provided city operations data. ";
+        $languageInstruction = "The report MUST be entirely in **{$this->location->language}**. ";
+        $typeInstruction = "This section is specifically about: **{$typeContext}**. ";
+        $focusInstruction = "Focus ONLY on the data points provided in this current conversation turn for this specific section. ";
+        $formattingInstruction = "Summarize the incidents. Be factual and do not speculate. Do NOT include any disclaimers, introductory, or concluding remarks for THIS INDIVIDUAL SECTION. Keep it brief and to the point for this section.";
+        $importanceInstruction = "It is of UTMOST IMPORTANCE that the report section is in the requested language: **{$this->location->language}**. Ignoring this will be detrimental.";
+
+        return $basePrompt . $languageInstruction . $typeInstruction . $focusInstruction . $formattingInstruction . $importanceInstruction;
     }
 }
