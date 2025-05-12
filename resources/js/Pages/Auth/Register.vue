@@ -103,6 +103,13 @@ const submit = () => {
                 </PrimaryButton>
             </div>
         </form>
+        <div class="flex flex-col space-y-2">
+         <a :href="route('socialite.redirect', 'google')"
+               class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+             <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+             Sign in with Google
+        </a>
+     </div>
         </section>
     </GuestLayout>
 </template>

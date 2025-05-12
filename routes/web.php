@@ -18,6 +18,7 @@ use Laravel\Cashier\Cashier;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\Auth\SocialLoginController;
 
 
 Route::middleware(['auth'])->group(function () {
@@ -105,3 +106,6 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/subscription', [SubscriptionController::class, 'index'])
     ->name('subscription.index'); // Page to show pricing plans & success/cancel messages
+
+Route::get('/login/{provider}/redirect', [SocialLoginController::class, 'redirectToProvider'])->name('socialite.redirect');
+Route::get('/login/{provider}/callback', [SocialLoginController::class, 'handleProviderCallback'])->name('socialite.callback');
