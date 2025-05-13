@@ -115,7 +115,6 @@ class ThreeOneOneCaseController extends Controller
     {
         $validated = $request->validate([
             'case_enquiry_ids' => 'required|array',
-            'case_enquiry_ids.*' => 'distinct', // Ensure each ID is a string and unique
         ]);
 
         $caseEnquiryIds = $validated['case_enquiry_ids'];
@@ -123,6 +122,8 @@ class ThreeOneOneCaseController extends Controller
         if (empty($caseEnquiryIds)) {
             return response()->json(['error' => 'No case enquiry IDs provided.'], 400);
         }
+        // deduplicate the case enquiry IDs
+        $caseEnquiryIds = array_unique($caseEnquiryIds);
 
         // The Boston API expects a comma-separated string for multiple service_request_id
         $serviceRequestIdsString = implode(',', $caseEnquiryIds);
