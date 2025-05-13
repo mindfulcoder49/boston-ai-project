@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Mail\Mailer;
 use App\Http\Controllers\GenericMapController;
+use App\Http\Controllers\ThreeOneOneCaseController; // Added import
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -119,6 +120,70 @@ class SendLocationReportEmail implements ShouldQueue
                 return strtotime($b) - strtotime($a); // Sort by date descending
             });
 
+            // --- 2.5. Enrich 311 Data with Live API Call ---
+            $threeOneOneController = new ThreeOneOneCaseController();
+            foreach ($groupedDataByDateAndType as $dateOrOlderKey => &$typesOnDate) { // Use reference for $typesOnDate
+                if (isset($typesOnDate['311 Case']) && !empty($typesOnDate['311 Case'])) {
+                    $serviceRequestIds = [];
+                    foreach ($typesOnDate['311 Case'] as $dataPoint) {
+                        if (isset($dataPoint->service_request_id) && !empty($dataPoint->service_request_id)) {
+                            $serviceRequestIds[] = $dataPoint->service_request_id;
+                        }
+                    }
+                    $serviceRequestIds = array_unique($serviceRequestIds); // Ensure unique IDs
+
+                    if (!empty($serviceRequestIds)) {
+                        Log::info("Attempting to fetch live 311 data for location {$this->location->id}, date/group '{$dateOrOlderKey}', IDs: " . implode(', ', $serviceRequestIds));
+                        try {
+                            // Prepare a request object for getMultiple.
+                            // Assumes getMultiple expects 'service_request_ids' in the request input.
+                            $idFetchingRequest = new Request();
+                            $idFetchingRequest->merge(['service_request_ids' => $serviceRequestIds]);
+
+                            $liveDataResponse = $threeOneOneController->getMultiple($idFetchingRequest);
+
+                            if ($liveDataResponse->getStatusCode() === 200) {
+                                $liveCasesData = json_decode($liveDataResponse->getContent(), false); // false for object output
+
+                                // Check if response is a Laravel Resource (e.g., has a 'data' property)
+                                $liveCases = $liveCasesData->data ?? $liveCasesData;
+
+
+                                if (is_array($liveCases) && !empty($liveCases)) {
+                                    $liveCasesMap = [];
+                                    foreach ($liveCases as $liveCase) {
+                                        if (isset($liveCase->service_request_id)) {
+                                            $liveCasesMap[$liveCase->service_request_id] = $liveCase;
+                                        }
+                                    }
+
+                                    $enrichedDataPoints = [];
+                                    foreach ($typesOnDate['311 Case'] as $originalDataPoint) {
+                                        if (isset($originalDataPoint->service_request_id) && isset($liveCasesMap[$originalDataPoint->service_request_id])) {
+                                            $liveVersion = $liveCasesMap[$originalDataPoint->service_request_id];
+                                            // Merge: live data supplements/overrides historical.
+                                            $merged = (object) array_merge((array) $originalDataPoint, (array) $liveVersion);
+                                            $enrichedDataPoints[] = $merged;
+                                            Log::info("Enriched 311 case {$originalDataPoint->service_request_id} for location {$this->location->id}");
+                                        } else {
+                                            $enrichedDataPoints[] = $originalDataPoint; // Keep original if no live data found
+                                        }
+                                    }
+                                    $typesOnDate['311 Case'] = $enrichedDataPoints; // Update the array
+                                } else {
+                                    Log::info("No live 311 cases returned or empty array for location {$this->location->id}, date/group '{$dateOrOlderKey}'. IDs: " . implode(', ', $serviceRequestIds));
+                                }
+                            } else {
+                                Log::warning("Failed to fetch live 311 data for location {$this->location->id}, date/group '{$dateOrOlderKey}'. Status: " . $liveDataResponse->getStatusCode() . " IDs: " . implode(', ', $serviceRequestIds));
+                            }
+                        } catch (\Exception $e) {
+                            Log::error("Error fetching or merging live 311 data for location {$this->location->id}, date/group '{$dateOrOlderKey}': " . $e->getMessage() . " IDs: " . implode(', ', $serviceRequestIds));
+                        }
+                    }
+                }
+            }
+            unset($typesOnDate); // Unset reference after loop
+
 
             // --- 3. Generate Reports for Each Date and Type Group ---
             $dailyCombinedReports = []; // To store the markdown for each day's report
@@ -200,7 +265,8 @@ class SendLocationReportEmail implements ShouldQueue
         }
 
         $apiKey = config('services.gemini.api_key');
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey";
+        //$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey";
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=$apiKey";
         $client = new Client();
 
         $contents = [];

@@ -41,6 +41,7 @@ return [
 
     'bostongov' => [
         'api_key' => env('BOSTON_API_KEY'),
+        'base_url' => env('BOSTON_311_BASE_URL', 'https://311.boston.gov/open311/v2'),
     ],
 
     'gemini' => [

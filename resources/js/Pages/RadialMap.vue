@@ -433,6 +433,74 @@ const fetchData = async () => {
     if (error.response.status === 419) {
       window.location.reload();
     }
+  } finally {
+    mapLoading.value = false;
+    //get 311 data for all 311 data points
+    (async () => {
+      try {
+        if (allDataPoints.value && allDataPoints.value.length > 0) {
+          const threeOneOneCases = allDataPoints.value.filter(
+            dp => dp.alcivartech_type === '311 Case' && dp.case_enquiry_id
+          );
+
+          if (threeOneOneCases.length > 0) {
+            const caseEnquiryIds = threeOneOneCases.map(dp => dp.case_enquiry_id);
+            
+            const liveDetailsResponse = await axios.post('/api/311-case/live-multiple', {
+              case_enquiry_ids: caseEnquiryIds,
+            }, {
+              headers: {
+                'X-CSRF-TOKEN': csrfToken,
+              },
+            });
+
+            const liveDataArray = liveDetailsResponse.data.data;
+
+            if (liveDataArray && Array.isArray(liveDataArray)) {
+              const liveDataMap = new Map();
+              liveDataArray.forEach(liveCase => {
+                // Assuming the live case data has 'service_request_id' that matches 'case_enquiry_id'
+                if (liveCase.service_request_id) {
+                  liveDataMap.set(liveCase.service_request_id.toString(), liveCase);
+                }
+              });
+
+              allDataPoints.value = allDataPoints.value.map(dp => {
+                if (dp.alcivartech_type === '311 Case' && dp.case_enquiry_id) {
+                  const liveDetail = liveDataMap.get(dp.case_enquiry_id.toString());
+                  if (liveDetail) {
+                    // Add live details to the data point, e.g., under a 'live_details' property
+                    return { ...dp, live_details: liveDetail };
+                  }
+                }
+                return dp;
+              });
+
+              // Re-apply filters to ensure UI reflects any changes from live data
+              applyFilters();
+
+              // If the currently selected data point is a 311 case, update it too
+              if (selectedDataPoint.value &&
+                  selectedDataPoint.value.alcivartech_type === '311 Case' &&
+                  selectedDataPoint.value.case_enquiry_id) {
+                const liveDetailForSelected = liveDataMap.get(selectedDataPoint.value.case_enquiry_id.toString());
+                if (liveDetailForSelected) {
+                  selectedDataPoint.value = { ...selectedDataPoint.value, live_details: liveDetailForSelected };
+                }
+              }
+            }
+          }
+        }
+      } catch (liveError) {
+        console.error('Error fetching or processing live 311 case details:', liveError);
+        if (liveError.response && liveError.response.status === 419) {
+          window.location.reload(); // CSRF token expired
+        }
+        // Non-blocking error for live data, main data might still be useful.
+      } finally {
+        mapLoading.value = false; // Ensure loading is set to false after all operations
+      }
+    })();
   }
 };
 
