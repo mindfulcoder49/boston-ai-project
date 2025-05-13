@@ -80,22 +80,22 @@ const dataTypeMapByLanguageCode = {
 
   const LabelsByLanguageCode = {
     'en-US': {
-      pageTitle: 'Boston City Govt Activity Map',
+      pageTitle: 'BostonScope',
     },
     'es-MX': {
-      pageTitle: 'Mapa de Actividades del Gobierno de la Ciudad de Boston',
+      pageTitle: 'BostonScope',
     },
     'zh-CN': {
-      pageTitle: '波士顿市政府活动地图',
+      pageTitle: '波士顿市政府活动地图', //translation literal: 'Boston City Government Activity Map',
     },
     'ht-HT': {
-      pageTitle: 'Kat Aktivite Gouvènman Vil Boston',
+      pageTitle: 'BostonScope',
     },
     'vi-VN': {
-      pageTitle: 'Bản đồ Hoạt động Chính phủ Thành phố Boston',
+      pageTitle: 'Bản đồ hoạt động của Chính phủ Thành phố Boston',
     },
     'pt-BR': {
-      pageTitle: 'Mapa de Atividades do Governo da Cidade de Boston',
+      pageTitle: 'BostonScope',
     },
   };
 

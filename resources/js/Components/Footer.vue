@@ -3,7 +3,7 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold text-white mb-3">Cityscope</h3>
+                    <h3 class="text-lg font-semibold text-white mb-3">BostonScope</h3>
                     <p class="text-sm">
                         Providing insights into your urban environment.
                         <!-- Short tagline or description -->
@@ -46,7 +46,7 @@
             </div>
             <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
                 <p>&copy; {{ new Date().getFullYear() }} AlcivarTech LLC. All rights reserved.</p>
-                <p class="mt-1">Cityscope - Know Your City.</p>
+                <p class="mt-1">BostonScope - Know Your City.</p>
             </div>
         </div>
     </footer>

@@ -220,27 +220,6 @@ const goToRoute = ( route ) => {
   window.location.href = route;
 }
 
-const LabelsByLanguageCode = {
-  'en-US': {
-    pageTitle: 'Boston City Govt Activity Map',
-  },
-  'es-MX': {
-    pageTitle: 'Mapa de Actividades del Gobierno de la Ciudad de Boston',
-  },
-  'zh-CN': {
-    pageTitle: '波士顿市政府活动地图',
-  },
-  'ht-HT': {
-    pageTitle: 'Kat Aktivite Gouvènman Vil Boston',
-  },
-  'vi-VN': {
-    pageTitle: 'Bản đồ Hoạt động Chính phủ Thành phố Boston',
-  },
-  'pt-BR': {
-    pageTitle: 'Mapa de Atividades do Governo da Cidade de Boston',
-  },
-};
-
 const getSingleLanguageCode = computed(() => {
   return language_codes.value[0];
 });
