@@ -19,6 +19,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Auth\SocialLoginController;
+use App\Http\Controllers\EmailController;
 
 
 Route::middleware(['auth'])->group(function () {
@@ -109,3 +110,22 @@ Route::get('/subscription', [SubscriptionController::class, 'index'])
 
 Route::get('/login/{provider}/redirect', [SocialLoginController::class, 'redirectToProvider'])->name('socialite.redirect');
 Route::get('/login/{provider}/callback', [SocialLoginController::class, 'handleProviderCallback'])->name('socialite.callback');
+
+Route::get('/privacy-policy', function () {
+    return Inertia::render('Legal/PrivacyPolicy');
+})->name('privacy.policy');
+
+Route::get('/terms-of-use', function () {
+    return Inertia::render('Legal/TermsOfUse');
+})->name('terms.of.use');
+
+Route::get('/about-us', function () {
+    return Inertia::render('Company/AboutUs');
+})->name('about.us');
+
+Route::get('/help-contact', function () {
+    return Inertia::render('Support/HelpContact');
+})->name('help.contact');
+
+Route::post('/feedback', [EmailController::class, 'store'])
+    ->name('feedback.store');
