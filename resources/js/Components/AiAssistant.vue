@@ -271,11 +271,5 @@ watch(() => props.language_codes, (newLanguageCodes) => {
 
 <style scoped>
 
-@media screen and (min-width: 768px) {
-
-  .ai-assistant {
-    width: 50%;
-  }
-}
 
 </style>

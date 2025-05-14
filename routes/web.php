@@ -73,8 +73,8 @@ Route::post('/api/crime-data', [CrimeMapController::class, 'getCrimeData'])->nam
 Route::get('/crime-map', [CrimeMapController::class, 'index'])->name('crime-map');
 Route::post('/api/natural-language-query', [CrimeMapController::class, 'naturalLanguageQuery'])->name('crime-map.natural-language-query');
 
-Route::get('/api/311-case/live/{case_enquiry_id}', [ThreeOneOneCaseController::class, 'getLiveCaseDetails'])->name('311case.live');
-Route::post('api/311-case/live-multiple', [ThreeOneOneCaseController::class, 'getMultipleLiveCaseDetails']);
+Route::get('/api/311-case/live/{case_enquiry_id}', [ThreeOneOneCaseController::class, 'getLiveCaseDetails'])->name('311case.live')->middleware('throttle:boston_311_live_global');
+Route::post('api/311-case/live-multiple', [ThreeOneOneCaseController::class, 'getMultipleLiveCaseDetails'])->middleware('throttle:boston_311_live_global');
 
 Route::middleware(['auth'])->group(function () {
     // ... other auth routes ...

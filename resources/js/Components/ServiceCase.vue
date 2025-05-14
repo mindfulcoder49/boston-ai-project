@@ -215,6 +215,8 @@
   const isLoadingLiveData = ref(false);
   const liveDataError = ref(null);
 
+
+
   const fetchLiveDetails = async () => {
     if (!props.data || !props.data.case_enquiry_id) {
       liveDataError.value = 'Case ID is missing from the current record.';
@@ -257,13 +259,17 @@
   };
 
   onMounted(() => {
-    if (props.data && props.data.case_enquiry_id) {
-      fetchLiveDetails();
+    if (props.data && props.data.case_enquiry_id && !liveApiData.value) {
+      //fetchLiveDetails();
+    }
+    if (props.data.live_details) {
+      liveApiData.value = props.data.live_details;
     }
   });
-
+  
   watch(() => props.data, (newData, oldData) => {
     // Reset live data if the case_enquiry_id changes or data becomes null
+    /*
     if (!newData || (oldData && newData.case_enquiry_id !== oldData.case_enquiry_id)) {
       liveApiData.value = null;
       liveDataError.value = null;
@@ -274,10 +280,15 @@
       if (!oldData || newData.case_enquiry_id !== oldData.case_enquiry_id || !liveApiData.value) {
          fetchLiveDetails();
       }
+    } */
+
+    if (props.data.live_details) {
+      liveApiData.value = props.data.live_details;
     }
   }, { deep: true }); // Use deep watch if internal properties of data might change without data itself being a new object.
                       // If data is always a new object on change, deep might not be necessary.
                       // Given it's a prop, it's safer to assume it might be mutated or replaced.
-</script>
+  
+ </script>
 
 <style scoped></style>
