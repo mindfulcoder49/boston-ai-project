@@ -30,6 +30,7 @@
     </div>
 
     
+    <div class="map-controls-container">
       <MapDisplay
         ref="mapDisplayRef"
         :mapCenterCoordinates="mapCenter"
@@ -52,6 +53,7 @@
             :singleLanguageCode="getSingleLanguageCode"
             @filters-updated="handleFiltersUpdated"
         />
+  </div>
         <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick" />
   
 
@@ -434,13 +436,13 @@ onMounted(() => {
   .map-controls-container { /* New container for MapFiltersControl and ImageCarousel */
     width: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction:row;
   }
   .case-details {
     width: 100%;  /* Assuming this was the intended layout alongside map controls */
   }
   .boston-map { /* This class is now inside MapDisplay.vue, ensure it is styled from there or globally if needed */
-    width: 100%; 
+    width: 80%; 
     height: 70vh
   }
 

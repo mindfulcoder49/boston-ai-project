@@ -1,6 +1,6 @@
 <template>
     <div class="map-controls">
-      <div class="filter-container flex justify-center">
+      <div class="filter-container flex flex-col justify-center">
         <div
           v-for="(isActive, type) in internalFiltersState"
           :key="type"
@@ -17,7 +17,13 @@
       </div>
   
       <div class="date-filter-container flex flex-col w-full">
-        <div class="flex flex-wrap justify-between">
+        <div class="flex flex-col justify-between">
+            <button
+            @click="handleClearDateSelections"
+            class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors show-all-dates"
+          >
+            {{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse]?.allDatesButton }}
+          </button>
           <button
             v-for="(date, index) in availableDates"
             :key="index"
@@ -26,16 +32,11 @@
               'bg-blue-500 text-white': internalSelectedDates.includes(date),
               'bg-gray-200 hover:bg-gray-300': !internalSelectedDates.includes(date),
             }"
-            class="px-4 py-2 shadow transition-colors w-1/5"
+            class="px-4 py-2 shadow transition-colors"
           >
             {{ new Date(date).toLocaleDateString(singleLanguageCodeToUse, { weekday: 'short', month: 'short', day: 'numeric' }) }}
           </button>
-          <button
-            @click="handleClearDateSelections"
-            class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors w-1/2 show-all-dates"
-          >
-            {{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse]?.allDatesButton }}
-          </button>
+
         </div>
       </div>
     </div>
@@ -83,6 +84,8 @@
       dates.push(new Date(currentDate).toISOString().split('T')[0]);
       currentDate.setDate(currentDate.getDate() + 1);
     }
+    //sort the dates in descending order
+    dates.sort((a, b) => new Date(b) - new Date(a));
     return dates;
   });
   
@@ -153,14 +156,19 @@
       width:auto;
     }
     .date-filter-container button {
-      width: 33%;
+      width:100%;
       font-size: 0.8rem;
     }
     .map-controls {
-      width: 100%;
+      width: 20%;
+      max-height: 70vh;
+        overflow-y: auto;
     }
     .show-all-dates {
       width:auto;
+    }
+    div {
+        width:100%;
     }
   
   </style>
