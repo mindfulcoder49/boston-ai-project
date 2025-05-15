@@ -115,18 +115,16 @@ class ThreeOneOneCaseController extends Controller
     {
         $validated = $request->validate([
             'case_enquiry_ids' => 'required|array',
+            'case_enquiry_ids.*' => 'string', // Ensure IDs are strings
         ]);
 
         $caseEnquiryIds = $validated['case_enquiry_ids'];
 
         if (empty($caseEnquiryIds)) {
-            return response()->json(['error' => 'No case enquiry IDs provided.'], 400);
+            return response()->json(['data' => []]); // Return empty data if no IDs provided
         }
         // deduplicate the case enquiry IDs
-        $caseEnquiryIds = array_unique($caseEnquiryIds);
-
-        // The Boston API expects a comma-separated string for multiple service_request_id
-        $serviceRequestIdsString = implode(',', $caseEnquiryIds);
+        $caseEnquiryIds = array_values(array_unique($caseEnquiryIds)); // array_values to reindex
 
         $apiKey = Config::get('services.bostongov.api_key');
         $baseUrl = Config::get('services.bostongov.base_url', 'https://311.boston.gov/open311/v2');
@@ -136,37 +134,50 @@ class ThreeOneOneCaseController extends Controller
             return response()->json(['error' => 'Service configuration error.'], 500);
         }
 
-        // Construct the URL as per Open311 spec for multiple requests
-        // e.g., https://311.boston.gov/open311/v2/requests.json?api_key=YOUR_API_KEY&service_request_id=ID1,ID2,ID3
-        $apiUrl = "{$baseUrl}/requests.json?api_key={$apiKey}&service_request_id={$serviceRequestIdsString}";
+        $allCaseData = [];
+        $chunkedCaseEnquiryIds = array_chunk($caseEnquiryIds, 50); // API limit of 50 per request
 
-        try {
-            $response = Http::timeout(30)->get($apiUrl); // Increased timeout for potentially larger response
-
-            if ($response->failed()) {
-                Log::error("Boston 311 API request failed for multiple case IDs. Status: " . $response->status() . " Body: " . $response->body());
-                return response()->json(['error' => 'Failed to fetch data from Boston 311 API for multiple cases.', 'details' => $response->json() ?: $response->body()], $response->status());
+        foreach ($chunkedCaseEnquiryIds as $index => $chunk) {
+            if (empty($chunk)) {
+                continue;
             }
 
-            $data = $response->json();
+            $serviceRequestIdsString = implode(',', $chunk);
+            $apiUrl = "{$baseUrl}/requests.json?api_key={$apiKey}&service_request_id={$serviceRequestIdsString}";
 
-            // According to Open311, the response should be an array of service_requests.
-            // If $data is null or not an array, it might indicate an issue or an empty valid response.
-            if (!is_array($data)) {
-                 Log::warning("Boston 311 API returned non-array data for multiple case IDs. Body: " . $response->body());
-                 // Depending on API behavior, an empty array might be valid if no cases are found or all are invalid.
-                 // If an error is expected, this might need adjustment.
-                 // For now, return what we got, which might be an empty array if $data was null and json() produced it.
+            try {
+                $response = Http::timeout(30)->get($apiUrl); // Timeout per chunk request
+
+                if ($response->failed()) {
+                    Log::error("Boston 311 API request failed for chunk of case IDs. Status: " . $response->status() . " Body: " . $response->body());
+                    return response()->json(['error' => 'Failed to fetch data from Boston 311 API for a batch of cases.', 'details' => $response->json() ?: $response->body()], $response->status());
+                }
+
+                $data = $response->json();
+
+                if (is_array($data)) {
+                    // The API returns an array of service_requests. Merge them.
+                    $allCaseData = array_merge($allCaseData, $data);
+                } else {
+                    Log::warning("Boston 311 API returned non-array data for chunk of case IDs. Body: " . $response->body());
+                    // If one chunk returns invalid data, we might want to stop and report an error.
+                    return response()->json(['error' => 'Boston 311 API returned invalid data for a batch of cases.'], 500);
+                }
+
+                // Rate limit: sleep for 1 second if there are more chunks to process
+                if ($index < count($chunkedCaseEnquiryIds) - 1) {
+                    sleep(1);
+                }
+
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                Log::error("Boston 311 API connection error for chunk of case IDs: " . $e->getMessage());
+                return response()->json(['error' => 'Could not connect to Boston 311 API.'], 503);
+            } catch (\Exception $e) {
+                Log::error("Error fetching live data for chunk of case IDs: " . $e->getMessage());
+                return response()->json(['error' => 'An unexpected error occurred while fetching live data for a batch of cases.'], 500);
             }
-            
-            return response()->json(['data' => $data]);
-
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error("Boston 311 API connection error for multiple case IDs: " . $e->getMessage());
-            return response()->json(['error' => 'Could not connect to Boston 311 API.'], 503);
-        } catch (\Exception $e) {
-            Log::error("Error fetching live data for multiple case IDs: " . $e->getMessage());
-            return response()->json(['error' => 'An unexpected error occurred while fetching live data for multiple cases.'], 500);
         }
+            
+        return response()->json(['data' => $allCaseData]);
     }
 }
