@@ -195,7 +195,7 @@ const setUiText = () => {
 const scrollToBottom = () => {
   nextTick(() => {
     if (chatHistory.value) {
-      chatHistory.value.scrollTop = chatHistory.value.scrollHeight;
+      //chatHistory.value.scrollTop = chatHistory.value.scrollHeight;
     }
   });
 };
