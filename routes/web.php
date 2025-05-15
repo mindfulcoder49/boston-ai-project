@@ -43,6 +43,8 @@ Route::post('/api/map-data', [GenericMapController::class, 'getRadialMapData'])-
 
 
 Route::post('/api/ai-chat', [AiAssistantController::class, 'handleRequest'])->name('ai.assistant');
+// New API endpoint for streaming location-based reports
+Route::post('/api/stream-location-report', [AiAssistantController::class, 'streamLocationReport'])->name('ai.stream-location-report');
 
 
 

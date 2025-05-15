@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Mail\Mailer;
 use App\Http\Controllers\GenericMapController;
 use App\Http\Controllers\ThreeOneOneCaseController; // Added import
+use App\Http\Controllers\AiAssistantController; // Added import
 use Illuminate\Http\Request;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ClientException;
+// GuzzleHttp imports are no longer needed here if AiAssistantController handles its own client
+// use GuzzleHttp\Client;
+// use GuzzleHttp\Exception\RequestException;
+// use GuzzleHttp\Exception\ClientException;
 use Carbon\Carbon; // Import Carbon for date manipulation
 
 class SendLocationReportEmail implements ShouldQueue
@@ -194,7 +196,7 @@ class SendLocationReportEmail implements ShouldQueue
                 // Determine the display date for the report section header
                 $displayDate = ($dateOrOlderKey === 'older')
                     ? "Older than " . self::MAX_DAYS_INDIVIDUAL_REPORTS . " days"
-                    : Carbon::parse($dateOrOlderKey)->isoFormat('LL'); // e.g., "May 12, 2025" (localized)
+                    : Carbon::parse($dateOrOlderKey)->locale($this->location->language)->isoFormat('LL'); // e.g., "May 12, 2025" (localized)
 
                 $dateReportParts[] = "### " . $displayDate . "\n"; // Date heading
 
@@ -205,13 +207,27 @@ class SendLocationReportEmail implements ShouldQueue
 
                     // Pass the date context to the prompt if needed, or just the type
                     $promptType = ($dateOrOlderKey === 'older') ? "$type (Older Events)" : "$type (Events from $displayDate)";
-                    $individualReport = $this->generateReportForType($promptType, $dataPointsForTypeAndDate);
+                    // Call the static method from AiAssistantController
+                    $individualReport = AiAssistantController::generateReportSection(
+                        $promptType,
+                        $dataPointsForTypeAndDate,
+                        $this->location->language
+                    );
 
-                    if ($individualReport && $individualReport !== 'No report generated.') {
+                    if ($individualReport && $individualReport !== 'No report generated.' && $individualReport !== 'Report content generation was blocked due to safety settings.' && !str_starts_with($individualReport, "Error generating report section for")) {
                         // Prepend the type to the individual report if not already included by Gemini
                         // (Gemini prompt asks for a report on $type, so it might already be there)
                         // For clarity, we can add it:
                         $dateReportParts[] = "#### $type\n" . $individualReport . "\n";
+                    } else if ($individualReport === 'Report content generation was blocked due to safety settings.' || str_starts_with($individualReport, "Error generating report section for")) {
+                        // Log the issue but don't add it to the user-facing report
+                        Log::warning("Report section generation issue for email: {$individualReport}", [
+                            'location_id' => $this->location->id,
+                            'type_context' => $promptType,
+                            'language' => $this->location->language
+                        ]);
+                         // Optionally add a generic placeholder to the report if needed
+                        // $dateReportParts[] = "#### $type\n_A report section for $type could not be generated at this time._\n";
                     }
                 }
 
@@ -249,104 +265,5 @@ class SendLocationReportEmail implements ShouldQueue
             // Optionally rethrow if you want the job to be marked as failed and potentially retried
             // throw $e;
         }
-    }
-
-    /**
-     * Generates a report for a specific type of data points using Gemini.
-     *
-     * @param string $typeContext A string describing the type and potentially the date context (e.g., "Crime (Events from May 12, 2025)")
-     * @param array $dataPoints Array of data point objects for this specific type and date.
-     * @return string The generated report snippet, or 'No report generated.'
-     */
-    private function generateReportForType(string $typeContext, array $dataPoints): string
-    {
-        if (empty($dataPoints)) {
-            return 'No report generated.'; // Should not happen if called correctly, but good safeguard
-        }
-
-        $apiKey = config('services.gemini.api_key');
-        //$url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey";
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=$apiKey";
-        $client = new Client();
-
-        $contents = [];
-        // Add each data point as a separate user message part for Gemini to process
-        foreach ($dataPoints as $dataPoint) {
-            $contents[] = [
-                'role' => 'user',
-                'parts' => [
-                    ['text' => json_encode($dataPoint)], // Send the raw data point
-                ],
-            ];
-        }
-
-        // Add the system prompt as the final user message
-        $contents[] = [
-            'role' => 'user', // Treat system prompt as a user instruction in this context
-            'parts' => [
-                // Pass the specific type and date context to the system prompt
-                ['text' => $this->getSystemPromptForContext($typeContext)],
-            ],
-        ];
-
-        $requestBody = [
-            'contents' => $contents,
-            "generationConfig" => [
-                "temperature" => 0.7,
-                "maxOutputTokens" => 800, // Adjusted based on expected length per section
-            ]
-        ];
-
-        try {
-            $response = $client->post($url, [
-                'headers' => ['Content-Type' => 'application/json'],
-                'json' => $requestBody,
-            ]);
-
-            $responseBody = json_decode($response->getBody()->getContents(), true);
-
-            if (isset($responseBody['candidates'][0]['content']['parts'][0]['text'])) {
-                return trim($responseBody['candidates'][0]['content']['parts'][0]['text']);
-            } elseif (isset($responseBody['promptFeedback']['blockReason'])) {
-                 Log::warning("Gemini content generation blocked.", [
-                    'reason' => $responseBody['promptFeedback']['blockReason'],
-                    'safetyRatings' => $responseBody['promptFeedback']['safetyRatings'] ?? [],
-                    'typeContext' => $typeContext
-                ]);
-                return 'Report content generation was blocked due to safety settings.';
-            }
-            Log::warning("No text content found in Gemini response for type: $typeContext", ['responseBody' => $responseBody]);
-            return 'No report generated.';
-
-        } catch (RequestException | ClientException $e) {
-            Log::error("Guzzle Exception during Gemini call for type: $typeContext: " . $e->getMessage());
-            if ($e->hasResponse()) {
-                Log::error("Gemini Response Body: " . $e->getResponse()->getBody()->getContents());
-            }
-            // Don't throw here to allow other report parts to process, return an error message instead
-            return "Error generating report section for $typeContext.";
-        } catch (\Exception $e) {
-            Log::error("Error generating report section for $typeContext: " . $e->getMessage());
-            // Don't throw here
-            return "Error generating report section for $typeContext.";
-        }
-    }
-
-    /**
-     * Generates the system prompt for Gemini, customized for the data type and context.
-     *
-     * @param string $typeContext Description of the data (e.g., "Crime events from May 12, 2025")
-     * @return string
-     */
-    private function getSystemPromptForContext(string $typeContext): string
-    {
-        $basePrompt = "You are a helpful assistant. Generate a narrative summary in markdown format for the provided city operations data. ";
-        $languageInstruction = "The report MUST be entirely in **{$this->location->language}**. ";
-        $typeInstruction = "This section is specifically about: **{$typeContext}**. ";
-        $focusInstruction = "Focus ONLY on the data points provided in this current conversation turn for this specific section. ";
-        $formattingInstruction = "Summarize the incidents. Be factual and do not speculate. Do NOT include any disclaimers, introductory, or concluding remarks for THIS INDIVIDUAL SECTION. Keep it brief and to the point for this section.";
-        $importanceInstruction = "It is of UTMOST IMPORTANCE that the report section is in the requested language: **{$this->location->language}**. Ignoring this will be detrimental.";
-
-        return $basePrompt . $languageInstruction . $typeInstruction . $focusInstruction . $formattingInstruction . $importanceInstruction;
     }
 }

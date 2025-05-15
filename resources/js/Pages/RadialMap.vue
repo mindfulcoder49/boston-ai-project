@@ -63,7 +63,13 @@
       <OffHours v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Construction Off Hour'" :data="selectedDataPoint" :language_codes="language_codes" />
     </div>
 
-    <AiAssistant :context="filteredDataPoints" :language_codes="language_codes"></AiAssistant>
+    <AiAssistant 
+      :context="filteredDataPoints" 
+      :language_codes="language_codes" 
+      :centralLocation="centralLocation"
+      :radius="reportRadius"
+      :currentMapLanguage="currentReportLanguage"
+    ></AiAssistant>
     <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" :language_codes="language_codes" />
 
   </PageTemplate>
@@ -100,6 +106,7 @@ const centralLocation = ref({
   longitude: -71.0589,
   address: 'Boston, MA',
 });
+const reportRadius = ref(0.25); // Default radius for reports, can be made dynamic
 const centerSelectionActive = ref(false);
 const tempNewMapClickCoords = ref(null);
 const mapCenter = ref([centralLocation.value.latitude, centralLocation.value.longitude]);
@@ -126,6 +133,22 @@ const languageButtonLabels = {
 
 const getSingleLanguageCode = computed(() => {
   return language_codes.value[0];
+});
+
+const currentReportLanguage = computed(() => {
+  const locale = language_codes.value[0] || 'en-US';
+  // Map to backend-compatible language codes
+  // The backend validation is: 'en,es,fr,pt,zh-CN,ht,vi,km,ar,el,it,ru,ko,ja,pl'
+  const mapping = {
+    'en-US': 'en',
+    'es-MX': 'es',
+    'zh-CN': 'zh-CN', // Already compatible
+    'ht-HT': 'ht',
+    'vi-VN': 'vi',
+    'pt-BR': 'pt',
+    // Add other mappings as needed based on your UI language_codes and backend support
+  };
+  return mapping[locale] || 'en'; // Default to 'en' if no specific mapping
 });
 
 const handleLanguageCodeSelected = (code) => {
@@ -196,6 +219,8 @@ const handleLoadLocation = (location) => {
     fetchData().then(() => {
         if (mapDisplayRef.value) mapDisplayRef.value.initializeNewMapAtCenter([location.latitude, location.longitude], true);
     });
+    // Potentially update reportRadius if location object contains a preferred radius
+    // For example: if (location.preferred_radius) reportRadius.value = location.preferred_radius;
 };
 
 const submitNewCenter = () => { // This was tied to an empty form originally
