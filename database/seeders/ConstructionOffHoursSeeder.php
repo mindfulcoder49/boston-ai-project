@@ -80,6 +80,26 @@ class ConstructionOffHoursSeeder extends Seeder
                     continue;
                 }
 
+                // Check for 2202 in the year for start and end times and change to 2022
+                if (str_contains($offHour['start_datetime'], '2202')) {
+                    $offHour['start_datetime'] = str_replace('2202', '2022', $offHour['start_datetime']);
+                }
+                if (str_contains($offHour['stop_datetime'], '2202')) {
+                    $offHour['stop_datetime'] = str_replace('2202', '2022', $offHour['stop_datetime']);
+                }
+                // Check if both start and stop times are between '1970-01-01 00:00:01' UTC to '2038-01-19 03:14:07'
+                if (strtotime($offHour['start_datetime']) < 0 || strtotime($offHour['stop_datetime']) < 0) {
+                    $skipped++;
+                    Log::warning("Skipping record with invalid date at row {$progress}: " . json_encode($offHour));
+                    continue;
+                }
+                if (strtotime($offHour['start_datetime']) > 2147483647 || strtotime($offHour['stop_datetime']) > 2147483647) {
+                    $skipped++;
+                    Log::warning("Skipping record with date out of range at row {$progress}: " . json_encode($offHour));
+                    continue;
+                }
+
+
                 // Extract and normalize the base address
                 $baseAddress = $this->normalizeAddress($offHour['address']);
 
@@ -113,7 +133,8 @@ class ConstructionOffHoursSeeder extends Seeder
 
                 $dataBatch[] = [
                     'app_no' => $offHour['app_no'],
-                    'start_datetime' => $offHour['start_datetime'],
+                    //start_datetime and stop_datetime need to be timestamps
+                    'start_datetime' => $offHour['start_datetime'], 
                     'stop_datetime' => $offHour['stop_datetime'],
                     'address' => $offHour['address'],
                     'ward' => $offHour['ward'],
