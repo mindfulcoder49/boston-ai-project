@@ -275,7 +275,8 @@ const fetchLiveData = async () => {
         dp => dp.alcivartech_type === '311 Case' && dp.case_enquiry_id
       );
       if (threeOneOneCases.length > 0) {
-        const caseEnquiryIds = threeOneOneCases.map(dp => dp.case_enquiry_id);
+        //caseEnquiryIds is an array of case_enquiry_ids as strings
+        const caseEnquiryIds = threeOneOneCases.map(dp => dp.case_enquiry_id.toString());
         try {
           /*
             const liveDetailsResponse = await axios.post('/api/311-case/live-multiple', {
