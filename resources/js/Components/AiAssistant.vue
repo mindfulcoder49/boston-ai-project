@@ -1,69 +1,111 @@
 <template>
-  <div class="ai-assistant border border-gray-700  shadow-lg p-4 bg-gray-900/25 relative z-2">
-      <div ref="chatHistory" class="p-2 bg-transparent chat-history max-h-[69vh]  overflow-y-auto mb-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800">
-          <div class="assistant-message text-gray-800 bg-gradient-to-r from-gray-200 to-gray-300 p-4 mr-1  inline-block max-w-[95%] float-left mb-2 text-left">
-              <p>{{ welcomeMessage }}</p>
-          </div>
-          <div v-for="(message, index) in messages" :key="index" class="message-item mb-2 clear-both">
-              <p v-if="message.role === 'user'" class="user-message text-gray-800 bg-gradient-to-r from-blue-100 to-blue-200 p-4 ml-2  inline-block max-w-[95%] float-right mb-2 text-right">
-                  {{ message.content }}
-              </p>
-              <div v-if="message.role === 'assistant'" class="assistant-message text-gray-800 bg-gradient-to-r from-gray-200 to-gray-300 p-4 mr-1  inline-block max-w-[95%] float-left mb-2 text-left">
-                  <div v-html="renderMarkdown(message.content)"></div>
-              </div>
-          </div>
-          <div v-if="loading" class="loading-indicator text-gray-800 mt-4 italic">
-              <p>...</p>
+  <div class="ai-assistant border border-gray-700 shadow-lg p-4 bg-gray-400 text-gray-100 relative z-2">
+      <!-- Data Context Display -->
+      <div class="context-info-bar p-2 mb-3 bg-gray-700 text-md text-gray-300 rounded flex items-center gap-x-4 gap-y-2 flex-wrap">
+          <span title="Total items in context" class="flex items-center">
+              <svg class="inline h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"> <!-- Heroicon: InformationCircleIcon -->
+                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              </svg>
+              {{ contextSummary.total }} items
+          </span>
+          <span title="Date range of items" class="flex items-center">
+              <svg class="inline h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor"> <!-- Heroicon: CalendarIcon -->
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+              </svg>
+              {{ contextSummary.dateRange }}
+          </span>
+          <div class="context-types flex gap-x-3 gap-y-1 flex-wrap">
+              <span v-for="(count, type) in contextSummary.types" :key="type" :title="`${count} ${type} items`"
+                    class="flex items-center p-1 text-md">
+                  <span class="context-data-icon"
+                        :class="{
+                          'context-icon-crime': type === 'Crime',
+                          'context-icon-311-case': type === '311 Case',
+                          'context-icon-building-permit': type === 'Building Permit',
+                          'context-icon-property-violation': type === 'Property Violation',
+                          'context-icon-construction-off-hour': type === 'Construction Off Hour',
+                          'context-icon-unknown': !['Crime', '311 Case', 'Building Permit', 'Property Violation', 'Construction Off Hour'].includes(type)
+                        }">
+                  </span>
+                  {{ type }}: {{ count }}
+              </span>
           </div>
       </div>
 
-      <div class="suggested-prompts flex flex-row gap-2 mb-4 float-right flex-wrap">
-          <button v-for="prompt in suggestedPrompts" :key="prompt.id" 
-                  @click="insertPrompt(prompt)" 
-                  class="bg-gradient-to-r from-blue-700 to-blue-800 text-white p-2  cursor-pointer">
-              {{ prompt.text }}
-          </button>
-      </div>
+      <ChatHistory
+          ref="chatHistoryComponentRef"
+          :messages="messages"
+          :loading="loading"
+          :editingMessageId="editingMessageId"
+          :editedMessageContent="editedMessageContent"
+          :welcomeMessage="welcomeMessage"
+          :renderMarkdown="renderMarkdown"
+          @update:editedMessageContent="editedMessageContent = $event"
+          @save-edit="saveMessageEdit"
+          @cancel-edit="cancelMessageEdit"
+          @start-edit="startMessageEdit"
+          @delete-message="deleteMessage"
+          @copy-message="copyMessageContent"
+      />
 
-      <form @submit.prevent="handleRegularChatSubmit" class="text-lg">
-          <textarea
-              v-model="form.message"
-              placeholder="Type your message..."
-              class="w-full p-3  border-none bg-gradient-to-r from-blue-100 to-blue-200 text-gray-800 text-lg"
-              rows="2"
-          ></textarea>
-
-          <div class="model-selector mb-4">
-          <button type="submit" class="send-button cursor-pointer  border border-white bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 p-4 mt-4 w-full">
-              {{ languageButtonLabels[getSingleLanguageCodeFromLocale].sendText }}
-          </button>
-          
-          <label for="model" class="">{{ languageButtonLabels[getSingleLanguageCodeFromLocale].model }}</label>
-          <select id="model" v-model="selectedModel" class="ml-2 p-2 bg-gray-700 text-white">
-              <option value="gemini">Gemini</option>
-              <option value="chatgpt">ChatGPT</option>
-          </select>
-      </div>
-      </form>
+      <ChatInput
+          v-model:modelValueMessage="currentMessageInput"
+          v-model:modelValueSelectedModel="selectedModel"
+          :canStreamReport="canStreamReport"
+          :languageButtonLabels="languageButtonLabels"
+          :currentLocale="getSingleLanguageCodeFromLocale"
+          :suggestedPrompts="suggestedPrompts"
+          @submit-chat="handleRegularChatSubmit"
+          @trigger-stream-report="triggerStreamReport"
+          @insert-prompt="insertPromptText"
+      />
   </div>
 </template>
 
 <style scoped>
-.scrollbar-thin {
-scrollbar-width: thin;
+/* Styles for context display icons */
+.context-data-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 5px;
+  vertical-align: middle;
+  filter: invert(0.9) saturate(0.5) brightness(1.5); /* Adjust to make icons visible on dark bg if they are dark */
 }
-.scrollbar-thumb-gray-500 {
-scrollbar-color: #6b7280 #1f2937;
+
+.context-icon-crime { background-image: url("/images/crimeshieldicon.svg"); }
+.context-icon-311-case { background-image: url("/images/boston311icon.svg"); }
+.context-icon-building-permit { background-image: url("/images/permiticon.svg"); }
+.context-icon-property-violation { background-image: url("/images/propertyviolationicon.svg"); }
+.context-icon-construction-off-hour { background-image: url("/images/constructionoffhouricon.svg"); }
+.context-icon-unknown { /* Basic fallback shape or leave blank */
+  border: 1px solid currentColor; 
+  border-radius: 3px;
 }
+
+/* Ensure chat history takes up available space if AI assistant is in a flex container */
+.ai-assistant {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Or a specific height like 80vh */
+}
+/* ChatHistory component now has its own flex-grow: 1 */
+
 </style>
 
 <script setup>
 import { reactive, ref, nextTick, watch, computed, defineProps, onMounted } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+// Removed useForm as we handle form fields with refs now for child components
 import markdownit from 'markdown-it';
 import markdownItLinkAttributes from 'markdown-it-link-attributes';
+import ChatHistory from './ChatHistory.vue';
+import ChatInput from './ChatInput.vue';
 
 const props = defineProps({
+// ...existing props...
   context: {
     type: Array,
     default: () => [],
@@ -87,9 +129,11 @@ const props = defineProps({
 });
 
 const md = markdownit({
+// ...existing md setup...
   html: true,
   linkify: true,
-  typographer: true
+  typographer: true,
+  breaks: true,
 });
 
 md.use(markdownItLinkAttributes, {
@@ -99,58 +143,38 @@ md.use(markdownItLinkAttributes, {
   },
 });
 
-const form = reactive(useForm({
-  message: '',
-  errors: {}
-}));
-
+const currentMessageInput = ref(''); // Replaces form.message
 const messages = ref([]);
 const loading = ref(false);
-const chatHistory = ref(null);
-const localContext = ref(props.context); // Store context locally
+const chatHistoryComponentRef = ref(null); // Ref for ChatHistory component instance
+const localContext = ref(props.context);
+const editingMessageId = ref(null);
+const editedMessageContent = ref('');
+const selectedModel = ref('gemini'); // Default model, managed here
 
-// Structure for suggested prompts
+// ...existing baseSuggestedPrompts, promptTranslations, languageButtonLabels, welcomeMessageTranslations...
 const baseSuggestedPrompts = [
-  { id: 'summarize_stream_report', textKey: 'summarizeAllEventsStream' },
   { id: 'ask_about_context', textKey: 'askAboutContext' },
 ];
 
 const promptTranslations = {
-  'en-US': {
-    summarizeAllEventsStream: "Generate Full Report (Stream)",
-    askAboutContext: "What can you tell me about these events?",
-  },
-  'es-MX': {
-    summarizeAllEventsStream: "Generar Informe Completo (Stream)",
-    askAboutContext: "¿Qué me puedes decir sobre estos eventos?",
-  },
-  'zh-CN': {
-    summarizeAllEventsStream: "生成完整报告 (串流)",
-    askAboutContext: "关于这些事件你能告诉我什么？",
-  },
-  'ht-HT': {
-    summarizeAllEventsStream: "Jenere Rapò Konplè (Kouran)",
-    askAboutContext: "Kisa ou ka di mwen sou evènman sa yo?",
-  },
-  'vi-VN': {
-    summarizeAllEventsStream: "Tạo Báo cáo Đầy đủ (Luồng)",
-    askAboutContext: "Bạn có thể cho tôi biết gì về những sự kiện này?",
-  },
-  'pt-BR': {
-    summarizeAllEventsStream: "Gerar Relatório Completo (Stream)",
-    askAboutContext: "O que você pode me dizer sobre esses eventos?",
-  },
+  'en-US': { askAboutContext: "What can you tell me about these events?" },
+  'es-MX': { askAboutContext: "¿Qué me puedes decir sobre estos eventos?" },
+  'zh-CN': { askAboutContext: "关于这些事件你能告诉我什么？" },
+  'ht-HT': { askAboutContext: "Kisa ou ka di mwen sou evènman sa yo?" },
+  'vi-VN': { askAboutContext: "Bạn có thể cho tôi biết gì về những sự kiện này?" },
+  'pt-BR': { askAboutContext: "O que você pode me dizer sobre esses eventos?" },
 };
 
 const suggestedPrompts = ref([]);
 
 const languageButtonLabels = {
-  'en-US': { sendText: 'Send', model: 'Select AI Model' },
-  'es-MX': { sendText: 'Enviar', model: 'Seleccionar modelo de IA' },
-  'zh-CN': { sendText: '发送', model: '选择AI模型' },
-  'ht-HT': { sendText: 'Voye', model: 'Chwazi modèl AI' },
-  'vi-VN': { sendText: 'Gửi', model: 'Chọn mô hình AI' },
-  'pt-BR': { sendText: 'Enviar', model: 'Selecione o modelo de IA' },
+  'en-US': { sendText: 'Send', model: 'Select AI Model', generateReportText: 'Generate Full Report' },
+  'es-MX': { sendText: 'Enviar', model: 'Seleccionar modelo de IA', generateReportText: 'Generar Informe Completo' },
+  'zh-CN': { sendText: '发送', model: '选择AI模型', generateReportText: '生成完整报告' },
+  'ht-HT': { sendText: 'Voye', model: 'Chwazi modèl AI', generateReportText: 'Jenere Rapò Konplè' },
+  'vi-VN': { sendText: 'Gửi', model: 'Chọn mô hình AI', generateReportText: 'Tạo Báo cáo Đầy đủ' },
+  'pt-BR': { sendText: 'Enviar', model: 'Selecione o modelo de IA', generateReportText: 'Gerar Relatório Completo' },
 };
 
 const welcomeMessage = ref("");
@@ -163,77 +187,112 @@ const welcomeMessageTranslations = {
   'pt-BR': "Oi! Eu sou o assistente de IA do aplicativo Boston. Eu posso ver todos os pontos de dados no mapa e responder perguntas sobre eles. Como posso te ajudar hoje?",
 };
 
+
 const getSingleLanguageCodeFromLocale = computed(() => props.language_codes[0] || 'en-US');
 
+const contextSummary = computed(() => {
+// ...existing contextSummary logic...
+  if (!localContext.value || localContext.value.length === 0) {
+    return { total: 0, types: {}, dateRange: 'N/A' };
+  }
+  const types = localContext.value.reduce((acc, item) => {
+    const type = item.alcivartech_type || 'Unknown';
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {});
+
+  const dates = localContext.value
+                  .map(item => item.alcivartech_date ? new Date(item.alcivartech_date) : null)
+                  .filter(date => date && !isNaN(date.getTime()));
+  let dateRange = 'N/A';
+  if (dates.length > 0) {
+    const minDate = new Date(Math.min.apply(null, dates));
+    const maxDate = new Date(Math.max.apply(null, dates));
+    if (!isNaN(minDate.getTime()) && !isNaN(maxDate.getTime())) {
+        dateRange = `${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`;
+    } else {
+        dateRange = 'Invalid date range';
+    }
+  }
+  
+  return {
+    total: localContext.value.length,
+    types,
+    dateRange,
+  };
+});
+
+
 const canStreamReport = computed(() => {
+// ...existing canStreamReport logic...
   console.log('Central Location:', props.centralLocation);
   return props.centralLocation && 
          props.centralLocation.latitude !== null && 
          props.centralLocation.longitude !== null &&
-         //typeof props.centralLocation.latitude === 'number' && // Ensure they are numbers
-         //typeof props.centralLocation.longitude === 'number' &&
          props.centralLocation.address && 
          props.centralLocation.address.trim() !== '';
 });
 
 const setUiText = () => {
+// ...existing setUiText logic...
   const langCode = getSingleLanguageCodeFromLocale.value;
   welcomeMessage.value = welcomeMessageTranslations[langCode] || welcomeMessageTranslations['en-US'];
   
   let availableBasePrompts = [...baseSuggestedPrompts];
-  if (!canStreamReport.value) {
-    // If report cannot be streamed, filter out the prompt for it
-    availableBasePrompts = availableBasePrompts.filter(p => p.id !== 'summarize_stream_report');
-  }
 
   suggestedPrompts.value = availableBasePrompts.map(p => ({
     id: p.id,
-    text: promptTranslations[langCode]?.[p.textKey] || p.textKey // Fallback to key if no translation
+    text: promptTranslations[langCode]?.[p.textKey] || 
+          (promptTranslations['en-US']?.[p.textKey] || p.textKey)
   }));
 };
 
-const scrollToBottom = () => {
+
+const scrollToBottomInChild = () => {
   nextTick(() => {
-    if (chatHistory.value) {
-      //chatHistory.value.scrollTop = chatHistory.value.scrollHeight;
+    if (chatHistoryComponentRef.value) {
+      chatHistoryComponentRef.value.scrollToBottom();
     }
   });
 };
 
-const insertPrompt = (prompt) => {
-  form.message = prompt.text; // Set the textarea for user visibility
-  if (prompt.id === 'summarize_stream_report') {
-    handleStreamReportRequest(prompt.text);
-  } else {
-    // For other prompts, or if user types and hits send, use the regular chat
-    handleRegularChatSubmit(); 
-  }
-  // Remove the clicked prompt from suggestions
-  suggestedPrompts.value = suggestedPrompts.value.filter((item) => item.id !== prompt.id);
+
+const insertPromptText = (promptText) => {
+  currentMessageInput.value = promptText;
+  //submit the prompt
+  handleRegularChatSubmit(promptText, selectedModel.value);
 };
 
-const selectedModel = ref('gemini'); // Default model for regular chat
 
-const handleRegularChatSubmit = () => {
-  if (form.message.trim() === '') return;
-  handleChatResponse(form.message, selectedModel.value, localContext.value);
-  form.message = ''; // Clear textarea after submitting
+const handleRegularChatSubmit = (messageText, model) => { // Receives params from ChatInput emit
+  if (messageText.trim() === '') return;
+  const userMessageText = messageText;
+  currentMessageInput.value = ''; // Clear input after 
+  scrollToBottomInChild();
+  handleChatResponse(userMessageText, model, localContext.value);
+};
+
+const generateUniqueId = () => {
+// ...existing generateUniqueId logic...
+  return `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 };
 
 const handleChatResponse = async (userMessageText, modelToUse, contextForChat) => {
-  messages.value.push({ role: 'user', content: userMessageText });
+  messages.value.push({ id: generateUniqueId(), role: 'user', content: userMessageText });
   loading.value = true;
-  scrollToBottom();
+  //scrollToBottomInChild();
 
   const requestBody = {
+// ...existing requestBody for chat...
     message: userMessageText,
-    history: messages.value.slice(0, -1), // Send history *before* current user message
+    history: messages.value.slice(0, -1),
     context: JSON.stringify(contextForChat),
     model: modelToUse,
   };
 
   try {
     const response = await fetch(route('ai.assistant'), {
+// ...existing fetch options for chat...
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -242,6 +301,7 @@ const handleChatResponse = async (userMessageText, modelToUse, contextForChat) =
       body: JSON.stringify(requestBody)
     });
 
+// ...existing response handling for chat...
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -252,44 +312,60 @@ const handleChatResponse = async (userMessageText, modelToUse, contextForChat) =
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let assistantMessageContent = '';
-    messages.value.push({ role: 'assistant', content: '' }); // Prepare to append
+    const assistantMessageId = generateUniqueId();
+    messages.value.push({ id: assistantMessageId, role: 'assistant', content: '' });
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       assistantMessageContent += decoder.decode(value, { stream: true });
-      messages.value[messages.value.length - 1].content = assistantMessageContent;
-      scrollToBottom();
+      const assistantMsgIndex = messages.value.findIndex(m => m.id === assistantMessageId);
+      if (assistantMsgIndex !== -1) {
+        messages.value[assistantMsgIndex].content = assistantMessageContent;
+      }
+      //scrollToBottomInChild();
     }
   } catch (error) {
+// ...existing error handling for chat...
     console.error('Error fetching AI chat response:', error);
-    messages.value.push({ role: 'assistant', content: `Error: Could not get response. ${error.message}` });
+    messages.value.push({ id: generateUniqueId(), role: 'assistant', content: `Error: Could not get response. ${error.message}` });
   } finally {
     loading.value = false;
-    scrollToBottom();
+    //scrollToBottomInChild();
   }
 };
 
+const triggerStreamReport = () => {
+// ...existing triggerStreamReport logic...
+  if (!canStreamReport.value) return;
+  const langCode = getSingleLanguageCodeFromLocale.value;
+  const reportPromptText = languageButtonLabels[langCode]?.generateReportText || 
+                           languageButtonLabels['en-US'].generateReportText;
+
+  scrollToBottomInChild();
+  handleStreamReportRequest(reportPromptText);
+};
+
 const handleStreamReportRequest = async (userPromptText) => {
-  // The check for canStreamReport is implicitly handled by not showing the prompt
-  // but an explicit check here remains a good safeguard if the method is called otherwise.
+// ...existing handleStreamReportRequest logic...
   console.log('Can stream Report:', canStreamReport.value);
   if (!canStreamReport.value) {
-    messages.value.push({ role: 'assistant', content: 'Cannot generate report: Central location details are missing or invalid.' });
-    scrollToBottom();
+    messages.value.push({ id: generateUniqueId(), role: 'assistant', content: 'Cannot generate report: Central location details are missing or invalid.' });
+    //scrollToBottomInChild();
     return;
   }
 
-  messages.value.push({ role: 'user', content: userPromptText });
+  messages.value.push({ id: generateUniqueId(), role: 'user', content: userPromptText });
   loading.value = true;
-  scrollToBottom();
+  //scrollToBottomInChild();
   
-  messages.value.push({ role: 'assistant', content: '' }); // Placeholder for streamed report
-  let assistantMessageIndex = messages.value.length - 1;
+  const assistantMessageId = generateUniqueId();
+  messages.value.push({ id: assistantMessageId, role: 'assistant', content: '' });
   let accumulatedContent = "";
 
   try {
     const requestBody = {
+// ...existing requestBody for stream report...
       latitude: props.centralLocation.latitude,
       longitude: props.centralLocation.longitude,
       address: props.centralLocation.address,
@@ -298,6 +374,7 @@ const handleStreamReportRequest = async (userPromptText) => {
     };
 
     const response = await fetch(route('ai.stream-location-report'), {
+// ...existing fetch options for stream report...
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -307,6 +384,7 @@ const handleStreamReportRequest = async (userPromptText) => {
       body: JSON.stringify(requestBody)
     });
 
+// ...existing response handling for stream report...
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     if (!response.body) throw new Error('Response body is null');
 
@@ -329,22 +407,24 @@ const handleStreamReportRequest = async (userPromptText) => {
           const jsonData = chunk.substring(6);
           try {
             const parsedData = JSON.parse(jsonData);
+            const assistantMsgIndex = messages.value.findIndex(m => m.id === assistantMessageId);
+            if (assistantMsgIndex === -1) continue;
+
             if (parsedData.type === 'markdown' && parsedData.content) {
               accumulatedContent += parsedData.content;
-              messages.value[assistantMessageIndex].content = accumulatedContent;
+              messages.value[assistantMsgIndex].content = accumulatedContent;
             } else if (parsedData.type === 'status' && parsedData.message) {
               accumulatedContent += `\n*Status: ${parsedData.message}*\n`;
-              messages.value[assistantMessageIndex].content = accumulatedContent;
+              messages.value[assistantMsgIndex].content = accumulatedContent;
             } else if (parsedData.type === 'error' && parsedData.message) {
               accumulatedContent += `\n**Error: ${parsedData.message}**\n`;
-              messages.value[assistantMessageIndex].content = accumulatedContent;
+              messages.value[assistantMsgIndex].content = accumulatedContent;
             } else if (parsedData.type === 'control' && parsedData.action === 'close') {
-              // Stream closed by server
               loading.value = false;
-              scrollToBottom();
-              return; // Exit loop and function
+              //scrollToBottomInChild();
+              return;
             }
-            scrollToBottom();
+            //scrollToBottomInChild();
           } catch (e) {
             console.error('Error parsing streamed JSON:', e, jsonData);
           }
@@ -352,28 +432,75 @@ const handleStreamReportRequest = async (userPromptText) => {
       }
     }
   } catch (error) {
+// ...existing error handling for stream report...
     console.error('Error fetching streaming report:', error);
-    messages.value[assistantMessageIndex].content = accumulatedContent + `\n**Error generating report: ${error.message}**`;
+    const assistantMsgIndex = messages.value.findIndex(m => m.id === assistantMessageId);
+    if (assistantMsgIndex !== -1) {
+        messages.value[assistantMsgIndex].content = accumulatedContent + `\n**Error generating report: ${error.message}**`;
+    } else {
+        messages.value.push({ id: generateUniqueId(), role: 'assistant', content: accumulatedContent + `\n**Error generating report: ${error.message}**` });
+    }
   } finally {
     loading.value = false;
-    scrollToBottom();
+    //scrollToBottomInChild();
   }
 };
 
 const renderMarkdown = (content) => {
+// ...existing renderMarkdown logic...
   return md.render(content);
 };
+
+// Message Management Functions (now called by emits from ChatHistory)
+const deleteMessage = (messageId) => {
+// ...existing deleteMessage logic...
+  if (window.confirm("Are you sure you want to delete this message?")) {
+    messages.value = messages.value.filter(msg => msg.id !== messageId);
+  }
+};
+
+const copyMessageContent = async (content, isAssistantMarkdown = false) => {
+// ...existing copyMessageContent logic...
+  try {
+    let textToCopy = content;
+    await navigator.clipboard.writeText(textToCopy);
+    alert('Content copied to clipboard!'); 
+  } catch (err) {
+    console.error('Failed to copy: ', err);
+    alert('Failed to copy content.');
+  }
+};
+
+const startMessageEdit = (message) => {
+// ...existing startMessageEdit logic...
+  editingMessageId.value = message.id;
+  editedMessageContent.value = message.content;
+};
+
+const saveMessageEdit = (messageId) => { // messageId is passed from emit
+  const messageIndex = messages.value.findIndex(msg => msg.id === messageId);
+  if (messageIndex !== -1) {
+    messages.value[messageIndex].content = editedMessageContent.value;
+  }
+  cancelMessageEdit();
+};
+
+const cancelMessageEdit = () => {
+// ...existing cancelMessageEdit logic...
+  editingMessageId.value = null;
+  editedMessageContent.value = '';
+};
+
 
 watch(() => props.context, (newContext) => {
   localContext.value = newContext;
 });
 
 watch(() => props.language_codes, () => {
-  setUiText(); // This will now also re-evaluate suggested prompts based on canStreamReport
+  setUiText();
 }, { immediate: true });
 
 watch(() => props.centralLocation, (newValue, oldValue) => {
-  // If centralLocation changes, re-evaluate suggested prompts
   if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
     setUiText();
   }
@@ -386,5 +513,33 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ...existing styles... */
+/* ...existing styles from the original AiAssistant.vue that are not moved to children... */
+/* Styles for context display icons */
+.context-data-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 5px;
+  vertical-align: middle;
+  filter: invert(0.9) saturate(0.5) brightness(1.5);
+}
+
+.context-icon-crime { background-image: url("/images/crimeshieldicon.svg"); }
+.context-icon-311-case { background-image: url("/images/boston311icon.svg"); }
+.context-icon-building-permit { background-image: url("/images/permiticon.svg"); }
+.context-icon-property-violation { background-image: url("/images/propertyviolationicon.svg"); }
+.context-icon-construction-off-hour { background-image: url("/images/constructionoffhouricon.svg"); }
+.context-icon-unknown {
+  border: 1px solid currentColor; 
+  border-radius: 3px;
+}
+
+.ai-assistant {
+    display: flex;
+    flex-direction: column;
+    height: 100%; 
+}
 </style>

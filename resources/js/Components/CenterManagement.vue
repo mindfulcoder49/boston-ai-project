@@ -24,7 +24,7 @@
     </div>
 
     <!-- Action Methods - Revamped Layout -->
-    <div class="mb-8">
+    <div class="mb-2">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Method 1: Use Current Location -->
         <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white">
@@ -67,10 +67,8 @@
     <!-- Removed Form to Confirm/Submit -->
     
     <!-- The SaveLocation component remains -->
-    <div class="mt-10 border-t pt-6">
-      <h3 class="text-lg font-semibold text-gray-700 mb-3 text-center">{{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].savedLocationsTitle || 'Manage Saved Locations' }}</h3>
-      <SaveLocation :location="centralLocation" :language_codes="language_codes" @load-location="handleLoadSavedLocation" />
-    </div>
+      <SaveLocation :location="centralLocation" :language_codes="language_codes" @load-location="handleLoadSavedLocation" :translations="translations" />
+    
   </div>
 </template>
 

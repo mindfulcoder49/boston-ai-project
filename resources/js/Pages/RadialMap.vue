@@ -7,7 +7,9 @@
     <SubscriptionBanner />
 
     <div class="before-map">
-      <h1 class="text-2xl font-bold text-gray-800 text-center my-4">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.pageTitle }}</h1>
+      <h1 class="text-2xl font-bold text-gray-800 text-center my-4">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.pageTitle }}
+
+      </h1>
 
       <LanguageSelector
         :languageButtonLabels="languageButtonLabels"
@@ -58,6 +60,7 @@
   
 
     <div class="case-details">
+      <h2 class="text-xl font-semibold text-gray-800 text-center my-4">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.caseDetailsTitle || 'Selected Case Details' }}</h2>
       <ServiceCase v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === '311 Case'" :data="selectedDataPoint" :language_codes="language_codes" />
       <Crime v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Crime'" :data="selectedDataPoint" :language_codes="language_codes" />
       <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Building Permit'" :data="selectedDataPoint" :language_codes="language_codes" />
