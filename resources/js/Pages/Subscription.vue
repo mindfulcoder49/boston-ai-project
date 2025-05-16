@@ -117,7 +117,7 @@
           </div>
         </div>
   
-        <div class="text-center mt-12" v-if="isAuthenticated && currentPlan">
+        <div class="text-center mt-12" v-if="isAuthenticated">
           <p class="text-gray-600 mb-2">
             {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.manageSubscriptionPrompt || 'Need to manage your subscription or payment details?' }}
           </p>
