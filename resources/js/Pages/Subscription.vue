@@ -52,15 +52,26 @@
                 {{ feature.text }}
               </li>
             </ul>
-            <button
-              v-if="currentPlan !== 'basic'"
-              @click="goToRoute(route('subscribe.checkout', { plan: 'basic' }))"
-              :disabled="!isAuthenticated"
-              class="w-full mt-auto px-6 py-3 text-white bg-blue-500 rounded-md shadow-lg hover:bg-blue-600 transition-colors disabled:bg-gray-400">
-              {{ isAuthenticated ? (translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscribeButton || 'Subscribe') : (translations.LabelsByLanguageCode[getSingleLanguageCode]?.loginToSubscribeButton || 'Login to Subscribe') }}
-            </button>
-            <div v-else class="w-full mt-auto px-6 py-3 text-center text-blue-600 font-semibold bg-blue-100 rounded-md">
-              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.currentPlanButton || 'Current Plan' }}
+            <div class="mt-auto">
+              <button
+                v-if="isAuthenticated && currentPlan !== 'basic'"
+                @click="goToRoute(route('subscribe.checkout', { plan: 'basic' }))"
+                class="w-full px-6 py-3 text-white bg-blue-500 rounded-md shadow-lg hover:bg-blue-600 transition-colors">
+                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscribeButton || 'Subscribe' }}
+              </button>
+              <div v-else-if="!isAuthenticated" class="flex flex-col space-y-2 items-center">
+                 <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('subscribe.checkout', { plan: 'basic' })"
+                   class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                   <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+                   {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerWithGoogleToSubscribeButton || 'Login with Google to Subscribe' }}
+                 </a>
+                 <Link :href="route('register') + '?redirect_to=' + route('subscribe.checkout', { plan: 'basic' })" class="text-sm text-blue-600 hover:underline">
+                   {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerManuallyToSubscribeLink || 'Or register manually to subscribe' }}
+                 </Link>
+              </div>
+              <div v-else-if="currentPlan === 'basic'" class="w-full px-6 py-3 text-center text-blue-600 font-semibold bg-blue-100 rounded-md">
+                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.currentPlanButton || 'Current Plan' }}
+              </div>
             </div>
           </div>
   
@@ -82,15 +93,26 @@
                 {{ feature.text }}
               </li>
             </ul>
-             <button
-              v-if="currentPlan !== 'pro'"
-              @click="goToRoute(route('subscribe.checkout', { plan: 'pro' }))"
-              :disabled="!isAuthenticated"
-              class="w-full mt-auto px-6 py-3 text-white bg-purple-500 rounded-md shadow-lg hover:bg-purple-600 transition-colors disabled:bg-gray-400">
-              {{ isAuthenticated ? (translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscribeButton || 'Subscribe') : (translations.LabelsByLanguageCode[getSingleLanguageCode]?.loginToSubscribeButton || 'Login to Subscribe') }}
-            </button>
-             <div v-else class="w-full mt-auto px-6 py-3 text-center text-purple-600 font-semibold bg-purple-100 rounded-md">
-              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.currentPlanButton || 'Current Plan' }}
+            <div class="mt-auto">
+              <button
+                v-if="isAuthenticated && currentPlan !== 'pro'"
+                @click="goToRoute(route('subscribe.checkout', { plan: 'pro' }))"
+                class="w-full px-6 py-3 text-white bg-purple-500 rounded-md shadow-lg hover:bg-purple-600 transition-colors">
+                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscribeButton || 'Subscribe' }}
+              </button>
+              <div v-else-if="!isAuthenticated" class="flex flex-col space-y-2 items-center">
+                 <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('subscribe.checkout', { plan: 'pro' })"
+                   class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                   <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+                   {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerWithGoogleToSubscribeButton || 'Login with Google to Subscribe' }}
+                 </a>
+                 <Link :href="route('register') + '?redirect_to=' + route('subscribe.checkout', { plan: 'pro' })" class="text-sm text-purple-600 hover:underline">
+                   {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerManuallyToSubscribeLink || 'Or register manually to subscribe' }}
+                 </Link>
+              </div>
+              <div v-else-if="currentPlan === 'pro'" class="w-full px-6 py-3 text-center text-purple-600 font-semibold bg-purple-100 rounded-md">
+                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.currentPlanButton || 'Current Plan' }}
+              </div>
             </div>
           </div>
         </div>
@@ -102,16 +124,6 @@
           <button @click="goToRoute(route('billing'))" class="px-6 py-3 text-white bg-gray-700 rounded-md shadow-lg hover:bg-gray-800 transition-colors">
             {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.goToBillingPortalButton || 'Go to Billing Portal' }}
           </button>
-        </div>
-        <div v-if="!isAuthenticated" class="text-center mt-12 p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md">
-          <p>{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.loginToSubscribeMessage || 'Please log in or register to subscribe to a plan.' }}</p>
-          <Link :href="route('login')" class="text-blue-600 hover:underline font-semibold">
-            {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.loginButton || 'Login' }}
-          </Link>
-          |
-          <Link :href="route('register')" class="text-blue-600 hover:underline font-semibold">
-            {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerButton || 'Register' }}
-          </Link>
         </div>
       </div>
     </PageTemplate>
@@ -135,19 +147,15 @@
   const getSingleLanguageCode = computed(() => {
     // This is a simplified version. In a real app, you'd likely get this from a store or user preferences.
     // For now, if translations exist for en-US, use it. Otherwise, fallback.
-    return (translations.LabelsByLanguageCode && translations.LabelsByLanguageCode['en-US']) ? language_codes.value[0] : 'en-US';
+    return (translations.LabelsByLanguageCode && translations.LabelsByLanguageCode[language_codes.value[0]]) ? language_codes.value[0] : 'en-US';
   });
   
   const goToRoute = (targetRoute) => {
-    if (props.isAuthenticated) {
-      window.location.href = targetRoute;
-    } else {
-      // Optionally, redirect to login or show a message
-      // For now, the button is disabled, but this could be a fallback
-      console.warn("User not authenticated. Subscription attempt blocked.");
-      // Or use Inertia to visit login page:
-      // Inertia.visit(route('login'));
-    }
+    // No need to check isAuthenticated here anymore for the primary button click,
+    // as the template logic now separates authenticated and unauthenticated actions.
+    // However, if called from other places, the check might still be relevant.
+    // For direct checkout, it's assumed user is authenticated by this point.
+    window.location.href = targetRoute;
   };
   
   // Define features for each plan - these should be translatable
@@ -184,13 +192,11 @@
     proPlanDescription: 'Unlock deeper insights and advanced tools for power users.',
     bestValueBadge: 'Best Value',
     subscribeButton: 'Subscribe',
-    loginToSubscribeButton: 'Login to Subscribe',
     currentPlanButton: 'Current Plan',
     manageSubscriptionPrompt: 'Need to manage your subscription or payment details?',
     goToBillingPortalButton: 'Go to Billing Portal',
-    loginToSubscribeMessage: 'Please log in or register to subscribe to a plan.',
-    loginButton: 'Login',
-    registerButton: 'Register',
+    registerWithGoogleToSubscribeButton: 'Login with Google to Subscribe',
+    registerManuallyToSubscribeLink: 'Or register manually to subscribe',
   };
   
   translations.FeatureTranslations = {

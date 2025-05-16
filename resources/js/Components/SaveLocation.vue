@@ -105,13 +105,24 @@
           </div>
           <div class="mt-6">
             <button
+              v-if="isAuthenticated"
               @click="saveLocation"
               class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               :disabled="saving"
             >
               {{ saving ? translations.LocationLabelsByLanguageCode[getSingleLanguageCode].saving : translations.LocationLabelsByLanguageCode[getSingleLanguageCode].saveLocation }}
             </button>
-            <span v-if="maxLocationsReached" class="mt-2 block text-sm text-red-500 text-center">
+            <div v-else class="flex flex-col space-y-2 items-center">
+              <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + currentPath"
+                 class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+                {{ translations.LocationLabelsByLanguageCode[getSingleLanguageCode].loginWithGoogleToSave || 'Login with Google to Save' }}
+              </a>
+              <Link :href="route('login') + '?redirect_to=' + currentPath" class="text-sm text-blue-600 hover:underline">
+                {{ translations.LocationLabelsByLanguageCode[getSingleLanguageCode].loginManuallyToSave || 'Or login manually to save' }}
+              </Link>
+            </div>
+            <span v-if="maxLocationsReached && isAuthenticated" class="mt-2 block text-sm text-red-500 text-center">
               {{ translations.LocationLabelsByLanguageCode[getSingleLanguageCode].maxLocationsReached }}
             </span>
           </div>
@@ -224,6 +235,7 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue';
 import axios from 'axios';
+import { usePage, Link } from '@inertiajs/vue3';
 
 // Props
 const props = defineProps({
@@ -245,6 +257,10 @@ const props = defineProps({
 const emit = defineEmits(['load-location']);
 
 // Reactive States
+const page = usePage();
+const isAuthenticated = computed(() => !!page.props.auth.user);
+const currentPath = computed(() => window.location.pathname + window.location.search);
+
 const selectedName = ref('home');
 const isSaved = ref(false);
 const saving = ref(false);
@@ -305,6 +321,12 @@ const checkIfSaved = () => {
 
 const saveLocation = async () => {
   
+  if (!isAuthenticated.value) {
+    // This case should ideally be handled by the UI showing login buttons,
+    // but as a fallback, redirect.
+    window.location.href = route('login') + '?redirect_to=' + currentPath.value;
+    return;
+  }
 
   //if (isSaved.value || saving.value) return;
 
@@ -322,10 +344,11 @@ const saveLocation = async () => {
     userLocations.value.push(response.data);
     isSaved.value = true;
     saving.value = false;
+    maxLocationsReached.value = false; // Reset on successful save
   } catch (error) {
-    if (error.response.status === 401) {
-      window.location.href = '/login';
-    } else if (error.response.status === 403) {
+    if (error.response && error.response.status === 401) {
+      window.location.href = route('login') + '?redirect_to=' + currentPath.value;
+    } else if (error.response && error.response.status === 403) {
       maxLocationsReached.value = true;
     } else {
       console.error('Error saving location:', error);
