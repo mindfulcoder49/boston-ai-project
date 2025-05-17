@@ -149,7 +149,6 @@ watch(
 <style scoped>
 .carousel-container {
     position: relative;
-    width: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column; /* Ensure content stays within container */
@@ -194,7 +193,7 @@ watch(
 
 .carousel-image {
     max-width: 100%;
-    max-height: 100%;
+    max-height: 50vh;
     object-fit: contain;
     border-radius: 8px;
 }

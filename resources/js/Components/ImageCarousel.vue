@@ -21,6 +21,7 @@
                         alt="Data Point Image"
                         class="carousel-image"
                     />
+                    
                     <div v-if="data.type" class="data-type-label">
                         {{ data.type }}
                     </div>

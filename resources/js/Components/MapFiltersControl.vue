@@ -82,7 +82,7 @@
     const endDate = new Date(props.maxDateForFilter);
     while (currentDate <= endDate) {
       dates.push(new Date(currentDate).toISOString().split('T')[0]);
-      currentDate.setDate(currentDate.getDate() + 1);
+      currentDate.setDate(currentDate.getDate()+1);
     }
     //sort the dates in descending order
     dates.sort((a, b) => new Date(b) - new Date(a));

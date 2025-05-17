@@ -56,7 +56,7 @@
             @filters-updated="handleFiltersUpdated"
         />
   </div>
-        <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick" />
+        
   
 
     <div class="case-details">
@@ -67,6 +67,8 @@
       <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Property Violation'" :data="selectedDataPoint" :language_codes="language_codes" />
       <OffHours v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Construction Off Hour'" :data="selectedDataPoint" :language_codes="language_codes" />
     </div>
+
+    <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick" />
 
     <AiAssistant 
       :context="filteredDataPoints" 

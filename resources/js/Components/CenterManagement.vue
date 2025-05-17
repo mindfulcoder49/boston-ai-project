@@ -25,41 +25,42 @@
 
     <!-- Action Methods - Revamped Layout -->
     <div class="mb-2">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Method 1: Use Current Location -->
-        <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white">
+      <!-- Method 1: Search Address -->
+      <div class="p-2 md:p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white mb-2 md:mb-4">
+        <AddressSearch @address-selected="handleAddressSelected" :language_codes="language_codes" :placeholder_text="translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].searchAddressPlaceholder || 'Search for an address'" />
+      </div>
+
+      <!-- Container for the two buttons: Click on Map and Use Current Location -->
+      <div class="grid grid-cols-2 gap-2 md:gap-4">
+        <!-- Method 2: Click on Map -->
+        <div class="p-2 md:p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white">
+          <button
+            type="button"
+            @click="handleToggleCenterSelection"
+            class="w-full h-full px-2 py-2 text-xs sm:text-sm md:px-4 md:py-3 md:text-base text-white rounded-lg shadow-md transition-colors flex items-center justify-center space-x-1 md:space-x-2"
+            :class="isCenterSelectionActive ? 'bg-red-500 hover:bg-red-600' : 'bg-teal-500 hover:bg-teal-600'"
+          >
+            <svg v-if="!isCenterSelectionActive" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 3.293A1 1 0 0118 4v12a1 1 0 01-1.707.707L10 10.414l-6.293 6.293A1 1 0 012 16V4a1 1 0 011.707-.707L10 9.586l6.293-6.293a1 1 0 011.000 0z" clip-rule="evenodd" /></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd" /></svg>
+            <span class="">{{ isCenterSelectionActive ? (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].cancelMapSelectionButton || 'Cancel Map Selection') : (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].selectByMapClickButton || 'Select by Map Click') }}</span>
+          </button>
+          <p v-if="isCenterSelectionActive" class="text-center text-blue-600 mt-1 md:mt-2 text-xs md:text-sm animate-pulse">
+            {{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].clickOnMapInstruction || 'Now, click on the map to choose your center!' }}
+          </p>
+        </div>
+
+        <!-- Method 3: Use Current Location -->
+        <div class="p-2 md:p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white">
           <button
             type="button"
             @click="requestCurrentLocation"
             :disabled="geolocationLoading"
-            class="w-full px-4 py-3 text-white bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center justify-center space-x-2 disabled:bg-gray-400"
+            class="w-full h-full px-2 py-2 text-xs sm:text-sm md:px-4 md:py-3 md:text-base text-white bg-blue-600 rounded-lg shadow-md hover:bg-indigo-700 transition-colors flex items-center justify-center space-x-1 md:space-x-2 disabled:bg-gray-400"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>
-            <span>{{ geolocationLoading ? (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].locatingButton || 'Locating...') : (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].useCurrentLocationButton || 'Use My Current Location') }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>
+            <span class="">{{ geolocationLoading ? (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].locatingButton || 'Locating...') : (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].useCurrentLocationButton || 'Use My Current Location') }}</span>
           </button>
-          <p v-if="geolocationError" class="text-red-500 text-sm text-center mt-2">{{ geolocationError }}</p>
-        </div>
-
-        <!-- Method 2: Search Address -->
-        <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white">
-          <AddressSearch @address-selected="handleAddressSelected" :language_codes="language_codes" :placeholder_text="translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].searchAddressPlaceholder || 'Search for an address'" />
-        </div>
-
-        <!-- Method 3: Click on Map -->
-        <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white">
-          <button
-            type="button"
-            @click="handleToggleCenterSelection"
-            class="w-full px-4 py-3 text-white rounded-lg shadow-md transition-colors flex items-center justify-center space-x-2"
-            :class="isCenterSelectionActive ? 'bg-red-500 hover:bg-red-600' : 'bg-teal-500 hover:bg-teal-600'"
-          >
-            <svg v-if="!isCenterSelectionActive" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 3.293A1 1 0 0118 4v12a1 1 0 01-1.707.707L10 10.414l-6.293 6.293A1 1 0 012 16V4a1 1 0 011.707-.707L10 9.586l6.293-6.293a1 1 0 011.000 0z" clip-rule="evenodd" /></svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd" /></svg>
-            <span>{{ isCenterSelectionActive ? (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].cancelMapSelectionButton || 'Cancel Map Selection') : (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].selectByMapClickButton || 'Select by Clicking on Map') }}</span>
-          </button>
-          <p v-if="isCenterSelectionActive" class="text-center text-blue-600 mt-2 animate-pulse">
-            {{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].clickOnMapInstruction || 'Now, click on the map to choose your center!' }}
-          </p>
+          <p v-if="geolocationError" class="text-red-500 text-xs md:text-sm text-center mt-1 md:mt-2">{{ geolocationError }}</p>
         </div>
       </div>
     </div>

@@ -1,13 +1,14 @@
 <template>
     <div
       v-if="data"
-      class="p-4 bg-gray-100 flex w-full h-full"
+      class="p-4 bg-gray-100 flex flex-col w-full h-full"
       :class="{ 'w-1/2': hasPhoto }"
     >
       <div class="flex-grow mr-4"> <!-- Added mr-4 for spacing if photo exists, wrapper for all text content -->
         
         <!-- Live Data from BOS:311 -->
-        <div v-if="liveApiData && Object.keys(liveApiData).length > 0" class="mb-4 p-3 border border-gray-300 bg-white shadow rounded">
+        <div v-if="liveApiData && Object.keys(liveApiData).length > 0" class="mb-4 p-3 border border-gray-300 bg-white shadow rounded flex-col sm:flex-row flex">
+          <div class="w-full sm:w-1/2">
           <h3 class="text-md font-semibold text-gray-700">Live Data from BOS:311</h3>
           <ul class="space-y-1 mt-2 text-sm text-gray-600">
             <li v-if="liveApiData.status"><strong>Live Status:</strong> {{ liveApiData.status }}</li>
@@ -20,11 +21,14 @@
             <li v-if="liveApiData.requested_datetime"><strong>Reported (Live):</strong> {{ formatDate(liveApiData.requested_datetime) }}</li>
             <li v-if="liveApiData.updated_datetime"><strong>Last Updated (Live):</strong> {{ formatDate(liveApiData.updated_datetime) }}</li>
             <li v-if="liveApiData.expected_datetime"><strong>Expected Resolution (Live):</strong> {{ formatDate(liveApiData.expected_datetime) }}</li>
-            <li v-if="liveApiData.media_url">
-              <strong>Live Media:</strong>
-              <img :src="liveApiData.media_url" alt="Live media from BOS:311" class="max-w-full md:max-w-sm h-auto mt-1 border rounded"/>
-            </li>
+
           </ul>
+        </div>
+          <div v-if="liveApiData.media_url" class="mt-2 w-full sm:w-1/2">
+            <h4 class="text-sm font-semibold text-gray-700">Live Media:</h4>
+              <img :src="liveApiData.media_url" alt="Live media from BOS:311" class="max-w-full md:max-w-sm h-auto mt-1 border rounded"/>
+            
+          </div>
         </div>
         <div v-else-if="liveApiData && Object.keys(liveApiData).length === 0 && !isLoadingLiveData && !liveDataError" class="mb-4 text-sm text-gray-500 p-3 border border-gray-300 bg-gray-50 shadow rounded">
            <p>Checked for live data from BOS:311; no specific details found or applicable for this case ID.</p>
@@ -44,24 +48,25 @@
         </div>
         
         <!-- Historical Case Info -->
-        <div class="case-info"> <!-- flex-grow removed from here, parent div has it -->
+         <div class="w-full flex flex-col sm:flex-row">
+        <div class="case-info w-full sm:w-1/2 "> <!-- flex-grow removed from here, parent div has it -->
           <h2 class="text-xl font-bold text-gray-800">
-            {{ LabelsByLanguageCode[getSingleLanguageCode].caseTitle }} (Historical Record)
+            {{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].caseTitle }} (Historical Record)
           </h2>
           <p class="text-gray-700 mb-4">
-            <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.alcivartech_date).toLocaleString() }}
+            <strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong> {{ new Date(data.alcivartech_date).toLocaleString() }}
           </p>
           <ul class="space-y-2">
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].caseId }}:</strong> {{ data.case_enquiry_id }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.case_status }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].title }}:</strong> {{ data.case_title }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].reason }}:</strong> {{ data.reason }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].subject }}:</strong> {{ data.subject }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].location }}:</strong> {{ data.location }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].neighborhood }}:</strong> {{ data.neighborhood }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].source }}:</strong> {{ data.source }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].department }}:</strong> {{ data.department }}</li>
-            <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].closureDate }}:</strong> {{ formatDate(data.closed_dt) }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].caseId }}:</strong> {{ data.case_enquiry_id }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.case_status }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].title }}:</strong> {{ data.case_title }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].reason }}:</strong> {{ data.reason }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].subject }}:</strong> {{ data.subject }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].location }}:</strong> {{ data.location }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].neighborhood }}:</strong> {{ data.neighborhood }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].source }}:</strong> {{ data.source }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].department }}:</strong> {{ data.department }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].closureDate }}:</strong> {{ formatDate(data.closed_dt) }}</li>
           </ul>
 
           <div class="mt-4">
@@ -75,9 +80,11 @@
           </div>
           <!-- Original live data sections removed from here as they are moved above -->
         </div>
+        <OneImageCarousel v-if="hasPhoto" :dataPoints="parsedPhotos" @on-image-click="onImageClick" class="ml-0 w-full sm:w-1/2" /> <!-- ml-4 removed as parent has mr-4 -->
+      </div>
       </div>
   
-      <OneImageCarousel v-if="hasPhoto" :dataPoints="parsedPhotos" @on-image-click="onImageClick" class="ml-0" /> <!-- ml-4 removed as parent has mr-4 -->
+      
     </div>
 </template>
   
@@ -85,6 +92,7 @@
   import { computed, defineProps, defineEmits, ref, onMounted, watch } from 'vue';
   import OneImageCarousel from './OneImageCarousel.vue';
   import axios from 'axios';
+  import { inject } from 'vue';
   
   const props = defineProps({
     data: {
@@ -96,93 +104,11 @@
       default: () => ['en-US'],
     },
   });
+
+
+  const translations = inject('translations');
   
-  const LabelsByLanguageCode = {
-    'en-US': {
-      caseTitle: '311 Case',
-      dateLabel: 'Date',
-      caseId: 'Case ID',
-      status: 'Status',
-      title: 'Title',
-      reason: 'Reason',
-      subject: 'Subject',
-      location: 'Location',
-      neighborhood: 'Neighborhood',
-      source: 'Source',
-      department: 'Department',
-      closureDate: 'Closure Date',
-    },
-    'es-MX': {
-      caseTitle: 'Caso 311',
-      dateLabel: 'Fecha',
-      caseId: 'ID de Caso',
-      status: 'Estado',
-      title: 'Título',
-      reason: 'Razón',
-      subject: 'Asunto',
-      location: 'Ubicación',
-      neighborhood: 'Vecindario',
-      source: 'Fuente',
-      department: 'Departamento',
-      closureDate: 'Fecha de Cierre',
-    },
-    'zh-CN': {
-      caseTitle: '311案例',
-      dateLabel: '日期',
-      caseId: '案例编号',
-      status: '状态',
-      title: '标题',
-      reason: '原因',
-      subject: '主题',
-      location: '位置',
-      neighborhood: '社区',
-      source: '来源',
-      department: '部门',
-      closureDate: '关闭日期',
-    },
-    'ht-HT': {
-      caseTitle: 'Kaz 311',
-      dateLabel: 'Dat',
-      caseId: 'ID Kaz',
-      status: 'Estati',
-      title: 'Tit',
-      reason: 'Rezon',
-      subject: 'Sijè',
-      location: 'Kote',
-      neighborhood: 'Katye',
-      source: 'Sous',
-      department: 'Depatman',
-      closureDate: 'Dat Fèmen',
-    },
-    'vi-VN': {
-      caseTitle: 'Trường hợp 311',
-      dateLabel: 'Ngày',
-      caseId: 'ID Trường hợp',
-      status: 'Trạng thái',
-      title: 'Tiêu đề',
-      reason: 'Lý do',
-      subject: 'Chủ đề',
-      location: 'Vị trí',
-      neighborhood: 'Hàng xóm',
-      source: 'Nguồn',
-      department: 'Bộ phận',
-      closureDate: 'Ngày đóng cửa',
-    },
-    'pt-BR': { 
-      caseTitle: 'Caso 311',
-      dateLabel: 'Data',
-      caseId: 'ID do Caso',
-      status: 'Estado',
-      title: 'Título',
-      reason: 'Razão',
-      subject: 'Assunto',
-      location: 'Localização',
-      neighborhood: 'Vizinhança',
-      source: 'Fonte',
-      department: 'Departamento',
-      closureDate: 'Data de Encerramento',
-    },   
-  };
+  
   
   const getSingleLanguageCode = computed(() => props.language_codes[0]);
   

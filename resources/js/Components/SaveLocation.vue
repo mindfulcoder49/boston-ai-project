@@ -1,7 +1,8 @@
 <template>
 <div class="p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white">
 <button
-    class="text-lg font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 py-2 px-4 rounded-md shadow-md flex items-center justify-center cursor-pointer transition-colors duration-150 ease-in-out w-full md:m-auto md:w-1/3"
+    class="text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 py-2 px-4 rounded-md shadow-md flex items-center justify-center cursor-pointer transition-colors duration-150 ease-in-out w-full md:m-auto md:w-1/3
+    md:text-lg"
     @click="toggleExpanded"
   >
   <!-- add icon depending on if expanded-->
