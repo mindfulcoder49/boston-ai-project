@@ -1,5 +1,5 @@
 <template>
-  <div v-if="data" class="p-4 bg-gray-100 rounded-lg h-full">
+  <div v-if="data" class="p-4 bg-gray-100 rounded-lg">
     <h2 class="text-xl font-bold text-gray-800">
       {{ LabelsByLanguageCode[getSingleLanguageCode].buildingPermitTitle }}
     </h2>

@@ -1,32 +1,40 @@
 <template>
     <div
       v-if="data"
-      class="p-4 bg-gray-100 flex flex-col w-full h-full"
+      class="p-4 bg-gray-100 flex flex-col w-full"
       :class="{ 'w-1/2': hasPhoto }"
     >
       <div class="flex-grow mr-4"> <!-- Added mr-4 for spacing if photo exists, wrapper for all text content -->
-        
+        <div class="mt-4">
+            <button
+              @click="fetchLiveDetails"
+              :disabled="isLoadingLiveData || !data?.case_enquiry_id"
+              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
+            >
+              {{ isLoadingLiveData ? 'Loading Live Data...' : 'Refresh Live Data from BOS:311' }}
+            </button>
+          </div>
         <!-- Live Data from BOS:311 -->
-        <div v-if="liveApiData && Object.keys(liveApiData).length > 0" class="mb-4 p-3 border border-gray-300 bg-white shadow rounded flex-col sm:flex-row flex">
-          <div class="w-full sm:w-1/2">
-          <h3 class="text-md font-semibold text-gray-700">Live Data from BOS:311</h3>
-          <ul class="space-y-1 mt-2 text-sm text-gray-600">
-            <li v-if="liveApiData.status"><strong>Live Status:</strong> {{ liveApiData.status }}</li>
-            <li v-if="liveApiData.status_notes"><strong>Status Notes:</strong> {{ liveApiData.status_notes }}</li>
-            <li v-if="liveApiData.service_name"><strong>Live Service Name:</strong> {{ liveApiData.service_name }}</li>
-            <li v-if="liveApiData.description"><strong>Live Description:</strong> <span class="whitespace-pre-wrap">{{ liveApiData.description }}</span></li>
-            <li v-if="liveApiData.address"><strong>Live Address:</strong> {{ liveApiData.address }}</li>
-            <li v-if="liveApiData.agency_responsible"><strong>Live Agency Responsible:</strong> {{ liveApiData.agency_responsible }}</li>
-            <li v-if="liveApiData.service_notice"><strong>Service Notice:</strong> {{ liveApiData.service_notice }}</li>
-            <li v-if="liveApiData.requested_datetime"><strong>Reported (Live):</strong> {{ formatDate(liveApiData.requested_datetime) }}</li>
-            <li v-if="liveApiData.updated_datetime"><strong>Last Updated (Live):</strong> {{ formatDate(liveApiData.updated_datetime) }}</li>
-            <li v-if="liveApiData.expected_datetime"><strong>Expected Resolution (Live):</strong> {{ formatDate(liveApiData.expected_datetime) }}</li>
+        <div v-if="liveApiData && Object.keys(liveApiData).length > 0" class="mb-4 p-3 border border-gray-300 bg-white shadow rounded flex flex-wrap -m-1">
+          <div class="w-full md:w-1/2 p-1">
+            <h3 class="text-md font-semibold text-gray-700">Live Data from BOS:311</h3>
+            <ul class="space-y-1 mt-2 text-sm text-gray-600">
+              <li v-if="liveApiData.status"><strong>Live Status:</strong> {{ liveApiData.status }}</li>
+              <li v-if="liveApiData.status_notes"><strong>Status Notes:</strong> {{ liveApiData.status_notes }}</li>
+              <li v-if="liveApiData.service_name"><strong>Live Service Name:</strong> {{ liveApiData.service_name }}</li>
+              <li v-if="liveApiData.description"><strong>Live Description:</strong> <span class="whitespace-pre-wrap">{{ liveApiData.description }}</span></li>
+              <li v-if="liveApiData.address"><strong>Live Address:</strong> {{ liveApiData.address }}</li>
+              <li v-if="liveApiData.agency_responsible"><strong>Live Agency Responsible:</strong> {{ liveApiData.agency_responsible }}</li>
+              <li v-if="liveApiData.service_notice"><strong>Service Notice:</strong> {{ liveApiData.service_notice }}</li>
+              <li v-if="liveApiData.requested_datetime"><strong>Reported (Live):</strong> {{ formatDate(liveApiData.requested_datetime) }}</li>
+              <li v-if="liveApiData.updated_datetime"><strong>Last Updated (Live):</strong> {{ formatDate(liveApiData.updated_datetime) }}</li>
+              <li v-if="liveApiData.expected_datetime"><strong>Expected Resolution (Live):</strong> {{ formatDate(liveApiData.expected_datetime) }}</li>
 
-          </ul>
+            </ul>
         </div>
-          <div v-if="liveApiData.media_url" class="mt-2 w-full sm:w-1/2">
+          <div v-if="liveApiData.media_url" class="w-full md:w-1/2 p-1">
             <h4 class="text-sm font-semibold text-gray-700">Live Media:</h4>
-              <img :src="liveApiData.media_url" alt="Live media from BOS:311" class="max-w-full md:max-w-sm h-auto mt-1 border rounded"/>
+              <img :src="liveApiData.media_url" alt="Live media from BOS:311" class="max-w-full h-auto mt-1 border rounded"/>
             
           </div>
         </div>
@@ -48,8 +56,8 @@
         </div>
         
         <!-- Historical Case Info -->
-         <div class="w-full flex flex-col sm:flex-row">
-        <div class="case-info w-full sm:w-1/2 "> <!-- flex-grow removed from here, parent div has it -->
+         <div class="w-full flex flex-wrap -m-1">
+        <div class="case-info w-full md:w-1/2 p-1">
           <h2 class="text-xl font-bold text-gray-800">
             {{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].caseTitle }} (Historical Record)
           </h2>
@@ -69,18 +77,10 @@
             <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].closureDate }}:</strong> {{ formatDate(data.closed_dt) }}</li>
           </ul>
 
-          <div class="mt-4">
-            <button
-              @click="fetchLiveDetails"
-              :disabled="isLoadingLiveData || !data?.case_enquiry_id"
-              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
-            >
-              {{ isLoadingLiveData ? 'Loading Live Data...' : 'Refresh Live Data from BOS:311' }}
-            </button>
-          </div>
+
           <!-- Original live data sections removed from here as they are moved above -->
         </div>
-        <OneImageCarousel v-if="hasPhoto" :dataPoints="parsedPhotos" @on-image-click="onImageClick" class="ml-0 w-full sm:w-1/2" /> <!-- ml-4 removed as parent has mr-4 -->
+        <OneImageCarousel v-if="hasPhoto" :dataPoints="parsedPhotos" @on-image-click="onImageClick" class="w-full md:w-1/2 p-1" />
       </div>
       </div>
   
@@ -157,6 +157,7 @@
       const response = await axios.get(`/api/311-case/live/${props.data.case_enquiry_id}`);
       if (response.data && response.data.data) {
         if (response.data.data.length > 0) {
+          console.log('Live data response:', response.data.data[0]);
           liveApiData.value = response.data.data[0]; // API returns an array
         } else {
           // API returned success but an empty array for data.

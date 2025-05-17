@@ -38,13 +38,13 @@
     <!-- Data List -->
     <div v-else class="flex flex-wrap">
       <div v-for="(item, index) in paginatedData" :key="index" class="p-4 bg-white w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-        <div class="bg-gray-100 p-2 rounded-md mb-2">
+        <div class="bg-gray-100 p-2 rounded-md mb-2 data-container">
           <ServiceCase v-if="item.alcivartech_type === '311 Case'" :data="item" :language_codes="language_codes" />
           <Crime v-if="item.alcivartech_type === 'Crime'" :data="item" :language_codes="language_codes" />
           <BuildingPermit v-if="item.alcivartech_type === 'Building Permit'" :data="item" :language_codes="language_codes" />
           <PropertyViolation v-if="item.alcivartech_type === 'Property Violation'" :data="item" :language_codes="language_codes" />
           <OffHours v-if="item.alcivartech_type === 'Construction Off Hour'" :data="item" :language_codes="language_codes" />
-
+          <FoodEstablishmentViolation v-if="item.alcivartech_type === 'Food Establishment Violation'" :data="item" :language_codes="language_codes" />
           <!-- Button to emit datapoint for goto marker on map function -->
           <button
             @click="$emit('handle-goto-marker', item)"
@@ -64,6 +64,7 @@ import Crime from "@/Components/Crime.vue";
 import BuildingPermit from "@/Components/BuildingPermit.vue";
 import PropertyViolation from "@/Components/PropertyViolation.vue";
 import OffHours from "@/Components/OffHours.vue";
+import FoodEstablishmentViolation from "./FoodEstablishmentViolation.vue";
 
 const localizationLabelsByLanguageCode = {
   'en-US': {
@@ -119,6 +120,7 @@ export default {
     BuildingPermit,
     PropertyViolation,
     OffHours,
+    FoodEstablishmentViolation,
   },
   props: {
     totalData: {
@@ -178,4 +180,12 @@ export default {
 
 <style scoped>
 /* Add any additional styling */
+.data-container {
+  transition: transform 0.3s;
+  height: 500px;
+  overflow: auto;
+}
+.data-container:hover {
+  transform: scale(1.02);
+}
 </style>

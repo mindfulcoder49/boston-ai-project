@@ -19,6 +19,8 @@ class DataPoint extends Model
         'property_violation_id',
         'construction_off_hour_id',
         'building_permit_id',
+        'food_establishment_violation_id',
+        'generic_foreign_id', // Add generic_foreign_id here
     ];
 
     /**
@@ -59,6 +61,14 @@ class DataPoint extends Model
     public function buildingPermit()
     {
         return $this->belongsTo(BuildingPermit::class, 'building_permit_id');
+    }
+
+    /**
+     * Relationship to FoodEstablishmentViolation model.
+     */
+    public function foodEstablishmentViolation()
+    {
+        return $this->belongsTo(FoodEstablishmentViolation::class, 'food_establishment_violation_id');
     }
 
     /**

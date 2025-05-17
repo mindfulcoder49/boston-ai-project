@@ -7,13 +7,15 @@ const dataTypeMapByLanguageCode = {
       'Building Permit': 'Building Permit',
       'Property Violation': 'Property Violation',
       'Construction Off Hour': 'Constr Off Hour',
+      'Food Establishment Violation': 'Food Inspection',
     },
     'es-MX': {
       'Crime': 'Crimen',
       '311 Case': 'Caso 311',
       'Building Permit': 'Permiso de Constr',
       'Property Violation': 'Violación de Prop',
-      'Construction Off Hour': 'Constr Fuera'
+      'Construction Off Hour': 'Constr Fuera',
+      'Food Establishment Violation': 'Inspección de Alimentos',
     },
     'zh-CN': {
       'Crime': '犯罪',
@@ -21,6 +23,7 @@ const dataTypeMapByLanguageCode = {
       'Building Permit': '建筑许可',
       'Property Violation': '财产违规',
       'Construction Off Hour': '非工作时间施工',
+      'Food Establishment Violation': '食品检查',
     },
     'ht-HT': {
       'Crime': 'Krim',
@@ -28,6 +31,7 @@ const dataTypeMapByLanguageCode = {
       'Building Permit': 'Pèmi Bati',
       'Property Violation': 'Vyolasyon Pwopriyete',
       'Construction Off Hour': 'Konstr Moun Ki Pa Travay',
+      'Food Establishment Violation': 'Enspeksyon Manje',
     },
     'vi-VN': {
       'Crime': 'Tội phạm',
@@ -35,13 +39,15 @@ const dataTypeMapByLanguageCode = {
       'Building Permit': 'Giấy phép Xây dựng',
       'Property Violation': 'Vi phạm Tài sản',
       'Construction Off Hour': 'Xây dựng Ngoài giờ',
+      'Food Establishment Violation': 'Kiểm tra Thực phẩm',
     },
     'pt-BR': {
       'Crime': 'Crime',
       '311 Case': 'Caso 311',
       'Building Permit': 'Licença de Constr',
       'Property Violation': 'Violação de Prop',
-      'Construction Off Hour': 'Constr Fora'
+      'Construction Off Hour': 'Constr Fora',
+      'Food Establishment Violation': 'Inspeção de Alimentos',
     },
   };
 

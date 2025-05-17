@@ -8,6 +8,7 @@ use App\Models\BuildingPermit;
 use App\Models\PropertyViolation;
 use App\Models\ConstructionOffHour;
 use App\Models\DataPoint;
+use App\Models\FoodEstablishmentViolation; // Add this line
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -71,107 +72,7 @@ class GenericMapController extends Controller
         $violationDays = 14;
         $offHourDays = 14;
 
-        /*
-        $boundingBox = $this->getBoundingBox($centralLocation['latitude'], $centralLocation['longitude'], $radius);
-
-        
-        $crimeData = collect($this->getCrimeDataForBoundingBox($boundingBox, $crimeDays, $language_codes));
-        Log::info('Crime data fetched.', ['crimeDataCount' => $crimeData->count()]);
-
-        $caseData = collect($this->getThreeOneOneCaseDataForBoundingBox($boundingBox, $caseDays, $language_codes));
-        Log::info('311 case data fetched.', ['caseDataCount' => $caseData->count()]);
-
-        $buildingPermits = collect($this->getBuildingPermitsForBoundingBox($boundingBox, $permitDays, $language_codes));
-        Log::info('Building permits data fetched.', ['buildingPermitsCount' => $buildingPermits->count()]);
-
-        $propertyViolations = collect($this->getPropertyViolationsForBoundingBox($boundingBox, $violationDays, $language_codes));
-        Log::info('Property violations data fetched.', ['propertyViolationsCount' => $propertyViolations->count()]);
-
-        $offHours = collect($this->getConstructionOffHoursForBoundingBox($boundingBox, $offHourDays));
-        Log::info('Construction off hours data fetched.', ['offHoursCount' => $offHours->count()]);
-
-        $dataPoints = $crimeData->merge($caseData)->merge($buildingPermits)->merge($propertyViolations)->merge($offHours);
-        Log::info('Data points merged.', ['totalDataPointsCount' => $dataPoints->count()]);
-        
-        /*
-        $crimeDataJson = $this->generateJsonObjectFromModel(CrimeData::class);
-        $threeOneOneJson = $this->generateJsonObjectFromModel(ThreeOneOneCase::class);
-        $buildingPermitJson = $this->generateJsonObjectFromModel(BuildingPermit::class);
-        $propertyViolationsJson = $this->generateJsonObjectFromModel(PropertyViolation::class);
-        $constructionOffHoursJson = $this->generateJsonObjectFromModel(ConstructionOffHour::class);
- 
-
-        $dataPoints = DB::table('crime_data')
-    ->select(
-        'lat as latitude',
-        'long as longitude',
-        'occurred_on_date as date',
-        DB::raw("'Crime' as type"),
-        DB::raw("$crimeDataJson as info")
-    )
-    ->whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
-    ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
-    ->where('occurred_on_date', '>=', Carbon::now()->subDays($days)->toDateString())
-
-    ->union(
-        DB::table('three_one_one_cases')
-            ->select(
-                'latitude',
-                'longitude',
-                'open_dt as date',
-                DB::raw("'311 Case' as type"),
-                DB::raw("$threeOneOneJson as info")
-            )
-            ->whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-            ->where('open_dt', '>=', Carbon::now()->subDays($days)->toDateString())
-    )
-
-    ->union(
-        DB::table('building_permits')
-            ->select(
-                'y_latitude as latitude',
-                'x_longitude as longitude',
-                'issued_date as date',
-                DB::raw("'Building Permit' as type"),
-                DB::raw("$buildingPermitJson as info")
-            )
-            ->whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-            ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-            ->where('issued_date', '>=', Carbon::now()->subDays($days)->toDateString())
-    )
-
-    ->union(
-        DB::table('property_violations')
-            ->select(
-                'latitude',
-                'longitude',
-                'status_dttm as date',
-                DB::raw("'Property Violation' as type"),
-                DB::raw("$propertyViolationsJson as info")
-            )
-            ->whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-            ->where('status_dttm', '>=', Carbon::now()->subDays($days)->toDateString())
-    )
-
-    ->union(
-        DB::table('construction_off_hours')
-            ->select(
-                'latitude',
-                'longitude',
-                'start_datetime as date',
-                DB::raw("'Construction Off Hour' as type"),
-                DB::raw("$constructionOffHoursJson as info")
-            )
-            ->whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-            ->where('start_datetime', '>=', Carbon::now()->subDays($days)->toDateString())
-    )
-    ->get();
     
-
-        */
         $latitude = $centralLocation['latitude'];
         $longitude = $centralLocation['longitude'];
         $radiusInMeters = $radius * 1609.34; // Convert miles to meters
@@ -204,12 +105,17 @@ class GenericMapController extends Controller
                 // Building Permits
                 'building_permits.id as permit_id',
                 'building_permits.*',
+
+                // Food Establishment Violations
+                'food_establishment_violations.id as food_violation_id',
+                'food_establishment_violations.*'
             )
             ->leftJoin('crime_data', 'data_points.crime_data_id', '=', 'crime_data.id')
             ->leftJoin('three_one_one_cases', 'data_points.three_one_one_case_id', '=', 'three_one_one_cases.id')
             ->leftJoin('property_violations', 'data_points.property_violation_id', '=', 'property_violations.id')
             ->leftJoin('construction_off_hours', 'data_points.construction_off_hour_id', '=', 'construction_off_hours.id')
             ->leftJoin('building_permits', 'data_points.building_permit_id', '=', 'building_permits.id')
+            ->leftJoin('food_establishment_violations', 'data_points.food_establishment_violation_id', '=', 'food_establishment_violations.id') // Add this line
             ->whereRaw("ST_Distance_Sphere(data_points.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters])
             ->get();    
 
@@ -250,6 +156,9 @@ class GenericMapController extends Controller
                 case 'construction_off_hours':
                     $point->alcivartech_type = 'Construction Off Hour';
                     break;
+                case 'food_establishment_violations': // Add this case
+                    $point->alcivartech_type = 'Food Establishment Violation';
+                    break;
                 default:
                     $point->alcivartech_type = 'Unknown';
             }
@@ -271,6 +180,9 @@ class GenericMapController extends Controller
                             case 'Construction Off Hour':
                                 $point->alcivartech_date = $point->start_datetime;
                                 break;
+                            case 'Food Establishment Violation': // Add this case
+                                $point->alcivartech_date = $point->violdttm;
+                                break;
                             default:
                                 $point->alcivartech_date = null;
                         }
@@ -290,176 +202,5 @@ class GenericMapController extends Controller
             'dataPoints' => $dataPoints,
             'centralLocation' => $centralLocation,
         ]);
-    }
-
-    private function getBoundingBox($lat, $lon, $radius)
-    {
-        $earthRadius = 3959;
-
-        $latDelta = rad2deg($radius / $earthRadius);
-        $lonDelta = rad2deg($radius / ($earthRadius * cos(deg2rad($lat))));
-
-        return [
-            'minLat' => $lat - $latDelta,
-            'maxLat' => $lat + $latDelta,
-            'minLon' => $lon - $lonDelta,
-            'maxLon' => $lon + $lonDelta,
-        ];
-    }
-
-    public function getCrimeDataForBoundingBox($boundingBox, $days, $language_codes)
-    {
-        Log::info('Fetching crime data within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
-
-        $startDate = Carbon::now()->subDays($days)->toDateString();
-
-        $query = CrimeData::whereBetween('lat', [$boundingBox['minLat'], $boundingBox['maxLat']])
-                          ->whereBetween('long', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                          ->where('occurred_on_date', '>=', $startDate)
-                            ->whereIn('language_code', $language_codes);
-
-        $crimeData = $query->get();
-
-        Log::info('Crime data query executed.', ['rowsFetched' => $crimeData->count()]);
-
-        // Transform data for the map
-        return $crimeData->map(function ($crime) {
-            // Convert crime object to an array and exclude the latitude, longitude, and date fields
-            $info = Arr::except($crime->toArray(), ['lat', 'long', 'occurred_on_date', 'created_at', 'updated_at', 'location', 'offense_code_group']);
-        
-            return [
-                'latitude' => $crime->lat,
-                'longitude' => $crime->long,
-                'date' => $crime->occurred_on_date,
-                'type' => 'Crime',
-                'info' => $info,
-            ];
-        });
-    }
-
-    public function getThreeOneOneCaseDataForBoundingBox($boundingBox, $days, $language_codes)
-    {
-        Log::info('Fetching 311 case data within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
-
-        $startDate = Carbon::now()->subDays($days)->toDateString();
-
-
-
-        $query = ThreeOneOneCase::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-            ->where('open_dt', '>=', $startDate)
-            ->whereIn('language_code', $language_codes);
-    
-        $cases = $query->get();
-
-        Log::info('311 case data query executed.', ['rowsFetched' => $cases->count()]);
-
-        // Transform data for the map
-        return $cases->map(function ($case) {
-            // Convert case object to an array and exclude the latitude, longitude, and date fields
-            $info = Arr::except($case->toArray(), ['latitude', 'longitude', 'open_dt','checksum']);
-        
-            return [
-                'latitude' => $case->latitude,
-                'longitude' => $case->longitude,
-                'date' => $case->open_dt,
-                'type' => '311 Case',
-                'info' => $info,
-            ];
-        });
-    }
-
-    public function getBuildingPermitsForBoundingBox($boundingBox, $days, $language_codes)
-    {
-        Log::info('Fetching building permits within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
-
-        $startDate = Carbon::now()->subDays($days)->toDateString();
-
-        $buildingPermits = BuildingPermit::whereBetween('y_latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-                                         ->whereBetween('x_longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                                         ->where('issued_date', '>=', $startDate)
-                                            ->whereIn('language_code', $language_codes)
-                                            ->get();
-
-        Log::info('Building permits data query executed.', ['rowsFetched' => $buildingPermits->count()]);
-
-        // Transform data for the map
-        return $buildingPermits->map(function ($permit) {
-            // Convert permit object to an array and exclude the latitude, longitude, and date fields
-            $info = Arr::except($permit->toArray(), ['y_latitude', 'x_longitude', 'issued_date', 'applicant']);
-
-            return [
-                'latitude' => $permit->y_latitude,
-                'longitude' => $permit->x_longitude,
-                'date' => $permit->issued_date,
-                'type' => 'Building Permit',
-                'info' => $info,
-            ];
-        });
-
-    }
-
-    public function getPropertyViolationsForBoundingBox($boundingBox, $days, $language_codes)
-    {
-        Log::info('Fetching property violations within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
-
-        $startDate = Carbon::now()->subDays($days)->toDateString();
-
-        $violations = PropertyViolation::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-                                         ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                                         ->where('status_dttm', '>=', $startDate)
-                                            ->whereIn('language_code', $language_codes)
-                                          ->get();
-
-        Log::info('Property violations data query executed.', ['rowsFetched' => $violations->count()]);
-
-        // Transform data for the map
-        return $violations->map(function ($violation) {
-            // Convert violation object to an array and exclude the latitude, longitude, and date fields
-            $info = Arr::except($violation->toArray(), ['latitude', 'longitude', 'status_dttm', 'created_at', 'updated_at']);
-
-            return [
-                'latitude' => $violation->latitude,
-                'longitude' => $violation->longitude,
-                'date' => $violation->status_dttm,
-                'type' => 'Property Violation',
-                'info' => $info,
-            ];
-        });
-
-    }
-
-
-    
-    public function getConstructionOffHoursForBoundingBox($boundingBox, $days)
-    {
-        Log::info('Fetching construction off hours within bounding box.', ['boundingBox' => $boundingBox, 'days' => $days]);
-
-        $startDate = Carbon::now()->subDays($days)->toDateString();
-        $endDate = Carbon::now()->addDays($days)->toDateString();
-
-        $offHours = ConstructionOffHour::whereBetween('latitude', [$boundingBox['minLat'], $boundingBox['maxLat']])
-                                            ->whereBetween('longitude', [$boundingBox['minLon'], $boundingBox['maxLon']])
-                                            ->where('start_datetime', '>=', $startDate)->where('start_datetime', '<', $endDate)
-                                            ->get();
-
-        Log::info('Construction off hours data query executed.', ['rowsFetched' => $offHours->count()]);
-
-        // Transform data for the map
-        return $offHours->map(function ($offHour) {
-            // Convert offHour object to an array and exclude the latitude, longitude, and date fields
-            $info = Arr::except($offHour->toArray(), ['latitude', 'longitude', 'created_at', 'updated_at']);
-            //convert start datetime to date
-            $start_date = Carbon::parse($offHour->start_datetime)->toDateString();
-
-            return [
-                'latitude' => $offHour->latitude,
-                'longitude' => $offHour->longitude,
-                'date' => $start_date,
-                'type' => 'Construction Off Hour',
-                'info' => $info,
-            ];
-        });
-
     }
 }

@@ -1,42 +1,49 @@
 <template>
-    <div class="map-controls">
-      <div class="filter-container flex flex-col justify-center">
-        <div
-          v-for="(isActive, type) in internalFiltersState"
-          :key="type"
-          @click="handleToggleFilter(type)"
-          :class="[
-            { 'active': isActive, 'inactive': !isActive },
-            `${type.toLowerCase().replace(/\s/g, '-').replace(/\d/g, 'a')}-filter-button`,
-            filterWidthClass
-          ]"
-          class="filter-button shadow-lg disabled:bg-gray-400 transition-colors text-base"
-        >
-          <div class="invisible filter-button-text lg:visible">{{ getDataTypeTranslationLabel(type) }}</div>
+    <div class="map-controls bg-gray-50 p-3 shadow-lg rounded-lg max-h-[70vh] overflow-y-auto">
+      <!-- Filter Type Buttons -->
+      <div class="filter-type-container mb-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2">{{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse]?.filterByTypeTitle || 'Filter by Type' }}</h3>
+        <div class="flex flex-row flex-wrap gap-2">
+          <button
+            v-for="(isActive, type) in internalFiltersState"
+            :key="type"
+            @click="handleToggleFilter(type)"
+            :class="[
+              'filter-button',
+              isActive ? 'active' : 'inactive',
+              `${type.toLowerCase().replace(/\s/g, '-').replace(/\d/g, 'a')}-filter-button`
+            ]"
+            class="flex-grow basis-1/3 md:basis-1/4 lg:basis-auto p-2 rounded-md text-xs font-medium transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50"
+            :title="getDataTypeTranslationLabel(type)"
+          >
+            <span class="filter-button-icon"></span> <!-- Icon will be via CSS -->
+            <span class="filter-button-text break-all hidden lg:inline ml-1">{{ getDataTypeTranslationLabel(type) }}</span>
+          </button>
         </div>
       </div>
   
-      <div class="date-filter-container flex flex-col w-full">
-        <div class="flex flex-col justify-between">
-            <button
-            @click="handleClearDateSelections"
-            class="px-4 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors show-all-dates"
-          >
-            {{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse]?.allDatesButton }}
-          </button>
+      <!-- Date Filter Section -->
+      <div class="date-filter-container">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2">{{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse]?.filterByDateTitle || 'Filter by Date' }}</h3>
+        <button
+          @click="handleClearDateSelections"
+          class="w-full px-3 py-2 mb-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-xs font-semibold shadow"
+        >
+          {{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse]?.allDatesButton || 'Show All Dates' }}
+        </button>
+        <div class="date-buttons-scroll-container overflow-y-auto space-y-1 pr-1">
           <button
             v-for="(date, index) in availableDates"
             :key="index"
             @click="handleToggleDateSelection(date)"
             :class="{
-              'bg-blue-500 text-white': internalSelectedDates.includes(date),
-              'bg-gray-200 hover:bg-gray-300': !internalSelectedDates.includes(date),
+              'bg-indigo-500 text-white shadow-md': internalSelectedDates.includes(date),
+              'bg-gray-200 text-gray-700 hover:bg-gray-300': !internalSelectedDates.includes(date),
             }"
-            class="px-4 py-2 shadow transition-colors"
+            class="w-full px-3 py-2 rounded-md transition-colors text-xs text-left"
           >
             {{ new Date(date).toLocaleDateString(singleLanguageCodeToUse, { weekday: 'short', month: 'short', day: 'numeric' }) }}
           </button>
-
         </div>
       </div>
     </div>
@@ -91,13 +98,10 @@
   
   const filterWidthClass = computed(() => {
     const count = Object.keys(internalFiltersState.value).length;
-    if (count > 6) return 'w-1/12';
-    if (count === 6) return 'w-1/6';
-    if (count === 5) return 'w-1/5';
-    if (count === 4) return 'w-1/4';
-    if (count === 3) return 'w-1/3';
-    if (count === 2) return 'w-1/2';
-    return 'w-full';
+    // Adjusted for flex-wrap, this might not be strictly needed if buttons have intrinsic sizing
+    if (count > 4) return 'sm:w-1/3 md:w-1/4'; // Example: 3 or 4 per row on larger screens
+    if (count > 2) return 'sm:w-1/2 md:w-1/3';
+    return 'w-full sm:w-1/2';
   });
   
   const getDataTypeTranslationLabel = (type) => {
@@ -139,36 +143,65 @@
   </script>
   
   <style scoped>
-  .filter-button-text {
-    width:100%;
-    height: 100%;
-    font-weight: 800;
-    font-size: 1.5rem;
-    align-content: center;
-    border-radius: 50%;
+  .map-controls {
+    width: 20%; /* Full width on small screens */
+    display: flex;
+    flex-direction: column;
   }
-    .filter-container div {
-      background-position: center;
-      text-align: center;
-      padding: 0.5rem;
-    }
-    .date-filter-container {
-      width:auto;
-    }
-    .date-filter-container button {
-      width:100%;
-      font-size: 0.8rem;
-    }
+  
+  .filter-button {
+    min-height: 50px; /* Ensures buttons are tall enough */
+    min-width: 50px; /* Ensures buttons are wide enough */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center icon when text is hidden */
+    border: 1px solid transparent;
+  }
+  
+  .filter-button.active {
+    border-color: #4A5568; /* Darker border for active */
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .filter-button.inactive {
+    background-color: #E2E8F0; /* bg-gray-300 */
+    color: #4A5568; /* text-gray-700 */
+  }
+  .filter-button.inactive:hover {
+    background-color: #CBD5E0; /* bg-gray-400 */
+  }
+  
+  .filter-button-icon {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+  }
+  
+  .date-buttons-scroll-container::-webkit-scrollbar {
+    width: 6px;
+  }
+  .date-buttons-scroll-container::-webkit-scrollbar-thumb {
+    background-color: #A0AEC0; /* bg-gray-500 */
+    border-radius: 3px;
+  }
+  .date-buttons-scroll-container::-webkit-scrollbar-track {
+    background-color: #EDF2F7; /* bg-gray-200 */
+  }
+  
+  /* Responsive adjustments for map-controls width */
+  @media (min-width: 768px) { /* md breakpoint */
     .map-controls {
-      width: 20%;
-      max-height: 70vh;
-        overflow-y: auto;
+      max-width: 20%;
     }
-    .show-all-dates {
-      width:auto;
+  }
+  @media (min-width: 1024px) { /* lg breakpoint */
+    .map-controls {
+      max-width: 20%
     }
-    div {
-        width:100%;
+    .filter-button-text {
+      font-size: 0.7rem; /* Smaller text on larger screens for filter buttons */
     }
+  }
   
   </style>
