@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             BuildingPermitsSeeder::class,
             PropertyViolationsSeeder::class,
             ConstructionOffHoursSeeder::class,
+            FoodEstablishmentViolationsSeeder::class,
         ]);
     }
 }
