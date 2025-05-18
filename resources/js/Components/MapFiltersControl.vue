@@ -42,7 +42,7 @@
             }"
             class="w-full px-3 py-2 rounded-md transition-colors text-xs text-left"
           >
-            {{ new Date(date).toLocaleDateString(singleLanguageCodeToUse, { weekday: 'short', month: 'short', day: 'numeric' }) }}
+            {{ displayLocalDateFromUtcString(date, singleLanguageCodeToUse, { weekday: 'short', month: 'short', day: 'numeric' }) }}
           </button>
         </div>
       </div>
@@ -106,6 +106,30 @@
   
   const getDataTypeTranslationLabel = (type) => {
     return props.translations?.dataTypeMapByLanguageCode?.[singleLanguageCodeToUse.value]?.[type] || type;
+  };
+
+  const displayLocalDateFromUtcString = (utcDateString, locale, options) => {
+    if (!utcDateString) return '';
+    // Assuming utcDateString is in "YYYY-MM-DD" format
+    const parts = utcDateString.split('-');
+    if (parts.length !== 3) {
+      console.warn('Invalid date string format for displayLocalDateFromUtcString:', utcDateString);
+      return utcDateString; // Return original string or handle error appropriately
+    }
+  
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // JavaScript months are 0-indexed
+    const day = parseInt(parts[2], 10);
+  
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+      console.warn('Invalid date components after parsing for displayLocalDateFromUtcString:', utcDateString);
+      return utcDateString; // Return original string or handle error appropriately
+    }
+  
+    // Create a Date object that represents midnight in the local timezone for that YYYY-MM-DD
+    const localDate = new Date(year, month, day);
+    
+    return localDate.toLocaleDateString(locale, options);
   };
   
   const handleToggleFilter = (type) => {
