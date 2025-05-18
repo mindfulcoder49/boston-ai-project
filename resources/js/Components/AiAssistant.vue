@@ -146,7 +146,7 @@ const languageButtonLabels = {
 
 const welcomeMessage = ref("");
 const welcomeMessageTranslations = {
-  'en-US': "Hi! I'm the Boston App AI Assistant. I can see all the data points in the map and answer questions about them. How can I help you today?",
+  'en-US': "Hi! I'm the BostonScope AI Assistant. I can see all the data points in the map and answer questions about them. How can I help you today?",
   'es-MX': "¡Hola! Soy el asistente de IA de la aplicación de Boston. Puedo ver todos los puntos de datos en el mapa y responder preguntas sobre ellos. ¿Cómo puedo ayudarte hoy?",
   'zh-CN': "你好！我是波士顿应用程序的AI助手。我可以查看地图中的所有数据点并用多种语言回答有关它们的问题。我今天能帮你什么？",
   'ht-HT': "Bonjou! Mwen se asistan AI nan aplikasyon Boston an. Mwen ka wè tout pwen done nan kat la ak reponn kesyon sou yo. Kijan mwen ka ede ou jodi a?",
