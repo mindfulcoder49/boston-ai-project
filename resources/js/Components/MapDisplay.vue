@@ -218,7 +218,9 @@
               const violDescEl = document.createElement('div');
               violDescEl.style.marginTop = '8px';
               violDescEl.style.paddingLeft = '5px';
-              violDescEl.innerHTML = `<strong style="color: #D32F2F;">${summaryItem.violdesc}</strong> (${summaryItem.entries.length} record(s))`;
+              // set the violdesc color red or green based on the most recent status
+              const statusColor = summaryItem.entries[0].viol_status === 'Fail' || (summaryItem.entries[0].result && summaryItem.entries[0].result.toLowerCase().includes('fail')) ? '#D32F2F' : '#388E3C';
+              violDescEl.innerHTML = `<strong style="color: ${statusColor};">${summaryItem.violdesc}</strong> (${summaryItem.entries.length} record(s))`;
               historyContainer.appendChild(violDescEl);
               console.log(`Food Inspection: Violation description element for "${summaryItem.violdesc}" appended.`);
   
@@ -241,7 +243,14 @@
                 const statusColor = entry.viol_status === 'Fail' || (entry.result && entry.result.toLowerCase().includes('fail')) ? 'red' : 'green';
                 entryHtml += `<div>Status: <span style="font-weight:bold; color: ${statusColor};">${entry.viol_status || 'N/A'}</span> | Result: ${entry.result || 'N/A'} | Level: ${entry.viol_level || 'N/A'}</div>`;
                 if (entry.comments) {
-                  entryHtml += `<div style="font-style: italic; color: #555; margin-top: 2px;">Comments: ${entry.comments}</div>`;
+                  // if passed, note that the comments are from a previous failed inspection and were addressed in order to pass
+                  if (entry.viol_status === 'Pass' || (entry.result && entry.result.toLowerCase().includes('pass'))) {
+                    entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments addressed from previous failed inspection: ${entry.comments}</div>`;
+                  }
+                  else if (entry.viol_status === 'Fail' || (entry.result && entry.result.toLowerCase().includes('fail'))) {
+                    entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments: ${entry.comments}</div>`;
+                  }
+                 
                 }
                 entryItem.innerHTML = entryHtml;
                 entriesList.appendChild(entryItem);
