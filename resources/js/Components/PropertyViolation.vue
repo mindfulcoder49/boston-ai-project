@@ -1,5 +1,5 @@
 <template>
-    <div v-if="data" class="p-4 bg-gray-100 h-full">
+    <div v-if="data" class="p-4 bg-gray-100">
       <h2 class="text-xl font-bold text-gray-800">
         {{ LabelsByLanguageCode[getSingleLanguageCode].propertyViolationTitle }}
       </h2>

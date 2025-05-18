@@ -47,3 +47,6 @@ transferdata.sh
 .venv/
 
 *.pdf
+
+output.txt
+latest.diff

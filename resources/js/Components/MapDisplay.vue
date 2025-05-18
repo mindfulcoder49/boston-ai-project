@@ -106,10 +106,26 @@
     });
   };
 
-  const getClusterIconInternal = (count) => {
+  const getClusterIconInternal = (count, points) => {
+    /*
     return L.divIcon({
       className: 'custom-cluster-div-icon',
       html: `<div>${count}</div>`,
+      iconSize: null, // Size controlled by CSS using --icon-size
+      popupAnchor: [0, -15], // Adjust if necessary, similar to other icons
+    });
+    */
+   // Create the icon like above but add classes for every point with 'id'+ data_point_id
+    let className = 'custom-cluster-div-icon';
+    let backgroundImage = '';
+    let iconHtml = `<div>${count}</div>`;
+    points.forEach((point) => {
+      className += ' id' + point.data_point_id;
+    });
+    //don't add photos
+    return L.divIcon({
+      className,
+      html: iconHtml,
       iconSize: null, // Size controlled by CSS using --icon-size
       popupAnchor: [0, -15], // Adjust if necessary, similar to other icons
     });
@@ -634,7 +650,7 @@
       if (cluster.count > 1) {
         const clusterMarker = markRaw(
           L.marker(cluster.representativeLatLng, {
-            icon: getClusterIconInternal(cluster.count),
+            icon: getClusterIconInternal(cluster.count, cluster.points),
           })
         );
         
