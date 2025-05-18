@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class FoodEstablishmentViolation extends Model
+class FoodInspection extends Model
 {
     use HasFactory;
 
-    protected $table = 'food_establishment_violations';
+    protected $table = 'food_inspections'; // Assuming it uses the same table
 
     protected $fillable = [
         'external_id',
@@ -53,12 +53,12 @@ class FoodEstablishmentViolation extends Model
 
     public static function getDateField(): string
     {
-        return 'violdttm'; // Or 'issdttm' or 'resultdttm' depending on primary relevance
+        return 'resultdttm';
     }
 
     public function getDate(): ?string
     {
-        return $this->violdttm ? $this->violdttm->toDateTimeString() : null;
+        return $this->resultdttm ? $this->violdttm->toDateTimeString() : null;
     }
 
     public static function getExternalIdName(): string

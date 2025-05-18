@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateFoodEstablishmentViolationsTable extends Migration
+class CreateFoodInspectionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateFoodEstablishmentViolationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('food_establishment_violations', function (Blueprint $table) {
+        Schema::create('food_inspections', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('external_id')->unique()->comment('From CSV _id');
             $table->string('businessname')->nullable();
@@ -48,10 +48,10 @@ class CreateFoodEstablishmentViolationsTable extends Migration
         });
 
         Schema::table('data_points', function (Blueprint $table) {
-            $table->unsignedBigInteger('food_establishment_violation_id')->nullable()->after('building_permit_id');
-            $table->foreign('food_establishment_violation_id')
+            $table->unsignedBigInteger('food_inspection_id')->nullable()->after('building_permit_id');
+            $table->foreign('food_inspection_id')
                   ->references('id')
-                  ->on('food_establishment_violations')
+                  ->on('food_inspections')
                   ->onDelete('cascade'); // Or set null if appropriate
         });
     }
@@ -64,9 +64,9 @@ class CreateFoodEstablishmentViolationsTable extends Migration
     public function down()
     {
         Schema::table('data_points', function (Blueprint $table) {
-            $table->dropForeign(['food_establishment_violation_id']);
-            $table->dropColumn('food_establishment_violation_id');
+            $table->dropForeign(['food_inspection_id']);
+            $table->dropColumn('food_inspection_id');
         });
-        Schema::dropIfExists('food_establishment_violations');
+        Schema::dropIfExists('food_inspections');
     }
 }

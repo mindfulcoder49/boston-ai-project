@@ -64,7 +64,7 @@ import Crime from "@/Components/Crime.vue";
 import BuildingPermit from "@/Components/BuildingPermit.vue";
 import PropertyViolation from "@/Components/PropertyViolation.vue";
 import OffHours from "@/Components/OffHours.vue";
-import FoodEstablishmentViolation from "./FoodEstablishmentViolation.vue";
+import FoodEstablishmentViolation from "./FoodInspection.vue";
 
 const localizationLabelsByLanguageCode = {
   'en-US': {

@@ -1,11 +1,11 @@
 <template>
   <div v-if="data" class="p-4 border border-black-200 rounded-lg h-full overflow-y-auto">
     <h2 class="text-xl font-bold  mb-1">
-      {{ data.violation_summary ? LabelsByLanguageCode[getSingleLanguageCode].foodEstablishmentRecordTitle : LabelsByLanguageCode[getSingleLanguageCode].foodEstablishmentViolationTitle }}
+      {{ (data.violation_summary || isNonViolationRecord) ? LabelsByLanguageCode[getSingleLanguageCode].foodEstablishmentRecordTitle : LabelsByLanguageCode[getSingleLanguageCode].foodEstablishmentViolationTitle }}
     </h2>
     <p class=" text-gray-600 mb-3">
-      <strong>{{ data.violation_summary ? LabelsByLanguageCode[getSingleLanguageCode].mostRecentActivityDate : LabelsByLanguageCode[getSingleLanguageCode].dateLabel }}:</strong>
-      {{ formatDate(data.alcivartech_date) }}
+      <strong>{{ data.violation_summary ? LabelsByLanguageCode[getSingleLanguageCode].mostRecentActivityDate : (isNonViolationRecord ? LabelsByLanguageCode[getSingleLanguageCode].inspectionDate : LabelsByLanguageCode[getSingleLanguageCode].violationDate) }}:</strong>
+      {{ formatDate(data.violation_summary ? data.alcivartech_date : (isNonViolationRecord ? data.resultdttm : data.violdttm)) }}
     </p>
 
     <!-- Common Establishment Details -->
@@ -40,15 +40,21 @@
       </div>
     </div>
 
-    <!-- Single Violation Details (if not aggregated) -->
+    <!-- Single Record Details (if not aggregated) -->
     <div v-else class="text-sm">
-        <h3 class=" font-semibold  mb-1.5">{{ LabelsByLanguageCode[getSingleLanguageCode].violationDetails }}</h3>
+        <h3 class=" font-semibold  mb-1.5">
+            {{ isNonViolationRecord ? LabelsByLanguageCode[getSingleLanguageCode].inspectionDetails : LabelsByLanguageCode[getSingleLanguageCode].violationDetails }}
+        </h3>
         <ul class="space-y-1">
             <li v-if="data.result"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].inspectionResult }}:</strong> {{ data.result }}</li>
             <li v-if="data.resultdttm"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].resultDate }}:</strong> {{ formatDate(data.resultdttm) }}</li>
-            <li v-if="data.violation"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationCode }}:</strong> {{ data.violation }} <span v-if="data.viol_level"> ({{ data.viol_level }})</span></li>
-            <li v-if="data.violdesc"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationDescription }}:</strong> {{ data.violdesc }}</li>
-            <li v-if="data.viol_status"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationStatus }}:</strong> {{ data.viol_status }}</li>
+            
+            <template v-if="data.violdttm">
+              <li v-if="data.violation"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationCode }}:</strong> {{ data.violation }} <span v-if="data.viol_level"> ({{ data.viol_level }})</span></li>
+              <li v-if="data.violdesc"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationDescription }}:</strong> {{ data.violdesc }}</li>
+              <li v-if="data.viol_status"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].violationStatus }}:</strong> {{ data.viol_status }}</li>
+            </template>
+            
             <li v-if="data.comments"><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].comments }}:</strong> {{ data.comments }}</li>
         </ul>
     </div>
@@ -71,9 +77,8 @@ const props = defineProps({
 
 const LabelsByLanguageCode = {
   'en-US': {
-    foodEstablishmentViolationTitle: 'Food Establishment Violation',
-    foodEstablishmentRecordTitle: 'Food Establishment Record',
-    dateLabel: 'Date',
+    foodEstablishmentViolationTitle: 'Food Inspection',
+    foodEstablishmentRecordTitle: 'Food Inspection Record',
     mostRecentActivityDate: 'Most Recent Activity',
     businessName: 'Business Name',
     dbaName: 'DBA Name',
@@ -94,11 +99,15 @@ const LabelsByLanguageCode = {
     recordSingular: 'record',
     recordPlural: 'records',
     violationLevel: 'Level',
+    // New labels
+    dateLabel: 'Date', // Kept for history list items if needed, or can be more specific there too.
+    inspectionDate: 'Inspection Date',
+    violationDate: 'Violation Date',
+    inspectionDetails: 'Inspection Details',
   },
   'es-MX': {
     foodEstablishmentViolationTitle: 'Violación de Establecimiento de Comida',
     foodEstablishmentRecordTitle: 'Registro de Establecimiento de Comida',
-    dateLabel: 'Fecha',
     mostRecentActivityDate: 'Actividad Más Reciente',
     businessName: 'Nombre del Negocio',
     dbaName: 'Nombre DBA',
@@ -119,11 +128,15 @@ const LabelsByLanguageCode = {
     recordSingular: 'registro',
     recordPlural: 'registros',
     violationLevel: 'Nivel',
+    // New labels
+    dateLabel: 'Fecha',
+    inspectionDate: 'Fecha de Inspección',
+    violationDate: 'Fecha de Violación',
+    inspectionDetails: 'Detalles de la Inspección',
   },
   'zh-CN': {
     foodEstablishmentViolationTitle: '食品机构违规',
     foodEstablishmentRecordTitle: '食品机构记录',
-    dateLabel: '日期',
     mostRecentActivityDate: '最近活动',
     businessName: '企业名称',
     dbaName: 'DBA名称',
@@ -144,11 +157,15 @@ const LabelsByLanguageCode = {
     recordSingular: '条记录',
     recordPlural: '条记录',
     violationLevel: '级别',
+    // New labels
+    dateLabel: '日期',
+    inspectionDate: '检查日期',
+    violationDate: '违规日期',
+    inspectionDetails: '检查详情',
   },
   'ht-HT': {
     foodEstablishmentViolationTitle: 'Vyolasyon Etablisman Manje',
     foodEstablishmentRecordTitle: 'Dosye Etablisman Manje',
-    dateLabel: 'Dat',
     mostRecentActivityDate: 'Aktivite Pi Resan',
     businessName: 'Non Biznis',
     dbaName: 'Non DBA',
@@ -169,11 +186,15 @@ const LabelsByLanguageCode = {
     recordSingular: 'dosye',
     recordPlural: 'dosye yo',
     violationLevel: 'Nivo',
+    // New labels
+    dateLabel: 'Dat',
+    inspectionDate: 'Dat Enspeksyon',
+    violationDate: 'Dat Vyolasyon',
+    inspectionDetails: 'Detay Enspeksyon',
   },
   'pt-BR': {
     foodEstablishmentViolationTitle: 'Violação de Estabelecimento Alimentar',
     foodEstablishmentRecordTitle: 'Registro de Estabelecimento Alimentar',
-    dateLabel: 'Data',
     mostRecentActivityDate: 'Atividade Mais Recente',
     businessName: 'Nome da Empresa',
     dbaName: 'Nome DBA',
@@ -194,11 +215,15 @@ const LabelsByLanguageCode = {
     recordSingular: 'registro',
     recordPlural: 'registros',
     violationLevel: 'Nível',
+    // New labels
+    dateLabel: 'Data',
+    inspectionDate: 'Data da Inspeção',
+    violationDate: 'Data da Violação',
+    inspectionDetails: 'Detalhes da Inspeção',
   },
   'vi-VN': {
     foodEstablishmentViolationTitle: 'Vi phạm Cơ sở Thực phẩm',
-    foodEstablishmentRecordTitle: 'Hồ sơ Cơ sở Thực phẩm',
-    dateLabel: 'Ngày',
+    foodEstablishmentRecordTitle: 'Biên bản Cơ sở Thực phẩm',
     mostRecentActivityDate: 'Hoạt động gần nhất',
     businessName: 'Tên doanh nghiệp',
     dbaName: 'Tên DBA',
@@ -219,8 +244,17 @@ const LabelsByLanguageCode = {
     recordSingular: 'hồ sơ',
     recordPlural: 'hồ sơ',
     violationLevel: 'Cấp độ',
+    // New labels
+    dateLabel: 'Ngày',
+    inspectionDate: 'Ngày kiểm tra',
+    violationDate: 'Ngày vi phạm',
+    inspectionDetails: 'Chi tiết kiểm tra',
   }
 };
+
+const isNonViolationRecord = computed(() => {
+  return props.data && !props.data.violation_summary && !props.data.violdttm;
+});
 
 const getSingleLanguageCode = computed(() => {
   // Fallback to 'en-US' if the provided language code is not in LabelsByLanguageCode

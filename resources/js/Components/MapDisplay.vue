@@ -62,8 +62,8 @@
       case 'Construction Off Hour':
         className = 'construction-off-hour-div-icon';
         break;
-      case 'Food Establishment Violation': // Add this case
-        className = 'food-establishment-violation-div-icon';
+      case 'Food Inspection': // Add this case
+        className = 'food-inspection-div-icon';
         break;
       default:
         break;
@@ -182,10 +182,10 @@
           }
           break;
         // ...existing code...
-        case 'Food Establishment Violation':
-          console.log('Food Establishment Violation: DataPoint:', JSON.parse(JSON.stringify(dataPoint)));
+        case 'Food Inspection':
+          console.log('Food Inspection: DataPoint:', JSON.parse(JSON.stringify(dataPoint)));
           if (dataPoint.violation_summary) { // This is an aggregated point
-            console.log('Food Establishment Violation: Aggregated point detected. Violation summary exists.');
+            console.log('Food Inspection: Aggregated point detected. Violation summary exists.');
             let initialDetailsHtml = `<div style="margin-bottom: 5px;"><strong>${new Date(dataPoint.alcivartech_date).toLocaleString()}</strong> (Most Recent Activity)</div>`;
             initialDetailsHtml += `<div>Type: Food Establishment Record</div>`;
             if (dataPoint.businessname) {
@@ -198,7 +198,7 @@
               initialDetailsHtml += `<div>Address: ${dataPoint.address}</div>`;
             }
             container.innerHTML = initialDetailsHtml;
-            console.log('Food Establishment Violation: Initial details HTML set:', initialDetailsHtml);
+            console.log('Food Inspection: Initial details HTML set:', initialDetailsHtml);
   
             const historyTitle = document.createElement('div');
             historyTitle.style.marginTop = '10px';
@@ -206,31 +206,31 @@
             const totalRecords = dataPoint.violation_summary.reduce((sum, s) => sum + s.entries.length, 0);
             historyTitle.innerHTML = `<strong>Violation History (${totalRecords} total records):</strong>`;
             container.appendChild(historyTitle);
-            console.log('Food Establishment Violation: History title appended. Total records:', totalRecords);
+            console.log('Food Inspection: History title appended. Total records:', totalRecords);
   
             const historyContainer = document.createElement('div');
             historyContainer.style.paddingRight = '5px';
-            console.log('Food Establishment Violation: History container created.');
+            console.log('Food Inspection: History container created.');
   
   
             dataPoint.violation_summary.forEach((summaryItem, summaryIndex) => {
-              console.log(`Food Establishment Violation: Processing summaryItem ${summaryIndex + 1}/${dataPoint.violation_summary.length}:`, JSON.parse(JSON.stringify(summaryItem)));
+              console.log(`Food Inspection: Processing summaryItem ${summaryIndex + 1}/${dataPoint.violation_summary.length}:`, JSON.parse(JSON.stringify(summaryItem)));
               const violDescEl = document.createElement('div');
               violDescEl.style.marginTop = '8px';
               violDescEl.style.paddingLeft = '5px';
               violDescEl.innerHTML = `<strong style="color: #D32F2F;">${summaryItem.violdesc}</strong> (${summaryItem.entries.length} record(s))`;
               historyContainer.appendChild(violDescEl);
-              console.log(`Food Establishment Violation: Violation description element for "${summaryItem.violdesc}" appended.`);
+              console.log(`Food Inspection: Violation description element for "${summaryItem.violdesc}" appended.`);
   
               const entriesList = document.createElement('ul');
               entriesList.style.listStylePosition = 'inside';
               entriesList.style.paddingLeft = '10px';
               entriesList.style.marginLeft = '0px';
-              console.log(`Food Establishment Violation: Entries list UL created for "${summaryItem.violdesc}".`);
+              console.log(`Food Inspection: Entries list UL created for "${summaryItem.violdesc}".`);
   
   
               summaryItem.entries.forEach((entry, entryIndex) => {
-                console.log(`Food Establishment Violation: Processing entry ${entryIndex + 1}/${summaryItem.entries.length} for "${summaryItem.violdesc}":`, JSON.parse(JSON.stringify(entry)));
+                console.log(`Food Inspection: Processing entry ${entryIndex + 1}/${summaryItem.entries.length} for "${summaryItem.violdesc}":`, JSON.parse(JSON.stringify(entry)));
                 const entryItem = document.createElement('li');
                 entryItem.style.fontSize = '0.9em';
                 entryItem.style.marginBottom = '6px';
@@ -245,20 +245,20 @@
                 }
                 entryItem.innerHTML = entryHtml;
                 entriesList.appendChild(entryItem);
-                console.log(`Food Establishment Violation: Entry list item LI appended for date "${entry.alcivartech_date}". HTML:`, entryHtml);
+                console.log(`Food Inspection: Entry list item LI appended for date "${entry.alcivartech_date}". HTML:`, entryHtml);
               });
   
               if (entriesList.lastChild) {
                   (entriesList.lastChild).style.borderBottom = 'none';
-                  console.log(`Food Establishment Violation: Removed border from last entry item in list for "${summaryItem.violdesc}".`);
+                  console.log(`Food Inspection: Removed border from last entry item in list for "${summaryItem.violdesc}".`);
               } else {
-                  console.log(`Food Establishment Violation: No entries found for "${summaryItem.violdesc}", so no border to remove.`);
+                  console.log(`Food Inspection: No entries found for "${summaryItem.violdesc}", so no border to remove.`);
               }
               historyContainer.appendChild(entriesList);
-              console.log(`Food Establishment Violation: Entries list UL for "${summaryItem.violdesc}" appended to history container.`);
+              console.log(`Food Inspection: Entries list UL for "${summaryItem.violdesc}" appended to history container.`);
             });
             container.appendChild(historyContainer);
-            console.log('Food Establishment Violation: History container appended to main container.');
+            console.log('Food Inspection: History container appended to main container.');
             
             // If this block handles the content, add back button (if needed) and return.
             if (onBackToClusterCallback) {
@@ -276,14 +276,14 @@
                   onBackToClusterCallback();
               };
               container.appendChild(backButton);
-              console.log('Food Establishment Violation: Back button appended.');
+              console.log('Food Inspection: Back button appended.');
             }
             return container; // Return early as container is fully built
   
           } else {
             // Fallback for non-aggregated: build up detailsHtml
-            console.log('Food Establishment Violation: Non-aggregated point (violation_summary is missing). Displaying individual details.');
-            detailsHtml += `<div>Type: Food Establishment Violation (Individual)</div>`;
+            console.log('Food Inspection: Non-aggregated point (violation_summary is missing). Displaying individual details.');
+            detailsHtml += `<div>Type: Food Inspection (Individual)</div>`;
             if (dataPoint.businessname) {
               detailsHtml += `<div>Business: ${dataPoint.businessname}</div>`;
             }
@@ -296,7 +296,7 @@
             if (dataPoint.result) {
               detailsHtml += `<div>Result: ${dataPoint.result}</div>`;
             }
-            console.log('Food Establishment Violation: Individual details HTML to be set (from outer scope):', detailsHtml);
+            console.log('Food Inspection: Individual details HTML to be set (from outer scope):', detailsHtml);
           }
           break;
         // ...existing code...
@@ -304,7 +304,7 @@
           detailsHtml += 'No details available.';
       }
       
-      // This line will now only execute if the 'Food Establishment Violation' with summary didn't return early.
+      // This line will now only execute if the 'Food Inspection' with summary didn't return early.
       container.innerHTML = detailsHtml;
     
       if (onBackToClusterCallback) {
@@ -381,7 +381,7 @@
         iconClassName = 'property-violation-div-icon';
       } else if (dataPoint.alcivartech_type === 'Construction Off Hour') {
         iconClassName = 'construction-off-hour-div-icon';
-      } else if (dataPoint.alcivartech_type === 'Food Establishment Violation') { // Add this else if
+      } else if (dataPoint.alcivartech_type === 'Food Inspection') { // Add this else if
         iconClassName = 'food-violation-div-icon';
       }
       iconDiv.className = iconClassName; // Apply base class
@@ -424,7 +424,7 @@
       } else if (dataPoint.alcivartech_type === 'Construction Off Hour' && dataPoint.address) {
         const idPart = dataPoint.app_no ? `App: ${dataPoint.app_no} - ` : '';
         itemPreviewText = `${idPart}${dataPoint.address}`;
-      } else if (dataPoint.alcivartech_type === 'Food Establishment Violation') {
+      } else if (dataPoint.alcivartech_type === 'Food Inspection') {
         const namePart = dataPoint.businessname || 'Food Establishment';
         let detailPart = '';
         if (dataPoint.violation_summary && dataPoint.violation_summary.length > 0) {
@@ -612,7 +612,7 @@
       return;
     }
 
-    // REMOVED: Pre-processing block for food establishment violations.
+    // REMOVED: Pre-processing block for Food Inspections.
     // Data points are now expected to be pre-aggregated by the parent.
     // The `dataPoints` variable here is equivalent to `processedDataPoints` from the old logic.
   
@@ -699,8 +699,8 @@
             ${dataPoint.alcivartech_type === 'Building Permit' ? dataPoint.description : ''}
             ${dataPoint.alcivartech_type === 'Property Violation' ? dataPoint.description : ''}
             ${dataPoint.alcivartech_type === 'Construction Off Hour' ? dataPoint.address : ''}
-            ${dataPoint.alcivartech_type === 'Food Establishment Violation' ? 
-              (dataPoint.businessname ? `${dataPoint.businessname} - Violations` : 'Food Establishment Violations') 
+            ${dataPoint.alcivartech_type === 'Food Inspection' ? 
+              (dataPoint.businessname ? `${dataPoint.businessname} - Violations` : 'Food Inspections') 
               : ''}
             </div>
           `;

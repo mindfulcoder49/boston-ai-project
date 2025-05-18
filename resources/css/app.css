@@ -21,8 +21,8 @@
   --property-violation-icon-color-transparent: rgba(255, 255, 0, 0.8);
   --construction-off-hour-icon-color-transparent: rgba(114, 203, 209, 0.8);
   /* add an orange icon for food violations */
-  --food-establishment-violation-icon-color: rgb(255, 165, 0);
-  --food-establishment-violation-icon-color-transparent: rgba(255, 165, 0, 0.8);
+  --food-inspection-icon-color: rgb(255, 165, 0);
+  --food-inspection-icon-color-transparent: rgba(255, 165, 0, 0.8);
 
 
   --center-icon-border-color: black;
@@ -294,9 +294,9 @@ a {
   z-index: 1000 !important;
 }
 
-.food-establishment-violation-div-icon div {
-  background-color: var(--food-establishment-violation-icon-color);
-  background-image: url("/images/foodviolationicon.svg");
+.food-inspection-div-icon div {
+  background-color: var(--food-inspection-icon-color);
+  background-image: url("/images/foodinspectionicon.svg");
   background-size: cover;
   background-position: center;
   color: white;
@@ -348,9 +348,9 @@ a {
   background-repeat: no-repeat;
 }
 
-.food-establishment-violation-filter-button {
-  background-image: url("/images/foodviolationicon.svg");
-  border: 10px solid var(--food-establishment-violation-icon-color-transparent);
+.food-inspection-filter-button {
+  background-image: url("/images/foodinspectionicon.svg");
+  border: 10px solid var(--food-inspection-icon-color-transparent);
   background-position: left;
   background-size: contain;
   background-repeat: no-repeat;
@@ -364,7 +364,7 @@ a {
   .aaa-case-filter-button,
   .property-violation-filter-button,
   .construction-off-hour-filter-button,
-  .food-establishment-violation-filter-button {
+  .food-inspection-filter-button {
     background-position: center;
   }
 }
@@ -394,8 +394,8 @@ a {
   color: black;
 }
 
-.food-establishment-violation-filter-button.active {
-  background-color: var(--food-establishment-violation-icon-color);
+.food-inspection-filter-button.active {
+  background-color: var(--food-inspection-icon-color);
   color: black;
 }
 
@@ -419,8 +419,8 @@ a {
   background-color: var(--construction-off-hour-icon-color-transparent);
 }
 
-.food-establishment-violation-filter-button .filter-button-text {
-  background-color: var(--food-establishment-violation-icon-color-transparent);
+.food-inspection-filter-button .filter-button-text {
+  background-color: var(--food-inspection-icon-color-transparent);
 }
 
 
@@ -435,7 +435,7 @@ a {
 .center-div-icon,
 .property-violation-div-icon,
 .construction-off-hour-div-icon,
-.food-establishment-violation-div-icon {
+.food-inspection-div-icon {
   transition: width 0.3s ease, height 0.3s ease; /* Smooth resizing */
 }
 

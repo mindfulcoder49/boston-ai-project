@@ -3,14 +3,14 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\FoodEstablishmentViolation;
+use App\Models\FoodInspection;
 use Illuminate\Support\Facades\File;
 use League\Csv\Reader;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
-class FoodEstablishmentViolationsSeeder extends Seeder
+class FoodInspectionsSeeder extends Seeder
 {
     private const BATCH_SIZE = 500;
 
@@ -152,7 +152,7 @@ class FoodEstablishmentViolationsSeeder extends Seeder
         });
 
 
-        DB::table((new FoodEstablishmentViolation)->getTable())->upsert(
+        DB::table((new FoodInspection)->getTable())->upsert(
             $dataBatch,
             ['external_id'], // Unique key for identifying records
             array_values($columnsToUpdate) // Columns to update on duplicate

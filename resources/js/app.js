@@ -7,7 +7,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { translations } from './translations';
 
-const appName = 'Boston City Services'
+const appName = 'BostonScope'
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

@@ -24,7 +24,7 @@
                           'context-icon-building-permit': type === 'Building Permit',
                           'context-icon-property-violation': type === 'Property Violation',
                           'context-icon-construction-off-hour': type === 'Construction Off Hour',
-                          'context-icon-food-establishment-violation': type === 'Food Establishment Violation',
+                          'context-icon-food-inspection': type === 'Food Inspection',
                           'context-icon-unknown': !['Crime', '311 Case', 'Building Permit', 'Property Violation', 'Construction Off Hour', 'Food Establishment Violation'].includes(type)
                         }">
                   </span>
@@ -498,7 +498,7 @@ onMounted(() => {
 .context-icon-building-permit { background-image: url("/images/permiticon.svg"); }
 .context-icon-property-violation { background-image: url("/images/propertyviolationicon.svg"); }
 .context-icon-construction-off-hour { background-image: url("/images/constructionoffhouricon.svg"); }
-.context-icon-food-establishment-violation { background-image: url("/images/foodviolationicon.svg"); }
+.context-icon-food-inspection { background-image: url("/images/foodinspectionicon.svg"); }
 .context-icon-unknown { /* Basic fallback shape or leave blank */
   border: 1px solid currentColor; 
   border-radius: 3px;

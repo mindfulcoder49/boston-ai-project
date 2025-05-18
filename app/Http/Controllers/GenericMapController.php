@@ -106,16 +106,16 @@ class GenericMapController extends Controller
                 'building_permits.id as permit_id',
                 'building_permits.*',
 
-                // Food Establishment Violations
-                'food_establishment_violations.id as food_violation_id',
-                'food_establishment_violations.*'
+                // Food Inspections
+                'food_inspections.id as food_inspection_id',
+                'food_inspections.*'
             )
             ->leftJoin('crime_data', 'data_points.crime_data_id', '=', 'crime_data.id')
             ->leftJoin('three_one_one_cases', 'data_points.three_one_one_case_id', '=', 'three_one_one_cases.id')
             ->leftJoin('property_violations', 'data_points.property_violation_id', '=', 'property_violations.id')
             ->leftJoin('construction_off_hours', 'data_points.construction_off_hour_id', '=', 'construction_off_hours.id')
             ->leftJoin('building_permits', 'data_points.building_permit_id', '=', 'building_permits.id')
-            ->leftJoin('food_establishment_violations', 'data_points.food_establishment_violation_id', '=', 'food_establishment_violations.id') // Add this line
+            ->leftJoin('food_inspections', 'data_points.food_inspection_id', '=', 'food_inspections.id') // Add this line
             ->whereRaw("ST_Distance_Sphere(data_points.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters])
             ->get();    
 
@@ -156,8 +156,8 @@ class GenericMapController extends Controller
                 case 'construction_off_hours':
                     $point->alcivartech_type = 'Construction Off Hour';
                     break;
-                case 'food_establishment_violations': // Add this case
-                    $point->alcivartech_type = 'Food Establishment Violation';
+                case 'food_inspections': // Add this case
+                    $point->alcivartech_type = 'Food Inspection';
                     break;
                 default:
                     $point->alcivartech_type = 'Unknown';
@@ -180,8 +180,14 @@ class GenericMapController extends Controller
                             case 'Construction Off Hour':
                                 $point->alcivartech_date = $point->start_datetime;
                                 break;
-                            case 'Food Establishment Violation': // Add this case
-                                $point->alcivartech_date = $point->violdttm;
+                            case 'Food Inspection': // Add this case
+                                //use violation date as the date if it exists
+                                if ($point->violdttm) {
+                                    $point->alcivartech_date = $point->violdttm;
+                                } else {
+                                    // Otherwise, use the result date
+                                    $point->alcivartech_date = $point->resultdttm;
+                                }
                                 break;
                             default:
                                 $point->alcivartech_date = null;

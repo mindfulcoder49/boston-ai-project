@@ -66,7 +66,7 @@
       <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Building Permit'" :data="selectedDataPoint" :language_codes="language_codes" />
       <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Property Violation'" :data="selectedDataPoint" :language_codes="language_codes" />
       <OffHours v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Construction Off Hour'" :data="selectedDataPoint" :language_codes="language_codes" />
-      <FoodEstablishmentViolation v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Food Establishment Violation'" :data="selectedDataPoint" :language_codes="language_codes" />
+      <FoodEstablishmentViolation v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Food Inspection'" :data="selectedDataPoint" :language_codes="language_codes" />
     </div>
 
     <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick" />
@@ -102,7 +102,7 @@ import LanguageSelector from '@/Components/LanguageSelector.vue';
 import CenterManagement from '@/Components/CenterManagement.vue';
 import MapDisplay from '@/Components/MapDisplay.vue';
 import MapFiltersControl from '@/Components/MapFiltersControl.vue';
-import FoodEstablishmentViolation from '@/Components/FoodEstablishmentViolation.vue';
+import FoodEstablishmentViolation from '@/Components/FoodInspection.vue';
 
 
 const mapDisplayRef = ref(null);
@@ -132,8 +132,8 @@ const translations = inject('translations');
 const language_codes = ref(['en-US']);
 
 const aggregateFoodViolations = (dataPoints) => {
-  const foodViolations = dataPoints.filter(dp => dp.alcivartech_type === 'Food Establishment Violation');
-  const otherDataPoints = dataPoints.filter(dp => dp.alcivartech_type !== 'Food Establishment Violation');
+  const foodViolations = dataPoints.filter(dp => dp.alcivartech_type === 'Food Inspection');
+  const otherDataPoints = dataPoints.filter(dp => dp.alcivartech_type !== 'Food Inspection');
 
   if (foodViolations.length === 0) {
     return otherDataPoints;
@@ -141,8 +141,8 @@ const aggregateFoodViolations = (dataPoints) => {
 
   const groupedByLicense = foodViolations.reduce((acc, viol) => {
     const key = viol.licenseno;
-    if (!key) { // If a food violation has no license number, keep it as an individual point
-        otherDataPoints.push(viol); // Add it to otherDataPoints to be returned ungrouped
+    if (!key) { 
+        otherDataPoints.push(viol); 
         return acc;
     }
     if (!acc[key]) {
@@ -155,49 +155,63 @@ const aggregateFoodViolations = (dataPoints) => {
   const aggregatedFoodViolations = Object.values(groupedByLicense).map(licenseGroup => {
     if (licenseGroup.length === 0) return null;
 
-    // Sort by date to find the most recent violation for representative data
+    // Sort by date to find the most recent record for representative data (address, name, etc.)
     licenseGroup.sort((a, b) => new Date(b.alcivartech_date) - new Date(a.alcivartech_date));
-    const mostRecentViolation = licenseGroup[0];
+    const mostRecentRecord = licenseGroup[0];
 
-    // Create a summary of all violations under this license
-    const violationSummaryMap = licenseGroup.reduce((acc, viol) => {
-      const descKey = viol.violdesc || 'Unknown Violation Description';
-      if (!acc[descKey]) {
-        acc[descKey] = {
-          violdesc: descKey,
-          entries: []
-        };
-      }
-      acc[descKey].entries.push({
-        alcivartech_date: viol.alcivartech_date,
-        viol_status: viol.viol_status,
-        comments: viol.comments,
-        result: viol.result,
-        viol_level: viol.viol_level,
-        // food_violation_id: viol.food_violation_id // original ID if needed
+    // Filter for actual violations within the group (those having violdttm)
+    // Assumes violdttm indicates an actual violation record, vs. just an inspection.
+    const actualViolationEntries = licenseGroup.filter(viol => viol.violdttm);
+
+    let violationSummary = null; 
+
+    if (actualViolationEntries.length > 0) {
+      // Create a summary of all actual violations under this license
+      const violationSummaryMap = actualViolationEntries.reduce((acc, viol) => {
+        // violdesc should ideally exist if violdttm exists for a violation
+        const descKey = viol.violdesc || 'Unknown Violation Description'; 
+        if (!acc[descKey]) {
+          acc[descKey] = {
+            violdesc: descKey,
+            entries: []
+          };
+        }
+        acc[descKey].entries.push({
+          alcivartech_date: viol.alcivartech_date, // Date of the specific violation entry
+          viol_status: viol.viol_status,
+          comments: viol.comments,
+          result: viol.result, 
+          viol_level: viol.viol_level,
+          // food_violation_id: viol.food_violation_id // original ID if needed
+        });
+        return acc;
+      }, {});
+      
+      const tempViolationSummary = Object.values(violationSummaryMap).map(summaryItem => {
+          summaryItem.entries.sort((a,b) => new Date(b.alcivartech_date) - new Date(a.alcivartech_date));
+          return summaryItem;
       });
-      return acc;
-    }, {});
-    
-    const violationSummary = Object.values(violationSummaryMap).map(summaryItem => {
-        // Sort entries within each violation description by date descending
-        summaryItem.entries.sort((a,b) => new Date(b.alcivartech_date) - new Date(a.alcivartech_date));
-        return summaryItem;
-    });
-    // Sort violation types alphabetically by description
-    violationSummary.sort((a,b) => a.violdesc.localeCompare(b.violdesc));
+      tempViolationSummary.sort((a,b) => a.violdesc.localeCompare(b.violdesc));
+      violationSummary = tempViolationSummary;
+    }
 
-    return {
-      ...mostRecentViolation, // Spread to carry over common fields like lat, long, address, etc.
-      alcivartech_type: "Food Establishment Violation", // Explicitly set
-      alcivartech_date: mostRecentViolation.alcivartech_date, // Date of the most recent violation
-      // data_point_id will be from mostRecentViolation, used for icon class if needed
-      // businessname, licenseno will be from mostRecentViolation
-      violation_summary: violationSummary,
-      // Add a flag to easily identify these aggregated points if needed elsewhere
+    const aggregatedPoint = {
+      ...mostRecentRecord, 
+      alcivartech_type: "Food Inspection", 
+      alcivartech_date: mostRecentRecord.alcivartech_date, 
       _is_aggregated_food_violation: true 
     };
-  }).filter(Boolean); // Remove any nulls if license groups were empty
+
+    if (violationSummary) {
+      aggregatedPoint.violation_summary = violationSummary;
+    }
+    // If violationSummary remains null (because actualViolationEntries was empty),
+    // the aggregatedPoint will not have the violation_summary property.
+    // The FoodEstablishmentViolation.vue component should then handle it as a record
+    // without a violation summary (e.g., an aggregated inspection record).
+
+    return aggregatedPoint;
+  }).filter(Boolean); 
 
   return [...otherDataPoints, ...aggregatedFoodViolations];
 };

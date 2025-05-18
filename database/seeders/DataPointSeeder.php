@@ -17,7 +17,8 @@ class DataPointSeeder extends Seeder
         'property_violations' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'status_dttm', 'foreign_key' => 'property_violation_id'],
         'construction_off_hours' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'start_datetime', 'foreign_key' => 'construction_off_hour_id'],
         'building_permits' => ['lat' => 'y_latitude', 'lng' => 'x_longitude', 'id' => 'id', 'date_field' => 'issued_date', 'foreign_key' => 'building_permit_id'],
-        'food_establishment_violations' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'violdttm', 'foreign_key' => 'food_establishment_violation_id'],
+        'food_inspections' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'violdttm', 'foreign_key' => 'food_inspection_id'],
+        'food_inspections' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'external_id', 'date_field' => 'resultdttm', 'foreign_key' => 'food_inspection_id'],
     ];
 
     public function run()
@@ -47,6 +48,8 @@ class DataPointSeeder extends Seeder
     {
         $this->command->info("Processing data for table: {$table}");
         Log::info("DataPointSeeder: Starting sync for table '{$table}'. Cutoff date: {$cutoffDate}");
+        //Log the fields being used
+        Log::info("DataPointSeeder: Fields used for table '{$table}'", $fields);
 
         try {
             $newData = DB::table($table)
