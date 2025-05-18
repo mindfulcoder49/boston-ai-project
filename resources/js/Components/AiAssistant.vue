@@ -24,7 +24,8 @@
                           'context-icon-building-permit': type === 'Building Permit',
                           'context-icon-property-violation': type === 'Property Violation',
                           'context-icon-construction-off-hour': type === 'Construction Off Hour',
-                          'context-icon-unknown': !['Crime', '311 Case', 'Building Permit', 'Property Violation', 'Construction Off Hour'].includes(type)
+                          'context-icon-food-establishment-violation': type === 'Food Establishment Violation',
+                          'context-icon-unknown': !['Crime', '311 Case', 'Building Permit', 'Property Violation', 'Construction Off Hour', 'Food Establishment Violation'].includes(type)
                         }">
                   </span>
                   {{ type }}: {{ count }}
@@ -61,40 +62,6 @@
       />
   </div>
 </template>
-
-<style scoped>
-/* Styles for context display icons */
-.context-data-icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  margin-right: 5px;
-  vertical-align: middle;
-  filter: invert(0.9) saturate(0.5) brightness(1.5); /* Adjust to make icons visible on dark bg if they are dark */
-}
-
-.context-icon-crime { background-image: url("/images/crimeshieldicon.svg"); }
-.context-icon-311-case { background-image: url("/images/boston311icon.svg"); }
-.context-icon-building-permit { background-image: url("/images/permiticon.svg"); }
-.context-icon-property-violation { background-image: url("/images/propertyviolationicon.svg"); }
-.context-icon-construction-off-hour { background-image: url("/images/constructionoffhouricon.svg"); }
-.context-icon-unknown { /* Basic fallback shape or leave blank */
-  border: 1px solid currentColor; 
-  border-radius: 3px;
-}
-
-/* Ensure chat history takes up available space if AI assistant is in a flex container */
-.ai-assistant {
-    display: flex;
-    flex-direction: column;
-    height: 100%; /* Or a specific height like 80vh */
-}
-/* ChatHistory component now has its own flex-grow: 1 */
-
-</style>
 
 <script setup>
 import { reactive, ref, nextTick, watch, computed, defineProps, onMounted } from 'vue';
@@ -513,7 +480,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ...existing styles from the original AiAssistant.vue that are not moved to children... */
 /* Styles for context display icons */
 .context-data-icon {
   display: inline-block;
@@ -524,7 +490,7 @@ onMounted(() => {
   background-position: center;
   margin-right: 5px;
   vertical-align: middle;
-  filter: invert(0.9) saturate(0.5) brightness(1.5);
+  filter: invert(0.9) saturate(0.5) brightness(1.5); /* Adjust to make icons visible on dark bg if they are dark */
 }
 
 .context-icon-crime { background-image: url("/images/crimeshieldicon.svg"); }
@@ -532,14 +498,18 @@ onMounted(() => {
 .context-icon-building-permit { background-image: url("/images/permiticon.svg"); }
 .context-icon-property-violation { background-image: url("/images/propertyviolationicon.svg"); }
 .context-icon-construction-off-hour { background-image: url("/images/constructionoffhouricon.svg"); }
-.context-icon-unknown {
+.context-icon-food-establishment-violation { background-image: url("/images/foodviolationicon.svg"); }
+.context-icon-unknown { /* Basic fallback shape or leave blank */
   border: 1px solid currentColor; 
   border-radius: 3px;
 }
 
+/* Ensure chat history takes up available space if AI assistant is in a flex container */
 .ai-assistant {
     display: flex;
     flex-direction: column;
-    height: 100%; 
+    height: 100%; /* Or a specific height like 80vh */
 }
+/* ChatHistory component now has its own flex-grow: 1 */
+
 </style>
