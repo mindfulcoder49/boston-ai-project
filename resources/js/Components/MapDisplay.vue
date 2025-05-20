@@ -8,6 +8,9 @@
   import { ref, onMounted, onBeforeUnmount, watch, nextTick, markRaw, defineProps, defineEmits, defineExpose } from 'vue';
   import 'leaflet/dist/leaflet.css';
   import * as L from 'leaflet';
+  import 'leaflet.markercluster/dist/MarkerCluster.css';
+  import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+  import 'leaflet.markercluster';
   
   const props = defineProps({
     mapCenterCoordinates: Array,
@@ -27,9 +30,7 @@
   const initialMap = ref(null);
   const markerCenter = ref(null);
   const newMarker = ref(null); 
-  const markers = ref([]);
-  
-  const CLUSTERING_DISTANCE_METERS = 1; // Distance in meters to consider points for clustering
+  const markerClusterGroups = ref({}); // Changed from markers = ref([])
   
   // currentMapViewport will store the map's view (center/zoom).
   // On first load, it uses props.mapCenterCoordinates or a default.
@@ -106,33 +107,47 @@
     });
   };
 
-  const getClusterIconInternal = (count, points) => {
-    /*
-    return L.divIcon({
-      className: 'custom-cluster-div-icon',
-      html: `<div>${count}</div>`,
-      iconSize: null, // Size controlled by CSS using --icon-size
-      popupAnchor: [0, -15], // Adjust if necessary, similar to other icons
-    });
-    */
-   // Create the icon like above but add classes for every point with 'id'+ data_point_id
-    let className = 'custom-cluster-div-icon';
-    let backgroundImage = '';
-    let iconHtml = `<div>${count}</div>`;
-    points.forEach((point) => {
-      className += ' id' + point.data_point_id;
-    });
-    //don't add photos
-    return L.divIcon({
-      className,
-      html: iconHtml,
-      iconSize: null, // Size controlled by CSS using --icon-size
-      popupAnchor: [0, -15], // Adjust if necessary, similar to other icons
-    });
+  const getClusterRadius = (zoom) => {
+    if (zoom < 10) {
+      return 80; 
+    } else if (zoom < 13) {
+      return 60;
+    } else if (zoom < 16) {
+      return 40;
+    } else {
+      return 10; 
+    }
   };
 
+  const createTypedIconCreateFunction = (type) => {
+    return function(cluster) {
+      const childCount = cluster.getChildCount();
+      let classNames = 'marker-cluster';
+  
+      const typeClass = (type === 'Unknown' || !type) 
+                        ? 'mixed' 
+                        : type.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, ''); // Sanitize type for CSS class
+      classNames += ` cluster-${typeClass}`;
+  
+      if (childCount < 10) {
+        classNames += ' marker-cluster-small';
+      } else if (childCount < 100) {
+        classNames += ' marker-cluster-medium';
+      } else {
+        classNames += ' marker-cluster-large';
+      }
+  
+      return L.divIcon({
+        html: `<div><span>${childCount}</span></div>`,
+        className: classNames,
+        iconSize: L.point(40, 40) // Standard size for these cluster icons
+      });
+    };
+  };
+  
+
   // Helper function to generate an HTMLElement for an individual data point's popup
-    // ...existing code...
+    // onBackToClusterCallback is kept for signature consistency but will be null with leaflet.markercluster
     const createIndividualItemPopupElement = (dataPoint, onBackToClusterCallback = null) => {
       const container = document.createElement('div');
       container.className = 'custom-popup-content individual-item-popup';
@@ -249,6 +264,8 @@
                   }
                   else if (entry.viol_status === 'Fail' || (entry.result && entry.result.toLowerCase().includes('fail'))) {
                     entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments: ${entry.comments}</div>`;
+                  } else {
+                    entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments: ${entry.comments}</div>`;
                   }
                  
                 }
@@ -270,7 +287,7 @@
             console.log('Food Inspection: History container appended to main container.');
             
             // If this block handles the content, add back button (if needed) and return.
-            if (onBackToClusterCallback) {
+            if (onBackToClusterCallback) { // This button will likely not show as callback will be null
               const backButton = document.createElement('button');
               backButton.textContent = '‹ Back to Cluster List';
               backButton.className = 'popup-back-button';
@@ -316,7 +333,7 @@
       // This line will now only execute if the 'Food Inspection' with summary didn't return early.
       container.innerHTML = detailsHtml;
     
-      if (onBackToClusterCallback) {
+      if (onBackToClusterCallback) { // This button will likely not show
         const backButton = document.createElement('button');
         backButton.textContent = '‹ Back to Cluster List';
         backButton.className = 'popup-back-button'; // For styling
@@ -338,150 +355,6 @@
     };
   // ...existing code...
   
-  // Helper function to generate an HTMLElement for a cluster's list of items
-  const createClusterListPopupElement = (cluster, onItemClickCallback) => {
-    const container = document.createElement('div');
-    container.className = 'custom-popup-content cluster-list-popup';
-    // Styling for the main container of the popup
-    container.style.maxHeight = '250px'; // Max height before vertical scroll
-    container.style.overflowY = 'auto';  // Enable vertical scroll for the whole list
-    container.style.paddingRight = '5px'; // A little padding so scrollbar doesn't overlap content
-    // container.style.width = 'auto'; // Let content determine width, Leaflet will constrain overall popup
-
-    const title = document.createElement('strong');
-    title.textContent = `Cluster (${cluster.count} items):`;
-    title.style.display = 'block';
-    title.style.marginBottom = '8px'; // Increased margin
-    title.style.fontSize = '1.1em'; // Slightly larger title
-    container.appendChild(title);
-  
-    const list = document.createElement('div');
-    // list.style.listStyle = 'none'; // Not needed for divs
-    list.style.paddingLeft = '0';
-    list.style.marginTop = '0';
-  
-    cluster.points.forEach((dataPoint) => {
-      const listItem = document.createElement('div');
-      // listItem styling for flex layout
-      listItem.style.display = 'flex';        // Use flexbox for alignment
-      listItem.style.alignItems = 'center';   // Vertically align items in the center
-      listItem.style.cursor = 'pointer';
-      listItem.style.padding = '6px 2px'; // Adjusted padding
-      listItem.style.borderBottom = '1px solid #eee';
-      listItem.style.minWidth = '200px'; // Ensure a minimum width for better layout
-
-      // Icon div
-      const iconDiv = document.createElement('div');
-      let iconClassName = '';
-      if (dataPoint.alcivartech_type === 'Crime') {
-        iconClassName = 'crime-div-icon';
-      } else if (dataPoint.alcivartech_type === '311 Case') {
-        iconClassName = 'case-div-icon';
-        if (dataPoint.submitted_photo) {
-          iconClassName += ' submitted-photo';
-        } else if (dataPoint.closed_photo) {
-          iconClassName += ' closed-photo';
-        } else {
-          iconClassName += ' no-photo';
-        }
-      } else if (dataPoint.alcivartech_type === 'Building Permit') {
-        iconClassName = 'permit-div-icon';
-      } else if (dataPoint.alcivartech_type === 'Property Violation') {
-        iconClassName = 'property-violation-div-icon';
-      } else if (dataPoint.alcivartech_type === 'Construction Off Hour') {
-        iconClassName = 'construction-off-hour-div-icon';
-      } else if (dataPoint.alcivartech_type === 'Food Inspection') { // Add this else if
-        iconClassName = 'food-violation-div-icon';
-      }
-      iconDiv.className = iconClassName; // Apply base class
-      iconDiv.style.width = 'var(--icon-size)';
-      iconDiv.style.height = 'var(--icon-size)';
-      iconDiv.style.flexShrink = '0'; // Prevent icon from shrinking
-
-      const insideIconDiv = document.createElement('div');
-      // insideIconDiv styling (already has background-size, position from CSS)
-      // Ensure it fills the iconDiv
-      insideIconDiv.style.width = '100%';
-      insideIconDiv.style.height = '100%';
-
-      if (dataPoint.alcivartech_type === '311 Case') {
-        if (dataPoint.submitted_photo) {
-          const photoURL = dataPoint.submitted_photo.split(' | ')[0];
-          insideIconDiv.style.backgroundImage = `url(${photoURL})`;
-        } else if (dataPoint.closed_photo) { // Use else if to prioritize submitted_photo
-          const photoURL = dataPoint.closed_photo.split(' | ')[0];
-          insideIconDiv.style.backgroundImage = `url(${photoURL})`;
-        }
-      }
-      iconDiv.appendChild(insideIconDiv);
-      listItem.appendChild(iconDiv);
-
-      // Item preview text generation (no more substring)
-      let itemPreviewText = '';
-      if (dataPoint.alcivartech_type === 'Crime' && dataPoint.offense_description) {
-        const idPart = dataPoint.incident_number ? `ID: ${dataPoint.incident_number} - ` : '';
-        itemPreviewText = `${idPart}${dataPoint.offense_description}`;
-      } else if (dataPoint.alcivartech_type === '311 Case' && dataPoint.case_title) {
-        const idPart = dataPoint.case_enquiry_id ? `ID: ${dataPoint.case_enquiry_id} - ` : '';
-        itemPreviewText = `${idPart}${dataPoint.case_title}`;
-      } else if (dataPoint.alcivartech_type === 'Building Permit' && dataPoint.description) {
-        const idPart = dataPoint.permitnumber ? `Permit: ${dataPoint.permitnumber} - ` : '';
-        itemPreviewText = `${idPart}${dataPoint.description}`;
-      } else if (dataPoint.alcivartech_type === 'Property Violation' && dataPoint.description) {
-        const idPart = dataPoint.ticket_number ? `Ticket: ${dataPoint.ticket_number} - ` : '';
-        itemPreviewText = `${idPart}${dataPoint.description}`;
-      } else if (dataPoint.alcivartech_type === 'Construction Off Hour' && dataPoint.address) {
-        const idPart = dataPoint.app_no ? `App: ${dataPoint.app_no} - ` : '';
-        itemPreviewText = `${idPart}${dataPoint.address}`;
-      } else if (dataPoint.alcivartech_type === 'Food Inspection') {
-        const namePart = dataPoint.businessname || 'Food Establishment';
-        let detailPart = '';
-        if (dataPoint.violation_summary && dataPoint.violation_summary.length > 0) {
-            const totalRecords = dataPoint.violation_summary.reduce((sum, s) => sum + s.entries.length, 0);
-            detailPart = `(${dataPoint.violation_summary.length} types, ${totalRecords} records)`;
-        } else if (dataPoint.violdesc) { // Fallback
-            detailPart = `- ${dataPoint.violdesc}`;
-        }
-        itemPreviewText = `${namePart} ${detailPart}`;
-      }
-      
-      // Item preview div
-      const itemPreviewDiv = document.createElement('div');
-      itemPreviewDiv.textContent = itemPreviewText;
-      itemPreviewDiv.style.marginLeft = '10px';    // Space between icon and text
-      itemPreviewDiv.style.overflowX = 'auto';   // Enable horizontal scroll for this text
-      itemPreviewDiv.style.whiteSpace = 'nowrap'; // Prevent text from wrapping
-      itemPreviewDiv.style.flexGrow = '1';        // Allow text to take available space
-      itemPreviewDiv.style.fontSize = '0.9rem';
-      itemPreviewDiv.style.fontWeight = 'bold';
-      itemPreviewDiv.style.color = '#333';
-      // itemPreviewDiv.style.lineHeight = 'var(--icon-size)'; // Not needed with flex align-items: center
-
-      // Add a scrollbar style for webkit browsers if desired
-      // itemPreviewDiv.style.setProperty('-webkit-overflow-scrolling', 'touch'); // For smoother scrolling on iOS
-      // You might need to add custom scrollbar CSS if you want to style it beyond default
-
-      listItem.appendChild(itemPreviewDiv);
-      listItem.title = `Click for details: ${itemPreviewText}`; // Show full text on hover
-
-      listItem.onmouseover = () => { listItem.style.backgroundColor = '#f0f0f0'; };
-      listItem.onmouseout = () => { listItem.style.backgroundColor = 'transparent'; };
-  
-      listItem.onclick = (e) => {
-        e.stopPropagation(); 
-        onItemClickCallback(dataPoint);
-      };
-      list.appendChild(listItem);
-    });
-    
-    if(list.lastChild) {
-      (list.lastChild).style.borderBottom = 'none';
-    }
-
-    container.appendChild(list);
-    return container;
-  };
-
   const initializeMapInternal = (centerArgFromParent = null, viewCenter = false) => {
     nextTick(() => {
       // Guard against re-initializing an already active map.
@@ -596,9 +469,14 @@
       initialMap.value.remove(); // Remove the map
       initialMap.value = null;
       
-      // Clear marker refs, they will be recreated if needed
-      markers.value.forEach(marker => marker.remove()); // Ensure Leaflet markers are removed
-      markers.value = [];
+      // Clear marker cluster groups
+      Object.values(markerClusterGroups.value).forEach(group => {
+        group.clearLayers(); // Clear markers from the group
+        // Note: Leaflet documentation implies map.removeLayer(group) should be enough,
+        // but explicit clearLayers is safer. The group itself is removed if map is destroyed.
+      });
+      markerClusterGroups.value = {};
+
       if (markerCenter.value) {
         markerCenter.value.remove();
         markerCenter.value = null;
@@ -613,123 +491,61 @@
   const updateMarkersInternal = (dataPoints) => {
     if (!initialMap.value) return;
   
-    // Clear existing data point markers (includes individual and cluster markers)
-    markers.value.forEach((marker) => initialMap.value.removeLayer(marker));
-    markers.value = [];
+    // Clear layers from all existing cluster groups
+    Object.values(markerClusterGroups.value).forEach(group => {
+      group.clearLayers();
+    });
+    // activeMarkersMap.value.clear(); // If using an activeMarkersMap
   
     if (!dataPoints || dataPoints.length === 0) {
       return;
     }
-
-    // REMOVED: Pre-processing block for Food Inspections.
-    // Data points are now expected to be pre-aggregated by the parent.
-    // The `dataPoints` variable here is equivalent to `processedDataPoints` from the old logic.
   
-    let clusters = []; // Stores { points: [], representativeLatLng: L.latLng, count: 0 }
-  
-    dataPoints.forEach(dataPoint => { // Use dataPoints directly (was processedDataPoints)
-      if (!dataPoint.latitude || !dataPoint.longitude) return;
-  
-      const pointLatLng = L.latLng(dataPoint.latitude, dataPoint.longitude);
-      let foundCluster = null;
-  
-      for (const cluster of clusters) {
-        if (pointLatLng.distanceTo(cluster.representativeLatLng) < CLUSTERING_DISTANCE_METERS) {
-          foundCluster = cluster;
-          break;
-        }
+    dataPoints.forEach(dataPoint => {
+      if (!dataPoint.latitude || !dataPoint.longitude) {
+        console.warn('Skipping data point due to invalid coordinates:', dataPoint);
+        return;
       }
   
-      if (foundCluster) {
-        foundCluster.points.push(dataPoint);
-        foundCluster.count++;
-        // Optional: Recalculate representativeLatLng (e.g., centroid).
-        // For simplicity, keeping the first point's location as representative.
-      } else {
-        clusters.push({
-          points: [dataPoint],
-          representativeLatLng: pointLatLng, // Use this point's location as representative for the new cluster
-          count: 1,
-        });
-      }
-    });
+      const lat = parseFloat(dataPoint.latitude);
+      const long = parseFloat(dataPoint.longitude);
+      const alcivartechType = dataPoint.alcivartech_type || 'Unknown'; // Default to 'Unknown'
   
-    // Now, render clusters and single points
-    clusters.forEach(cluster => {
-      if (cluster.count > 1) {
-        const clusterMarker = markRaw(
-          L.marker(cluster.representativeLatLng, {
-            icon: getClusterIconInternal(cluster.count, cluster.points),
-          })
-        );
-        
-        // Bind a popup that will be managed dynamically on 'popupopen'
-        clusterMarker.bindPopup(null, { minWidth: 240 }); // Initial empty popup, options for size
-
-        clusterMarker.on('popupopen', (popupEvent) => {
-          const popup = popupEvent.popup;
-          
-          const showItemDetails = (dataPoint) => {
-            const itemElement = createIndividualItemPopupElement(dataPoint, () => {
-              // This is the "Back to Cluster" action
-              showClusterList(); 
-            });
-            popup.setContent(itemElement);
-            // Move popup to the individual item's location
-            popup.setLatLng([dataPoint.latitude, dataPoint.longitude]);
-            popup.update(); // Ensure Leaflet redraws the popup
-            emit('marker-data-point-clicked', dataPoint);
-          };
-
-          const showClusterList = () => {
-            const listElement = createClusterListPopupElement(cluster, (dataPoint) => {
-              // This is the action when an item in the list is clicked
-              showItemDetails(dataPoint);
-            });
-            popup.setContent(listElement);
-            // Ensure popup is at the cluster's representative location
-            popup.setLatLng(cluster.representativeLatLng);
-            popup.update();
-          };
-          
-          showClusterList(); // Initial view when popup opens
-        });
-  
-        clusterMarker.addTo(initialMap.value);
-        markers.value.push(clusterMarker);
-      } else {
-        // Single point, render as before but use the new popup helper
-        const dataPoint = cluster.points[0];
-        const popupContentStart = `<div><strong>${new Date(dataPoint.alcivartech_date).toLocaleString()}</strong>`;
-        const popupContent = `
-            ${popupContentStart}<br>
-            ${dataPoint.alcivartech_type === 'Crime' ? dataPoint.offense_description : ''}
-            ${dataPoint.alcivartech_type === '311 Case' ? dataPoint.case_title : ''}
-            ${dataPoint.alcivartech_type === 'Building Permit' ? dataPoint.description : ''}
-            ${dataPoint.alcivartech_type === 'Property Violation' ? dataPoint.description : ''}
-            ${dataPoint.alcivartech_type === 'Construction Off Hour' ? dataPoint.address : ''}
-            ${dataPoint.alcivartech_type === 'Food Inspection' ? 
-              (dataPoint.businessname ? `${dataPoint.businessname} - Violations` : 'Food Inspections') 
-              : ''}
-            </div>
-          `;
-        const marker = markRaw(
-          L.marker([dataPoint.latitude, dataPoint.longitude], {
-            icon: getDivIconInternal(dataPoint),
-          })
-        );
-        
-        const individualPopupElement = createIndividualItemPopupElement(dataPoint, null); // No "back" button
-        marker.bindPopup(individualPopupElement, { minWidth: 220 });
-
-        marker.on('click', (e) => {
-          // Popup opens automatically on click due to bindPopup.
-          // We still emit for consistency or if parent needs to react to any marker click.
-          emit('marker-data-point-clicked', dataPoint);
-        });
-        marker.addTo(initialMap.value);
-        markers.value.push(marker);
+      if (isNaN(lat) || isNaN(long)) {
+        console.warn('Skipping data point due to invalid parsed coordinates:', dataPoint);
+        return;
       }
+  
+      // Ensure a cluster group exists for this type
+      if (!markerClusterGroups.value[alcivartechType]) {
+        const newClusterGroup = markRaw(L.markerClusterGroup({
+          maxClusterRadius: getClusterRadius, // Function to determine radius by zoom
+          iconCreateFunction: createTypedIconCreateFunction(alcivartechType), // Function to create cluster icons
+          // Other leaflet.markercluster options can be set here:
+          // e.g., spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true,
+        }));
+        initialMap.value.addLayer(newClusterGroup);
+        markerClusterGroups.value[alcivartechType] = newClusterGroup;
+      }
+  
+      const marker = markRaw(
+        L.marker([lat, long], {
+          icon: getDivIconInternal(dataPoint), // Use existing divIcon for individual markers
+        })
+      );
+      
+      // Bind popup using the existing complex popup generator
+      // The onBackToClusterCallback is null because leaflet.markercluster handles cluster interaction.
+      const individualPopupElement = createIndividualItemPopupElement(dataPoint, null); 
+      marker.bindPopup(individualPopupElement, { minWidth: 220 });
+  
+      marker.on('click', (e) => {
+        // Popup opens automatically. Emit event for parent component.
+        emit('marker-data-point-clicked', dataPoint);
+        // L.DomEvent.stopPropagation(e); // May not be needed, test behavior
+      });
+      
+      markerClusterGroups.value[alcivartechType].addLayer(marker);
     });
   };
   
@@ -801,11 +617,19 @@
     destroyMapInternal();
   });
   
+  const getAllMarkersFromClusterGroups = () => {
+    let allMarkers = [];
+    Object.values(markerClusterGroups.value).forEach(group => {
+      allMarkers = allMarkers.concat(group.getLayers());
+    });
+    return allMarkers;
+  };
+
   defineExpose({
     destroyMapAndClear: destroyMapInternal,
     initializeNewMapAtCenter: initializeMapInternal, // Parent can call this with new logical center
     getMapInstance: () => initialMap.value,
-    getMarkers: () => markers.value,
+    getMarkers: getAllMarkersFromClusterGroups, // Adapted to get markers from cluster groups
   });
   
   </script>
@@ -902,5 +726,67 @@
     background-color: #e0e0e0;
     border-color: #bbb;
   }
+
+  /* Styles for leaflet.markercluster icons (adapted from DataMapDisplay.vue) */
+  :deep(.marker-cluster) {
+    background-clip: padding-box;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+  }
+  :deep(.marker-cluster div) {
+    width: 30px;
+    height: 30px;
+    margin-left: 0; /* Reset from default leaflet.markercluster if any */
+    margin-top: 0;  /* Reset from default leaflet.markercluster if any */
+    text-align: center;
+    border-radius: 15px;
+    font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  :deep(.marker-cluster span) {
+    line-height: 30px; /* Or adjust to vertically center based on div height */
+  }
+
+  /* Default cluster size-based colors */
+  :deep(.marker-cluster-small) { background-color: rgba(181, 226, 140, 0.7); }
+  :deep(.marker-cluster-small div) { background-color: rgba(110, 204, 57, 0.8); color: white; }
+  :deep(.marker-cluster-medium) { background-color: rgba(241, 211, 87, 0.7); }
+  :deep(.marker-cluster-medium div) { background-color: rgba(240, 194, 12, 0.8); color: #333; }
+  :deep(.marker-cluster-large) { background-color: rgba(253, 156, 115, 0.7); }
+  :deep(.marker-cluster-large div) { background-color: rgba(241, 128, 23, 0.8); color: white; }
+
+  /* Type-specific cluster colors */
+  /* Crime: base rgb(252, 127, 127) from original app.css */
+  :deep(.cluster-crime) { background-color: rgba(252, 127, 127, 0.5) !important; }
+  :deep(.cluster-crime div) { background-color: rgba(222, 97, 97, 0.85) !important; color: white; }
+
+  /* 311 Case: base rgb(59, 130, 246) */
+  :deep(.cluster-311-case) { background-color: rgba(59, 130, 246, 0.5) !important; }
+  :deep(.cluster-311-case div) { background-color: rgba(29, 100, 216, 0.85) !important; color: white; }
+
+  /* Building Permit: base rgb(138, 231, 138) */
+  :deep(.cluster-building-permit) { background-color: rgba(138, 231, 138, 0.5) !important; }
+  :deep(.cluster-building-permit div) { background-color: rgba(108, 201, 108, 0.85) !important; color: #333; }
+
+  /* Property Violation: base rgb(255, 255, 0) */
+  :deep(.cluster-property-violation) { background-color: rgba(255, 255, 0, 0.5) !important; }
+  :deep(.cluster-property-violation div) { background-color: rgba(225, 225, 0, 0.85) !important; color: #333; }
+
+  /* Construction Off Hour: base rgb(114, 203, 209) */
+  :deep(.cluster-construction-off-hour) { background-color: rgba(114, 203, 209, 0.5) !important; }
+  :deep(.cluster-construction-off-hour div) { background-color: rgba(84, 173, 179, 0.85) !important; color: white; }
+
+  /* Food Inspection: base rgb(255, 165, 0) */
+  :deep(.cluster-food-inspection) { background-color: rgba(255, 165, 0, 0.5) !important; }
+  :deep(.cluster-food-inspection div) { background-color: rgba(225, 135, 0, 0.85) !important; color: white; }
+  
+  /* Fallback for 'Unknown' or mixed types */
+  :deep(.cluster-mixed) { background-color: rgba(169, 169, 169, 0.5) !important; }
+  :deep(.cluster-mixed div) { background-color: rgba(128, 128, 128, 0.85) !important; color: white; }
   
   </style>

@@ -16,6 +16,11 @@
         :currentLanguageCodes="language_codes"
         @language-code-selected="handleLanguageCodeSelected"
       />
+      <FoodInspectionTeaser
+        :language_codes="language_codes"
+        :dataPoints="dataPoints"
+        :isAuthenticated="isAuthenticated"
+        />
 
       <CenterManagement
         :centralLocation="centralLocation"
@@ -66,7 +71,7 @@
       <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Building Permit'" :data="selectedDataPoint" :language_codes="language_codes" />
       <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Property Violation'" :data="selectedDataPoint" :language_codes="language_codes" />
       <OffHours v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Construction Off Hour'" :data="selectedDataPoint" :language_codes="language_codes" />
-      <FoodEstablishmentViolation v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Food Inspection'" :data="selectedDataPoint" :language_codes="language_codes" />
+      <FoodInspection v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Food Inspection'" :data="selectedDataPoint" :language_codes="language_codes" />
     </div>
 
     <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick" />
@@ -102,8 +107,11 @@ import LanguageSelector from '@/Components/LanguageSelector.vue';
 import CenterManagement from '@/Components/CenterManagement.vue';
 import MapDisplay from '@/Components/MapDisplay.vue';
 import MapFiltersControl from '@/Components/MapFiltersControl.vue';
-import FoodEstablishmentViolation from '@/Components/FoodInspection.vue';
+import FoodInspection from '@/Components/FoodInspection.vue';
+import FoodInspectionTeaser from '@/Components/FoodInspectionTeaser.vue';
+import { usePage } from '@inertiajs/vue3'; // Import usePage
 
+const page = usePage(); // Get page instance
 
 const mapDisplayRef = ref(null);
 
@@ -126,6 +134,8 @@ const maxDate = ref('');
 const selectedDataPoint = ref(null);
 const isMapInitialized = ref(false);
 const mapLoading = ref(false);
+
+const isAuthenticated = computed(() => !!page.props.auth.user); // Compute isAuthenticated
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 const translations = inject('translations');
@@ -207,7 +217,7 @@ const aggregateFoodViolations = (dataPoints) => {
     }
     // If violationSummary remains null (because actualViolationEntries was empty),
     // the aggregatedPoint will not have the violation_summary property.
-    // The FoodEstablishmentViolation.vue component should then handle it as a record
+    // The FoodInspection.vue component should then handle it as a record
     // without a violation summary (e.g., an aggregated inspection record).
 
     return aggregatedPoint;

@@ -36,6 +36,35 @@
           </Link>
         </div>
   
+        <!-- Registered User / Free Tier Information -->
+        <div class="mb-10 p-6 bg-gray-100 border border-gray-300 rounded-lg shadow-md">
+          <h2 class="text-2xl font-semibold text-gray-700 mb-3">
+            {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.freeTierTitle || 'Registered User Features (Free)' }}
+          </h2>
+          <p class="text-gray-600 mb-4">
+            {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.freeTierDescription || 'By creating a free account, you get access to valuable local insights.' }}
+          </p>
+          <ul class="space-y-2 text-gray-600 mb-6">
+            <li v-for="feature in freeFeatures" :key="feature.id" class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              {{ feature.text }}
+            </li>
+          </ul>
+          <div v-if="!isAuthenticated" class="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 items-center">
+            <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
+               class="flex items-center justify-center w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+               <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+               {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerWithGoogleButton || 'Register with Google' }}
+            </a>
+            <Link :href="route('register') + '?redirect_to=' + route('map.index')" class="w-full sm:w-auto px-6 py-3 text-white bg-blue-500 rounded-md shadow-lg hover:bg-blue-600 transition-colors text-center">
+               {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerManuallyButton || 'Register Manually' }}
+            </Link>
+          </div>
+           <div v-else-if="isAuthenticated && !currentPlan" class="w-full px-6 py-3 text-center text-gray-700 font-semibold bg-gray-200 rounded-md">
+                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.yourCurrentAccessInfo || 'These are your current features.' }}
+           </div>
+        </div>
+
         <div class="grid md:grid-cols-2 gap-8">
           <!-- Basic Plan -->
           <div class="border p-6 rounded-lg shadow-lg flex flex-col bg-white" :class="{'ring-2 ring-blue-500': currentPlan === 'basic'}">
@@ -44,7 +73,7 @@
             </h2>
             <p class="text-3xl font-bold my-4 text-blue-600">$5 <span class="text-sm font-normal text-gray-500">/month</span></p>
             <p class="text-gray-600 mb-6">
-              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.basicPlanDescription || 'Stay informed about what\'s happening in your neighborhood.' }}
+              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.basicPlanDescription || 'Enhanced access for deeper local insights, including extended data history.' }}
             </p>
             <ul class="space-y-2 text-gray-600 mb-6 flex-grow">
               <li v-for="feature in basicFeatures" :key="feature.id" class="flex items-center">
@@ -85,7 +114,7 @@
             </h2>
             <p class="text-3xl font-bold my-4 text-purple-600">$15 <span class="text-sm font-normal text-gray-500">/month</span></p>
             <p class="text-gray-600 mb-6">
-              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.proPlanDescription || 'Unlock deeper insights and advanced tools for power users.' }}
+              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.proPlanDescription || 'Comprehensive data access and advanced tools for power users and professionals.' }}
             </p>
             <ul class="space-y-2 text-gray-600 mb-6 flex-grow">
                <li v-for="feature in proFeatures" :key="feature.id" class="flex items-center">
@@ -155,24 +184,34 @@
     // as the template logic now separates authenticated and unauthenticated actions.
     // However, if called from other places, the check might still be relevant.
     // For direct checkout, it's assumed user is authenticated by this point.
+    // Inertia.visit might be preferable if you want to stay within SPA navigation
+    // For Stripe checkout, window.location.href is often necessary.
     window.location.href = targetRoute;
   };
   
   // Define features for each plan - these should be translatable
-  const basicFeatures = computed(() => [
-    { id:1, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.radialMapAccess || 'Radial Map Access' },
-    { id:2, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.saveOneLocation || 'Save 1 Favorite Location' },
-    { id:3, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.dailyWeeklyReportsOne || 'Daily/Weekly Reports (1 Location)' },
+  const freeFeatures = computed(() => [
+    { id:1, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.foodInspectionResults || 'Food Inspection Results Access' },
+    { id:2, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.fullMapTwoWeeksData || 'Full Map Access (Last 2 Weeks Data)' }, // For authenticated free users
+    { id:3, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.saveOneLocation || 'Save 1 Favorite Location' },
     { id:4, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.basicAIAssistant || 'Basic AI Assistant' },
+  ]);
+
+  const basicFeatures = computed(() => [
+    { id:1, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.allFreeFeatures || 'All Registered User Features' },
+    { id:2, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.fullMapSixMonthsData || 'Full Map Access (Last 6 Months Data)' },
+    { id:3, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.dailyAIReport || 'Daily AI Report' },
+    { id:4, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.radialMapAccess || 'Radial Map Access' },
+    { id:5, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.saveThreeLocations || 'Save 3 Favorite Locations' },
   ]);
   
   const proFeatures = computed(() => [
     { id:1, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.allBasicFeatures || 'All Basic Plan Features' },
-    { id:2, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.crime311Maps || 'Interactive Crime & 311 Maps' },
-    { id:3, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.saveFiveLocations || 'Save 5 Favorite Locations' },
-    { id:4, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.reportsAllLocations || 'Reports for All Saved Locations' },
+    { id:2, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.fullMapAllTimeData || 'Full Map Access (All Time Data)' },
+    { id:4, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.saveTenLocations || 'Save 10 Favorite Locations' },
     { id:5, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.advancedAIAssistant || 'Advanced AI Assistant' },
     { id:6, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.csvExport || 'CSV Data Export' },
+    { id:7, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.prioritySupport || 'Priority Support' },
   ]);
   
   // Example: Add these to your main translations provider (e.g., app.js or a dedicated translations file)
@@ -186,10 +225,17 @@
     goToDashboard: 'Go to Dashboard',
     subscriptionCancelledTitle: 'Subscription Canceled',
     subscriptionCancelledMessage: 'Your subscription process was canceled. You can choose a plan below or return to the dashboard.',
+    
+    freeTierTitle: 'Registered User Features (Free)',
+    freeTierDescription: 'By creating a free account, you get access to valuable local insights.',
+    registerWithGoogleButton: 'Register with Google',
+    registerManuallyButton: 'Register Manually',
+    yourCurrentAccessInfo: 'These are your current features.',
+
     basicPlanTitle: 'Resident Awareness',
-    basicPlanDescription: 'Stay informed about what\'s happening in your neighborhood.',
+    basicPlanDescription: 'Enhanced access for deeper local insights, including extended data history.',
     proPlanTitle: 'Pro Insights',
-    proPlanDescription: 'Unlock deeper insights and advanced tools for power users.',
+    proPlanDescription: 'Comprehensive data access and advanced tools for power users and professionals.',
     bestValueBadge: 'Best Value',
     subscribeButton: 'Subscribe',
     currentPlanButton: 'Current Plan',
@@ -201,20 +247,53 @@
   
   translations.FeatureTranslations = {
     'en-US': {
-      radialMapAccess: 'Radial Map Access',
+      // Free Tier (Authenticated)
+      foodInspectionResults: 'Food Inspection Results Access',
+      fullMapTwoWeeksData: 'Full Map Access (Last 2 Weeks Data)', // Authenticated Free User
       saveOneLocation: 'Save 1 Favorite Location',
-      dailyWeeklyReportsOne: 'Daily/Weekly Reports (1 Location)',
       basicAIAssistant: 'Basic AI Assistant',
+      
+      // Basic Tier (includes free + more)
+      allFreeFeatures: 'All Registered User Features',
+      fullMapSixMonthsData: 'Full Map Access (Last 6 Months Data)',
+      dailyAIReport: 'Daily AI Report',
+      saveThreeLocations: 'Save 3 Favorite Locations',
+      radialMapAccess: 'Radial Map Access',
+
+      // Pro Tier (includes basic + more)
       allBasicFeatures: 'All Basic Plan Features',
-      crime311Maps: 'Interactive Crime & 311 Maps',
-      saveFiveLocations: 'Save 5 Favorite Locations',
-      reportsAllLocations: 'Reports for All Saved Locations',
+      fullMapAllTimeData: 'Full Map Access (All Time Data)',
+      saveTenLocations: 'Save 10 Favorite Locations',
       advancedAIAssistant: 'Advanced AI Assistant',
       csvExport: 'CSV Data Export',
+      prioritySupport: 'Priority Support',
+
+      // Potentially unused or to be reviewed if still needed:
+      crime311Maps: 'Interactive Crime & 311 Maps', 
     },
     'es-MX': { // Example for Spanish
+      // Free Tier (Authenticated)
+      foodInspectionResults: 'Acceso a Resultados de Inspección de Alimentos',
+      fullMapTwoWeeksData: 'Acceso al Mapa Completo (Datos de las Últimas 2 Semanas)',
+      saveOneLocation: 'Guardar 1 Ubicación Favorita',
+      basicAIAssistant: 'Asistente de IA Básico',
+
+      // Basic Tier
+      allFreeFeatures: 'Todas las Funciones de Usuario Registrado',
+      fullMapSixMonthsData: 'Acceso al Mapa Completo (Datos de los Últimos 6 Meses)',
+      dailyAIReport: 'Reporte Diario de IA',
+      saveThreeLocations: 'Guardar 3 Ubicaciones Favoritas',
       radialMapAccess: 'Acceso al Mapa Radial',
-      // ... other features
+
+      // Pro Tier
+      allBasicFeatures: 'Todas las Funciones del Plan Básico',
+      fullMapAllTimeData: 'Acceso al Mapa Completo (Todos los Datos Históricos)',
+      saveTenLocations: 'Guardar 10 Ubicaciones Favoritas',
+      advancedAIAssistant: 'Asistente de IA Avanzado',
+      csvExport: 'Exportación de Datos CSV',
+      prioritySupport: 'Soporte Prioritario',
+      
+      crime311Maps: 'Mapas Interactivos de Crimen y 311',
     }
   };
   

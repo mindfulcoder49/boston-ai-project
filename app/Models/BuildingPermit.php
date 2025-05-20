@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\Mappable; // Added
 
 class BuildingPermit extends Model
 {
-    use HasFactory;
+    use HasFactory, Mappable; // Added Mappable
 
     // Specify the table name if it's different from the model's pluralized name
     protected $table = 'building_permits';
@@ -40,6 +41,11 @@ class BuildingPermit extends Model
         'language_code',
     ];
 
+    const SEARCHABLE_COLUMNS = [ // Added
+        'permitnumber', 'worktype', 'permittypedescr', 'status', 'occupancytype',
+        'address', 'city', 'state', 'zip', 'property_id', 'parcel_id', 'language_code',
+    ];
+
     public static function getDateField(): string
     {
         return 'issued_date';
@@ -59,4 +65,10 @@ class BuildingPermit extends Model
     {
         return $this->permitnumber;
     }
+
+    // Mappable Trait Implementations
+    // getFilterableFieldsDescription() method removed
+    // getContextData() method removed
+    // getSearchableColumns() method removed (trait will use SEARCHABLE_COLUMNS constant if defined, or suggestions)
+    // getGptFunctionSchema() method removed
 }

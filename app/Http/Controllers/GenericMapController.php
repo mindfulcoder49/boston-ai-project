@@ -34,6 +34,42 @@ class GenericMapController extends Controller
 
     public function getRadialMapData(Request $request)
     {
+        $user = Auth::user();
+        $currentPlan = null;
+        $daysToFilter = 7; // Default for unauthenticated users
+        $targetTable = 'data_points'; // Default table
+
+        if ($user) {
+            $daysToFilter = 14; // Authenticated free user
+            if ($user->subscribed('default')) {
+                $subscription = $user->subscription('default');
+                if ($subscription) {
+                    if ($subscription->stripe_price === config('stripe.prices.basic_plan')) {
+                        $currentPlan = 'basic';
+                        $daysToFilter = 21; // Basic plan gets ~6 months from data_points
+                        $targetTable = 'data_points';
+                    } elseif ($subscription->stripe_price === config('stripe.prices.pro_plan')) {
+                        $currentPlan = 'pro';
+                        $targetTable = 'data_points'; // Pro plan uses all_time_data_points
+                        // No date filtering for pro plan on all_time_data_points, or a very long period if needed for performance.
+                        // For true "all time", $daysToFilter is not strictly applied to the query on this table.
+                        // We can set it to a very large number or null to signify no filtering.
+                        $daysToFilter = 31; // Or a very large number like 365 * 20 (20 years)
+                    }
+                }
+            }
+        }
+
+        $cutoffDateTime = $daysToFilter ? Carbon::now()->subDays($daysToFilter)->startOfDay() : null;
+
+        Log::info('User authentication status for data filtering.', [
+            'authenticated' => (bool)$user,
+            'currentPlan' => $currentPlan,
+            'targetTable' => $targetTable,
+            'daysToFilter' => $daysToFilter,
+            'cutoffDateTime' => $cutoffDateTime ? $cutoffDateTime->toDateTimeString() : 'N/A (all time)',
+        ]);
+
         $defaultLatitude = 42.3601;
         $defaultLongitude = -71.0589;
         $defaultAddress = 'Boston, MA';
@@ -65,12 +101,10 @@ class GenericMapController extends Controller
         Log::info('Language codes to include.', ['language_codes' => $language_codes]);
 
         $radius = $request->input('radius', .25);
-        $days = 14;
-        $crimeDays = 14;
-        $caseDays = 14;
-        $permitDays = 14;
-        $violationDays = 14;
-        $offHourDays = 14;
+        // The individual $crimeDays, $caseDays etc. are no longer primary drivers for date filtering,
+        // $cutoffDateTime based on subscription will be used.
+        // These can be removed or kept if there's a different specific use case for them later.
+        // For now, we'll rely on the global $cutoffDateTime.
 
     
         $latitude = $centralLocation['latitude'];
@@ -79,11 +113,11 @@ class GenericMapController extends Controller
 
         $wktPoint = "POINT($longitude $latitude)";
 
-        $dataPoints = DB::table('data_points')
+        $query = DB::table($targetTable) // Use dynamic targetTable
             ->select(
-                'data_points.id as data_point_id',
-                DB::raw('ST_AsText(data_points.location) as location_wkt'), // Convert spatial data to readable format
-                'data_points.type as alcivartech_type', // Renaming type to prevent conflicts
+                $targetTable.'.id as data_point_id', // Qualify column names with table name
+                DB::raw("ST_AsText({$targetTable}.location) as location_wkt"),
+                $targetTable.'.type as alcivartech_type',
 
                 // Crime Data
                 'crime_data.id as crime_id',
@@ -110,14 +144,20 @@ class GenericMapController extends Controller
                 'food_inspections.id as food_inspection_id',
                 'food_inspections.*'
             )
-            ->leftJoin('crime_data', 'data_points.crime_data_id', '=', 'crime_data.id')
-            ->leftJoin('three_one_one_cases', 'data_points.three_one_one_case_id', '=', 'three_one_one_cases.id')
-            ->leftJoin('property_violations', 'data_points.property_violation_id', '=', 'property_violations.id')
-            ->leftJoin('construction_off_hours', 'data_points.construction_off_hour_id', '=', 'construction_off_hours.id')
-            ->leftJoin('building_permits', 'data_points.building_permit_id', '=', 'building_permits.id')
-            ->leftJoin('food_inspections', 'data_points.food_inspection_id', '=', 'food_inspections.id') // Add this line
-            ->whereRaw("ST_Distance_Sphere(data_points.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters])
-            ->get();    
+            ->leftJoin('crime_data', $targetTable.'.crime_data_id', '=', 'crime_data.id')
+            ->leftJoin('three_one_one_cases', $targetTable.'.three_one_one_case_id', '=', 'three_one_one_cases.id')
+            ->leftJoin('property_violations', $targetTable.'.property_violation_id', '=', 'property_violations.id')
+            ->leftJoin('construction_off_hours', $targetTable.'.construction_off_hour_id', '=', 'construction_off_hours.id')
+            ->leftJoin('building_permits', $targetTable.'.building_permit_id', '=', 'building_permits.id')
+            ->leftJoin('food_inspections', $targetTable.'.food_inspection_id', '=', 'food_inspections.id')
+            ->whereRaw("ST_Distance_Sphere({$targetTable}.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters]);
+
+        if ($cutoffDateTime && $targetTable === 'data_points') { // Apply date filtering only if cutoffDateTime is set and it's the regular data_points table
+            $query->where($targetTable.'.alcivartech_date', '>=', $cutoffDateTime);
+        }
+        // For all_time_data_points, we don't apply the $cutoffDateTime unless a specific very long-term cutoff is desired for performance.
+
+        $dataPoints = $query->get();    
 
         // Convert location_wkt (e.g., "POINT(-71.0589 42.3601)") into separate lat/lng
         $dataPoints = $dataPoints->map(function ($point) {
@@ -192,6 +232,27 @@ class GenericMapController extends Controller
                             default:
                                 $point->alcivartech_date = null;
                         }
+
+            // If user is not logged in, replace food inspection data fields
+            if (!Auth::check() && $point->alcivartech_type === 'Food Inspection') {
+                $restrictedMessage = "Log In to See Food Inspection Information";
+                // Iterate over a copy of keys to avoid issues if properties are unset or changed during iteration
+                $pointProperties = (array)$point;
+                foreach ($pointProperties as $key => $value) {
+                    // hash the licenseno to prevent scraping
+                    // remove latitude and longitude
+                    if ($key === 'lat' || $key === 'lng' || $key === 'latitude' || $key === 'longitude' || $key === 'location') {
+                        unset($point->$key);
+                    }
+                    if ($key === 'licenseno') {
+                        $point->licenseno = md5($point->licenseno);
+                    }
+                    if (!empty($point->$key) && $key !== 'alcivartech_type' && $key !== 'alcivartech_date'
+                        && $key !== 'licenseno' && $key !== 'violdesc' && $key !== 'viol_level' && $key !== 'comments') {
+                        $point->$key = $restrictedMessage;
+                    }
+                }
+            }
 
 
             return $point;

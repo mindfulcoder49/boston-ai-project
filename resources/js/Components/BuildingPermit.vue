@@ -15,6 +15,10 @@
       <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].totalFees }}:</strong> {{ data.total_fees }}</li>
       <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].expirationDate }}:</strong> {{ formatDate(data.expiration_date) }}</li>
       <li><strong>{{ LabelsByLanguageCode[getSingleLanguageCode].address }}:</strong> {{ data.address }}, {{ data.city }}, {{ data.state }} {{ data.zip }}</li>
+      <!-- add comments if they exist -->
+      <li v-if="data.comments" >
+        <strong>{{ LabelsByLanguageCode[getSingleLanguageCode].comments || 'Comments' }}:</strong>
+      </li>
     </ul>
   </div>
 </template>

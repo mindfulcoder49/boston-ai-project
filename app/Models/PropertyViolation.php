@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\Mappable; // Added
 
 class PropertyViolation extends Model
 {
-    use HasFactory;
+    use HasFactory, Mappable; // Added Mappable
 
     protected $table = 'property_violations';
 
@@ -39,6 +40,11 @@ class PropertyViolation extends Model
         'language_code',
     ];
 
+    const SEARCHABLE_COLUMNS = [ // Added
+        'case_no', 'status', 'code', 'description', 'violation_stno', 'violation_street',
+        'violation_zip', 'ward', 'contact_city', 'contact_state', 'sam_id', 'latitude', 'longitude', 'language_code',
+    ];
+
     public static function getDateField(): string
     {
         return 'status_dttm';
@@ -61,4 +67,10 @@ class PropertyViolation extends Model
     {
         return $this->case_no;
     }
+
+    // Mappable Trait Implementations
+    // getFilterableFieldsDescription() method removed
+    // getContextData() method removed
+    // getSearchableColumns() method removed (trait will use SEARCHABLE_COLUMNS constant if defined, or suggestions)
+    // getGptFunctionSchema() method removed
 }

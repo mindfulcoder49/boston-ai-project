@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\Mappable; // Added
 
 class ThreeOneOneCase extends Model
 {
+    use Mappable; // Added
+
     /**
      * The primary key associated with the table.
      *
@@ -64,7 +67,7 @@ class ThreeOneOneCase extends Model
     ];
 
     const SEARCHABLE_COLUMNS = [
-        'id', 'case_enquiry_id', 'open_dt', 'sla_target_dt', 'closed_dt', 'on_time', 'case_status', 'closure_reason', 'case_title', 'subject', 'reason', 'type', 'queue', 'department', 'submitted_photo', 'closed_photo', 'location', 'fire_district', 'pwd_district', 'city_council_district', 'police_district', 'neighborhood', 'neighborhood_services_district', 'ward', 'precinct', 'location_street_name', 'location_zipcode', 'latitude', 'longitude', 'source', 'ward_number',
+        'id', 'case_enquiry_id', 'open_dt', 'sla_target_dt', 'closed_dt', 'on_time', 'case_status', 'closure_reason', 'case_title', 'subject', 'reason', 'type', 'queue', 'department', 'submitted_photo', 'closed_photo', 'location', 'fire_district', 'pwd_district', 'city_council_district', 'police_district', 'neighborhood', 'neighborhood_services_district', 'ward', 'precinct', 'location_street_name', 'location_zipcode', 'latitude', 'longitude', 'source', 'ward_number', 'language_code',
     ];
     
     //function to check case survival time
@@ -105,4 +108,10 @@ class ThreeOneOneCase extends Model
     {
         return $this->case_enquiry_id;
     }
+
+    // Mappable Trait Implementations
+    // getFilterableFieldsDescription() method removed
+    // getContextData() method removed
+    // getSearchableColumns() method removed (trait will use SEARCHABLE_COLUMNS constant if defined, or suggestions)
+    // getGptFunctionSchema() method removed
 }

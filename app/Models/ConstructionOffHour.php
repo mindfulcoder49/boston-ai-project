@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\Mappable; // Added
 
 class ConstructionOffHour extends Model
 {
-    use HasFactory;
+    use HasFactory, Mappable; // Added Mappable
 
     protected $table = 'construction_off_hours';
 
@@ -20,6 +21,10 @@ class ConstructionOffHour extends Model
         'latitude',
         'longitude',
         'language_code',
+    ];
+
+    const SEARCHABLE_COLUMNS = [ // Added
+        'app_no', 'address', 'ward', 'latitude', 'longitude', 'language_code',
     ];
 
     public static function getDateField(): string
@@ -41,4 +46,6 @@ class ConstructionOffHour extends Model
     {
         return $this->app_no;
     }
+
+    // Mappable Trait Implementations
 }

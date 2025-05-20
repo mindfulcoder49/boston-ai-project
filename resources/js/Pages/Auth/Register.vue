@@ -1,5 +1,5 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
+import PageTemplate from '@/Components/PageTemplate.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -25,7 +25,7 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
+    <PageTemplate>
         <Head title="Register" />
         <section class="lg:p-20">
         <form @submit.prevent="submit">
@@ -111,5 +111,5 @@ const submit = () => {
         </a>
      </div>
         </section>
-    </GuestLayout>
+    </PageTemplate>
 </template>

@@ -3,6 +3,7 @@
 return [
     'base_url' => 'http://data.boston.gov/datastore/dump',
     'datasets' => [
+        /*
         [
             //311 Service Requests 2024
             'name' => '311-service-requests-2025',
@@ -37,7 +38,7 @@ return [
             'name' => 'property-violations',
             'resource_id' => '800a2663-1d6a-46e7-9356-bedb70f5332c',
             'format' => 'csv',
-        ],
+        ], */
         //Add food inspection dataset https://data.boston.gov/dataset/03693648-2c62-4a2c-a4ec-48de2ee14e18/resource/4582bec6-2b4f-4f9e-bc55-cbaa73117f4c/download/tmpsu449jys.csv
         [
             'name' => 'food-inspections',

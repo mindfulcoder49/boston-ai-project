@@ -17,11 +17,8 @@
                         <NavLink :href="route('map.index')" :active="route().current('map.index')">
                             Home
                         </NavLink>
-                        <NavLink :href="route('crime-map')" :active="route().current('crime-map')">
-                            Boston Crime Map
-                        </NavLink>
-                        <NavLink :href="route('cases.indexnofilter')" :active="route().current('cases.indexnofilter') || route().current('scatter')">
-                            Boston 311 Case Map
+                        <NavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')">
+                            Full Data Map
                         </NavLink>
                         <NavLink :href="route('subscription.index')" :active="route().current('subscription.index')">
                             Subscription
@@ -92,8 +89,7 @@
         <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden">
             <div class="pt-2 pb-3 space-y-1">
                 <ResponsiveNavLink :href="route('map.index')" :active="route().current('map.index')"> Home </ResponsiveNavLink>
-                <ResponsiveNavLink :href="route('crime-map')" :active="route().current('crime-map')"> Boston Crime Map </ResponsiveNavLink>
-                <ResponsiveNavLink :href="route('cases.indexnofilter')" :active="route().current('cases.indexnofilter') || route().current('scatter')"> Boston 311 Case Map </ResponsiveNavLink>
+                <ResponsiveNavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')"> Full Data Map </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('subscription.index')" :active="route().current('subscription.index')"> Subscription </ResponsiveNavLink>
             </div>
 

@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\Mappable; // Added
 
 class CrimeData extends Model
 {
-    use HasFactory;
+    use HasFactory, Mappable; // Added Mappable
 
     // Specify the table name if it doesn't follow Laravel's naming conventions
     protected $table = 'crime_data';
@@ -37,6 +38,12 @@ class CrimeData extends Model
     // Cast the occurred_on_date to a date type
     protected $casts = [
         'occurred_on_date' => 'datetime',
+    ];
+
+    const SEARCHABLE_COLUMNS = [ // Added
+        'incident_number', 'offense_code', 'offense_code_group', 'offense_description',
+        'district', 'reporting_area', 'shooting', 'year', 'month', 'day_of_week', 'hour',
+        'ucr_part', 'street', 'location', 'language_code',
     ];
 
     public static function getDateField(): string
@@ -461,8 +468,8 @@ class CrimeData extends Model
         3123	EXPLOSIVES - TURNED IN OR FOUND
         2604	EXTORTION OR BLACKMAIL
         1721	FAILURE TO REGISTER AS A SEX OFFENDER
-        3160	FIRE REPORT - CAR, BRUSH, ETC
-        3108	FIRE REPORT - HOUSE, BUILDING, ETC. 
+        3160	FIRE REPORT - CAR, BRUSH, ETC.
+        3108	FIRE REPORT - HOUSE, BUILDING, ETC.
         2602	FIRE REPORT/ALARM - FALSE
         3017	FIREARM/WEAPON - ACCIDENTAL DEATH
         3016	FIREARM/WEAPON - ACCIDENTAL INJURY
@@ -642,5 +649,11 @@ class CrimeData extends Model
         
         EOT;
 
-    
+
+    public static function getContextData(): string // Added
+    {
+        // Clean up the context data slightly for better processing if needed
+        return preg_replace('/\s+/', ' ', self::CONTEXT_CRIME_DATA);
+    }
+
 }

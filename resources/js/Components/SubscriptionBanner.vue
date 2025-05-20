@@ -1,30 +1,36 @@
 <template>
-    <div v-if="!isSubscribed"
+    <div v-if="!isAuthenticated || (isAuthenticated && !isSubscribed)"
          class="bg-gradient-to-r from-blue-900 to-green-700 text-white p-6 shadow-xl my-6 flex flex-col md:flex-row items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold mb-2">
-          {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerTitle || 'Unlock Full Potential!' }}
+          {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerTitle || 'Enhance Your Experience!' }}
         </h2>
-        <p class="mb-4 md:mb-0">
-          {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerDescription || 'Subscribe to access premium features like detailed reports, advanced maps, and more saved locations.' }}
+        <p class="mb-4 md:mb-0" v-if="!isAuthenticated">
+          {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerDescriptionLoggedOut || 'Log in or register to access advanced free features like recent data on the full map and Food Inspection results. Subscribe for even more!' }}
+        </p>
+        <p class="mb-4 md:mb-0" v-else-if="isAuthenticated && !isSubscribed">
+          {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerDescriptionLoggedInNotSubscribed || 'You have access to great free features! Subscribe to unlock premium capabilities like extended data history, detailed reports, and more saved locations.' }}
         </p>
       </div>
       <div class="mt-4 md:mt-0 md:ml-6 text-center">
-        <template v-if="isAuthenticated">
+        <template v-if="isAuthenticated && !isSubscribed">
           <Link :href="route('subscription.index')"
                 class="px-6 py-3 bg-white text-blue-600 font-semibold rounded-md shadow-md hover:bg-gray-100 transition-colors whitespace-nowrap">
-            {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerButton || 'View Plans & Subscribe' }}
+            {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerButtonViewPlans || 'View Plans & Subscribe' }}
           </Link>
         </template>
-        <template v-else>
+        <template v-else-if="!isAuthenticated">
           <div class="flex flex-col space-y-2 items-center">
-            <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('subscription.index')"
+            <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
                class="flex items-center justify-center w-full px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-blue-600 bg-white hover:bg-gray-50">
               <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
-              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerRegisterWithGoogleButton || 'Login with Google to Subscribe' }}
+              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerRegisterWithGoogleButton || 'Login with Google' }}
             </a>
-            <Link :href="route('register') + '?redirect_to=' + route('subscription.index')" class="text-sm text-gray-100 hover:text-white hover:underline">
+            <Link :href="route('register') + '?redirect_to=' + route('map.index')" class="text-sm text-gray-100 hover:text-white hover:underline">
               {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerRegisterManuallyLink || 'Or register manually' }}
+            </Link>
+             <Link :href="route('subscription.index')" class="mt-2 text-sm text-gray-100 hover:text-white hover:underline">
+              {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerOrViewPlansLink || 'Or view subscription plans' }}
             </Link>
           </div>
         </template>
@@ -56,7 +62,8 @@
   const isSubscribed = computed(() => {
       // This logic needs to be robust. Ideally, pass subscription status as a prop from Laravel.
       // For now, a simple check. You'll likely enhance this.
-      return page.props.auth.user && page.props.auth.user.is_subscribed; // Assuming you add `is_subscribed` to user props
+      // Ensure auth and user objects exist before accessing properties
+      return page.props.auth && page.props.auth.user && page.props.auth.user.is_subscribed;
   });
   
   
@@ -71,14 +78,16 @@
   /*
   translations.LabelsByLanguageCode['en-US'] = {
     ...translations.LabelsByLanguageCode['en-US'],
-    bannerTitle: 'Unlock Full Potential!',
-    bannerDescription: 'Subscribe to access premium features like detailed reports, advanced maps, and more saved locations.',
-    bannerButton: 'View Plans & Subscribe',
+    bannerTitle: 'Enhance Your Experience!',
+    bannerDescriptionLoggedOut: 'Log in or register to access advanced free features like recent data on the full map and Food Inspection results. Subscribe for even more!',
+    bannerDescriptionLoggedInNotSubscribed: 'You have access to great free features! Subscribe to unlock premium capabilities like extended data history, detailed reports, and more saved locations.',
+    bannerButtonViewPlans: 'View Plans & Subscribe',
+    bannerRegisterWithGoogleButton: 'Login with Google', // Was: 'Register with Google to Subscribe'
+    bannerRegisterManuallyLink: 'Or register manually',
+    bannerOrViewPlansLink: 'Or view subscription plans',
     subscribedBannerTitle: 'You\'re All Set!',
     subscribedBannerDescription: 'Thank you for being a subscriber. Manage your subscription or explore features.',
     manageSubscriptionButton: 'Manage Subscription',
-    bannerRegisterWithGoogleButton: 'Register with Google to Subscribe',
-    bannerRegisterManuallyLink: 'Or register manually',
   };
   */
   </script>

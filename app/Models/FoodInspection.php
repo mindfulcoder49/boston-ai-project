@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\Mappable; // Added
 
 class FoodInspection extends Model
 {
-    use HasFactory;
+    use HasFactory, Mappable; // Added Mappable
 
     protected $table = 'food_inspections'; // Assuming it uses the same table
 
@@ -43,6 +44,11 @@ class FoodInspection extends Model
         'language_code',
     ];
 
+    const SEARCHABLE_COLUMNS = [ // Added
+        'external_id', 'businessname', 'dbaname', 'licenseno', 'licstatus', 'licensecat',
+        'result', 'viol_level', 'viol_status', 'address', 'city', 'zip', 'property_id', 'language_code',
+    ];
+
     protected $casts = [
         'issdttm' => 'datetime',
         'expdttm' => 'datetime',
@@ -58,7 +64,7 @@ class FoodInspection extends Model
 
     public function getDate(): ?string
     {
-        return $this->resultdttm ? $this->violdttm->toDateTimeString() : null;
+        return $this->resultdttm ? $this->resultdttm->toDateTimeString() : null;
     }
 
     public static function getExternalIdName(): string
@@ -70,4 +76,10 @@ class FoodInspection extends Model
     {
         return (string)$this->external_id;
     }
+
+    // Mappable Trait Implementations
+    // getFilterableFieldsDescription() method removed
+    // getContextData() method removed
+    // getSearchableColumns() method removed (trait will use SEARCHABLE_COLUMNS constant if defined, or suggestions)
+    // getGptFunctionSchema() method removed
 }

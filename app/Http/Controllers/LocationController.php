@@ -33,13 +33,30 @@ class LocationController extends Controller
             'language' => 'nullable|string',
         ]);
 
-        // check if the user has reached the maximum number of locations
-        if (Auth::user()->locations()->count() >= 3) {
-            return response()->json(['error' => 'Maximum number of locations reached'], 403);
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthenticated.'], 401);
+        }
+
+        $currentLocationCount = $user->locations()->count();
+        $maxLocations = 1; // Default for free users
+
+        if ($user->subscribed('default')) {
+            $subscription = $user->subscription('default');
+            if ($subscription && $subscription->stripe_price === config('stripe.prices.basic_plan')) {
+                $maxLocations = 3;
+            } elseif ($subscription && $subscription->stripe_price === config('stripe.prices.pro_plan')) {
+                $maxLocations = 10;
+            }
+        }
+        // If user is authenticated but not subscribed to basic or pro, they are on the free tier (maxLocations remains 1)
+
+        if ($currentLocationCount >= $maxLocations) {
+            return response()->json(['error' => 'Maximum number of locations reached for your current plan.'], 403);
         }
 
         // Associate the location with the authenticated user
-        $location = Auth::user()->locations()->create($validated);
+        $location = $user->locations()->create($validated);
 
         return response()->json($location, 201);
     }
