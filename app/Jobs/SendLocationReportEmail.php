@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 // use GuzzleHttp\Exception\RequestException;
 // use GuzzleHttp\Exception\ClientException;
 use Carbon\Carbon; // Import Carbon for date manipulation
+use App\Models\Report; // Added import
 
 class SendLocationReportEmail implements ShouldQueue
 {
@@ -250,7 +251,26 @@ class SendLocationReportEmail implements ShouldQueue
             }
 
 
-            // --- 5. Send Email (if there's a report to send)---
+            // --- 5. Save Report to Database (New Step) ---
+            if (!empty($finalReport) && $this->location->user) {
+                try {
+                    $reportDateForTitle = Carbon::now()->format('Y-m-d'); // Or use a date derived from the report content if more appropriate
+                    Report::create([
+                        'user_id' => $this->location->user_id,
+                        'location_id' => $this->location->id,
+                        'title' => "Location Report for {$this->location->name_or_address} - {$reportDateForTitle}",
+                        'content' => $finalReport,
+                        'generated_at' => Carbon::now(),
+                    ]);
+                    Log::info("Report saved to database for user: {$this->location->user->email}, location: {$this->location->address}");
+                } catch (\Exception $dbException) {
+                    Log::error("Failed to save report to database for user: {$this->location->user->email}, location: {$this->location->address}. Error: {$dbException->getMessage()}");
+                    // Decide if you want to proceed with email if DB save fails. For now, it continues.
+                }
+            }
+
+
+            // --- 6. Send Email (if there's a report to send)---
             if (!empty($finalReport)) {
                 $mailer->to($this->location->user->email)
                        ->send(new \App\Mail\SendLocationReport($this->location, $finalReport));

@@ -74,5 +74,10 @@ class User extends Authenticatable
         return $this->hasMany(Location::class);
     }
 
+    public function reports()
+    {
+        return $this->hasMany(Report::class);
+    }
+
 
 }

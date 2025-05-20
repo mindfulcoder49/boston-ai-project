@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Auth\SocialLoginController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\ReportController; // Added
 
 
 Route::middleware(['auth'])->group(function () {
@@ -55,6 +56,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     //Route::put('/profile', [RoleController::class, 'update'])->name('role.update');
+
+    // Report History Routes
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+    Route::get('/reports/{report}/download', [ReportController::class, 'download'])->name('reports.download');
 
 });
 

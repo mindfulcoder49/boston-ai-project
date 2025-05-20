@@ -15,7 +15,7 @@
          }">
       <div class="font-bold text-lg">
         <template v-if="!isAuthenticated">
-          <span v-if="mostSevereGroupForTeaser">
+          <span v-if="mostSevereGroupForTeaser" class="text-amber-800">
             ⚠️ {{ LabelsByLanguageCode[getSingleLanguageCode].guestCollapsedTitle(totalViolationsForTeaser, mostSevereGroupForTeaser.count, mostSevereGroupForTeaser.severityLabel) }}
           </span>
           <span v-else>{{ LabelsByLanguageCode[getSingleLanguageCode].guestCollapsedTitleDefault }}</span>

@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Config;
+use Laravel\Cashier\Subscription; // Import Subscription model
 
 class ProfileController extends Controller
 {
@@ -18,9 +20,70 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+        $subscriptionsDetailsList = [];
+        $socialLoginDetails = [
+            'providerName' => $user->provider_name,
+            'providerAvatar' => $user->provider_avatar,
+        ];
+
+        if ($user) {
+            if ($user->subscriptions->isNotEmpty()) {
+                foreach ($user->subscriptions as $subscription) {
+                    /** @var Subscription $subscription */
+                    $planName = 'Unknown Plan'; // Default plan name
+                    $planKey = 'unknown';
+
+                    // Determine plan name and key based on Stripe price ID
+                    if ($subscription->stripe_price === config('stripe.prices.basic_plan')) {
+                        $planName = 'Resident Awareness'; // Or fetch from translations/config
+                        $planKey = 'basic';
+                    } elseif ($subscription->stripe_price === config('stripe.prices.pro_plan')) {
+                        $planName = 'Pro Insights'; // Or fetch from translations/config
+                        $planKey = 'pro';
+                    }
+                    // Add more plans here if necessary
+
+                    $subscriptionsDetailsList[] = [
+                        'name' => $planKey, // The name of the subscription (e.g., 'default', 'premium')
+                        'planName' => $planName,
+                        'planKey' => $planKey, // To help Vue component map to translations if needed
+                        'status' => $subscription->stripe_status,
+                        'isActive' => $subscription->active(),
+                        'isOnTrial' => $subscription->onTrial(),
+                        'isCancelled' => $subscription->cancelled(),
+                        'isOnGracePeriod' => $subscription->onGracePeriod(),
+                        'endsAt' => $subscription->ends_at ? date('F j, Y', strtotime($subscription->ends_at)) : null,
+                        'trialEndsAt' => $subscription->trial_ends_at ? (date('F j, Y', strtotime($subscription->trial_ends_at))) : null,
+                        'currentPeriodEnd' => $subscription->active() && !$subscription->onTrial() && !$subscription->cancelled() ? date('F j, Y', $subscription->current_period_end) : null,
+                    ];
+                }
+            }
+
+            // If no subscriptions, add a default "free tier" representation
+            if (empty($subscriptionsDetailsList)) {
+                $subscriptionsDetailsList[] = [
+                    'name' => 'free_tier',
+                    'planName' => 'Registered User Features (Free)', // Or fetch from translations/config
+                    'planKey' => 'free',
+                    'status' => 'free',
+                    'isActive' => false,
+                    'isOnTrial' => false,
+                    'isCancelled' => false,
+                    'isOnGracePeriod' => false,
+                    'endsAt' => null,
+                    'trialEndsAt' => null,
+                    'currentPeriodEnd' => null,
+                ];
+            }
+        }
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            // 'currentPlanKey' => $currentPlanKey, // This is now ambiguous, replaced by planKey within each subscription item
+            'subscriptionsList' => $subscriptionsDetailsList, // Changed from subscriptionDetails
+            'socialLoginDetails' => $socialLoginDetails,
         ]);
     }
 
