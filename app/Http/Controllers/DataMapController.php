@@ -47,11 +47,49 @@ class DataMapController extends Controller
         return $modelClass;
     }
 
+    public function getMinDateForUser(string $dataType)
+    {
+        $modelClass = $this->getModelClass($dataType);
+        $user = Auth::user();
+        $tierMinDate = null;
+
+        if ($user && !$user->subscribed('default')) {
+            // Authenticated free user
+            $tierMinDate = Carbon::now()->subWeeks(2);
+        } elseif ($user && $user->subscribed('default')) {
+            $subscription = $user->subscription('default');
+            if ($subscription && $subscription->stripe_price === config('stripe.prices.basic_plan')) {
+                $tierMinDate = Carbon::now()->subMonths(6);
+            } elseif ($subscription && $subscription->stripe_price === config('stripe.prices.pro_plan')) {
+                // Pro users have no date restriction from tier
+                $tierMinDate = null; 
+            } else {
+                 // Fallback for subscribed users without a recognized plan (treat as free)
+                $tierMinDate = Carbon::now()->subWeeks(2);
+            }
+        }
+
+        return $tierMinDate;
+    }
+
     public function index(Request $request, string $dataType)
     {
         $modelClass = $this->getModelClass($dataType);
         // Fetch initial data with a sensible limit. Filters can override this.
-        $initialData = $modelClass::limit(5000)->get(); 
+        //$initialData = $modelClass::limit(5000)->get(); 
+
+        // Fetch data limited by user's subscription tier
+        $user = Auth::user();
+        $tierMinDate =$this->getMinDateForUser($dataType);
+
+        $query = $modelClass::query();
+        // Apply tier-based date restriction first
+        if ($tierMinDate) {
+            $query->where($modelClass::getDateField(), '>=', $tierMinDate->toDateString());
+        }
+
+  
+        $initialData = $query->limit(max(1, min($limit, 5000)))->get(); // Clamp limit for performance
 
         // enrich data with additional fields
         $initialData = $this->enrichData($initialData, $dataType);
@@ -98,11 +136,20 @@ class DataMapController extends Controller
             // Fetch initial data only for the designated initialDataType
             if ($dataType === $initialDataType) {
                 $query = $modelClass::query();
+
+                // Apply tier-based date restriction first
+                $tierMinDate =$this->getMinDateForUser($dataType);
+                if ($tierMinDate) {
+                    $query->where($modelClass::getDateField(), '>=', $tierMinDate->toDateString());
+                }
+
                 // Apply initial filters if any (e.g., limit)
                 if (isset($initialFilters['limit'])) {
                     $query->limit(max(1, min((int)$initialFilters['limit'], 5000)));
                 }
                 // Add other default filters for initial load if necessary
+
+                
                 $initialData = $this->enrichData($query->get(), $dataType);
             }
         }
