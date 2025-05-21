@@ -105,6 +105,7 @@ Route::middleware(['auth'])->group(function () {
                 // Pass status to the subscription index page
                 'success_url' => route('subscription.index', ['status' => 'success', 'session_id' => '{CHECKOUT_SESSION_ID}']),
                 'cancel_url' => route('subscription.index', ['status' => 'cancel']),
+                'allow_promotion_codes' => true,
             ]);
     })->name('subscribe.checkout'); // Name changed slightly to be more generic, plan is a param
 
