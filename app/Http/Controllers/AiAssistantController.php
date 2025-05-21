@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Http\Controllers\GenericMapController; // Added for streamLocationReport
 use App\Http\Controllers\ThreeOneOneCaseController; // Added for streamLocationReport
+use Illuminate\Support\Facades\Auth; // Added for Auth
+use App\Models\Report; // Added for Report model
 
 class AiAssistantController extends Controller
 {
@@ -316,8 +318,24 @@ class AiAssistantController extends Controller
         $language = $validated['language'];
         $maxDaysIndividualReports = 7; // Same constant as in SendLocationReportEmail
 
-        return new StreamedResponse(function () use ($centralLatitude, $centralLongitude, $address, $radius, $language, $maxDaysIndividualReports) {
+        $fullReportContent = ""; // Accumulator for the full report
+
+        return new StreamedResponse(function () use ($centralLatitude, $centralLongitude, $address, $radius, $language, $maxDaysIndividualReports, &$fullReportContent) {
             try {
+                // --- 0. Prepend Location Details ---
+                $locationDetailsHeader = "## Location Report Details\n\n";
+                $locationDetailsHeader .= "- **Address:** {$address}\n";
+                $locationDetailsHeader .= "- **Coordinates:** Latitude {$centralLatitude}, Longitude {$centralLongitude}\n";
+                $locationDetailsHeader .= "- **Radius:** {$radius} miles\n";
+                $locationDetailsHeader .= "- **Report Language:** {$language}\n";
+                $locationDetailsHeader .= "- **Report Generated:** " . Carbon::now()->locale($language)->isoFormat('LLLL') . "\n\n";
+                $locationDetailsHeader .= "---\n\n";
+
+                echo "data: " . json_encode(['type' => 'markdown', 'content' => $locationDetailsHeader]) . "\n\n";
+                ob_flush();
+                flush();
+                $fullReportContent .= $locationDetailsHeader;
+
                 // --- 1. Get Map Data ---
                 $mapController = new GenericMapController();
                 $simulatedRequest = new Request([
@@ -333,9 +351,21 @@ class AiAssistantController extends Controller
 
                 if (empty($mapData->dataPoints)) {
                     Log::info("Stream Report: No map data found for address: {$address}");
-                    echo "data: " . json_encode(['type' => 'status', 'message' => 'No map data found.']) . "\n\n";
+                    $noDataMessage = 'No map data found for the specified location and radius.';
+                    echo "data: " . json_encode(['type' => 'status', 'message' => $noDataMessage]) . "\n\n";
                     ob_flush();
                     flush();
+                    $fullReportContent .= $noDataMessage . "\n";
+                    // Still save this attempt if user is logged in
+                    if (Auth::check()) {
+                        Report::create([
+                            'user_id' => Auth::id(),
+                            'location_id' => null,
+                            'title' => "On-Demand Report for {$address} - " . Carbon::now()->format('Y-m-d H:i'),
+                            'content' => $fullReportContent,
+                            'generated_at' => Carbon::now(),
+                        ]);
+                    }
                     return;
                 }
 
@@ -413,6 +443,7 @@ class AiAssistantController extends Controller
                         : Carbon::parse($dateOrOlderKey)->locale($language)->isoFormat('LL');
 
                     $dateHeaderSent = false;
+                    $currentDateSectionContent = "";
 
                     foreach ($typesOnDate as $type => $dataPointsForTypeAndDate) {
                         if (empty($dataPointsForTypeAndDate)) {
@@ -420,49 +451,78 @@ class AiAssistantController extends Controller
                         }
 
                         if (!$dateHeaderSent) {
-                            echo "data: " . json_encode(['type' => 'markdown', 'content' => "\n### " . $displayDate . "\n"]) . "\n\n";
+                            $dateHeaderMarkdown = "\n### " . $displayDate . "\n";
+                            echo "data: " . json_encode(['type' => 'markdown', 'content' => $dateHeaderMarkdown]) . "\n\n";
                             ob_flush();
                             flush();
+                            $currentDateSectionContent .= $dateHeaderMarkdown;
                             $dateHeaderSent = true;
                         }
                         
-                        echo "data: " . json_encode(['type' => 'markdown', 'content' => "#### $type\n"]) . "\n\n";
+                        $typeHeaderMarkdown = "#### $type\n";
+                        echo "data: " . json_encode(['type' => 'markdown', 'content' => $typeHeaderMarkdown]) . "\n\n";
                         ob_flush();
                         flush();
+                        $currentDateSectionContent .= $typeHeaderMarkdown;
 
                         $promptType = ($dateOrOlderKey === 'older') ? "$type (Older Events)" : "$type (Events from $displayDate)";
                         $individualReport = self::generateReportSection($promptType, $dataPointsForTypeAndDate, $language);
 
-                        if ($individualReport && $individualReport !== 'No report generated.') {
-                            echo "data: " . json_encode(['type' => 'markdown', 'content' => $individualReport . "\n\n"]) . "\n\n";
+                        if ($individualReport && $individualReport !== 'No report generated.' && !str_starts_with($individualReport, "Error generating report section for") && $individualReport !== 'Report content generation was blocked due to safety settings.') {
+                            $reportChunk = $individualReport . "\n\n";
+                            echo "data: " . json_encode(['type' => 'markdown', 'content' => $reportChunk]) . "\n\n";
                             ob_flush();
                             flush();
+                            $currentDateSectionContent .= $reportChunk;
                             $reportGenerated = true;
                         } else if ($individualReport === 'No report generated.') {
-                             echo "data: " . json_encode(['type' => 'status', 'message' => "No specific details to report for $type on $displayDate."]) . "\n\n";
+                             $statusMsg = "No specific details to report for $type on $displayDate.";
+                             echo "data: " . json_encode(['type' => 'status', 'message' => $statusMsg]) . "\n\n";
                              ob_flush();
                              flush();
-                        } else { // Error message from generation
-                             echo "data: " . json_encode(['type' => 'error', 'message' => $individualReport]) . "\n\n";
+                             $currentDateSectionContent .= "*".$statusMsg."*\n\n";
+                        } else { // Error message or safety block
+                             $errorMsg = $individualReport; // Contains the error or safety message
+                             echo "data: " . json_encode(['type' => 'error', 'message' => $errorMsg]) . "\n\n";
                              ob_flush();
                              flush();
+                             $currentDateSectionContent .= "**".$errorMsg."**\n\n";
                         }
                     }
                      if ($dateHeaderSent) { // Add a separator between dates if a date section was processed
-                        echo "data: " . json_encode(['type' => 'markdown', 'content' => "\n---\n\n"]) . "\n\n";
+                        $separatorMarkdown = "\n---\n\n";
+                        echo "data: " . json_encode(['type' => 'markdown', 'content' => $separatorMarkdown]) . "\n\n";
                         ob_flush();
                         flush();
-                    }
+                        $currentDateSectionContent .= $separatorMarkdown;
+                     }
+                     $fullReportContent .= $currentDateSectionContent; // Append the whole date section
                 }
 
-                if (!$reportGenerated && empty($groupedDataByDateAndType)) {
-                     echo "data: " . json_encode(['type' => 'status', 'message' => 'No relevant data points found to generate a report.']) . "\n\n";
-                     ob_flush();
-                     flush();
+                if (!$reportGenerated && empty($groupedDataByDateAndType)) { // This case is handled earlier by mapData check
+                     // $msg = 'No relevant data points found to generate a report.';
+                     // echo "data: " . json_encode(['type' => 'status', 'message' => $msg]) . "\n\n";
+                     // ob_flush();
+                     // flush();
+                     // $fullReportContent .= "*".$msg."*\n";
                 } else if (!$reportGenerated) {
-                    echo "data: " . json_encode(['type' => 'status', 'message' => 'Finished processing. No specific report sections were generated based on the available data.']) . "\n\n";
+                    $msg = 'Finished processing. No specific report sections were generated based on the available data.';
+                    echo "data: " . json_encode(['type' => 'status', 'message' => $msg]) . "\n\n";
                     ob_flush();
                     flush();
+                    $fullReportContent .= "*".$msg."*\n";
+                }
+
+                // Save the full report if user is authenticated
+                if (Auth::check() && !empty($fullReportContent)) {
+                    Report::create([
+                        'user_id' => Auth::id(),
+                        'location_id' => null, // On-demand reports are not tied to a saved location
+                        'title' => "On-Demand Report for {$address} - " . Carbon::now()->format('Y-m-d H:i'),
+                        'content' => $fullReportContent,
+                        'generated_at' => Carbon::now(),
+                    ]);
+                    Log::info("Streamed on-demand report saved for user: " . Auth::id() . " for address: {$address}");
                 }
 
 

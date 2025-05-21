@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('location_id')->constrained()->onDelete('cascade');
+            $table->foreignId('location_id')->nullable()->constrained()->onDelete('set null'); // Modified
             $table->string('title');
             $table->longText('content');
-            $table->timestamp('generated_at')->useCurrent(); // When the report content was finalized by the job
-            $table->timestamps(); // created_at, updated_at for the record itself
+            $table->timestamp('generated_at')->useCurrent();
+            $table->timestamps();
         });
     }
 

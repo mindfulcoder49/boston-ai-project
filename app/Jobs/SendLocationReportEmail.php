@@ -27,6 +27,7 @@ class SendLocationReportEmail implements ShouldQueue
 
     protected $location;
     protected const MAX_DAYS_INDIVIDUAL_REPORTS = 7; // Number of recent days to report individually
+    protected $radiusForReport; // Store radius used for data fetching
 
     /**
      * Create a new job instance.
@@ -34,6 +35,7 @@ class SendLocationReportEmail implements ShouldQueue
     public function __construct(Location $location)
     {
         $this->location = $location;
+        $this->radiusForReport = 0.25; // Default, or could be from $location->report_radius if you add such a field
     }
 
     /**
@@ -51,7 +53,7 @@ class SendLocationReportEmail implements ShouldQueue
                     'longitude' => $this->location->longitude,
                     'address' => $this->location->address,
                 ],
-                'radius' => 0.25, // Default radius, or could be configurable per location
+                'radius' => $this->radiusForReport, // Use stored radius
                 // 'language_codes' => [$this->location->language] // If getRadialMapData uses this
             ]);
             $mapDataResponse = $mapController->getRadialMapData($simulatedRequest);
@@ -239,7 +241,22 @@ class SendLocationReportEmail implements ShouldQueue
             }
 
             // --- 4. Combine All Daily Reports into a Single String ---
-            $finalReport = implode("\n---\n\n", $dailyCombinedReports); // Separate daily sections with a horizontal rule
+            $dailyReportContent = implode("\n---\n\n", $dailyCombinedReports); // Separate daily sections with a horizontal rule
+
+            // --- 4.5 Prepend Location Details to the Final Report ---
+            $locationDetailsHeader = "## Location Report: {$this->location->name_or_address}\n\n";
+            if ($this->location->name && $this->location->name !== $this->location->address) {
+                $locationDetailsHeader .= "- **Location Name:** {$this->location->name}\n";
+            }
+            $locationDetailsHeader .= "- **Address:** {$this->location->address}\n";
+            $locationDetailsHeader .= "- **Coordinates:** Latitude {$this->location->latitude}, Longitude {$this->location->longitude}\n";
+            $locationDetailsHeader .= "- **Radius Covered:** {$this->radiusForReport} miles\n";
+            $locationDetailsHeader .= "- **Report Language:** {$this->location->language}\n";
+            $locationDetailsHeader .= "- **Report Generated:** " . Carbon::now()->locale($this->location->language)->isoFormat('LLLL') . "\n\n";
+            $locationDetailsHeader .= "---\n\n";
+            
+            $finalReport = $locationDetailsHeader . $dailyReportContent;
+
 
             // Log the generated report details
             if ($this->location->user && $this->location->user->subscription('default')) {
@@ -252,14 +269,14 @@ class SendLocationReportEmail implements ShouldQueue
 
 
             // --- 5. Save Report to Database (New Step) ---
-            if (!empty($finalReport) && $this->location->user) {
+            if (!empty($finalReport) && $this->location->user) { // Check $finalReport, not $dailyReportContent
                 try {
                     $reportDateForTitle = Carbon::now()->format('Y-m-d'); // Or use a date derived from the report content if more appropriate
                     Report::create([
                         'user_id' => $this->location->user_id,
                         'location_id' => $this->location->id,
                         'title' => "Location Report for {$this->location->name_or_address} - {$reportDateForTitle}",
-                        'content' => $finalReport,
+                        'content' => $finalReport, // Save the full report with header
                         'generated_at' => Carbon::now(),
                     ]);
                     Log::info("Report saved to database for user: {$this->location->user->email}, location: {$this->location->address}");
@@ -271,12 +288,12 @@ class SendLocationReportEmail implements ShouldQueue
 
 
             // --- 6. Send Email (if there's a report to send)---
-            if (!empty($finalReport)) {
+            if (!empty($dailyReportContent)) { // Check if there was actual daily content, not just the header
                 $mailer->to($this->location->user->email)
-                       ->send(new \App\Mail\SendLocationReport($this->location, $finalReport));
+                       ->send(new \App\Mail\SendLocationReport($this->location, $finalReport)); // Send full report
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
-                Log::info("No reports generated after date/type processing. No email was sent to {$this->location->user->email} for location: {$this->location->address}");
+                Log::info("No reports generated after date/type processing (empty dailyReportContent). No email was sent to {$this->location->user->email} for location: {$this->location->address}");
             }
 
         } catch (\Exception $e) {

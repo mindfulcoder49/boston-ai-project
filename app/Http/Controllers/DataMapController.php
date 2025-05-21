@@ -88,6 +88,9 @@ class DataMapController extends Controller
             $query->where($modelClass::getDateField(), '>=', $tierMinDate->toDateString());
         }
 
+        //get limit from request    
+        $limit = $request->input('limit', 1000); // Default limit
+
   
         $initialData = $query->limit(max(1, min($limit, 5000)))->get(); // Clamp limit for performance
 

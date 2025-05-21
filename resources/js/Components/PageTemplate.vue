@@ -72,7 +72,7 @@
                     </div>
                     <!-- Guest User Links -->
                     <div v-else class="flex items-center ml-3 relative">
-                        <a :href="route('socialite.redirect', 'google')"
+                        <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
                            class="p-2 mr-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full focus:outline-none focus:bg-gray-100"
                            title="Login or Register with Google">
                             <img class="h-5 w-5" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
