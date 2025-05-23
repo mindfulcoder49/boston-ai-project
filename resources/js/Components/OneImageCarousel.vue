@@ -1,72 +1,55 @@
 <template>
-    <div class="carousel-container" v-if="hasImages">
-        <div class="carousel-wrapper" ref="carouselWrapper">
-            <div
-                v-for="(data, index) in filteredDataPoints"
-                :key="index"
-                :class="{ 'carousel-slide': true, 'active': currentIndex === index }"
-                @click="openModal(data)"
-            >
-                <div class="carousel-slide-inner">
-                    <img
-                        v-if="data.info.closed_photo"
-                        :src="data.info.closed_photo"
-                        alt="Data Point Image"
-                        class="carousel-image"
-                    />
-                    <img
-                        v-else-if="data.info.submitted_photo"
-                        :src="data.info.submitted_photo"
-                        alt="Data Point Image"
-                        class="carousel-image"
-                    />
-                    <div class="data-type-label">
-                        {{ data.info.type }}
-                    </div>
-                </div>
-            </div>
+  <div class="carousel-container" v-if="hasImages">
+    <div class="carousel-wrapper" ref="carouselWrapper">
+      <div
+        v-for="(data, index) in filteredDataPoints"
+        :key="index"
+        :class="{ 'carousel-slide': true, 'active': currentIndex === index }"
+        @click="openModal(data)"
+      >
+        <div class="carousel-slide-inner">
+          <img
+            :src="getPhotoUrl(data)"
+            alt="Data Point Image"
+            class="carousel-image"
+          />
+          <div class="data-type-label">
+            {{ data.info.type }}
+          </div>
         </div>
-        <div class="carousel-decoration" v-if="filteredDataPoints.length > 1">
-            <div class="carousel-controls">
-                <button @click="prevSlide" :disabled="currentIndex === 0" class="control-button prev-button">
-                    <
-                </button>
-                <button @click="nextSlide" :disabled="isLastSlide" class="control-button next-button">
-                    >
-                </button>
-            </div>
-
-            <div class="carousel-indicators">
-                <button
-                    v-for="(data, index) in filteredDataPoints"
-                    :key="index"
-                    @click="goToSlide(index)"
-                    :class="{ 'indicator-button': true, 'active': currentIndex === index }"
-                ></button>
-            </div>
-        </div>
-
-         <!-- Modal Component -->
-        <Modal :show="modalOpen" @close="closeModal" maxWidth="xl">
-            <div v-if="modalData" class="flex justify-center">
-                <img
-                    v-if="modalData.info.closed_photo"
-                    :src="modalData.info.closed_photo"
-                    alt="Full Image"
-                    class="modal-image"
-                />
-                <img
-                    v-else-if="modalData.info.submitted_photo"
-                    :src="modalData.info.submitted_photo"
-                    alt="Full Image"
-                    class="modal-image"
-                />
-            </div>
-        </Modal>
+      </div>
     </div>
-    <div v-else class="no-image-container">
-        No Images Available
+    <div class="carousel-decoration" v-if="filteredDataPoints.length > 1">
+      <div class="carousel-controls">
+        <button @click="prevSlide" :disabled="currentIndex === 0" class="control-button prev-button">
+          &lt;
+        </button>
+        <button @click="nextSlide" :disabled="isLastSlide" class="control-button next-button">
+          &gt;
+        </button>
+      </div>
+      <div class="carousel-indicators">
+        <button
+          v-for="(data, index) in filteredDataPoints"
+          :key="index"
+          @click="goToSlide(index)"
+          :class="{ 'indicator-button': true, 'active': currentIndex === index }"
+        ></button>
+      </div>
     </div>
+    <Modal :show="modalOpen" @close="closeModal" maxWidth="xl">
+      <div v-if="modalData" class="flex justify-center">
+        <img
+          :src="getPhotoUrl(modalData)"
+          alt="Full Image"
+          class="modal-image"
+        />
+      </div>
+    </Modal>
+  </div>
+  <div v-else class="no-image-container">
+    No Images Available
+  </div>
 </template>
 
 <script setup>
@@ -74,10 +57,7 @@ import { ref, computed, watch } from 'vue';
 import Modal from './Modal.vue';
 
 const props = defineProps({
-    dataPoints: {
-        type: Array,
-        default: () => [],
-    },
+  dataPoints: { type: Array, default: () => [] }
 });
 
 const carouselWrapper = ref(null);
@@ -85,65 +65,44 @@ const currentIndex = ref(0);
 const modalOpen = ref(false);
 const modalData = ref(null);
 
-
-
 const emit = defineEmits(['on-image-click']);
 
-const hasImage = (data) => {
-    return data.info?.closed_photo || data.info?.submitted_photo;
-};
-
-const onImageClick = (data) => {
-    emit('on-image-click', data);
-};
+// Helper to get a photo URL from a photo object.
+// This looks for a generic "photo" property; if absent, tries closed_photo/submitted_photo.
+function getPhotoUrl(data) {
+  return data.info?.photo || data.info?.closed_photo || data.info?.submitted_photo || '';
+}
 
 const filteredDataPoints = computed(() => {
-    return props.dataPoints.filter((data) => hasImage(data));
+  return props.dataPoints.filter(data => getPhotoUrl(data));
 });
 
-const hasImages = computed(() => {
-    return filteredDataPoints.value.length > 0;
-});
+const hasImages = computed(() => filteredDataPoints.value.length > 0);
 
-const isLastSlide = computed(() => {
-    return currentIndex.value === filteredDataPoints.value.length -1;
-});
+const isLastSlide = computed(() => currentIndex.value === filteredDataPoints.value.length - 1);
 
-const prevSlide = () => {
-    if (currentIndex.value > 0) {
-        currentIndex.value--;
-    }
-};
+const prevSlide = () => { if (currentIndex.value > 0) currentIndex.value--; };
+const nextSlide = () => { if (!isLastSlide.value) currentIndex.value++; };
+const goToSlide = (index) => { currentIndex.value = index; };
 
-const nextSlide = () => {
-    if (!isLastSlide.value) {
-         currentIndex.value++;
-    }
-};
-
-const goToSlide = (index) => {
-    currentIndex.value = index;
-};
 const openModal = (data) => {
-    modalOpen.value = true;
-    modalData.value = data
-}
+  modalOpen.value = true;
+  modalData.value = data;
+  emit('on-image-click', data);
+};
 const closeModal = () => {
-    modalOpen.value = false;
-    modalData.value = null;
-}
-watch(
-    () => currentIndex.value,
-    () => {
-         if (carouselWrapper.value) {
-            carouselWrapper.value.scrollTo({
-                left: carouselWrapper.value.offsetWidth * currentIndex.value,
-                behavior: 'smooth',
-           });
-      }
-    }
-);
+  modalOpen.value = false;
+  modalData.value = null;
+};
 
+watch(() => currentIndex.value, () => {
+  if (carouselWrapper.value) {
+    carouselWrapper.value.scrollTo({
+      left: carouselWrapper.value.offsetWidth * currentIndex.value,
+      behavior: 'smooth',
+    });
+  }
+});
 </script>
 
 <style scoped>

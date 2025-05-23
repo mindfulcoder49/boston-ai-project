@@ -91,12 +91,7 @@
     <div v-else class="flex flex-wrap -mx-2">
       <div v-for="(item, index) in paginatedData" :key="item.alcivartech_external_id || item.id || index" class="p-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
         <div class="bg-gray-100 p-2 rounded-md mb-2 data-container">
-          <ServiceCase v-if="item.alcivartech_type === '311 Case'" :data="item" :language_codes="language_codes" />
-          <Crime v-if="item.alcivartech_type === 'Crime'" :data="item" :language_codes="language_codes" />
-          <BuildingPermit v-if="item.alcivartech_type === 'Building Permit'" :data="item" :language_codes="language_codes" />
-          <PropertyViolation v-if="item.alcivartech_type === 'Property Violation'" :data="item" :language_codes="language_codes" />
-          <OffHours v-if="item.alcivartech_type === 'Construction Off Hour'" :data="item" :language_codes="language_codes" />
-          <FoodInspection v-if="item.alcivartech_type === 'Food Inspection'" :data="item" :language_codes="language_codes" />
+          <UniversalDataDisplay :data="item" :language_codes="language_codes" />
           <!-- Button to emit datapoint for goto marker on map function -->
           <button
             @click="$emit('handle-goto-marker', item)"
@@ -117,6 +112,7 @@ import BuildingPermit from "@/Components/BuildingPermit.vue";
 import PropertyViolation from "@/Components/PropertyViolation.vue";
 import OffHours from "@/Components/OffHours.vue";
 import FoodInspection from "./FoodInspection.vue";
+import UniversalDataDisplay from "@/Components/UniversalDataDisplay.vue";
 
 const localizationLabelsByLanguageCode = {
   'en-US': {
@@ -222,6 +218,7 @@ export default {
     PropertyViolation,
     OffHours,
     FoodInspection,
+    UniversalDataDisplay,
   },
   props: {
     totalData: {

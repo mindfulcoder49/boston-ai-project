@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             FoodInspectionsSeeder::class,
             CambridgeBuildingPermitsSeeder::class,
             CambridgeThreeOneOneSeeder::class,
+            CambridgeFoodInspectionSeeder::class,
+            CambridgePropertyViolationsSeeder::class,
         ]);
     }
 }

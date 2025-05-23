@@ -66,12 +66,7 @@
 
     <div class="case-details">
       <h2 class="text-xl font-semibold text-gray-800 text-center my-4">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.caseDetailsTitle || 'Selected Case Details' }}</h2>
-      <ServiceCase v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === '311 Case'" :data="selectedDataPoint" :language_codes="language_codes" />
-      <Crime v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Crime'" :data="selectedDataPoint" :language_codes="language_codes" />
-      <BuildingPermit v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Building Permit'" :data="selectedDataPoint" :language_codes="language_codes" />
-      <PropertyViolation v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Property Violation'" :data="selectedDataPoint" :language_codes="language_codes" />
-      <OffHours v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Construction Off Hour'" :data="selectedDataPoint" :language_codes="language_codes" />
-      <FoodInspection v-if="selectedDataPoint && selectedDataPoint.alcivartech_type === 'Food Inspection'" :data="selectedDataPoint" :language_codes="language_codes" />
+      <UniversalDataDisplay :data="selectedDataPoint" :language_codes="language_codes" />
     </div>
 
     <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick" />
@@ -94,6 +89,7 @@ import axios from 'axios';
 import PageTemplate from '@/Components/PageTemplate.vue';
 import AiAssistant from '@/Components/AiAssistant.vue';
 import GenericDataList from '@/Components/GenericDataList.vue';
+import UniversalDataDisplay from '@/Components/UniversalDataDisplay.vue';
 import ServiceCase from '@/Components/ServiceCase.vue';
 import Crime from '@/Components/Crime.vue';
 import BuildingPermit from '@/Components/BuildingPermit.vue';
@@ -344,6 +340,26 @@ const fetchData = async () => {
     });
 
     allDataPoints.value = response.data.dataPoints;
+
+    // keep top level fields and merge in the correct data type subobject and delete all subobjects
+    allDataPoints.value = allDataPoints.value.map((dataPoint) => {
+      const dataType = dataPoint.alcivartech_type;
+      console.log('Data type:', dataType.toLowerCase() + '_data');
+      // Log the subobjects for debugging
+      console.log('Data point:', dataPoint);
+      
+      const subObject = dataPoint[dataType.toLowerCase().replace(/ /g, '_').replace('311','three_one_one') + '_data'];
+      console.log('Sub-object:', subObject);
+      if (subObject) {
+        // Remove the sub-object from the dataPoint
+        delete dataPoint[dataType.toLowerCase() + '_data'];
+        // Merge top-level fields with the sub-object
+        console.log('Sub-object:', subObject);
+        return { ...dataPoint, ...subObject };
+      }
+      
+      return dataPoint; // Return as is if no sub-object
+    })
     // Aggregate food violations after fetching
     allDataPoints.value = aggregateFoodViolations(allDataPoints.value);
 
