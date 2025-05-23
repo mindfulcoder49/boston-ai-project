@@ -8,7 +8,7 @@ use App\Models\BuildingPermit;
 use App\Models\PropertyViolation;
 use App\Models\ConstructionOffHour;
 use App\Models\DataPoint;
-use App\Models\FoodEstablishmentViolation; // Add this line
+use App\Models\FoodInspection; // Corrected model name from FoodEstablishmentViolation
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -19,17 +19,41 @@ use Illuminate\Support\Facades\DB;
 class GenericMapController extends Controller
 {
 
-    public function generateJsonObjectFromModel($modelClass)
+    protected function getJsonSelectForModel($modelClass, $jsonAlias)
     {
-        $fillable = (new $modelClass)->getFillable();
-    
-        // Escape reserved keywords with backticks for MySQL
-        $jsonObject = implode(', ', array_map(function ($field) {
-            $escapedField = "`$field`"; // Add backticks around the field name
-            return "'$field', $escapedField";
-        }, $fillable));
-    
-        return "JSON_OBJECT($jsonObject)";
+        $model = new $modelClass;
+        $table = $model->getTable();
+        
+        $fields = $model->getFillable();
+        $fields[] = $model->getKeyName(); // Add primary key
+        
+        // Add date field(s) used in logic if not already in fillable
+        // Most models have one main date field returned by getDateField()
+        $dateField = $modelClass::getDateField();
+        if (!in_array($dateField, $fields)) {
+            $fields[] = $dateField;
+        }
+
+        // FoodInspection uses violdttm and resultdttm. Both should be in fillable.
+        // If not, add them explicitly. Current FoodInspection model has them in fillable.
+        // Example:
+        // if ($modelClass === \App\Models\FoodInspection::class) {
+        //     if(!in_array('violdttm', $fields)) $fields[] = 'violdttm';
+        // }
+
+        $fields = array_unique(array_filter($fields)); // Remove duplicates and empty values
+
+        if (empty($fields)) {
+            return "JSON_OBJECT() as $jsonAlias"; // Return empty JSON object if no fields
+        }
+
+        $jsonObjectParts = [];
+        foreach ($fields as $field) {
+            $jsonObjectParts[] = "'$field'";
+            $jsonObjectParts[] = "`$table`.`$field`";
+        }
+
+        return "JSON_OBJECT(" . implode(', ', $jsonObjectParts) . ") as $jsonAlias";
     }
 
     public function getRadialMapData(Request $request)
@@ -115,34 +139,17 @@ class GenericMapController extends Controller
 
         $query = DB::table($targetTable) // Use dynamic targetTable
             ->select(
-                $targetTable.'.id as data_point_id', // Qualify column names with table name
+                $targetTable.'.id as data_point_id', 
                 DB::raw("ST_AsText({$targetTable}.location) as location_wkt"),
-                $targetTable.'.type as alcivartech_type',
+                $targetTable.'.type as alcivartech_type_raw', // Keep raw type for switch, rename to avoid clash if alcivartech_type is also a field in JSON
+                // $targetTable.'.alcivartech_date as data_point_alcivartech_date', // This can be used if alcivartech_date in data_points is the source of truth
 
-                // Crime Data
-                'crime_data.id as crime_id',
-                'crime_data.*',
-
-
-                // 311 Cases
-                'three_one_one_cases.id as case_id',
-                'three_one_one_cases.*',
-
-                // Property Violations
-                'property_violations.id as violation_id',
-                'property_violations.*',
-
-                // Construction Off Hours
-                'construction_off_hours.id as construction_id',
-                'construction_off_hours.*',
-
-                // Building Permits
-                'building_permits.id as permit_id',
-                'building_permits.*',
-
-                // Food Inspections
-                'food_inspections.id as food_inspection_id',
-                'food_inspections.*'
+                DB::raw($this->getJsonSelectForModel(\App\Models\CrimeData::class, 'crime_data_json')),
+                DB::raw($this->getJsonSelectForModel(\App\Models\ThreeOneOneCase::class, 'three_one_one_case_json')),
+                DB::raw($this->getJsonSelectForModel(\App\Models\PropertyViolation::class, 'property_violation_json')),
+                DB::raw($this->getJsonSelectForModel(\App\Models\ConstructionOffHour::class, 'construction_off_hour_json')),
+                DB::raw($this->getJsonSelectForModel(\App\Models\BuildingPermit::class, 'building_permit_json')),
+                DB::raw($this->getJsonSelectForModel(\App\Models\FoodInspection::class, 'food_inspection_json'))
             )
             ->leftJoin('crime_data', $targetTable.'.crime_data_id', '=', 'crime_data.id')
             ->leftJoin('three_one_one_cases', $targetTable.'.three_one_one_case_id', '=', 'three_one_one_cases.id')
@@ -152,109 +159,112 @@ class GenericMapController extends Controller
             ->leftJoin('food_inspections', $targetTable.'.food_inspection_id', '=', 'food_inspections.id')
             ->whereRaw("ST_Distance_Sphere({$targetTable}.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters]);
 
-        if ($cutoffDateTime && $targetTable === 'data_points') { // Apply date filtering only if cutoffDateTime is set and it's the regular data_points table
+        if ($cutoffDateTime && $targetTable === 'data_points') { 
+            // Apply date filtering based on the main date of the data_point itself
             $query->where($targetTable.'.alcivartech_date', '>=', $cutoffDateTime);
         }
-        // For all_time_data_points, we don't apply the $cutoffDateTime unless a specific very long-term cutoff is desired for performance.
-
+        
         $dataPoints = $query->get();    
 
-        // Convert location_wkt (e.g., "POINT(-71.0589 42.3601)") into separate lat/lng
         $dataPoints = $dataPoints->map(function ($point) {
+            // Decode JSON strings into objects
+            $point->crime_data = $point->crime_data_json ? json_decode($point->crime_data_json) : null;
+            unset($point->crime_data_json);
+            $point->three_one_one_case_data = $point->three_one_one_case_json ? json_decode($point->three_one_one_case_json) : null;
+            unset($point->three_one_one_case_json);
+            $point->property_violation_data = $point->property_violation_json ? json_decode($point->property_violation_json) : null;
+            unset($point->property_violation_json);
+            $point->construction_off_hour_data = $point->construction_off_hour_json ? json_decode($point->construction_off_hour_json) : null;
+            unset($point->construction_off_hour_json);
+            $point->building_permit_data = $point->building_permit_json ? json_decode($point->building_permit_json) : null;
+            unset($point->building_permit_json);
+            $point->food_inspection_data = $point->food_inspection_json ? json_decode($point->food_inspection_json) : null;
+            unset($point->food_inspection_json);
+
             preg_match('/POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)/', $point->location_wkt, $matches);
-            $point->longitude = $matches[1] ?? null;
-            $point->latitude = $matches[2] ?? null;
+            $point->longitude = isset($matches[1]) ? floatval($matches[1]) : null;
+            $point->latitude = isset($matches[2]) ? floatval($matches[2]) : null;
+            unset($point->location_wkt); 
 
-            //make sure latitute and longitude are numbers not strings
-            $point->latitude = floatval($point->latitude);
-            $point->longitude = floatval($point->longitude);
-            
-            unset($point->location_wkt); // Remove WKT field
-
-
-
-            //also convert the alcivartech type to a human readable format specifically:
-            /*    'Crime': 
-                '311 Case': 
-                'Building Permit': 
-                'Property Violation': 
-                'Construction Off Hour':  */
-            
-            switch ($point->alcivartech_type) {
+            $humanReadableType = 'Unknown';
+            switch ($point->alcivartech_type_raw) {
                 case 'crime_data':
-                    $point->alcivartech_type = 'Crime';
+                    $humanReadableType = 'Crime';
                     break;
                 case 'three_one_one_cases':
-                    $point->alcivartech_type = '311 Case';
+                    $humanReadableType = '311 Case';
                     break;
                 case 'building_permits':
-                    $point->alcivartech_type = 'Building Permit';
+                    $humanReadableType = 'Building Permit';
                     break;
                 case 'property_violations':
-                    $point->alcivartech_type = 'Property Violation';
+                    $humanReadableType = 'Property Violation';
                     break;
                 case 'construction_off_hours':
-                    $point->alcivartech_type = 'Construction Off Hour';
+                    $humanReadableType = 'Construction Off Hour';
                     break;
-                case 'food_inspections': // Add this case
-                    $point->alcivartech_type = 'Food Inspection';
+                case 'food_inspections': 
+                    $humanReadableType = 'Food Inspection';
+                    break;
+            }
+            $point->alcivartech_type = $humanReadableType;
+            unset($point->alcivartech_type_raw);
+
+            switch ($humanReadableType) {
+                case 'Crime':
+                    $point->alcivartech_date = $point->crime_data->occurred_on_date ?? null;
+                    break;
+                case '311 Case':
+                    // Assuming 'open_dt' is the field in ThreeOneOneCase model
+                    $point->alcivartech_date = $point->three_one_one_case_data->open_dt ?? null; 
+                    break;
+                case 'Building Permit':
+                    $point->alcivartech_date = $point->building_permit_data->issued_date ?? null;
+                    break;
+                case 'Property Violation':
+                    $point->alcivartech_date = $point->property_violation_data->status_dttm ?? null;
+                    break;
+                case 'Construction Off Hour':
+                    $point->alcivartech_date = $point->construction_off_hour_data->start_datetime ?? null;
+                    break;
+                case 'Food Inspection': 
+                    if ($point->food_inspection_data && !empty($point->food_inspection_data->violdttm)) {
+                        $point->alcivartech_date = $point->food_inspection_data->violdttm;
+                    } elseif ($point->food_inspection_data && !empty($point->food_inspection_data->resultdttm)) {
+                        $point->alcivartech_date = $point->food_inspection_data->resultdttm;
+                    } else {
+                        $point->alcivartech_date = null;
+                    }
                     break;
                 default:
-                    $point->alcivartech_type = 'Unknown';
+                    $point->alcivartech_date = null;
             }
 
-                        //set alcivartech_date field to the right date field based on the type
-                        switch ($point->alcivartech_type) {
-                            case 'Crime':
-                                $point->alcivartech_date = $point->occurred_on_date;
-                                break;
-                            case '311 Case':
-                                $point->alcivartech_date = $point->open_dt;
-                                break;
-                            case 'Building Permit':
-                                $point->alcivartech_date = $point->issued_date;
-                                break;
-                            case 'Property Violation':
-                                $point->alcivartech_date = $point->status_dttm;
-                                break;
-                            case 'Construction Off Hour':
-                                $point->alcivartech_date = $point->start_datetime;
-                                break;
-                            case 'Food Inspection': // Add this case
-                                //use violation date as the date if it exists
-                                if ($point->violdttm) {
-                                    $point->alcivartech_date = $point->violdttm;
-                                } else {
-                                    // Otherwise, use the result date
-                                    $point->alcivartech_date = $point->resultdttm;
-                                }
-                                break;
-                            default:
-                                $point->alcivartech_date = null;
-                        }
-
-            // If user is not logged in, replace food inspection data fields
-            if (!Auth::check() && $point->alcivartech_type === 'Food Inspection') {
+            if (!Auth::check() && $humanReadableType === 'Food Inspection') {
                 $restrictedMessage = "Log In to See Food Inspection Information";
-                // Iterate over a copy of keys to avoid issues if properties are unset or changed during iteration
-                $pointProperties = (array)$point;
-                foreach ($pointProperties as $key => $value) {
-                    // hash the licenseno to prevent scraping
-                    // remove latitude and longitude
-                    if ($key === 'lat' || $key === 'lng' || $key === 'latitude' || $key === 'longitude' || $key === 'location') {
-                        unset($point->$key);
+                
+                if ($point->food_inspection_data) {
+                    $foodData = (array)$point->food_inspection_data;
+                    $newFoodData = new \stdClass();
+                    foreach ($foodData as $key => $value) {
+                        // Remove specific location fields from food_inspection_data itself
+                        if (in_array($key, ['latitude', 'longitude', 'location', 'lat', 'lng', 'gpsy', 'gpsx', 'y_latitude', 'x_longitude'])) {
+                            continue; 
+                        }
+                        if ($key === 'licenseno') {
+                            $newFoodData->$key = md5((string)$value);
+                        } elseif (!empty($value) && !in_array($key, ['violdesc', 'viol_level', 'comments'])) {
+                            $newFoodData->$key = $restrictedMessage;
+                        } else {
+                            $newFoodData->$key = $value;
+                        }
                     }
-                    if ($key === 'licenseno') {
-                        $point->licenseno = md5($point->licenseno);
-                    }
-                    if (!empty($point->$key) && $key !== 'alcivartech_type' && $key !== 'alcivartech_date'
-                        && $key !== 'licenseno' && $key !== 'violdesc' && $key !== 'viol_level' && $key !== 'comments') {
-                        $point->$key = $restrictedMessage;
-                    }
+                    $point->food_inspection_data = $newFoodData;
                 }
+                // Unset top-level lat/lng for this data point if it's a food inspection and user is not authed
+                unset($point->latitude);
+                unset($point->longitude);
             }
-
-
             return $point;
         });
         

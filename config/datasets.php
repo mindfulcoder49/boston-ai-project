@@ -1,49 +1,33 @@
 <?php
 
 return [
-    'base_url' => 'http://data.boston.gov/datastore/dump',
+    // This file is for datasets using the newer, more flexible configuration
+    // (e.g., multiple cities, varied URL patterns).
+    // Boston datasets are now in config/boston_datasets.php
     'datasets' => [
-        /*
+        // Add the Cambridge dataset (or other non-Boston datasets) 
         [
-            //311 Service Requests 2024
-            'name' => '311-service-requests-2025',
-            'resource_id' => '9d7c2214-4709-478a-a2e8-fb2020a5bb94',
+            'name' => 'cambridge-311-service-requests',
+            'city' => 'cambridge',
+            'base_url' => 'https://data.cambridgema.gov/resource', // Base URL for Cambridge Socrata API
+            'resource_id' => '2z9k-mv9g', // Resource ID from the URL
             'format' => 'csv',
+            'url_pattern_type' => 'extension', // Cambridge uses /resource_id.format
+            'pagination_type' => 'socrata_offset', // Indicates Socrata-style pagination
+            'page_size' => 10000, // Number of records to fetch per page (max 50000 for SODA 2.0)
+            'order_by_field' => ':id', // Field to ensure stable ordering for pagination
+        ], 
+        [
+            'name' => 'cambridge-building-permits',
+            'city' => 'cambridge', // This will be used to create the 'datasets/cambridge/' subdirectory
+            'base_url' => 'https://data.cambridgema.gov/resource',
+            'resource_id' => 'qu2z-8suj',
+            'format' => 'csv',
+            'url_pattern_type' => 'extension',
+            'pagination_type' => 'socrata_offset',
+            'page_size' => 10000,
+            'order_by_field' => ':id', // Or ':id' if 'permit_num' isn't reliable for ordering
         ],
-        // Add more datasets as needed
-        
-        [
-            'name' => 'construction-off-hours',
-            'resource_id' => 'c66524ea-36f5-43b1-aa9c-da36d7cb8744',
-            'format' => 'csv',
-        ],
-        
-        [
-            'name' => 'building-permits',
-            'resource_id' => '6ddcd912-32a0-43df-9908-63574f8c7e77',
-            'format' => 'csv',
-        ],
-        [
-            'name' => 'crime-incident-reports',
-            'resource_id' => 'b973d8cb-eeb2-4e7e-99da-c92938efc9c0',
-            'format' => 'csv',
-        ],
-        [
-            'name' => 'trash-schedules-by-address',
-            'resource_id' => 'fee8ee07-b8b5-4ee5-b540-5162590ba5c1',
-            'format' => 'csv',
-        ],
-        // Add a dataset for property violations
-        [
-            'name' => 'property-violations',
-            'resource_id' => '800a2663-1d6a-46e7-9356-bedb70f5332c',
-            'format' => 'csv',
-        ], */
-        //Add food inspection dataset https://data.boston.gov/dataset/03693648-2c62-4a2c-a4ec-48de2ee14e18/resource/4582bec6-2b4f-4f9e-bc55-cbaa73117f4c/download/tmpsu449jys.csv
-        [
-            'name' => 'food-inspections',
-            'resource_id' => '4582bec6-2b4f-4f9e-bc55-cbaa73117f4c',
-            'format' => 'csv',
-        ],
+        // Add more datasets from Cambridge or other cities (not Boston) as needed
     ],
 ];

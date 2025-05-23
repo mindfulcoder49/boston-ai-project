@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder
             PropertyViolationsSeeder::class,
             ConstructionOffHoursSeeder::class,
             FoodInspectionsSeeder::class,
+            CambridgeBuildingPermitsSeeder::class,
+            CambridgeThreeOneOneSeeder::class,
         ]);
     }
 }

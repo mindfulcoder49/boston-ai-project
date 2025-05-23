@@ -66,15 +66,37 @@
           </p>
           <ul class="space-y-2">
             <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].caseId }}:</strong> {{ data.case_enquiry_id }}</li>
+            <li v-if="data.source_city"><strong>Source City:</strong> {{ data.source_city }}</li>
             <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].status }}:</strong> {{ data.case_status }}</li>
             <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].title }}:</strong> {{ data.case_title }}</li>
+            <li v-if="data.threeoneonedescription"><strong>Description:</strong> <span class="whitespace-pre-wrap">{{ data.threeoneonedescription }}</span></li>
             <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].reason }}:</strong> {{ data.reason }}</li>
             <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].subject }}:</strong> {{ data.subject }}</li>
-            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].location }}:</strong> {{ data.location }}</li>
-            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].neighborhood }}:</strong> {{ data.neighborhood }}</li>
-            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].source }}:</strong> {{ data.source }}</li>
-            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].department }}:</strong> {{ data.department }}</li>
+            <li v-if="data.type"><strong>Type:</strong> {{ data.type }}</li>
+            <li v-if="data.open_dt"><strong>Opened Date:</strong> {{ formatDate(data.open_dt) }}</li>
+            <li v-if="data.sla_target_dt"><strong>SLA Target Date:</strong> {{ formatDate(data.sla_target_dt) }}</li>
             <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].closureDate }}:</strong> {{ formatDate(data.closed_dt) }}</li>
+            <li v-if="data.closure_reason"><strong>Closure Reason:</strong> {{ data.closure_reason }}</li>
+            <li v-if="data.on_time"><strong>On Time:</strong> {{ data.on_time }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].department }}:</strong> {{ data.department }}</li>
+            <li v-if="data.queue"><strong>Queue:</strong> {{ data.queue }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].location }}:</strong> {{ data.location }}</li>
+            <li v-if="data.location_street_name"><strong>Street Name:</strong> {{ data.location_street_name }}</li>
+            <li v-if="data.location_zipcode"><strong>Zipcode:</strong> {{ data.location_zipcode }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].neighborhood }}:</strong> {{ data.neighborhood }}</li>
+            <li v-if="data.neighborhood_services_district"><strong>Neighborhood Services District:</strong> {{ data.neighborhood_services_district }}</li>
+            <li v-if="data.ward"><strong>Ward:</strong> {{ data.ward }}</li>
+            <li v-if="data.ward_number"><strong>Ward Number:</strong> {{ data.ward_number }}</li>
+            <li v-if="data.precinct"><strong>Precinct:</strong> {{ data.precinct }}</li>
+            <li v-if="data.fire_district"><strong>Fire District:</strong> {{ data.fire_district }}</li>
+            <li v-if="data.pwd_district"><strong>PWD District:</strong> {{ data.pwd_district }}</li>
+            <li v-if="data.city_council_district"><strong>City Council District:</strong> {{ data.city_council_district }}</li>
+            <li v-if="data.police_district"><strong>Police District:</strong> {{ data.police_district }}</li>
+            <li v-if="data.latitude"><strong>Latitude:</strong> {{ data.latitude }}</li>
+            <li v-if="data.longitude"><strong>Longitude:</strong> {{ data.longitude }}</li>
+            <li><strong>{{ translations.CaseLabelsByLanguageCode[getSingleLanguageCode].source }}:</strong> {{ data.source }}</li>
+            <li v-if="data.language_code"><strong>Language Code:</strong> {{ data.language_code }}</li>
+            <li v-if="data.checksum"><strong>Checksum:</strong> {{ data.checksum }}</li>
           </ul>
 
 
