@@ -33,6 +33,9 @@ class CrimeData extends Model
         'long',
         'location',
         'language_code',
+        'crime_details', // Added
+        'crime_start_time', // Added
+        'crime_end_time',   // Added
     ];
 
     // Cast the occurred_on_date to a date type
@@ -43,7 +46,7 @@ class CrimeData extends Model
     const SEARCHABLE_COLUMNS = [ // Added
         'incident_number', 'offense_code', 'offense_code_group', 'offense_description',
         'district', 'reporting_area', 'shooting', 'year', 'month', 'day_of_week', 'hour',
-        'ucr_part', 'street', 'location', 'language_code',
+        'ucr_part', 'street', 'location', 'language_code', 'crime_details', 'crime_start_time', 'crime_end_time'
     ];
 
     public static function getDateField(): string

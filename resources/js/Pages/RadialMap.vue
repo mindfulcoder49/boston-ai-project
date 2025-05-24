@@ -352,7 +352,7 @@ const fetchData = async () => {
       console.log('Sub-object:', subObject);
       if (subObject) {
         // Remove the sub-object from the dataPoint
-        delete dataPoint[dataType.toLowerCase() + '_data'];
+        //delete dataPoint[dataType.toLowerCase() + '_data'];
         // Merge top-level fields with the sub-object
         console.log('Sub-object:', subObject);
         return { ...dataPoint, ...subObject };

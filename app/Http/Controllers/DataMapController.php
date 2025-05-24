@@ -55,7 +55,7 @@ class DataMapController extends Controller
 
         if ($user && !$user->subscribed('default')) {
             // Authenticated free user
-            $tierMinDate = Carbon::now()->subWeeks(2);
+            $tierMinDate = Carbon::now()->subMonths(2);
         } elseif ($user && $user->subscribed('default')) {
             $subscription = $user->subscription('default');
             if ($subscription && $subscription->stripe_price === config('stripe.prices.basic_plan')) {
@@ -65,7 +65,7 @@ class DataMapController extends Controller
                 $tierMinDate = null; 
             } else {
                  // Fallback for subscribed users without a recognized plan (treat as free)
-                $tierMinDate = Carbon::now()->subWeeks(2);
+                $tierMinDate = Carbon::now()->subMonths(2);
             }
         }
 
@@ -76,7 +76,7 @@ class DataMapController extends Controller
     {
         $modelClass = $this->getModelClass($dataType);
         // Fetch initial data with a sensible limit. Filters can override this.
-        //$initialData = $modelClass::limit(5000)->get(); 
+        //$initialData = $modelClass::limit(100000)->get(); 
 
         // Fetch data limited by user's subscription tier
         $user = Auth::user();
@@ -92,7 +92,7 @@ class DataMapController extends Controller
         $limit = $request->input('limit', 1000); // Default limit
 
   
-        $initialData = $query->limit(max(1, min($limit, 5000)))->get(); // Clamp limit for performance
+        $initialData = $query->limit(max(1, min($limit, 100000)))->get(); // Clamp limit for performance
 
         // enrich data with additional fields
         $initialData = $this->enrichData($initialData, $dataType);
@@ -148,7 +148,7 @@ class DataMapController extends Controller
 
                 // Apply initial filters if any (e.g., limit)
                 if (isset($initialFilters['limit'])) {
-                    $query->limit(max(1, min((int)$initialFilters['limit'], 5000)));
+                    $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
                 }
                 // Add other default filters for initial load if necessary
 
@@ -166,7 +166,7 @@ class DataMapController extends Controller
                 $modelClass = $this->getModelClass($initialDataType);
                 $query = $modelClass::query();
                 if (isset($initialFilters['limit'])) {
-                    $query->limit(max(1, min((int)$initialFilters['limit'], 5000)));
+                    $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
                 }
                 $initialData = $this->enrichData($query->get(), $initialDataType);
             }
@@ -206,7 +206,7 @@ class DataMapController extends Controller
             // For this iteration, we'll rely on middleware. If user is null, no tier-specific date limits apply here.
         } else if ($user && !$user->subscribed('default')) {
             // Authenticated free user
-            $tierMinDate = Carbon::now()->subWeeks(2);
+            $tierMinDate = Carbon::now()->subMonths(2);
         } elseif ($user && $user->subscribed('default')) {
             $subscription = $user->subscription('default');
             if ($subscription && $subscription->stripe_price === config('stripe.prices.basic_plan')) {
@@ -216,7 +216,7 @@ class DataMapController extends Controller
                 $tierMinDate = null; 
             } else {
                  // Fallback for subscribed users without a recognized plan (treat as free)
-                $tierMinDate = Carbon::now()->subWeeks(2);
+                $tierMinDate = Carbon::now()->subMonths(2);
             }
         }
 
@@ -365,7 +365,7 @@ class DataMapController extends Controller
         // if ($user && !$user->subscribed('default')) { $limit = min($limit, 200); } // Free user limit
         // elseif ($user && $user->subscribed('default') && $user->subscription('default')->stripe_price === config('stripe.prices.basic_plan')) { $limit = min($limit, 1000); } // Basic
         // Pro users could use the default clamp or a higher one.
-        $query->limit(max(1, min($limit, 5000))); // Clamp limit for performance
+        $query->limit(max(1, min($limit, 100000))); // Clamp limit for performance
         
         Log::info("Query: " . $query->toSql());
         Log::info("Query values: " . json_encode($query->getBindings()));

@@ -24,6 +24,10 @@ class DatabaseSeeder extends Seeder
             CambridgeThreeOneOneSeeder::class,
             CambridgeFoodInspectionSeeder::class,
             CambridgePropertyViolationsSeeder::class,
+            CambridgAddressesSeeder::class,
+            CambridgeIntersectionsSeeder::class,
+            CambridgeCrimeDataSeederMerge::class,
+            CambridgePoliceLogSeeder::class,
         ]);
     }
 }

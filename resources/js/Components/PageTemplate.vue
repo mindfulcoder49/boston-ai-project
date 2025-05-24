@@ -176,7 +176,8 @@
         </div>
     </nav> <!-- End of nav -->
 
-    <main class="flex-grow">
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <DataVisibilityBanner /> 
       <slot></slot>
     </main>
 
@@ -195,6 +196,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, router, usePage } from '@inertiajs/vue3'; 
 import axios from 'axios';
 import Footer from '@/Components/Footer.vue'; // Import the new Footer component
+import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; // Import the new banner
 
 const $page = usePage();
 
