@@ -91,7 +91,8 @@ class DataMapController extends Controller
         //get limit from request    
         $limit = $request->input('limit', 1000); // Default limit
 
-  
+        //order by date field
+        $query->orderBy($modelClass::getDateField(), 'desc');
         $initialData = $query->limit(max(1, min($limit, 100000)))->get(); // Clamp limit for performance
 
         // enrich data with additional fields
@@ -366,6 +367,9 @@ class DataMapController extends Controller
         // elseif ($user && $user->subscribed('default') && $user->subscription('default')->stripe_price === config('stripe.prices.basic_plan')) { $limit = min($limit, 1000); } // Basic
         // Pro users could use the default clamp or a higher one.
         $query->limit(max(1, min($limit, 100000))); // Clamp limit for performance
+
+        //order by date field
+        $query->orderBy($modelClass::getDateField(), 'desc');
         
         Log::info("Query: " . $query->toSql());
         Log::info("Query values: " . json_encode($query->getBindings()));
