@@ -60,8 +60,6 @@ class CrimeDataSeeder extends Seeder
                 print_r("Skipping record with invalid lat/long: " . $crime['Lat'] . ", " . $crime['Long'] . "\n");
                 $skipped++;
                 continue;
-            } else {
-                print_r("Processing record with lat/long: " . $crime['Lat'] . ", " . $crime['Long'] . "\n");
             }
 
             $occurred_on_date = $this->formatDate($crime['OCCURRED_ON_DATE']);

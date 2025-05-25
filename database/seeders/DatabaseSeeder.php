@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             CambridgeIntersectionsSeeder::class,
             CambridgeCrimeDataSeederMerge::class,
             CambridgePoliceLogSeeder::class,
+            EverettCrimeDataSeeder::class, // Add this line
         ]);
     }
 }

@@ -25,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('crime_data', function (Blueprint $table) {
-            $table->dropColumn(['crime_start_time', 'crime_end_time', 'crime_description']);
+            $table->dropColumn(['crime_start_time', 'crime_end_time', 'crime_details']);
         });
     }
 };
