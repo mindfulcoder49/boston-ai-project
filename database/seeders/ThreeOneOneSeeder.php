@@ -135,8 +135,11 @@ class ThreeOneOneSeeder extends Seeder
         if (is_null($value)) {
             return null;
         }
+        if (empty($value)) {
+            return null; // Allow null or empty values
+        }
         if (!is_numeric($value)) {
-            throw new \Exception("Invalid double value: $value");
+            throw new \Exception("Invalid double value: \"$value\"");
         }
         return floatval($value);
     }
