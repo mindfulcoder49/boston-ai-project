@@ -212,10 +212,11 @@ const showingNavigationDropdown = ref(false);
 async function logoutUser() {
   try {
       await axios.post(route('logout'));
-      window.location = '/'; // Or router.visit('/', { replace: true })
   } catch (error) {
       console.error("Logout failed:", error);
       // Handle logout error, e.g., show a notification
+  } finally {
+      window.location = '/'; // Or router.visit('/', { replace: true })
   }
 }
 </script>
