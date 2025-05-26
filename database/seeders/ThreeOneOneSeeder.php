@@ -111,7 +111,7 @@ class ThreeOneOneSeeder extends Seeder
             'checksum' => $row['checksum'] ?? null,
             'ward_number' => $row['ward_number'] ?? null,
             'language_code' => 'en-US',
-            'description' => $row['description'] ?? null, // Added
+            'threeoneonedescription' => $row['description'] ?? null, // Added
             'source_city' => 'Boston', // Added
         ];
     }
