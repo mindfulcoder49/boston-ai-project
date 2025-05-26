@@ -53,4 +53,12 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
+
+    'scraper_service' => [
+        'base_url' => env('SCRAPER_API_BASE_URL', 'http://localhost:8000'),
+        'user_id' => env('SCRAPER_X_USER_ID', '1'),
+        'user_name' => env('SCRAPER_X_USER_NAME', 'Guest'),
+        'user_role' => env('SCRAPER_X_USER_ROLE', 'guest'),
+        'wait_seconds' => env('SCRAPER_WAIT_SECONDS', '5'),
+    ],
 ];
