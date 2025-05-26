@@ -459,6 +459,7 @@ const updateDateRange = () => {
   const dates = allDataPoints.value.map((point) => new Date(point.alcivartech_date));
   minDate.value = new Date(Math.min(...dates)).toISOString().split('T')[0];
   maxDate.value = new Date(Math.max(...dates)).toISOString().split('T')[0];
+  console.log('Date range updated:', minDate.value, maxDate.value);
 };
 
 const populateFilters = () => {
