@@ -6,7 +6,7 @@ import { createInertiaApp, router } from '@inertiajs/vue3'; // Import router
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { translations } from './translations';
-import * as VueGtagModule from 'vue-gtag'; // Changed import style
+import * as VueGtagModule from 'vue-gtag'; // Keep using namespace import for stability
 
 const appName = 'BostonScope'; // Or use: import.meta.env.VITE_APP_NAME || 'BostonScope';
 
@@ -20,24 +20,30 @@ createInertiaApp({
             .provide('translations', translations);
 
         if (import.meta.env.VITE_GA_ID) {
-            // Access the plugin via .default and event via .event from the namespace
-            const VueGtag = VueGtagModule.default;
-            const eventFunction = VueGtagModule.event;
+            const VueGtag = VueGtagModule.default; // Access default export for the plugin
+            const gtagEvent = VueGtagModule.event; // Access named export 'event'
 
-            vueApp.use(VueGtag, {
-                config: { id: import.meta.env.VITE_GA_ID }
-            });
+            if (VueGtag && typeof gtagEvent === 'function') {
+                vueApp.use(VueGtag, {
+                    config: { id: import.meta.env.VITE_GA_ID }
+                });
 
-            // Track SPA navigations
-            router.on('finish', () => {
-                if (props.initialPage && props.initialPage.url) {
-                    eventFunction('page_view', { // Use the extracted event function
-                        page_path: new URL(props.initialPage.url, window.location.origin).pathname,
-                        page_location: props.initialPage.url,
-                        page_title: document.title,
+                // Track SPA navigations
+                router.on('finish', () => {
+                    // Ensure props.initialPage.url is the new URL after navigation
+                    const currentPath = window.location.pathname;
+                    const currentUrl = window.location.href;
+                    const currentTitle = document.title;
+
+                    gtagEvent('page_view', {
+                        page_path: currentPath,
+                        page_location: currentUrl,
+                        page_title: currentTitle,
                     });
-                }
-            });
+                });
+            } else {
+                console.error('Failed to initialize VueGtag or access event function.');
+            }
         }
 
         vueApp.mount(el);

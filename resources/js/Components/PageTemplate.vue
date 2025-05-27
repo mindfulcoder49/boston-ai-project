@@ -191,7 +191,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'; // Added onMounted, onBeforeUnmount
+import { ref, computed, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue'; // Added getCurrentInstance
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -199,20 +199,38 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, router, usePage } from '@inertiajs/vue3'; 
 import axios from 'axios';
-import Footer from '@/Components/Footer.vue'; // Import the new Footer component
-import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; // Import the new banner
+import Footer from '@/Components/Footer.vue'; 
+import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; 
 
-// Import event from vue-gtag if VITE_GA_ID is set
-let event = () => {}; // No-op function if gtag is not used
+// Attempt to use useGtag composable
+let gtagClickEvent = () => {}; // No-op function
+
 if (import.meta.env.VITE_GA_ID) {
-    import('vue-gtag').then(module => {
-        event = module.event;
-    });
+    try {
+        const { event } = useGtag(); // This needs to be called within setup if vue-gtag is installed and configured
+        if (typeof event === 'function') {
+            gtagClickEvent = event;
+        } else {
+            // Fallback or error logging if useGtag() doesn't provide event
+            // This might happen if useGtag() is called too early or vue-gtag isn't fully initialized
+            console.warn('useGtag did not provide an event function, click tracking might be affected.');
+        }
+    } catch (e) {
+        console.error('Error using useGtag:', e, 'Click tracking might not work. Ensure vue-gtag is correctly installed and set up.');
+        // Fallback for environments where useGtag might not be available (e.g. if VITE_GA_ID is set but plugin failed)
+        // This part is tricky because `useGtag` must be called inside `setup` context.
+        // A more robust way if `useGtag` itself is problematic is to rely on the global $gtag if available.
+        const instance = getCurrentInstance();
+        if (instance && instance.appContext.config.globalProperties.$gtag && typeof instance.appContext.config.globalProperties.$gtag.event === 'function') {
+            gtagClickEvent = instance.appContext.config.globalProperties.$gtag.event;
+        }
+    }
 }
+
 
 const $page = usePage();
 
-// Use computed properties to safely access potentially nested props
+// ... existing computed properties (isAuthenticated, userName, etc.) ...
 const isAuthenticated = computed(() => !!$page.props.auth?.user);
 const userName = computed(() => $page.props.auth?.user?.name || '');
 const userEmail = computed(() => $page.props.auth?.user?.email || '');
@@ -233,12 +251,12 @@ async function logoutUser() {
 }
 
 const handleGlobalClick = (e) => {
-  if (import.meta.env.VITE_GA_ID && e.target) {
+  if (import.meta.env.VITE_GA_ID && e.target && typeof gtagClickEvent === 'function') {
     let eventLabel = e.target.innerText || e.target.ariaLabel || e.target.alt || e.target.id || e.target.tagName;
     if (eventLabel && eventLabel.length > 100) { // GA label limit
         eventLabel = eventLabel.substring(0, 97) + '...';
     }
-    event('click', {
+    gtagClickEvent('click', { // Use the event function from useGtag
       event_category: 'interaction',
       event_label: eventLabel || 'unlabeled_element',
       element_classes: e.target.className || '',
@@ -251,6 +269,7 @@ const handleGlobalClick = (e) => {
 onMounted(() => {
   if (import.meta.env.VITE_GA_ID) {
     document.addEventListener('click', handleGlobalClick);
+    // Initial page_view is handled by vue-gtag config and router.on('finish') in app.js
   }
 });
 
