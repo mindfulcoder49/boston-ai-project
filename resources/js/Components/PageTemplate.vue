@@ -62,7 +62,7 @@
                                         </span>
                                         {{ userName }}
                                         <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z" clip-rule="evenodd" />
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                         </svg>
                                     </button>
                                 </span>
@@ -89,7 +89,7 @@
                                     >
                                         Login/Register
                                         <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z" clip-rule="evenodd" />
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                         </svg>
                                     </button>
                                 </span>
@@ -191,7 +191,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'; // Removed getCurrentInstance as it's not used in this pattern
+import { ref, computed } from 'vue'; // Added computed
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -199,12 +199,12 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, router, usePage } from '@inertiajs/vue3'; 
 import axios from 'axios';
-import Footer from '@/Components/Footer.vue'; 
-import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; 
-import { event as gtagEvent } from 'vue-gtag'; // Named import for event function as per your example
+import Footer from '@/Components/Footer.vue'; // Import the new Footer component
+import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; // Import the new banner
 
 const $page = usePage();
 
+// Use computed properties to safely access potentially nested props
 const isAuthenticated = computed(() => !!$page.props.auth?.user);
 const userName = computed(() => $page.props.auth?.user?.name || '');
 const userEmail = computed(() => $page.props.auth?.user?.email || '');
@@ -218,50 +218,9 @@ async function logoutUser() {
       await axios.post(route('logout'));
   } catch (error) {
       console.error("Logout failed:", error);
+      // Handle logout error, e.g., show a notification
   } finally {
-      window.location = '/'; 
+      window.location = '/'; // Or router.visit('/', { replace: true })
   }
 }
-
-const handleGlobalClick = (e) => {
-  if (import.meta.env.VITE_GA_ID && e.target && typeof gtagEvent === 'function') {
-    let eventLabel = e.target.innerText || e.target.ariaLabel || e.target.alt || e.target.id || e.target.tagName;
-    if (eventLabel && eventLabel.length > 100) { 
-        eventLabel = eventLabel.substring(0, 97) + '...';
-    }
-    gtagEvent('click', {
-      event_category: 'interaction', // Changed from 'click' to 'interaction' for better GA4 semantics
-      event_label: eventLabel || 'unlabeled_element',
-      element_classes: e.target.className || '',
-      element_id: e.target.id || '',
-      element_tag_name: e.target.tagName || '',
-      // value: 1 // 'value' is typically for monetary values or specific counts in GA4 events
-    });
-  }
-};
-
-onMounted(() => {
-  if (import.meta.env.VITE_GA_ID) {
-    document.addEventListener('click', handleGlobalClick);
-
-    // Track initial page view as per your example structure
-    // Note: vue-gtag with config.id should also send an initial page_view.
-    // The router.on('finish') in app.js handles subsequent SPA navigations.
-    if (typeof gtagEvent === 'function') {
-      gtagEvent('page_view', {
-        page_path: window.location.pathname, 
-        page_location: window.location.href,
-        page_title: document.title
-      });
-    } else {
-        console.error('gtagEvent (for onMounted page_view) is not a function.');
-    }
-  }
-});
-
-onBeforeUnmount(() => {
-  if (import.meta.env.VITE_GA_ID) {
-    document.removeEventListener('click', handleGlobalClick);
-  }
-});
 </script>
