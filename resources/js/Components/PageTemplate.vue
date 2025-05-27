@@ -26,6 +26,9 @@
                         <NavLink :href="route('subscription.index')" :active="route().current('subscription.index')">
                             Subscription
                         </NavLink>
+                        <NavLink :href="route('data.metrics')" :active="route().current('data.metrics')">
+                            Data Metrics
+                        </NavLink>
                     </div>
                 </div>
 
@@ -118,6 +121,7 @@
                 <ResponsiveNavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')"> Full Data Map </ResponsiveNavLink>
                 <ResponsiveNavLink v-if="isAuthenticated" :href="route('reports.index')" :active="route().current('reports.index') || route().current('reports.show')"> Report History </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('subscription.index')" :active="route().current('subscription.index')"> Subscription </ResponsiveNavLink>
+                <ResponsiveNavLink :href="route('data.metrics')" :active="route().current('data.metrics')"> Data Metrics </ResponsiveNavLink>
             </div>
 
             <!-- Responsive Settings Options -->

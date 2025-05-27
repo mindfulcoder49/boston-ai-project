@@ -5,6 +5,7 @@ use App\Http\Controllers\ThreeOneOneCaseController;
 use App\Http\Controllers\CrimeReportsController;
 use App\Http\Controllers\CrimeMapController;
 use App\Http\Controllers\DataMapController; // Added
+use App\Http\Controllers\MetricsController; // Added
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -142,6 +143,9 @@ Route::get('/help-contact', function () {
 
 Route::post('/feedback', [EmailController::class, 'store'])
     ->name('feedback.store');
+
+// Data Metrics Page Route (Public)
+Route::get('/data-metrics', [MetricsController::class, 'index'])->name('data.metrics'); // Added
 
 // Generalized Data Map Routes (New)
 Route::get('/map/{dataType}', [DataMapController::class, 'index'])
