@@ -191,7 +191,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue'; // Added getCurrentInstance
+import { ref, computed, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -201,32 +201,35 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import Footer from '@/Components/Footer.vue'; 
 import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; 
+import * as VueGtagModule from 'vue-gtag'; // Import entire module as namespace
 
-// Attempt to use useGtag composable
 let gtagClickEvent = () => {}; // No-op function
 
 if (import.meta.env.VITE_GA_ID) {
     try {
-        const { event } = useGtag(); // This needs to be called within setup if vue-gtag is installed and configured
-        if (typeof event === 'function') {
-            gtagClickEvent = event;
+        if (VueGtagModule && typeof VueGtagModule.event === 'function') {
+            gtagClickEvent = VueGtagModule.event;
         } else {
-            // Fallback or error logging if useGtag() doesn't provide event
-            // This might happen if useGtag() is called too early or vue-gtag isn't fully initialized
-            console.warn('useGtag did not provide an event function, click tracking might be affected.');
+            console.warn('VueGtagModule.event is not a function. Trying fallback for click tracking.');
+            const instance = getCurrentInstance();
+            if (instance && instance.appContext.config.globalProperties.$gtag && typeof instance.appContext.config.globalProperties.$gtag.event === 'function') {
+                console.warn('Falling back to global $gtag.event for click tracking.');
+                gtagClickEvent = instance.appContext.config.globalProperties.$gtag.event;
+            } else {
+                console.error('Failed to obtain gtag event function for click tracking.');
+            }
         }
     } catch (e) {
-        console.error('Error using useGtag:', e, 'Click tracking might not work. Ensure vue-gtag is correctly installed and set up.');
-        // Fallback for environments where useGtag might not be available (e.g. if VITE_GA_ID is set but plugin failed)
-        // This part is tricky because `useGtag` must be called inside `setup` context.
-        // A more robust way if `useGtag` itself is problematic is to rely on the global $gtag if available.
+        console.error('Error accessing VueGtagModule.event:', e, 'Click tracking might not work.');
         const instance = getCurrentInstance();
         if (instance && instance.appContext.config.globalProperties.$gtag && typeof instance.appContext.config.globalProperties.$gtag.event === 'function') {
+            console.warn('Falling back to global $gtag.event due to error.');
             gtagClickEvent = instance.appContext.config.globalProperties.$gtag.event;
+        } else {
+             console.error('Fallback to $gtag.event also failed for click tracking.');
         }
     }
 }
-
 
 const $page = usePage();
 
@@ -251,7 +254,7 @@ async function logoutUser() {
 }
 
 const handleGlobalClick = (e) => {
-  if (import.meta.env.VITE_GA_ID && e.target && typeof gtagClickEvent === 'function') {
+  if (import.meta.env.VITE_GA_ID && e.target && typeof gtagClickEvent === 'function' && gtagClickEvent !== (() => {})) { // Ensure it's not the no-op
     let eventLabel = e.target.innerText || e.target.ariaLabel || e.target.alt || e.target.id || e.target.tagName;
     if (eventLabel && eventLabel.length > 100) { // GA label limit
         eventLabel = eventLabel.substring(0, 97) + '...';
