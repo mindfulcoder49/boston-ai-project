@@ -31,6 +31,12 @@ class RunAllDataPipelineCommand extends Command
             // Seeding commands
             ['command' => 'db:seed', 'params' => ['--force' => true]], // Using --force for production, be cautious
             ['command' => 'db:seed', 'params' => ['--class' => 'DataPointSeeder', '--force' => true]],
+
+            // Cache metrics data
+            ['command' => 'app:cache-metrics-data', 'params' => []],
+
+            // Send reports
+            ['command' => 'reports:send', 'params' => []],
         ];
 
         foreach ($commands as $item) {
