@@ -31,9 +31,26 @@ class DownloadCambridgeLogs extends Command
         $overallStatus = 0;
         $daysProcessed = 0;
         $daysFailed = 0;
+        $daysSkipped = 0;
 
         foreach ($period as $dateObject) {
             $dateString = $dateObject->format('Y-m-d');
+            $this->line("<fg=magenta>--- Checking date: {$dateString} ---</>");
+
+            // Construct the expected output file path
+            [$Y, $m, $d] = explode('-', $dateString);
+            $outFileName = "cambridge_{$Y}{$m}{$d}.csv";
+            $outputDir = storage_path("app/datasets/cambridge/logs");
+            $expectedFilePath = "{$outputDir}/{$outFileName}";
+
+            if (file_exists($expectedFilePath)) {
+                $this->line("<fg=yellow>Logs for {$dateString} already exist at {$expectedFilePath}. Skipping.</>");
+                $daysSkipped++;
+                $this->line("<fg=magenta>--- Finished checking for date: {$dateString} ---</>");
+                $this->line(""); // Add a blank line for readability
+                continue;
+            }
+            
             $this->line("<fg=magenta>--- Processing date: {$dateString} ---</>");
             
             $result = $this->processDate($dateString);
@@ -56,7 +73,8 @@ class DownloadCambridgeLogs extends Command
         $this->info("Log download process completed.");
         $this->info("Days processed successfully: {$daysProcessed}");
         $this->info("Days failed: {$daysFailed}");
-        $this->info("Days with no logs/page not found: " . (iterator_count($period) - $daysProcessed - $daysFailed));
+        $this->info("Days skipped (already downloaded): {$daysSkipped}");
+        $this->info("Days with no logs/page not found: " . (iterator_count($period) - $daysProcessed - $daysFailed - $daysSkipped));
 
         return $overallStatus;
     }
