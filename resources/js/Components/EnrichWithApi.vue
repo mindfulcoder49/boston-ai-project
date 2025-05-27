@@ -37,17 +37,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
   caseData: { type: Object, required: true },
-  liveData: { type: Object, required: true, default: () => ({}) }
+  startLiveData: { type: Object, required: true, default: () => ({}) }
 });
 
 const isLoading = ref(false);
 const liveDataError = ref(null);
-const liveData = computed(() => props.liveData || {});
+const liveData =  ref({});
+
 
 function formatDate(date) {
   return date ? new Date(date).toLocaleString() : 'N/A';
@@ -77,4 +78,10 @@ const fetchLiveData = async () => {
 if (props.caseData.source_city === 'Boston') {
   fetchLiveData();
 }
+
+watch(() => props.startLiveData, (newVal) => {
+  if (newVal) {
+    liveData.value = newVal;
+  }
+}, { immediate: true });
 </script>

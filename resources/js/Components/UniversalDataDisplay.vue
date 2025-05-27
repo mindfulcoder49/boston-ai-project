@@ -9,7 +9,7 @@
       <!-- For 311 Cases: Use EnrichWithApi if source_city is Boston -->
       <EnrichWithApi 
         v-if="section.key==='three_one_one_case_data' && section.content?.source_city!='Cambridge' && section.content?.case_enquiry_id"
-        :case-data="section.content" :live-data="data.live_details"
+        :case-data="section.content" :start-live-data="data.live_details"
       />
       
       <!-- Print each key/value pair -->

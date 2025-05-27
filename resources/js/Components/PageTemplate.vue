@@ -62,7 +62,7 @@
                                         </span>
                                         {{ userName }}
                                         <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z" clip-rule="evenodd" />
                                         </svg>
                                     </button>
                                 </span>
@@ -89,7 +89,7 @@
                                     >
                                         Login/Register
                                         <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z" clip-rule="evenodd" />
                                         </svg>
                                     </button>
                                 </span>
@@ -191,7 +191,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'; // Removed getCurrentInstance as it's not used in this pattern
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -201,39 +201,10 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import Footer from '@/Components/Footer.vue'; 
 import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; 
-import * as VueGtagModule from 'vue-gtag'; // Import entire module as namespace
-
-let gtagClickEvent = () => {}; // No-op function
-
-if (import.meta.env.VITE_GA_ID) {
-    try {
-        if (VueGtagModule && typeof VueGtagModule.event === 'function') {
-            gtagClickEvent = VueGtagModule.event;
-        } else {
-            console.warn('VueGtagModule.event is not a function. Trying fallback for click tracking.');
-            const instance = getCurrentInstance();
-            if (instance && instance.appContext.config.globalProperties.$gtag && typeof instance.appContext.config.globalProperties.$gtag.event === 'function') {
-                console.warn('Falling back to global $gtag.event for click tracking.');
-                gtagClickEvent = instance.appContext.config.globalProperties.$gtag.event;
-            } else {
-                console.error('Failed to obtain gtag event function for click tracking.');
-            }
-        }
-    } catch (e) {
-        console.error('Error accessing VueGtagModule.event:', e, 'Click tracking might not work.');
-        const instance = getCurrentInstance();
-        if (instance && instance.appContext.config.globalProperties.$gtag && typeof instance.appContext.config.globalProperties.$gtag.event === 'function') {
-            console.warn('Falling back to global $gtag.event due to error.');
-            gtagClickEvent = instance.appContext.config.globalProperties.$gtag.event;
-        } else {
-             console.error('Fallback to $gtag.event also failed for click tracking.');
-        }
-    }
-}
+import { event as gtagEvent } from 'vue-gtag'; // Named import for event function as per your example
 
 const $page = usePage();
 
-// ... existing computed properties (isAuthenticated, userName, etc.) ...
 const isAuthenticated = computed(() => !!$page.props.auth?.user);
 const userName = computed(() => $page.props.auth?.user?.name || '');
 const userEmail = computed(() => $page.props.auth?.user?.email || '');
@@ -247,24 +218,24 @@ async function logoutUser() {
       await axios.post(route('logout'));
   } catch (error) {
       console.error("Logout failed:", error);
-      // Handle logout error, e.g., show a notification
   } finally {
-      window.location = '/'; // Or router.visit('/', { replace: true })
+      window.location = '/'; 
   }
 }
 
 const handleGlobalClick = (e) => {
-  if (import.meta.env.VITE_GA_ID && e.target && typeof gtagClickEvent === 'function' && gtagClickEvent !== (() => {})) { // Ensure it's not the no-op
+  if (import.meta.env.VITE_GA_ID && e.target && typeof gtagEvent === 'function') {
     let eventLabel = e.target.innerText || e.target.ariaLabel || e.target.alt || e.target.id || e.target.tagName;
-    if (eventLabel && eventLabel.length > 100) { // GA label limit
+    if (eventLabel && eventLabel.length > 100) { 
         eventLabel = eventLabel.substring(0, 97) + '...';
     }
-    gtagClickEvent('click', { // Use the event function from useGtag
-      event_category: 'interaction',
+    gtagEvent('click', {
+      event_category: 'interaction', // Changed from 'click' to 'interaction' for better GA4 semantics
       event_label: eventLabel || 'unlabeled_element',
       element_classes: e.target.className || '',
       element_id: e.target.id || '',
       element_tag_name: e.target.tagName || '',
+      // value: 1 // 'value' is typically for monetary values or specific counts in GA4 events
     });
   }
 };
@@ -272,7 +243,19 @@ const handleGlobalClick = (e) => {
 onMounted(() => {
   if (import.meta.env.VITE_GA_ID) {
     document.addEventListener('click', handleGlobalClick);
-    // Initial page_view is handled by vue-gtag config and router.on('finish') in app.js
+
+    // Track initial page view as per your example structure
+    // Note: vue-gtag with config.id should also send an initial page_view.
+    // The router.on('finish') in app.js handles subsequent SPA navigations.
+    if (typeof gtagEvent === 'function') {
+      gtagEvent('page_view', {
+        page_path: window.location.pathname, 
+        page_location: window.location.href,
+        page_title: document.title
+      });
+    } else {
+        console.error('gtagEvent (for onMounted page_view) is not a function.');
+    }
   }
 });
 
