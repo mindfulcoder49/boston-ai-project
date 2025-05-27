@@ -126,10 +126,13 @@
       return utcDateString; // Return original string or handle error appropriately
     }
   
-    // Create a Date object that represents midnight in the local timezone for that YYYY-MM-DD
-    const localDate = new Date(year, month, day);
+    // Create a Date object for noon UTC on the given YYYY-MM-DD.
+    // Using noon helps avoid timezone conversion issues around midnight.
+    const dateObjUtc = new Date(Date.UTC(year, month, day, 12, 0, 0));
     
-    return localDate.toLocaleDateString(locale, options);
+    // toLocaleDateString will convert this UTC time to the specified locale's timezone
+    // and format it.
+    return dateObjUtc.toLocaleDateString(locale, options);
   };
   
   const handleToggleFilter = (type) => {
