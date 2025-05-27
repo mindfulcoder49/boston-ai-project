@@ -9,17 +9,25 @@
         <Link
           v-if="!isAuthenticated"
           :href="route('register')"
-          class="inline-block bg-sky-600 text-white text-sm px-4 py-2 rounded-md hover:bg-sky-700 mr-2"
+          class="inline-block bg-sky-600 text-white text-sm px-4 py-2 rounded-md hover:bg-sky-700 mr-2 mb-2 md:mb-0 align-middle"
         >Sign Up</Link>
+        <a
+          v-if="!isAuthenticated"
+          :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
+          class="inline-flex items-center justify-center bg-white text-sky-700 border border-sky-300 text-sm px-4 py-2 rounded-md hover:bg-sky-50 mr-2 mb-2 md:mb-0 align-middle"
+        >
+          <img class="h-4 w-4 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+          Login with Google
+        </a>
         <Link
           v-if="!isAuthenticated"
           :href="route('login')"
-          class="inline-block bg-slate-200 text-slate-800 text-sm px-4 py-2 rounded-md hover:bg-slate-300"
+          class="inline-block bg-slate-200 text-slate-800 text-sm px-4 py-2 rounded-md hover:bg-slate-300 mb-2 md:mb-0 align-middle"
         >Log In</Link>
         <Link
           v-if="isAuthenticated && !isPro"
           :href="route('subscription.index')"
-          class="inline-block bg-green-500 text-white text-sm px-4 py-2 rounded-md hover:bg-green-600"
+          class="inline-block bg-green-500 text-white text-sm px-4 py-2 rounded-md hover:bg-green-600 align-middle"
         >Upgrade</Link>
       </div>
     </div>
