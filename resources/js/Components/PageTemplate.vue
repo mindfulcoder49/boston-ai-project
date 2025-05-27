@@ -191,7 +191,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'; // Added computed
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'; // Added onMounted, onBeforeUnmount
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -201,6 +201,14 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import Footer from '@/Components/Footer.vue'; // Import the new Footer component
 import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; // Import the new banner
+
+// Import event from vue-gtag if VITE_GA_ID is set
+let event = () => {}; // No-op function if gtag is not used
+if (import.meta.env.VITE_GA_ID) {
+    import('vue-gtag').then(module => {
+        event = module.event;
+    });
+}
 
 const $page = usePage();
 
@@ -223,4 +231,32 @@ async function logoutUser() {
       window.location = '/'; // Or router.visit('/', { replace: true })
   }
 }
+
+const handleGlobalClick = (e) => {
+  if (import.meta.env.VITE_GA_ID && e.target) {
+    let eventLabel = e.target.innerText || e.target.ariaLabel || e.target.alt || e.target.id || e.target.tagName;
+    if (eventLabel && eventLabel.length > 100) { // GA label limit
+        eventLabel = eventLabel.substring(0, 97) + '...';
+    }
+    event('click', {
+      event_category: 'interaction',
+      event_label: eventLabel || 'unlabeled_element',
+      element_classes: e.target.className || '',
+      element_id: e.target.id || '',
+      element_tag_name: e.target.tagName || '',
+    });
+  }
+};
+
+onMounted(() => {
+  if (import.meta.env.VITE_GA_ID) {
+    document.addEventListener('click', handleGlobalClick);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (import.meta.env.VITE_GA_ID) {
+    document.removeEventListener('click', handleGlobalClick);
+  }
+});
 </script>

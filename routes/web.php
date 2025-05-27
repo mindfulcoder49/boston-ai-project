@@ -56,8 +56,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    //Route::put('/profile', [RoleController::class, 'update'])->name('role.update');
-
     // Report History Routes
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
@@ -110,9 +108,7 @@ Route::middleware(['auth'])->group(function () {
             ]);
     })->name('subscribe.checkout'); // Name changed slightly to be more generic, plan is a param
 
-    // REMOVE OLD success and cancel routes, as they now point to subscription.index
-    // Route::get('/subscribe/success', ...)->name('subscription.success'); // REMOVE
-    // Route::get('/subscribe/cancel', ...)->name('subscription.cancel');   // REMOVE
+    // Old success and cancel routes are removed, as they now point to subscription.index
 
     Route::get('/billing-portal', function (Request $request) {
         return $request->user()->redirectToBillingPortal(route('subscription.index')); // Return to subscription page

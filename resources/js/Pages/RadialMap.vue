@@ -344,17 +344,14 @@ const fetchData = async () => {
     // keep top level fields and merge in the correct data type subobject and delete all subobjects
     allDataPoints.value = allDataPoints.value.map((dataPoint) => {
       const dataType = dataPoint.alcivartech_type;
-      console.log('Data type:', dataType.toLowerCase() + '_data');
-      // Log the subobjects for debugging
-      console.log('Data point:', dataPoint);
       
       const subObject = dataPoint[dataType.toLowerCase().replace(/ /g, '_').replace('311','three_one_one') + '_data'];
-      console.log('Sub-object:', subObject);
+      
       if (subObject) {
         // Remove the sub-object from the dataPoint
         //delete dataPoint[dataType.toLowerCase() + '_data'];
         // Merge top-level fields with the sub-object
-        console.log('Sub-object:', subObject);
+        
         return { ...dataPoint, ...subObject };
       }
       
@@ -459,7 +456,7 @@ const updateDateRange = () => {
   const dates = allDataPoints.value.map((point) => new Date(point.alcivartech_date));
   minDate.value = new Date(Math.min(...dates)).toISOString().split('T')[0];
   maxDate.value = new Date(Math.max(...dates)).toISOString().split('T')[0];
-  console.log('Date range updated:', minDate.value, maxDate.value);
+  
 };
 
 const populateFilters = () => {
