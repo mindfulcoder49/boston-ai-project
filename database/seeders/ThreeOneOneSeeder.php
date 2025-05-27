@@ -6,9 +6,12 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\Reader; // Import League CSV Reader
 
 class ThreeOneOneSeeder extends Seeder
 {
+    private const BATCH_SIZE = 500; // Define batch size for DB operations
+
     /**
      * Run the database seeds.
      *
@@ -26,11 +29,12 @@ class ThreeOneOneSeeder extends Seeder
 
         // Only proceed if there are any files to process
         if (!empty($files)) {
+            sort($files); // Ensure consistent processing order, e.g., oldest to newest or vice-versa
             $file = end($files); // Process the most recent file
-            echo "Processing file: " . $file . "\n";
+            $this->command->info("Processing file: " . $file);
             $this->processFile(Storage::path($file));
         } else {
-            echo "No files found to process for name: " . $name . "\n";
+            $this->command->warn("No files found to process for name: " . $name);
         }
     }
 
@@ -43,30 +47,83 @@ class ThreeOneOneSeeder extends Seeder
     private function processFile(string $filePath): void
     {
         if (!file_exists($filePath)) {
-            echo "File not found: $filePath\n";
+            $this->command->error("File not found: $filePath");
             return;
         }
 
-        // Read and decode the file content (assuming CSV)
-        $rows = array_map('str_getcsv', file($filePath));
-        $header = array_shift($rows); // Extract header row
+        try {
+            $csv = Reader::createFromPath($filePath, 'r');
+            $csv->setHeaderOffset(0); // The header is on the first row
+            $records = $csv->getRecords(); // Get an iterator for the records
 
-        foreach ($rows as $index => $row) {
-            try {
-                // Combine header and row data into an associative array
-                $rowData = array_combine($header, $row);
+            $dataBatch = [];
+            $rowCount = 0;
+            $processedCount = 0;
 
-                // Validate and clean the data
-                $cleanedData = $this->validateAndCleanData($rowData);
+            // It's difficult to get an accurate total row count from the iterator without iterating twice
+            // or loading everything into memory. We'll report progress based on processed batches.
 
-                // upsert the data into the database matching on case_enquiry_id
-                DB::table('three_one_one_cases')->upsert($cleanedData, ['case_enquiry_id']);
-                
-            } catch (\Exception $e) {
-                // Log errors without interrupting the seeding process
-                Log::error("Error processing row $index in file $filePath: " . $e->getMessage());
+            foreach ($records as $index => $row) {
+                $rowCount++;
+                try {
+                    // $rowData is already an associative array from League\Csv\Reader
+                    $cleanedData = $this->validateAndCleanData($row);
+                    $dataBatch[] = $cleanedData;
+
+                    if (count($dataBatch) >= self::BATCH_SIZE) {
+                        $this->insertOrUpdateBatch($dataBatch);
+                        $processedCount += count($dataBatch);
+                        $dataBatch = []; // Reset the batch
+                        $this->command->info("Processed {$processedCount} records...");
+                    }
+                } catch (\Exception $e) {
+                    // Log errors without interrupting the seeding process
+                    Log::error("Error processing row " . ($index + 1) . " in file $filePath: " . $e->getMessage() . " Data: " . json_encode($row));
+                    $this->command->warn("Skipped row " . ($index + 1) . " due to error: " . $e->getMessage());
+                }
             }
+
+            // Process any remaining data in the last batch
+            if (!empty($dataBatch)) {
+                $this->insertOrUpdateBatch($dataBatch);
+                $processedCount += count($dataBatch);
+            }
+            $this->command->info("Finished processing file: " . basename($filePath) . ". Total records processed: {$processedCount}. Total rows read: {$rowCount}.");
+
+        } catch (\Exception $e) {
+            $this->command->error("Failed to read or process CSV file {$filePath}: " . $e->getMessage());
         }
+    }
+
+    private function insertOrUpdateBatch(array $dataBatch): void
+    {
+        if (empty($dataBatch)) {
+            return;
+        }
+        // Ensure all items in batch have the case_enquiry_id for upsert
+        $validBatch = array_filter($dataBatch, fn($item) => isset($item['case_enquiry_id']));
+
+        if (empty($validBatch)) {
+            $this->command->warn("A batch of records was skipped as no valid 'case_enquiry_id' was found.");
+            return;
+        }
+        
+        // Define columns to update in case of conflict
+        $updateColumns = array_keys($validBatch[0]);
+        // Remove 'case_enquiry_id' from updateColumns as it's the unique key
+        $updateColumns = array_filter($updateColumns, fn($col) => $col !== 'case_enquiry_id');
+        // Ensure 'created_at' is not updated on conflict, 'updated_at' should be.
+        if (!in_array('updated_at', $updateColumns) && array_key_exists('updated_at', $validBatch[0])) {
+             // This logic might be too simplistic if 'updated_at' isn't always present or needs special handling.
+             // For upsert, typically all non-key fields are listed for update.
+        }
+
+
+        DB::table('three_one_one_cases')->upsert(
+            $validBatch,
+            ['case_enquiry_id'], // Unique key(s)
+            $updateColumns // Columns to update on duplicate
+        );
     }
 
     /**
@@ -108,11 +165,13 @@ class ThreeOneOneSeeder extends Seeder
             'latitude' => $this->validateDouble($row['latitude'] ?? null),
             'longitude' => $this->validateDouble($row['longitude'] ?? null),
             'source' => $row['source'] ?? null,
-            'checksum' => $row['checksum'] ?? null,
-            'ward_number' => $row['ward_number'] ?? null,
-            'language_code' => 'en-US',
-            'threeoneonedescription' => $row['description'] ?? null, // Added
-            'source_city' => 'Boston', // Added
+            // 'checksum' => $row['checksum'] ?? null, // Checksum might not be needed in DB
+            'ward_number' => $row['ward_number'] ?? null, // Often redundant if 'ward' is present
+            'language_code' => 'en-US', // Default
+            'threeoneonedescription' => $row['description'] ?? null, 
+            'source_city' => 'Boston', 
+            'created_at' => now(), // Add created_at
+            'updated_at' => now(), // Add updated_at
         ];
     }
 
@@ -146,13 +205,17 @@ class ThreeOneOneSeeder extends Seeder
 
     private function validateDateTime($value): ?string
     {
-        if (is_null($value)) {
+        if (is_null($value) || empty(trim($value))) { // Also check for empty string
             return null;
         }
-        $date = date_create($value);
-        if (!$date) {
-            throw new \Exception("Invalid datetime value: $value");
+        try {
+            // Attempt to parse with Carbon for more robust date handling
+            $date = \Carbon\Carbon::parse($value);
+            return $date->format('Y-m-d H:i:s');
+        } catch (\Exception $e) {
+            // Log or handle specific invalid date formats if necessary
+            // For now, throw exception to be caught by the row processing loop
+            throw new \Exception("Invalid datetime value: $value. Error: " . $e->getMessage());
         }
-        return $date->format('Y-m-d H:i:s');
     }
 }

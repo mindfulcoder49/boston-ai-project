@@ -54,6 +54,22 @@ class DownloadEverettPDFMarkdown extends Command
         if (!File::isDirectory($mdOutputDir)) {
             File::makeDirectory($mdOutputDir, 0775, true, true);
         }
+
+        // Scan for existing base filenames
+        $existingBaseFilenames = [];
+        if (File::isDirectory($mdOutputDir)) {
+            $filesInDir = File::files($mdOutputDir);
+            foreach ($filesInDir as $file) {
+                $filename = $file->getFilename();
+                // Extracts base_filename from base_filename_YYYYMMDD_HHMMSS.md
+                if (preg_match('/^(.*?)_\d{8}_\d{6}\.md$/', $filename, $matches)) {
+                    $existingBaseFilenames[$matches[1]] = true; // Use as a set for quick lookups
+                }
+            }
+        }
+        if (count($existingBaseFilenames) > 0) {
+            $this->info("Found " . count($existingBaseFilenames) . " existing base filenames in {$mdOutputDir}. These will be skipped if encountered again.");
+        }
         
         $headers = [
             'X-User-Id'   => $scraperConfig['user_id'] ?? '1',
@@ -108,6 +124,16 @@ class DownloadEverettPDFMarkdown extends Command
 
                 foreach ($pdfLinks as $pdfLink) {
                     $this->info("Processing PDF link for Markdown: {$pdfLink}");
+
+                    // Generate base filename for the current PDF to check if it exists
+                    $pathinfoCurrentPdf = pathinfo($pdfLink);
+                    $currentPdfBaseFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $pathinfoCurrentPdf['filename'] ?? 'document');
+
+                    if (isset($existingBaseFilenames[$currentPdfBaseFilename])) {
+                        $this->info("Skipping PDF link as a version (based on filename pattern '{$currentPdfBaseFilename}_[timestamp].md') already exists: {$pdfLink}");
+                        continue; // Skip to the next PDF link
+                    }
+
                     // Payload to get Markdown from the PDF link
                     $pdfToMarkdownPayload = [
                         'url'               => $pdfLink,
@@ -128,11 +154,11 @@ class DownloadEverettPDFMarkdown extends Command
 
                     $markdownText = $mdResponse->body(); // Expecting plain text Markdown
                     
-                    // Sanitize filename (more robustly)
-                    $pathinfo = pathinfo($pdfLink);
-                    $baseFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $pathinfo['filename'] ?? 'document');
+                    // Sanitize filename (more robustly) - currentPdfBaseFilename is already sanitized
+                    // $pathinfo = pathinfo($pdfLink); // Already done above as $pathinfoCurrentPdf
+                    // $baseFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $pathinfo['filename'] ?? 'document'); // Use $currentPdfBaseFilename
                     $timestamp = now()->format('Ymd_His');
-                    $filename = "{$baseFilename}_{$timestamp}.md";
+                    $filename = "{$currentPdfBaseFilename}_{$timestamp}.md"; // Use $currentPdfBaseFilename
                     $filepath = $mdOutputDir . DIRECTORY_SEPARATOR . $filename;
 
                     File::put($filepath, $markdownText);

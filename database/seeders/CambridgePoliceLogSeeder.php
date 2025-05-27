@@ -11,7 +11,8 @@ use League\Csv\Statement;
 
 class CambridgePoliceLogSeeder extends Seeder
 {
-    private const BATCH_SIZE = 500;
+    private const BATCH_SIZE = 500; // For DB upserts
+    private const MAX_RECORDS_IN_MEMORY_CHUNK = 10000; // For accumulating raw CSV records before processing
     private const STREET_ABBREVIATIONS = [
         'MOUNT' => 'MT',
         'SAINT' => 'ST',
@@ -45,9 +46,16 @@ class CambridgePoliceLogSeeder extends Seeder
         'CENTER' => 'CTR', */
     ];
 
+    private array $addressCache = [];
+    private array $intersectionCache = [];
+
     public function run(): void
     {
         $this->command->info("Starting Cambridge Police Log Seeder...");
+        
+        $this->loadAddressData();
+        $this->loadIntersectionData();
+
         $logDirectory = 'datasets/cambridge/logs';
         $files = Storage::disk('local')->files($logDirectory);
 
@@ -62,177 +70,243 @@ class CambridgePoliceLogSeeder extends Seeder
 
         $this->command->info("Found " . count($csvFiles) . " CSV files to process in {$logDirectory}.");
 
-        foreach ($csvFiles as $file) {
-            $this->command->info("Processing file: " . $file);
-            $this->processFile(Storage::path($file));
+        $recordsChunk = [];
+        $grandTotalRecordsProcessed = 0;
+        $grandTotalNotFoundCount = 0;
+        $fileCount = 0;
+
+        foreach ($csvFiles as $filePath) {
+            $fileCount++;
+            $this->command->info("Reading file #{$fileCount}/" . count($csvFiles) . ": " . basename($filePath));
+            
+            try {
+                $csv = Reader::createFromPath(Storage::path($filePath), 'r');
+                $csv->setHeaderOffset(0);
+                $csv->setEscape('');
+                
+                $stmt = Statement::create()->where(fn (array $record) => !empty($record['file_number']));
+                $fileRecordsIterator = $stmt->process($csv);
+
+                $recordsReadFromFile = 0;
+                foreach ($fileRecordsIterator as $record) {
+                    $recordsChunk[] = $record;
+                    $recordsReadFromFile++;
+
+                    if (count($recordsChunk) >= self::MAX_RECORDS_IN_MEMORY_CHUNK) {
+                        $this->command->info("Processing a chunk of " . count($recordsChunk) . " records...");
+                        $chunkStats = $this->processAndInsertRecordsChunk($recordsChunk);
+                        $grandTotalRecordsProcessed += $chunkStats['processed'];
+                        $grandTotalNotFoundCount += $chunkStats['notFound'];
+                        $recordsChunk = []; // Clear the chunk
+                        $this->command->info("Chunk processed. Grand total records processed so far: {$grandTotalRecordsProcessed}. Locations not found so far: {$grandTotalNotFoundCount}.");
+                    }
+                }
+                $this->command->info("Finished reading {$recordsReadFromFile} records from " . basename($filePath) . ".");
+
+            } catch (\Exception $e) {
+                $this->command->error("Error reading or preparing records from file: " . basename($filePath) . " - " . $e->getMessage());
+                // Optionally skip this file or halt; here, we continue with the next file.
+            }
         }
 
-        $this->command->info("Cambridge Police Log Seeder finished.");
+        // Process any remaining records in the last chunk
+        if (!empty($recordsChunk)) {
+            $this->command->info("Processing the final chunk of " . count($recordsChunk) . " records...");
+            $chunkStats = $this->processAndInsertRecordsChunk($recordsChunk);
+            $grandTotalRecordsProcessed += $chunkStats['processed'];
+            $grandTotalNotFoundCount += $chunkStats['notFound'];
+            $this->command->info("Final chunk processed.");
+        }
+
+        $this->command->info("Cambridge Police Log Seeder finished. Total records processed: {$grandTotalRecordsProcessed}. Total locations not found: {$grandTotalNotFoundCount}.");
     }
 
-    private function processFile(string $filePath): void
+    private function processAndInsertRecordsChunk(array $rawCsvRecords): array
     {
-        try {
-            $csv = Reader::createFromPath($filePath, 'r');
-            $csv->setHeaderOffset(0);
-            $csv->setEscape(''); // Assuming default escape, adjust if needed
+        $dataBatch = [];
+        $recordsProcessedInChunk = 0;
+        $notFoundInChunk = 0;
+        $currentRecordIndexInChunk = 0;
+
+        foreach ($rawCsvRecords as $record) {
+            $currentRecordIndexInChunk++;
+            $recordsProcessedInChunk++;
+
+            $crimeDateTimeStr = trim($record['crime_date_time'] ?? '');
+            $crimeDateTimeCarbon = $this->parseCrimeTimestamp($crimeDateTimeStr);
+
+            $occurred_on_date_main = null;
+            $year = null;
+            $month = null;
+            $day_of_week = null;
+            $hour = null;
+            $crime_start_val = null;
+            $crime_end_val = null;
+
+            if ($crimeDateTimeCarbon) {
+                $occurred_on_date_main = $crimeDateTimeCarbon->format('Y-m-d H:i:s');
+                $year = $crimeDateTimeCarbon->year;
+                $month = $crimeDateTimeCarbon->month;
+                $day_of_week = $crimeDateTimeCarbon->format('l');
+                $hour = $crimeDateTimeCarbon->hour;
+                $crime_start_val = $occurred_on_date_main;
+                $crime_end_val = $occurred_on_date_main;
+            } else {
+                 // Warning already logged by parseCrimeTimestamp if needed
+            }
             
-            // Filter out empty rows if any, based on a key column like 'file_number'
-            $stmt = Statement::create()->where(fn (array $record) => !empty($record['file_number']));
-            $records = $stmt->process($csv);
+            $raw_location = trim($record['location'] ?? '');
+            $coords = ['latitude' => null, 'longitude' => null];
+            $street_for_db = null;
 
-            $dataBatch = [];
-            $progress = 0;
-            $totalRecordsInFile = iterator_count($csv->getRecords()); // Count before statement processing for total
-            $processedInFile = 0;
-            $notFoundCount = 0;
-
-            $this->command->info("Total records in file " . basename($filePath) . ": {$totalRecordsInFile}");
-
-            foreach ($records as $record) {
-                $progress++;
-                $processedInFile++;
-
-                $crimeDateTimeStr = trim($record['crime_date_time'] ?? '');
-                $crimeDateTimeCarbon = $this->parseCrimeTimestamp($crimeDateTimeStr);
-
-                $occurred_on_date_main = null;
-                $year = null;
-                $month = null;
-                $day_of_week = null;
-                $hour = null;
-                $crime_start_val = null;
-                $crime_end_val = null;
-
-                if ($crimeDateTimeCarbon) {
-                    $occurred_on_date_main = $crimeDateTimeCarbon->format('Y-m-d H:i:s');
-                    $year = $crimeDateTimeCarbon->year;
-                    $month = $crimeDateTimeCarbon->month;
-                    $day_of_week = $crimeDateTimeCarbon->format('l');
-                    $hour = $crimeDateTimeCarbon->hour;
-                    $crime_start_val = $occurred_on_date_main; // Assume start time is the given time
-                    $crime_end_val = $occurred_on_date_main;   // Assume end time is the same
+            if (!empty($raw_location)) {
+                if (strpos($raw_location, '&') !== false || stripos($raw_location, ' AND ') !== false) {
+                    $normalized_coords = $this->normalizeAndLookupIntersection($raw_location);
+                    if ($normalized_coords) {
+                        $coords = $normalized_coords;
+                    }
+                    $street_for_db = $this->normalizeStreetName($raw_location);
                 } else {
-                    $this->command->warn("Could not parse crime_date_time '{$crimeDateTimeStr}' for record with file_number '{$record['file_number']}'. Skipping date fields.");
-                }
-                
-                $raw_location = trim($record['location'] ?? '');
-                $coords = ['latitude' => null, 'longitude' => null];
-                $street_for_db = null;
-
-                if (!empty($raw_location)) {
-                    // The 'location' from CSV is already somewhat processed by the download script
-                    // It's either "BLOCK STREET" or "STREET1 & STREET2"
-                    if (strpos($raw_location, '&') !== false || stripos($raw_location, ' AND ') !== false) {
-                        $normalized_coords = $this->normalizeAndLookupIntersection($raw_location);
-                        if ($normalized_coords) {
-                            $coords = $normalized_coords;
-                        }
-                        $street_for_db = $this->normalizeStreetName($raw_location); // Normalize the intersection string itself
-                    } else {
-                        $parsedAddressInfo = $this->parseCrimeLocationAddress($raw_location);
-                        if ($parsedAddressInfo) {
-                            $crimeStreetNumber = $parsedAddressInfo['number'];
-                            $crimeStreetName = $parsedAddressInfo['name']; // This is already normalized
-                            $street_for_db = $crimeStreetName;
-
-                            $dbAddresses = DB::table('cambridge_addresses')
-                                ->where(DB::raw('LOWER(stname)'), strtolower($crimeStreetName))
-                                ->select('street_number', 'latitude', 'longitude')
-                                ->get();
-
-                            if ($dbAddresses->isNotEmpty()) {
-                                $closestMatch = null; $minDifference = PHP_INT_MAX;
-                                foreach ($dbAddresses as $dbAddr) {
-                                    $dbStreetNumberNumeric = intval($dbAddr->street_number);
-                                    if ($dbStreetNumberNumeric > 0) { // Ensure valid numeric street number
-                                        $difference = abs($crimeStreetNumber - $dbStreetNumberNumeric);
-                                        if ($difference < $minDifference) {
-                                            $minDifference = $difference; $closestMatch = $dbAddr;
-                                        } elseif ($difference === $minDifference && $closestMatch && $dbStreetNumberNumeric < intval($closestMatch->street_number)) {
-                                            // Prefer lower number in case of tie, or any other consistent rule
-                                            $closestMatch = $dbAddr;
-                                        }
+                    $parsedAddressInfo = $this->parseCrimeLocationAddress($raw_location);
+                    if ($parsedAddressInfo) {
+                        $crimeStreetNumber = $parsedAddressInfo['number'];
+                        $crimeStreetName = $parsedAddressInfo['name'];
+                        $street_for_db = $crimeStreetName;
+                        $cachedAddressesOnStreet = $this->addressCache[strtolower($crimeStreetName)] ?? [];
+                        if (!empty($cachedAddressesOnStreet)) {
+                            $closestMatch = null; $minDifference = PHP_INT_MAX;
+                            foreach ($cachedAddressesOnStreet as $cachedAddr) {
+                                if ($cachedAddr['number'] > 0) {
+                                    $difference = abs($crimeStreetNumber - $cachedAddr['number']);
+                                    if ($difference < $minDifference) {
+                                        $minDifference = $difference; $closestMatch = $cachedAddr;
+                                    } elseif ($difference === $minDifference && $closestMatch && $cachedAddr['number'] < $closestMatch['number']) {
+                                        $closestMatch = $cachedAddr;
                                     }
                                 }
-                                if ($closestMatch) {
-                                     $coords = ['latitude' => $closestMatch->latitude, 'longitude' => $closestMatch->longitude];
-                                }
                             }
-                        }
-                        // Fallback if address parsing failed or no match, try raw location if not already an intersection
-                        if (empty($coords['latitude'])) {
-                            $this->command->comment(" -> Location '{$raw_location}' not directly matched. Attempting broader search or fallback for file_number '{$record['file_number']}'.");
-                            // Add more sophisticated fallbacks if needed, e.g., lowest address on street if only street name is good
-                            if ($parsedAddressInfo && !empty($parsedAddressInfo['name'])) {
-                                $addressStreet = DB::table('cambridge_addresses')
-                                    ->where(DB::raw('LOWER(stname)'), strtolower($parsedAddressInfo['name']))
-                                    ->whereNotNull('street_number')->where('street_number', 'REGEXP', '^[0-9]+$')
-                                    ->orderByRaw('CAST(street_number AS UNSIGNED) ASC')
-                                    ->select('latitude', 'longitude')->first();
-                                if ($addressStreet) {
-                                    $coords = ['latitude' => $addressStreet->latitude, 'longitude' => $addressStreet->longitude];
-                                    $this->command->comment(" -> Fallback to lowest address on street '{$parsedAddressInfo['name']}'.");
-                                }
+                            if ($closestMatch) {
+                                 $coords = ['latitude' => $closestMatch['latitude'], 'longitude' => $closestMatch['longitude']];
                             }
                         }
                     }
                     if (empty($coords['latitude'])) {
-                        $notFoundCount++;
-                        $this->command->warn(" -> Location '{$raw_location}' NOT FOUND for file_number '{$record['file_number']}'.");
-                    } else {
-                         $this->command->info(" -> Location '{$raw_location}' FOUND for file_number '{$record['file_number']}' as {$coords['latitude']},{$coords['longitude']}. Street: {$street_for_db}");
+                        if ($parsedAddressInfo && !empty($parsedAddressInfo['name'])) {
+                            $cachedStreetAddresses = $this->addressCache[strtolower($parsedAddressInfo['name'])] ?? [];
+                            if (!empty($cachedStreetAddresses)) {
+                                $lowestAddress = $cachedStreetAddresses[0];
+                                $coords = ['latitude' => $lowestAddress['latitude'], 'longitude' => $lowestAddress['longitude']];
+                            }
+                        }
                     }
-                } else {
-                    $notFoundCount++;
-                    $this->command->warn(" -> Empty location field for file_number '{$record['file_number']}'.");
                 }
-
-                $incident_number = 'CPL-' . ($record['file_number'] ?? ('UNKNOWN-' . $progress));
-                $offense_description_raw = $record['crime'] ?? null;
-                $offense_description_decoded = $offense_description_raw ? html_entity_decode($offense_description_raw, ENT_QUOTES | ENT_HTML5, 'UTF-8') : null;
-
-
-                $dataBatch[] = [
-                    'incident_number'     => $incident_number,
-                    'offense_code'        => null, // Not in logs
-                    'offense_code_group'  => null, // Not in logs
-                    'offense_description' => $offense_description_decoded,
-                    'district'            => null, // Not in logs
-                    'reporting_area'      => null, // Not in logs
-                    'shooting'            => false, // Assume false unless specified
-                    'occurred_on_date'    => $occurred_on_date_main,
-                    'year'                => $year,
-                    'month'               => $month,
-                    'day_of_week'         => $day_of_week,
-                    'hour'                => $hour,
-                    'ucr_part'            => null, // Not in logs
-                    'street'              => $street_for_db,
-                    'lat'                 => $coords['latitude'] ? round((float)$coords['latitude'], 7) : null,
-                    'long'                => $coords['longitude'] ? round((float)$coords['longitude'], 7) : null,
-                    'location'            => $raw_location, // Original location string from CSV
-                    'crime_start_time'    => $crime_start_val,
-                    'crime_end_time'      => $crime_end_val,
-                    'crime_details'           => trim($record['crime_details'] ?? null), // New field for narrative
-                    'created_at'          => now(),
-                    'updated_at'          => now(),
-                ];
-
-                if ($progress % self::BATCH_SIZE === 0) {
-                    $this->insertOrUpdateBatch($dataBatch);
-                    $dataBatch = [];
-                    $this->command->info("Processed {$progress} records from " . basename($filePath) . "... ({$notFoundCount} locations not found so far in this file)");
+                if (empty($coords['latitude'])) {
+                    $notFoundInChunk++;
+                    // $this->command->warn(" -> Location '{$raw_location}' NOT FOUND for file_number '{$record['file_number']}'."); // Too verbose here
                 }
+            } else {
+                $notFoundInChunk++;
+                // $this->command->warn(" -> Empty location field for file_number '{$record['file_number']}'."); // Too verbose here
             }
 
-            if (!empty($dataBatch)) {
+            $incident_number = 'CPL-' . ($record['file_number'] ?? ('UNKNOWN-' . $recordsProcessedInChunk));
+            $offense_description_raw = $record['crime'] ?? null;
+            $offense_description_decoded = $offense_description_raw ? html_entity_decode($offense_description_raw, ENT_QUOTES | ENT_HTML5, 'UTF-8') : null;
+
+            $dataBatch[] = [
+                'incident_number'     => $incident_number,
+                'offense_code'        => null,
+                'offense_code_group'  => null,
+                'offense_description' => $offense_description_decoded,
+                'district'            => null,
+                'reporting_area'      => null,
+                'shooting'            => false,
+                'occurred_on_date'    => $occurred_on_date_main,
+                'year'                => $year,
+                'month'               => $month,
+                'day_of_week'         => $day_of_week,
+                'hour'                => $hour,
+                'ucr_part'            => null,
+                'street'              => $street_for_db,
+                'lat'                 => $coords['latitude'] ? round((float)$coords['latitude'], 7) : null,
+                'long'                => $coords['longitude'] ? round((float)$coords['longitude'], 7) : null,
+                'location'            => $raw_location,
+                'crime_start_time'    => $crime_start_val,
+                'crime_end_time'      => $crime_end_val,
+                'crime_details'       => trim($record['crime_details'] ?? null),
+                'created_at'          => now(),
+                'updated_at'          => now(),
+            ];
+
+            if (count($dataBatch) >= self::BATCH_SIZE) {
                 $this->insertOrUpdateBatch($dataBatch);
+                $this->command->info("... upserted " . count($dataBatch) . " records to DB (processed {$currentRecordIndexInChunk}/" . count($rawCsvRecords) . " in current chunk) ...");
+                $dataBatch = [];
             }
-            $this->command->info("Finished processing file: " . basename($filePath) . ". Total records processed in file: {$processedInFile}. Total locations not found in this file: {$notFoundCount}");
-
-        } catch (\Exception $e) {
-            $this->command->error("Error processing file: " . basename($filePath) . " - " . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
+
+        if (!empty($dataBatch)) {
+            $this->insertOrUpdateBatch($dataBatch);
+            $this->command->info("... upserted final " . count($dataBatch) . " records to DB for this chunk ...");
+        }
+        
+        return ['processed' => $recordsProcessedInChunk, 'notFound' => $notFoundInChunk];
+    }
+
+    private function loadAddressData(): void
+    {
+        $this->command->info("Loading Cambridge address data into cache...");
+        $addresses = DB::table('cambridge_addresses')
+            ->select('street_number', 'stname', 'latitude', 'longitude')
+            ->whereNotNull('stname')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
+        foreach ($addresses as $address) {
+            $normalizedStName = strtolower($this->normalizeStreetName($address->stname));
+            if (empty($normalizedStName)) {
+                continue;
+            }
+            $streetNumberNumeric = intval($address->street_number); // Handles numeric and alphanumeric like "1A"
+
+            $this->addressCache[$normalizedStName][] = [
+                'number' => $streetNumberNumeric, // Store the numeric part for comparison
+                'original_number' => $address->street_number, // Keep original for reference if needed
+                'latitude' => (float)$address->latitude,
+                'longitude' => (float)$address->longitude,
+            ];
+        }
+
+        // Sort addresses by street number for efficient searching
+        foreach ($this->addressCache as $streetName => $addressList) {
+            usort($this->addressCache[$streetName], function ($a, $b) {
+                return $a['number'] <=> $b['number'];
+            });
+        }
+        $this->command->info("Finished loading " . count($addresses) . " addresses into cache, grouped by " . count($this->addressCache) . " unique street names.");
+    }
+
+    private function loadIntersectionData(): void
+    {
+        $this->command->info("Loading Cambridge intersection data into cache...");
+        $intersections = DB::table('cambridge_intersections')
+            ->select('intersection', 'latitude', 'longitude')
+            ->whereNotNull('intersection')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
+        foreach ($intersections as $intersection) {
+            // The intersection name in the DB should already be normalized (e.g., StreetA & StreetB, sorted alphabetically)
+            // If not, normalization (splitting, sorting, rejoining) would be needed here.
+            // Assuming 'intersection' column is already in 'StreetA & StreetB' format, sorted alphabetically.
+            $this->intersectionCache[strtolower($intersection->intersection)] = [
+                'latitude' => (float)$intersection->latitude,
+                'longitude' => (float)$intersection->longitude,
+            ];
+        }
+        $this->command->info("Finished loading " . count($intersections) . " intersections into cache.");
     }
 
     private function normalizeStreetName(string $streetName): string
@@ -271,56 +345,45 @@ class CambridgePoliceLogSeeder extends Seeder
 
         $streetsForPrimaryLookup = [$street1_processed, $street2_processed];
         sort($streetsForPrimaryLookup, SORT_STRING | SORT_FLAG_CASE); // Case-insensitive sort
-        $primaryLookupString = $streetsForPrimaryLookup[0] . ' & ' . $streetsForPrimaryLookup[1];
+        $primaryLookupString = strtolower($streetsForPrimaryLookup[0] . ' & ' . $streetsForPrimaryLookup[1]);
         
-        $lookup = DB::table('cambridge_intersections')
-            ->where(DB::raw('LOWER(intersection)'), strtolower($primaryLookupString))
-            ->first();
-
-        if ($lookup) {
-            $this->command->info("     SUCCESS (Primary Match): '{$intersectionQueryString}' found as '{$primaryLookupString}'.");
-            return ['latitude' => $lookup->latitude, 'longitude' => $lookup->longitude];
+        if (isset($this->intersectionCache[$primaryLookupString])) {
+            $this->command->info("     SUCCESS (Primary Cache Match): '{$intersectionQueryString}' found as '{$primaryLookupString}'.");
+            return $this->intersectionCache[$primaryLookupString];
         }
-        $logBuffer[] = "     Primary lookup FAILED for '{$primaryLookupString}'.";
+        $logBuffer[] = "     Primary cache lookup FAILED for '{$primaryLookupString}'.";
         
-        // Fallback: Try swapping order if initial sort didn't match (unlikely if DB is also sorted, but a safeguard)
-        $secondaryLookupString = $streetsForPrimaryLookup[1] . ' & ' . $streetsForPrimaryLookup[0];
+        // Fallback: Try swapping order (should be covered by sort, but as a safeguard if DB isn't perfectly normalized or cache keying differs)
+        $secondaryLookupString = strtolower($streetsForPrimaryLookup[1] . ' & ' . $streetsForPrimaryLookup[0]);
+        if ($primaryLookupString !== $secondaryLookupString && isset($this->intersectionCache[$secondaryLookupString])) {
+            $this->command->info("     SUCCESS (Secondary Cache Match - swapped): '{$intersectionQueryString}' found as '{$secondaryLookupString}'.");
+            return $this->intersectionCache[$secondaryLookupString];
+        }
         if ($primaryLookupString !== $secondaryLookupString) {
-            $lookup = DB::table('cambridge_intersections')
-                ->where(DB::raw('LOWER(intersection)'), strtolower($secondaryLookupString))
-                ->first();
-            if ($lookup) {
-                $this->command->info("     SUCCESS (Secondary Match - swapped): '{$intersectionQueryString}' found as '{$secondaryLookupString}'.");
-                return ['latitude' => $lookup->latitude, 'longitude' => $lookup->longitude];
-            }
-            $logBuffer[] = "     Secondary lookup FAILED for '{$secondaryLookupString}'.";
+            $logBuffer[] = "     Secondary cache lookup FAILED for '{$secondaryLookupString}'.";
         }
 
-        // Fallback to lowest address on street1
+        // Fallback to lowest address on street1 using addressCache
         if (!empty($street1_processed)) {
-            $addressStreet1 = DB::table('cambridge_addresses')
-                ->where(DB::raw('LOWER(stname)'), strtolower($street1_processed))
-                ->whereNotNull('street_number')->where('street_number', 'REGEXP', '^[0-9]+$')
-                ->orderByRaw('CAST(street_number AS UNSIGNED) ASC')
-                ->select('latitude', 'longitude')->first();
-            if ($addressStreet1) {
-                 $this->command->info("     SUCCESS (Street 1 Fallback): Used lowest address on '{$street1_processed}'.");
-                return ['latitude' => $addressStreet1->latitude, 'longitude' => $addressStreet1->longitude];
+            $cachedAddressesStreet1 = $this->addressCache[strtolower($street1_processed)] ?? [];
+            if (!empty($cachedAddressesStreet1)) {
+                // Cache is sorted by number, first element is the lowest.
+                $addressStreet1 = $cachedAddressesStreet1[0];
+                $this->command->info("     SUCCESS (Street 1 Fallback - Cache): Used lowest address on '{$street1_processed}'.");
+                return ['latitude' => $addressStreet1['latitude'], 'longitude' => $addressStreet1['longitude']];
             }
-             $logBuffer[] = "     Street 1 fallback FAILED for '{$street1_processed}'.";
+            $logBuffer[] = "     Street 1 fallback (Cache) FAILED for '{$street1_processed}'.";
         }
-        // Fallback to lowest address on street2
+
+        // Fallback to lowest address on street2 using addressCache
         if (!empty($street2_processed)) {
-            $addressStreet2 = DB::table('cambridge_addresses')
-                ->where(DB::raw('LOWER(stname)'), strtolower($street2_processed))
-                ->whereNotNull('street_number')->where('street_number', 'REGEXP', '^[0-9]+$')
-                ->orderByRaw('CAST(street_number AS UNSIGNED) ASC')
-                ->select('latitude', 'longitude')->first();
-            if ($addressStreet2) {
-                $this->command->info("     SUCCESS (Street 2 Fallback): Used lowest address on '{$street2_processed}'.");
-                return ['latitude' => $addressStreet2->latitude, 'longitude' => $addressStreet2->longitude];
+            $cachedAddressesStreet2 = $this->addressCache[strtolower($street2_processed)] ?? [];
+            if (!empty($cachedAddressesStreet2)) {
+                $addressStreet2 = $cachedAddressesStreet2[0];
+                $this->command->info("     SUCCESS (Street 2 Fallback - Cache): Used lowest address on '{$street2_processed}'.");
+                return ['latitude' => $addressStreet2['latitude'], 'longitude' => $addressStreet2['longitude']];
             }
-            $logBuffer[] = "     Street 2 fallback FAILED for '{$street2_processed}'.";
+            $logBuffer[] = "     Street 2 fallback (Cache) FAILED for '{$street2_processed}'.";
         }
 
         $this->command->warn(implode("\n", $logBuffer));
@@ -332,20 +395,24 @@ class CambridgePoliceLogSeeder extends Seeder
     {
         // Example: "1200 MASSACHUSETTS AVE"
         // Regex to capture number and street part
-        if (preg_match('/^(\d+[A-Z]?(-\d+[A-Z]?)?)\s+(.*)$/i', $locationString, $matches)) {
-            $numberPart = trim($matches[1]); // e.g., "1200", "10-12", "12A"
-            $rawStreetNamePart = trim($matches[3]);
-            
-            // For simplicity in matching, we'll use the first number if it's a range like "10-12"
-            $numericStreetNumberToMatch = intval($numberPart); // intval("10-12") is 10, intval("12A") is 12
+        // Updated regex to better handle cases like "0 BLOCK", "1-10 BLOCK"
+        if (preg_match('/^(\d+[A-Z]?(-\d+[A-Z]?)?(\s+BLOCK)?)\s+(.*)$/i', $locationString, $matches) ||
+            preg_match('/^(BLOCK\s+\d+[A-Z]?(-\d+[A-Z]?)?)\s+(.*)$/i', $locationString, $matches) || // Handles "BLOCK 123 MAIN ST"
+            preg_match('/^(\d+[A-Z]?(-\d+[A-Z]?)?)\s+(.*)$/i', $locationString, $matches) // Original
+           ) {
+            $numberPart = trim($matches[1]); 
+            $rawStreetNamePart = trim(end($matches)); // Use end() to get the last capture group for street name
+
+            // If "BLOCK" is part of numberPart, remove it for numeric conversion but keep for original
+            $numericStreetNumberToMatch = intval(preg_replace('/(\s*BLOCK\s*)/i', '', $numberPart));
 
             $normalizedStreetName = $this->normalizeStreetName($rawStreetNamePart);
             
-            if ($numericStreetNumberToMatch >= 0 && !empty($normalizedStreetName)) { // Allow 0 block
+            if (!empty($normalizedStreetName)) { // Allow 0 block, street number can be 0
                 return [
-                    'number' => $numericStreetNumberToMatch, // The numeric part for matching
-                    'name' => $normalizedStreetName,         // Normalized street name
-                    'original_number_part' => $numberPart   // Original number string "1200", "10-12"
+                    'number' => $numericStreetNumberToMatch, 
+                    'name' => $normalizedStreetName,         
+                    'original_number_part' => $numberPart   
                 ];
             }
         }
