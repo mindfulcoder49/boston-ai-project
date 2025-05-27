@@ -11,6 +11,7 @@
     <div v-if="liveData && Object.keys(liveData).length > 0">
       <h3 class="text-md font-semibold text-gray-700">Live Data from BOS:311</h3>
       <ul class="mt-2 text-sm text-gray-600 space-y-1">
+        <li v-if="liveData.service_request_id"><strong>Service Request ID:</strong> {{ liveData.service_request_id }}</li>
         <li v-if="liveData.status"><strong>Status:</strong> {{ liveData.status }}</li>
         <li v-if="liveData.status_notes"><strong>Status Notes:</strong> {{ liveData.status_notes }}</li>
         <li v-if="liveData.service_name"><strong>Service Name:</strong> {{ liveData.service_name }}</li>
@@ -36,16 +37,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
   caseData: { type: Object, required: true },
-  liveData: { type: Object, required: false },
+  liveData: { type: Object, required: true, default: () => ({}) }
 });
 
 const isLoading = ref(false);
 const liveDataError = ref(null);
+const liveData = computed(() => props.liveData || {});
 
 function formatDate(date) {
   return date ? new Date(date).toLocaleString() : 'N/A';
@@ -64,6 +66,7 @@ const fetchLiveData = async () => {
       liveData.value = {};
     }
   } catch (error) {
+    console.error('Error fetching live data:', error);
     liveDataError.value = 'Failed to fetch live data.';
   } finally {
     isLoading.value = false;
