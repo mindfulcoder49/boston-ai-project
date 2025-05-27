@@ -191,7 +191,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'; // Added computed
+import { ref, computed, onMounted, watch } from 'vue'; // Added onMounted, watch
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -199,8 +199,9 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, router, usePage } from '@inertiajs/vue3'; 
 import axios from 'axios';
-import Footer from '@/Components/Footer.vue'; // Import the new Footer component
-import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; // Import the new banner
+import Footer from '@/Components/Footer.vue'; 
+import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; 
+import { event } from 'vue-gtag'; // Import event from vue-gtag
 
 const $page = usePage();
 
@@ -216,6 +217,9 @@ const showingNavigationDropdown = ref(false);
 async function logoutUser() {
   try {
       await axios.post(route('logout'));
+      event('logout', {
+          method: 'Standard'
+      });
   } catch (error) {
       console.error("Logout failed:", error);
       // Handle logout error, e.g., show a notification
@@ -223,4 +227,42 @@ async function logoutUser() {
       window.location = '/'; // Or router.visit('/', { replace: true })
   }
 }
+
+onMounted(() => {
+  // Global click tracking
+  document.addEventListener('click', (e) => {
+    let label = e.target.innerText || e.target.title || e.target.alt || 'unlabeled_element';
+    if (e.target.closest('a')) {
+        label = `link_click: ${label} (href: ${e.target.closest('a').href})`;
+    } else if (e.target.closest('button')) {
+        label = `button_click: ${label}`;
+    }
+    event('click_event', {
+      event_category: 'interaction',
+      event_label: label.substring(0, 100), // Limit label length
+      value: 1
+    });
+  });
+
+  // Initial page view
+  event('page_view', {
+    page_title: document.title,
+    page_location: window.location.href,
+    page_path: window.location.pathname,
+    user_id: $page.props.auth?.user?.id // Optional: include user_id if available
+  });
+});
+
+// Watch for page changes (URL changes) to track subsequent page views
+watch(() => $page.url, (newUrl, oldUrl) => {
+  if (newUrl !== oldUrl) {
+    event('page_view', {
+      page_title: document.title, // Title might update after navigation
+      page_location: window.location.origin + newUrl,
+      page_path: newUrl,
+      user_id: $page.props.auth?.user?.id // Optional: include user_id if available
+    });
+  }
+}, { immediate: false }); // 'immediate: false' to avoid double-tracking on initial load with onMounted
+
 </script>
