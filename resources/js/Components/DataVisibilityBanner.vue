@@ -5,29 +5,29 @@
         <h3 class="text-xl font-bold text-sky-900">Your Plan: {{ planLabel }}</h3>
         <p class="text-sm text-sky-700 mt-1">Here’s what you can see:</p>
       </div>
-      <div v-if="promptAction" class="mt-4 md:mt-0">
+      <div v-if="promptAction" class="mt-4 md:mt-0 flex flex-wrap gap-2 items-center">
         <Link
           v-if="!isAuthenticated"
           :href="route('register')"
-          class="inline-block bg-sky-600 text-white text-sm px-4 py-2 rounded-md hover:bg-sky-700 mr-2 mb-2 md:mb-0 align-middle"
+          class="inline-block bg-sky-600 text-white text-sm px-4 py-2 rounded-md hover:bg-sky-700"
         >Sign Up</Link>
         <a
           v-if="!isAuthenticated"
           :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
-          class="inline-flex items-center justify-center bg-white text-sky-700 border border-sky-300 text-sm px-4 py-2 rounded-md hover:bg-sky-50 mr-2 mb-2 md:mb-0 align-middle"
+          class="inline-flex items-center justify-center bg-white text-sky-700 border border-sky-300 text-sm px-4 py-2 rounded-md hover:bg-sky-50"
         >
-          <img class="h-4 w-4 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
-          Login with Google
+          <img class="h-4 w-4 md:mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
+          <span class="hidden md:inline">Login with Google</span>
         </a>
         <Link
           v-if="!isAuthenticated"
           :href="route('login')"
-          class="inline-block bg-slate-200 text-slate-800 text-sm px-4 py-2 rounded-md hover:bg-slate-300 mb-2 md:mb-0 align-middle"
+          class="inline-block bg-slate-200 text-slate-800 text-sm px-4 py-2 rounded-md hover:bg-slate-300"
         >Log In</Link>
         <Link
           v-if="isAuthenticated && !isPro"
           :href="route('subscription.index')"
-          class="inline-block bg-green-500 text-white text-sm px-4 py-2 rounded-md hover:bg-green-600 align-middle"
+          class="inline-block bg-green-500 text-white text-sm px-4 py-2 rounded-md hover:bg-green-600"
         >Upgrade</Link>
       </div>
     </div>
