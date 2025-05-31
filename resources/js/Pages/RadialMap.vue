@@ -132,7 +132,6 @@ const maxDate = ref('');
 const selectedDataPoint = ref(null);
 const isMapInitialized = ref(false);
 const mapLoading = ref(false);
-const userLocationLoadedInitially = ref(false); // New flag
 
 const isAuthenticated = computed(() => !!page.props.auth.user); // Compute isAuthenticated
 
@@ -302,7 +301,6 @@ const handleAddressSearchUpdate = (coordinates) => {
         centralLocation.value.address = coordinates.lat + ', ' + coordinates.lng;
     }
     mapCenter.value = [coordinates.lat, coordinates.lng];
-    userLocationLoadedInitially.value = true; // Indicate that a specific location is being set
     if (mapDisplayRef.value) mapDisplayRef.value.destroyMapAndClear();
     fetchData().then(() => {
         if (mapDisplayRef.value) mapDisplayRef.value.initializeNewMapAtCenter([coordinates.lat, coordinates.lng], true);
@@ -312,7 +310,6 @@ const handleAddressSearchUpdate = (coordinates) => {
 
 
 const handleLoadLocation = (location) => {
-    userLocationLoadedInitially.value = true; // Set flag as user location is being loaded
     centralLocation.value.latitude = location.latitude;
     centralLocation.value.longitude = location.longitude;
     if (location.address) {
@@ -545,9 +542,31 @@ watch(centralLocation, (newLoc) => {
 
 
 
-onMounted(() => {
-  if (!userLocationLoadedInitially.value) {
-    fetchData(); 
+onMounted(async () => {
+  if (isAuthenticated.value) {
+    try {
+      const response = await axios.get('/locations');
+      if (response.data && response.data.length > 0) {
+        // User has saved locations, load the first one
+        handleLoadLocation(response.data[0]); 
+        // handleLoadLocation calls fetchData, so we don't need another call here.
+      } else {
+        // No saved locations, or empty array returned
+        fetchData(); // Fetch data for default location
+      }
+    } catch (error) {
+      console.error('Error fetching user locations on mount:', error);
+      if (error.response && error.response.status === 419) {
+        window.location.reload();
+      } else {
+        // Error fetching locations (e.g., network issue, or 401 if not truly authenticated by backend)
+        // Fallback to default data load
+        fetchData();
+      }
+    }
+  } else {
+    // User is not authenticated, load default data
+    fetchData();
   }
 });
 

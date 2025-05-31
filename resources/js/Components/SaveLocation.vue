@@ -304,7 +304,7 @@ const fetchUserLocations = async (mode) => {
     userLocations.value = response.data;
     checkIfSaved();
     if (mode === 'set' && userLocations.value.length) {
-      emitLocation(userLocations.value[0]);
+      //emitLocation(userLocations.value[0]);
       //set the active tab to the first location
       setActiveTab(userLocations.value[0].id);
     }
