@@ -198,7 +198,7 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, router, usePage } from '@inertiajs/vue3'; 
-import axios from 'axios';
+// import axios from 'axios'; // No longer needed for logoutUser
 import Footer from '@/Components/Footer.vue'; 
 import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; 
 import { event } from 'vue-gtag'; // Import event from vue-gtag
@@ -216,15 +216,25 @@ const showingNavigationDropdown = ref(false);
 
 async function logoutUser() {
   try {
-      await axios.post(route('logout'));
-      event('logout', {
-          method: 'Standard'
+      router.post(route('logout'), {}, {
+          onSuccess: () => {
+              console.log("User logged out successfully via Inertia router.post");
+              event('logout', {
+                  method: 'Standard (Inertia)'
+              });
+              console.log("Logout event tracked successfully");
+              // Inertia will handle the redirect based on the server response.
+              // No need for window.location = '/' here.
+          },
+          onError: (errors) => {
+              console.error("Logout failed:", errors);
+              // Handle logout error, e.g., show a notification
+          }
       });
   } catch (error) {
-      console.error("Logout failed:", error);
-      // Handle logout error, e.g., show a notification
-  } finally {
-      window.location = '/'; // Or router.visit('/', { replace: true })
+      // This catch block might not be strictly necessary for router.post
+      // as errors are typically handled in the onError callback.
+      console.error("Exception during logoutUser call:", error);
   }
 }
 
