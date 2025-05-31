@@ -41,6 +41,8 @@
       <MapDisplay
         ref="mapDisplayRef"
         :mapCenterCoordinates="mapCenter"
+        :allMapDataPoints="allDataPoints"
+        :activeFilterTypes="filters"
         :dataPointsToDisplay="dataPoints"
         :isCenterSelectionModeActive="centerSelectionActive"
         :tempNewMarkerPlacementCoords="tempNewMapClickCoords"

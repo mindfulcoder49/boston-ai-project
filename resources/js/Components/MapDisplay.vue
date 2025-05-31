@@ -14,7 +14,9 @@
   
   const props = defineProps({
     mapCenterCoordinates: Array,
-    dataPointsToDisplay: Array,
+    // dataPointsToDisplay: Array, // This will be effectively replaced by allMapDataPoints + activeFilterTypes for marker rendering
+    allMapDataPoints: Array, // New prop for all data
+    activeFilterTypes: Object, // New prop for active filter states
     isCenterSelectionModeActive: Boolean,
     tempNewMarkerPlacementCoords: Object, 
     mapIsLoading: Boolean,
@@ -444,8 +446,8 @@
   
       emit('map-initialized-internal');
   
-      if (props.dataPointsToDisplay) {
-        updateMarkersInternal(props.dataPointsToDisplay);
+      if (props.allMapDataPoints) {
+        rebuildAllMarkerClusters(props.allMapDataPoints);
       }
       
       if (props.tempNewMarkerPlacementCoords && newMarker.value == null) {
@@ -472,8 +474,9 @@
       // Clear marker cluster groups
       Object.values(markerClusterGroups.value).forEach(group => {
         group.clearLayers(); // Clear markers from the group
-        // Note: Leaflet documentation implies map.removeLayer(group) should be enough,
-        // but explicit clearLayers is safer. The group itself is removed if map is destroyed.
+        if (initialMap.value && initialMap.value.hasLayer(group)) {
+          initialMap.value.removeLayer(group);
+        }
       });
       markerClusterGroups.value = {};
 
@@ -488,64 +491,82 @@
     }
   };
   
-  const updateMarkersInternal = (dataPoints) => {
+  const rebuildAllMarkerClusters = (currentAllMapDataPoints) => {
     if (!initialMap.value) return;
-  
-    // Clear layers from all existing cluster groups
+
+    // Clear existing groups from map and internal ref
     Object.values(markerClusterGroups.value).forEach(group => {
+      if (initialMap.value.hasLayer(group)) {
+        initialMap.value.removeLayer(group);
+      }
       group.clearLayers();
     });
-    // activeMarkersMap.value.clear(); // If using an activeMarkersMap
-  
-    if (!dataPoints || dataPoints.length === 0) {
+    markerClusterGroups.value = {};
+
+    if (!currentAllMapDataPoints || currentAllMapDataPoints.length === 0) {
+      updateVisibleClusterGroups(); // Ensure map is clear if no data
       return;
     }
-  
-    dataPoints.forEach(dataPoint => {
+
+    currentAllMapDataPoints.forEach(dataPoint => {
       if (!dataPoint.latitude || !dataPoint.longitude) {
         console.warn('Skipping data point due to invalid coordinates:', dataPoint);
         return;
       }
-  
+
       const lat = parseFloat(dataPoint.latitude);
       const long = parseFloat(dataPoint.longitude);
-      const alcivartechType = dataPoint.alcivartech_type || 'Unknown'; // Default to 'Unknown'
-  
+      const alcivartechType = dataPoint.alcivartech_type || 'Unknown';
+
       if (isNaN(lat) || isNaN(long)) {
         console.warn('Skipping data point due to invalid parsed coordinates:', dataPoint);
         return;
       }
-  
-      // Ensure a cluster group exists for this type
+
       if (!markerClusterGroups.value[alcivartechType]) {
         const newClusterGroup = markRaw(L.markerClusterGroup({
-          maxClusterRadius: getClusterRadius, // Function to determine radius by zoom
-          iconCreateFunction: createTypedIconCreateFunction(alcivartechType), // Function to create cluster icons
-          // Other leaflet.markercluster options can be set here:
-          // e.g., spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true,
+          maxClusterRadius: getClusterRadius,
+          iconCreateFunction: createTypedIconCreateFunction(alcivartechType),
         }));
-        initialMap.value.addLayer(newClusterGroup);
+        // Do not add to map here; updateVisibleClusterGroups will handle it
         markerClusterGroups.value[alcivartechType] = newClusterGroup;
       }
-  
+
       const marker = markRaw(
         L.marker([lat, long], {
-          icon: getDivIconInternal(dataPoint), // Use existing divIcon for individual markers
+          icon: getDivIconInternal(dataPoint),
         })
       );
       
-      // Bind popup using the existing complex popup generator
-      // The onBackToClusterCallback is null because leaflet.markercluster handles cluster interaction.
       const individualPopupElement = createIndividualItemPopupElement(dataPoint, null); 
       marker.bindPopup(individualPopupElement, { minWidth: 220 });
   
       marker.on('click', (e) => {
-        // Popup opens automatically. Emit event for parent component.
         emit('marker-data-point-clicked', dataPoint);
-        // L.DomEvent.stopPropagation(e); // May not be needed, test behavior
       });
       
       markerClusterGroups.value[alcivartechType].addLayer(marker);
+    });
+    
+    updateVisibleClusterGroups(); // Add initially active groups to the map
+  };
+
+  const updateVisibleClusterGroups = () => {
+    if (!initialMap.value) return;
+
+    const currentActiveTypes = props.activeFilterTypes || {};
+
+    Object.entries(markerClusterGroups.value).forEach(([type, group]) => {
+      const isActive = currentActiveTypes[type];
+      if (isActive) {
+        if (!initialMap.value.hasLayer(group)) {
+          initialMap.value.addLayer(group);
+        }
+      } else {
+        if (initialMap.value.hasLayer(group)) {
+          initialMap.value.removeLayer(group);
+        }
+      }
     });
   };
   
@@ -570,11 +591,17 @@
     }
   }, { deep: true });
 
-  // Watch for changes in data points to display and update markers
-  // This is useful if data points can be updated without a full map re-initialization
-  watch(() => props.dataPointsToDisplay, (newDataPoints) => {
+  // Watch for changes in all data points to rebuild all marker clusters
+  watch(() => props.allMapDataPoints, (newDataPoints) => {
     if (initialMap.value && newDataPoints) {
-      updateMarkersInternal(newDataPoints);
+      rebuildAllMarkerClusters(newDataPoints);
+    }
+  }, { deep: true });
+
+  // Watch for changes in active filter types to toggle cluster group visibility
+  watch(() => props.activeFilterTypes, () => {
+    if (initialMap.value) {
+      updateVisibleClusterGroups();
     }
   }, { deep: true });
   
