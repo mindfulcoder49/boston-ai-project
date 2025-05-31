@@ -41,9 +41,8 @@
       <MapDisplay
         ref="mapDisplayRef"
         :mapCenterCoordinates="mapCenter"
-        :allMapDataPoints="allDataPoints"
+        :allMapDataPoints="pointsFilteredByDate"
         :activeFilterTypes="filters"
-        :dataPointsToDisplay="dataPoints"
         :isCenterSelectionModeActive="centerSelectionActive"
         :tempNewMarkerPlacementCoords="tempNewMapClickCoords"
         :mapIsLoading="mapLoading"
@@ -115,6 +114,7 @@ const mapDisplayRef = ref(null);
 
 const filters = ref({});
 const allDataPoints = ref([]);
+const pointsFilteredByDate = ref([]); // New ref for date-filtered data for the map
 const dataPoints = ref([]);
 const centralLocation = ref({
   latitude: 42.3601,
@@ -482,17 +482,22 @@ const handleFiltersUpdated = (newFilterState) => {
 
 const applyFiltersAndData = () => {
   if (allDataPoints.value.length === 0) {
+    pointsFilteredByDate.value = [];
     dataPoints.value = [];
     return;
   }
-  let filtered = allDataPoints.value;
+
+  let dateFiltered = allDataPoints.value;
   if (selectedDates.value.length > 0) {
-    filtered = filtered.filter(point => {
-      const pointDate = new Date(point.alcivartech_date).toISOString().split('T')[0];
-      return selectedDates.value.includes(pointDate);
+    dateFiltered = dateFiltered.filter(point => {
+      const pointDateStr = new Date(point.alcivartech_date).toISOString().split('T')[0];
+      return selectedDates.value.includes(pointDateStr);
     });
   }
-  dataPoints.value = filtered.filter(point => filters.value[point.alcivartech_type]);
+  pointsFilteredByDate.value = dateFiltered;
+
+  // dataPoints (for lists, AI, carousel, etc.) is further filtered by type from the date-filtered set
+  dataPoints.value = pointsFilteredByDate.value.filter(point => filters.value[point.alcivartech_type]);
 };
 
 
