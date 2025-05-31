@@ -130,6 +130,7 @@ const maxDate = ref('');
 const selectedDataPoint = ref(null);
 const isMapInitialized = ref(false);
 const mapLoading = ref(false);
+const userLocationLoadedInitially = ref(false); // New flag
 
 const isAuthenticated = computed(() => !!page.props.auth.user); // Compute isAuthenticated
 
@@ -299,6 +300,7 @@ const handleAddressSearchUpdate = (coordinates) => {
         centralLocation.value.address = coordinates.lat + ', ' + coordinates.lng;
     }
     mapCenter.value = [coordinates.lat, coordinates.lng];
+    userLocationLoadedInitially.value = true; // Indicate that a specific location is being set
     if (mapDisplayRef.value) mapDisplayRef.value.destroyMapAndClear();
     fetchData().then(() => {
         if (mapDisplayRef.value) mapDisplayRef.value.initializeNewMapAtCenter([coordinates.lat, coordinates.lng], true);
@@ -308,6 +310,7 @@ const handleAddressSearchUpdate = (coordinates) => {
 
 
 const handleLoadLocation = (location) => {
+    userLocationLoadedInitially.value = true; // Set flag as user location is being loaded
     centralLocation.value.latitude = location.latitude;
     centralLocation.value.longitude = location.longitude;
     if (location.address) {
@@ -541,7 +544,9 @@ watch(centralLocation, (newLoc) => {
 
 
 onMounted(() => {
-  fetchData(); 
+  if (!userLocationLoadedInitially.value) {
+    fetchData(); 
+  }
 });
 
 </script>
