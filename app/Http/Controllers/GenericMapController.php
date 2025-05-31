@@ -266,9 +266,23 @@ class GenericMapController extends Controller
                 unset($point->longitude);
             }
             return $point;
-        });
+        })->filter(function ($point) use ($cutoffDateTime) {
+            // If there's no cutoff date (e.g., for an "all time" scenario, though not fully implemented for pro plan yet),
+            // or if the point has no date, include it.
+            // However, if a cutoffDateTime is set, points without a date should likely be excluded.
+            if (!$cutoffDateTime) {
+                return true; 
+            }
+            if (empty($point->alcivartech_date)) {
+                // If a date filter is active, points without a date are excluded.
+                return false; 
+            }
+            // Ensure the point's final alcivartech_date is on or after the cutoff.
+            // Carbon::parse can handle various date string formats.
+            return Carbon::parse($point->alcivartech_date)->startOfDay()->gte($cutoffDateTime);
+        })->values(); // Reset keys after filtering
         
-        Log::info('Data points fetched.', ['totalDataPointsCount' => $dataPoints->count()]);
+        Log::info('Data points fetched and filtered.', ['totalDataPointsCount' => $dataPoints->count()]);
 
         //log some of the data points
         $dataPoints->take(5)->each(function ($dataPoint) {
