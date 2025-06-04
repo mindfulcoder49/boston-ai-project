@@ -78,7 +78,7 @@ class GenerateModelMetadataCommand extends Command
                     $distinctValues = [];
                     $distinctCount = 0;
 
-                    if (!in_array($appType, ['text', 'json']) && !Str::contains(strtolower($dbType), ['text', 'blob', 'json'])) {
+                    if (!in_array($appType, ['json']) && !Str::contains(strtolower($dbType), ['blob', 'json'])) {
                         $this->line("    [DISTINCT_VALUES] Column eligible for distinct value check.");
                         try {
                             $rawCountQueryForLog = "SELECT COUNT(DISTINCT {$column}) as count FROM \"{$tableName}\"";

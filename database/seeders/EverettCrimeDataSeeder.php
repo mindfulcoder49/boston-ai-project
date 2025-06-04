@@ -159,6 +159,7 @@ class EverettCrimeDataSeeder extends Seeder
                 // and will remain null or be handled by a different process if needed.
                 'crime_start_time' => $occurred_on_datetime_str, // Or null if not applicable as start time
                 'crime_end_time' => null, // Or derive if possible, otherwise null
+                'source_city' => 'Everett'
             ];
 
             if ($progress % self::BATCH_SIZE == 0) {
@@ -202,7 +203,8 @@ class EverettCrimeDataSeeder extends Seeder
             'language_code',
             'crime_details',
             'crime_start_time',
-            'crime_end_time'
+            'crime_end_time',
+            'source_city'
         ]);
     }
 

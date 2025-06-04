@@ -258,7 +258,8 @@ class CrimeDataSeeder extends Seeder
                 'lat' => (float)$lat,
                 'long' => (float)$long,
                 'location' => $crime['Location'], // Keep original Location field
-                'language_code' => 'en-US' // Default language code
+                'language_code' => 'en-US', // Default language code
+                'source_city' => 'Boston'
             ];
 
             if ($progress % self::BATCH_SIZE == 0) {
@@ -300,7 +301,8 @@ class CrimeDataSeeder extends Seeder
             'lat',
             'long',
             'location',
-            'language_code'
+            'language_code',
+            'source_city'
         ]);
     }
 

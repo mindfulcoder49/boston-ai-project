@@ -2827,22 +2827,8 @@ return [
             21 => [
                 'name' => 'source_city',
                 'label' => 'Source City',
-                'type' => 'select',
-                'placeholder' => 'Select Source City',
-                'options' => [
-                    0 => [
-                        'value' => 'Boston',
-                        'label' => 'Boston',
-                    ],
-                    1 => [
-                        'value' => 'Cambridge',
-                        'label' => 'Cambridge',
-                    ],
-                    2 => [
-                        'value' => 'Everett',
-                        'label' => 'Everett',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Source City',
             ],
             22 => [
                 'name' => 'crime_details',
@@ -2997,7 +2983,7 @@ return [
             ],
             'source_city' => [
                 'type' => 'string',
-                'description' => 'Filter by Source City. Possible values: Boston, Cambridge, Everett.',
+                'description' => 'Filter by Source City.',
             ],
             'crime_details' => [
                 'type' => 'string',
@@ -3066,42 +3052,14 @@ return [
             6 => [
                 'name' => 'on_time',
                 'label' => 'On Time',
-                'type' => 'select',
-                'placeholder' => 'Select On Time',
-                'options' => [
-                    0 => [
-                        'value' => 'ONTIME',
-                        'label' => 'ONTIME',
-                    ],
-                    1 => [
-                        'value' => 'OVERDUE',
-                        'label' => 'OVERDUE',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter On Time',
             ],
             7 => [
                 'name' => 'case_status',
                 'label' => 'Case Status',
-                'type' => 'select',
-                'placeholder' => 'Select Case Status',
-                'options' => [
-                    0 => [
-                        'value' => 'Acknowledged',
-                        'label' => 'Acknowledged',
-                    ],
-                    1 => [
-                        'value' => 'Archived',
-                        'label' => 'Archived',
-                    ],
-                    2 => [
-                        'value' => 'Closed',
-                        'label' => 'Closed',
-                    ],
-                    3 => [
-                        'value' => 'Open',
-                        'label' => 'Open',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Case Status',
             ],
             8 => [
                 'name' => 'closure_reason',
@@ -3124,174 +3082,8 @@ return [
             11 => [
                 'name' => 'reason',
                 'label' => 'Reason',
-                'type' => 'select',
-                'placeholder' => 'Select Reason',
-                'options' => [
-                    0 => [
-                        'value' => 'Abandoned Bicycle',
-                        'label' => 'Abandoned Bicycle',
-                    ],
-                    1 => [
-                        'value' => 'Administrative & General Requests',
-                        'label' => 'Administrative & General Requests',
-                    ],
-                    2 => [
-                        'value' => 'Air Pollution Control',
-                        'label' => 'Air Pollution Control',
-                    ],
-                    3 => [
-                        'value' => 'Animal Issues',
-                        'label' => 'Animal Issues',
-                    ],
-                    4 => [
-                        'value' => 'Billing',
-                        'label' => 'Billing',
-                    ],
-                    5 => [
-                        'value' => 'Boston Bikes',
-                        'label' => 'Boston Bikes',
-                    ],
-                    6 => [
-                        'value' => 'Bridge Maintenance',
-                        'label' => 'Bridge Maintenance',
-                    ],
-                    7 => [
-                        'value' => 'Building',
-                        'label' => 'Building',
-                    ],
-                    8 => [
-                        'value' => 'Catchbasin',
-                        'label' => 'Catchbasin',
-                    ],
-                    9 => [
-                        'value' => 'Cemetery',
-                        'label' => 'Cemetery',
-                    ],
-                    10 => [
-                        'value' => 'Code Enforcement',
-                        'label' => 'Code Enforcement',
-                    ],
-                    11 => [
-                        'value' => 'Employee & General Comments',
-                        'label' => 'Employee & General Comments',
-                    ],
-                    12 => [
-                        'value' => 'Enforcement & Abandoned Vehicles',
-                        'label' => 'Enforcement & Abandoned Vehicles',
-                    ],
-                    13 => [
-                        'value' => 'Environmental Services',
-                        'label' => 'Environmental Services',
-                    ],
-                    14 => [
-                        'value' => 'Fire Hydrant',
-                        'label' => 'Fire Hydrant',
-                    ],
-                    15 => [
-                        'value' => 'Generic Noise Disturbance',
-                        'label' => 'Generic Noise Disturbance',
-                    ],
-                    16 => [
-                        'value' => 'Graffiti',
-                        'label' => 'Graffiti',
-                    ],
-                    17 => [
-                        'value' => 'Health',
-                        'label' => 'Health',
-                    ],
-                    18 => [
-                        'value' => 'Highway Maintenance',
-                        'label' => 'Highway Maintenance',
-                    ],
-                    19 => [
-                        'value' => 'Housing',
-                        'label' => 'Housing',
-                    ],
-                    20 => [
-                        'value' => 'Massport',
-                        'label' => 'Massport',
-                    ],
-                    21 => [
-                        'value' => 'Needle Program',
-                        'label' => 'Needle Program',
-                    ],
-                    22 => [
-                        'value' => 'Neighborhood Services Issues',
-                        'label' => 'Neighborhood Services Issues',
-                    ],
-                    23 => [
-                        'value' => 'Noise Disturbance',
-                        'label' => 'Noise Disturbance',
-                    ],
-                    24 => [
-                        'value' => 'Notification',
-                        'label' => 'Notification',
-                    ],
-                    25 => [
-                        'value' => 'Office of The Parking Clerk',
-                        'label' => 'Office of The Parking Clerk',
-                    ],
-                    26 => [
-                        'value' => 'Operations',
-                        'label' => 'Operations',
-                    ],
-                    27 => [
-                        'value' => 'Park Maintenance & Safety',
-                        'label' => 'Park Maintenance & Safety',
-                    ],
-                    28 => [
-                        'value' => 'Parking Complaints',
-                        'label' => 'Parking Complaints',
-                    ],
-                    29 => [
-                        'value' => 'Pothole',
-                        'label' => 'Pothole',
-                    ],
-                    30 => [
-                        'value' => 'Programs',
-                        'label' => 'Programs',
-                    ],
-                    31 => [
-                        'value' => 'Recycling',
-                        'label' => 'Recycling',
-                    ],
-                    32 => [
-                        'value' => 'Sanitation',
-                        'label' => 'Sanitation',
-                    ],
-                    33 => [
-                        'value' => 'Sidewalk Cover / Manhole',
-                        'label' => 'Sidewalk Cover / Manhole',
-                    ],
-                    34 => [
-                        'value' => 'Signs & Signals',
-                        'label' => 'Signs & Signals',
-                    ],
-                    35 => [
-                        'value' => 'Street Cleaning',
-                        'label' => 'Street Cleaning',
-                    ],
-                    36 => [
-                        'value' => 'Street Lights',
-                        'label' => 'Street Lights',
-                    ],
-                    37 => [
-                        'value' => 'Traffic Management & Engineering',
-                        'label' => 'Traffic Management & Engineering',
-                    ],
-                    38 => [
-                        'value' => 'Trees',
-                        'label' => 'Trees',
-                    ],
-                    39 => [
-                        'value' => 'Valet',
-                        'label' => 'Valet',
-                    ],
-                    40 => [
-                        'value' => 'Weights and Measures',
-                        'label' => 'Weights and Measures',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Reason',
             ],
             12 => [
                 'name' => 'type',
@@ -3308,74 +3100,8 @@ return [
             14 => [
                 'name' => 'department',
                 'label' => 'Department',
-                'type' => 'select',
-                'placeholder' => 'Select Department',
-                'options' => [
-                    0 => [
-                        'value' => 'ANML',
-                        'label' => 'ANML',
-                    ],
-                    1 => [
-                        'value' => 'BHA_',
-                        'label' => 'BHA_',
-                    ],
-                    2 => [
-                        'value' => 'BPD_',
-                        'label' => 'BPD_',
-                    ],
-                    3 => [
-                        'value' => 'BPS_',
-                        'label' => 'BPS_',
-                    ],
-                    4 => [
-                        'value' => 'BTDT',
-                        'label' => 'BTDT',
-                    ],
-                    5 => [
-                        'value' => 'BWSC',
-                        'label' => 'BWSC',
-                    ],
-                    6 => [
-                        'value' => 'DISB',
-                        'label' => 'DISB',
-                    ],
-                    7 => [
-                        'value' => 'DND_',
-                        'label' => 'DND_',
-                    ],
-                    8 => [
-                        'value' => 'GEN_',
-                        'label' => 'GEN_',
-                    ],
-                    9 => [
-                        'value' => 'GRNi',
-                        'label' => 'GRNi',
-                    ],
-                    10 => [
-                        'value' => 'INFO',
-                        'label' => 'INFO',
-                    ],
-                    11 => [
-                        'value' => 'ISD',
-                        'label' => 'ISD',
-                    ],
-                    12 => [
-                        'value' => 'ONS_',
-                        'label' => 'ONS_',
-                    ],
-                    13 => [
-                        'value' => 'PARK',
-                        'label' => 'PARK',
-                    ],
-                    14 => [
-                        'value' => 'PROP',
-                        'label' => 'PROP',
-                    ],
-                    15 => [
-                        'value' => 'PWDx',
-                        'label' => 'PWDx',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Department',
             ],
             15 => [
                 'name' => 'submitted_photo',
@@ -3398,430 +3124,38 @@ return [
             18 => [
                 'name' => 'fire_district',
                 'label' => 'Fire District',
-                'type' => 'select',
-                'placeholder' => 'Select Fire District',
-                'options' => [
-                    0 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    1 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    2 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    3 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                    4 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    5 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    6 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    7 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    8 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    9 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Fire District',
             ],
             19 => [
                 'name' => 'pwd_district',
                 'label' => 'Pwd District',
-                'type' => 'select',
-                'placeholder' => 'Select Pwd District',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '02',
-                        'label' => '02',
-                    ],
-                    2 => [
-                        'value' => '03',
-                        'label' => '03',
-                    ],
-                    3 => [
-                        'value' => '04',
-                        'label' => '04',
-                    ],
-                    4 => [
-                        'value' => '05',
-                        'label' => '05',
-                    ],
-                    5 => [
-                        'value' => '06',
-                        'label' => '06',
-                    ],
-                    6 => [
-                        'value' => '07',
-                        'label' => '07',
-                    ],
-                    7 => [
-                        'value' => '08',
-                        'label' => '08',
-                    ],
-                    8 => [
-                        'value' => '09',
-                        'label' => '09',
-                    ],
-                    9 => [
-                        'value' => '10A',
-                        'label' => '10A',
-                    ],
-                    10 => [
-                        'value' => '10B',
-                        'label' => '10B',
-                    ],
-                    11 => [
-                        'value' => '1A',
-                        'label' => '1A',
-                    ],
-                    12 => [
-                        'value' => '1B',
-                        'label' => '1B',
-                    ],
-                    13 => [
-                        'value' => '1C',
-                        'label' => '1C',
-                    ],
-                    14 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    15 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    16 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    17 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    18 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    19 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    20 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Pwd District',
             ],
             20 => [
                 'name' => 'city_council_district',
                 'label' => 'City Council District',
-                'type' => 'select',
-                'placeholder' => 'Select City Council District',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '0',
-                        'label' => '0',
-                    ],
-                    2 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    3 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    4 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    5 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    6 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    7 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    8 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    9 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    10 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter City Council District',
             ],
             21 => [
                 'name' => 'police_district',
                 'label' => 'Police District',
-                'type' => 'select',
-                'placeholder' => 'Select Police District',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => 'A1',
-                        'label' => 'A1',
-                    ],
-                    2 => [
-                        'value' => 'A15',
-                        'label' => 'A15',
-                    ],
-                    3 => [
-                        'value' => 'A7',
-                        'label' => 'A7',
-                    ],
-                    4 => [
-                        'value' => 'B2',
-                        'label' => 'B2',
-                    ],
-                    5 => [
-                        'value' => 'B3',
-                        'label' => 'B3',
-                    ],
-                    6 => [
-                        'value' => 'C11',
-                        'label' => 'C11',
-                    ],
-                    7 => [
-                        'value' => 'C6',
-                        'label' => 'C6',
-                    ],
-                    8 => [
-                        'value' => 'D14',
-                        'label' => 'D14',
-                    ],
-                    9 => [
-                        'value' => 'D4',
-                        'label' => 'D4',
-                    ],
-                    10 => [
-                        'value' => 'E13',
-                        'label' => 'E13',
-                    ],
-                    11 => [
-                        'value' => 'E18',
-                        'label' => 'E18',
-                    ],
-                    12 => [
-                        'value' => 'E5',
-                        'label' => 'E5',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Police District',
             ],
             22 => [
                 'name' => 'neighborhood',
                 'label' => 'Neighborhood',
-                'type' => 'select',
-                'placeholder' => 'Select Neighborhood',
-                'options' => [
-                    0 => [
-                        'value' => 'Allston',
-                        'label' => 'Allston',
-                    ],
-                    1 => [
-                        'value' => 'Allston / Brighton',
-                        'label' => 'Allston / Brighton',
-                    ],
-                    2 => [
-                        'value' => 'Back Bay',
-                        'label' => 'Back Bay',
-                    ],
-                    3 => [
-                        'value' => 'Beacon Hill',
-                        'label' => 'Beacon Hill',
-                    ],
-                    4 => [
-                        'value' => 'Boston',
-                        'label' => 'Boston',
-                    ],
-                    5 => [
-                        'value' => 'Brighton',
-                        'label' => 'Brighton',
-                    ],
-                    6 => [
-                        'value' => 'Charlestown',
-                        'label' => 'Charlestown',
-                    ],
-                    7 => [
-                        'value' => 'Chestnut Hill',
-                        'label' => 'Chestnut Hill',
-                    ],
-                    8 => [
-                        'value' => 'Dorchester',
-                        'label' => 'Dorchester',
-                    ],
-                    9 => [
-                        'value' => 'Downtown / Financial District',
-                        'label' => 'Downtown / Financial District',
-                    ],
-                    10 => [
-                        'value' => 'East Boston',
-                        'label' => 'East Boston',
-                    ],
-                    11 => [
-                        'value' => 'Fenway / Kenmore / Audubon Circle / Longwood',
-                        'label' => 'Fenway / Kenmore / Audubon Circle / Longwood',
-                    ],
-                    12 => [
-                        'value' => 'Greater Mattapan',
-                        'label' => 'Greater Mattapan',
-                    ],
-                    13 => [
-                        'value' => 'Hyde Park',
-                        'label' => 'Hyde Park',
-                    ],
-                    14 => [
-                        'value' => 'Jamaica Plain',
-                        'label' => 'Jamaica Plain',
-                    ],
-                    15 => [
-                        'value' => 'Mattapan',
-                        'label' => 'Mattapan',
-                    ],
-                    16 => [
-                        'value' => 'Mission Hill',
-                        'label' => 'Mission Hill',
-                    ],
-                    17 => [
-                        'value' => 'Roslindale',
-                        'label' => 'Roslindale',
-                    ],
-                    18 => [
-                        'value' => 'Roxbury',
-                        'label' => 'Roxbury',
-                    ],
-                    19 => [
-                        'value' => 'South Boston',
-                        'label' => 'South Boston',
-                    ],
-                    20 => [
-                        'value' => 'South Boston / South Boston Waterfront',
-                        'label' => 'South Boston / South Boston Waterfront',
-                    ],
-                    21 => [
-                        'value' => 'South End',
-                        'label' => 'South End',
-                    ],
-                    22 => [
-                        'value' => 'West Roxbury',
-                        'label' => 'West Roxbury',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Neighborhood',
             ],
             23 => [
                 'name' => 'neighborhood_services_district',
                 'label' => 'Neighborhood Services District',
-                'type' => 'select',
-                'placeholder' => 'Select Neighborhood Services District',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '0',
-                        'label' => '0',
-                    ],
-                    2 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    3 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    4 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    5 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                    6 => [
-                        'value' => '13',
-                        'label' => '13',
-                    ],
-                    7 => [
-                        'value' => '14',
-                        'label' => '14',
-                    ],
-                    8 => [
-                        'value' => '15',
-                        'label' => '15',
-                    ],
-                    9 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    10 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    11 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    12 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    13 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    14 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    15 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    16 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Neighborhood Services District',
             ],
             24 => [
                 'name' => 'ward',
@@ -4136,11 +3470,11 @@ return [
             ],
             'on_time' => [
                 'type' => 'string',
-                'description' => 'Filter by On Time. Possible values: ONTIME, OVERDUE.',
+                'description' => 'Filter by On Time.',
             ],
             'case_status' => [
                 'type' => 'string',
-                'description' => 'Filter by Case Status. Possible values: Acknowledged, Archived, Closed, Open.',
+                'description' => 'Filter by Case Status.',
             ],
             'closure_reason' => [
                 'type' => 'string',
@@ -4156,7 +3490,7 @@ return [
             ],
             'reason' => [
                 'type' => 'string',
-                'description' => 'Filter by Reason. Possible values: Abandoned Bicycle, Administrative & General Requests, Air Pollution Control, Animal Issues, Billing, Boston Bikes, Bridge Maintenance, Building, Catchbasin, Cemetery, Code Enforcement, Employee & General Comments, Enforcement & Abandoned Vehicles, Environmental Services, Fire Hydrant, Generic Noise Disturbance, Graffiti, Health, Highway Maintenance, Housing, Massport, Needle Program, Neighborhood Services Issues, Noise Disturbance, Notification, Office of The Parking Clerk, Operations, Park Maintenance & Safety, Parking Complaints, Pothole, Programs, Recycling, Sanitation, Sidewalk Cover / Manhole, Signs & Signals, Street Cleaning, Street Lights, Traffic Management & Engineering, Trees, Valet, Weights and Measures.',
+                'description' => 'Filter by Reason.',
             ],
             'type' => [
                 'type' => 'string',
@@ -4168,7 +3502,7 @@ return [
             ],
             'department' => [
                 'type' => 'string',
-                'description' => 'Filter by Department. Possible values: ANML, BHA_, BPD_, BPS_, BTDT, BWSC, DISB, DND_, GEN_, GRNi, INFO, ISD, ONS_, PARK, PROP, PWDx.',
+                'description' => 'Filter by Department.',
             ],
             'submitted_photo' => [
                 'type' => 'string',
@@ -4184,27 +3518,27 @@ return [
             ],
             'fire_district' => [
                 'type' => 'string',
-                'description' => 'Filter by Fire District. Possible values: 1, 10, 11, 12, 3, 4, 6, 7, 8, 9.',
+                'description' => 'Filter by Fire District.',
             ],
             'pwd_district' => [
                 'type' => 'string',
-                'description' => 'Filter by Pwd District. Possible values:  , 02, 03, 04, 05, 06, 07, 08, 09, 10A, 10B, 1A, 1B, 1C, 2, 3, 4, 5, 7, 8, 9.',
+                'description' => 'Filter by Pwd District.',
             ],
             'city_council_district' => [
                 'type' => 'string',
-                'description' => 'Filter by City Council District. Possible values:  , 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.',
+                'description' => 'Filter by City Council District.',
             ],
             'police_district' => [
                 'type' => 'string',
-                'description' => 'Filter by Police District. Possible values:  , A1, A15, A7, B2, B3, C11, C6, D14, D4, E13, E18, E5.',
+                'description' => 'Filter by Police District.',
             ],
             'neighborhood' => [
                 'type' => 'string',
-                'description' => 'Filter by Neighborhood. Possible values: Allston, Allston / Brighton, Back Bay, Beacon Hill, Boston, Brighton, Charlestown, Chestnut Hill, Dorchester, Downtown / Financial District, East Boston, Fenway / Kenmore / Audubon Circle / Longwood, Greater Mattapan, Hyde Park, Jamaica Plain, Mattapan, Mission Hill, Roslindale, Roxbury, South Boston, South Boston / South Boston Waterfront, South End, West Roxbury.',
+                'description' => 'Filter by Neighborhood.',
             ],
             'neighborhood_services_district' => [
                 'type' => 'string',
-                'description' => 'Filter by Neighborhood Services District. Possible values:  , 0, 1, 10, 11, 12, 13, 14, 15, 2, 3, 4, 5, 6, 7, 8, 9.',
+                'description' => 'Filter by Neighborhood Services District.',
             ],
             'ward' => [
                 'type' => 'string',

@@ -7,34 +7,27 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use League\Csv\Reader;
-// Note: Statement class might be useful if complex filtering is needed before chunking,
-// but for now, we read all records from the selected file.
-// use League\Csv\Statement; 
+use App\Services\CambridgeAddressLookupService; // Added
 
 class CambridgeCrimeDataSeederMerge extends Seeder
 {
     private const BATCH_SIZE = 500; // For DB upserts
     private const MAX_RECORDS_IN_MEMORY_CHUNK = 10000; // For accumulating raw CSV records
-    private const STREET_ABBREVIATIONS = [
-        'MOUNT' => 'MT',
-        'SAINT' => 'ST',
-        'ACORN PK' => 'ACORN PARK DR',
-        'GALILEO GALILEI' => 'GALILEI',
-        'CAMBRIDGE CTR' => 'BROADWAY',
-        'STREET NORTH'  => 'ST N',
-        'HAWTHORNE' => 'HAWTHORN',
-        // Add other abbreviations from CambridgePoliceLogSeeder if needed
-    ];
+    // STREET_ABBREVIATIONS removed
 
-    private array $addressCache = [];
-    private array $intersectionCache = [];
+    // addressCache and intersectionCache removed
+    private ?CambridgeAddressLookupService $addressLookupService = null; // Added
+
 
     public function run()
     {
         $this->command->info("Starting Cambridge Crime Data Merge Seeder...");
 
-        $this->loadAddressData();
-        $this->loadIntersectionData();
+        $this->addressLookupService = new CambridgeAddressLookupService(
+            $this->command,
+            env('GOOGLE_GEOCODING_API_KEY')
+        );
+        $this->addressLookupService->loadDbCaches();
 
         $datasetName = 'cambridge-crime-reports';
         $citySubdirectory = 'cambridge';
@@ -92,167 +85,22 @@ class CambridgeCrimeDataSeederMerge extends Seeder
         // Process any remaining records in the last chunk
         if (!empty($recordsChunk)) {
             $this->command->info("Processing the final chunk of " . count($recordsChunk) . " records...");
-            $chunkStats = $this->processAndInsertRecordsChunk($recordsChunk);
+            $chunkStats = $this->processAndInsertRecordsChunk($recordsChunk, $grandTotalRecordsProcessed); // Pass grandTotal for unique ID
             $grandTotalRecordsProcessed += $chunkStats['processed'];
             $grandTotalNotFoundCount += $chunkStats['notFound'];
             $this->command->info("Final chunk processed.");
         }
+        
+        $this->addressLookupService->finalSaveGeocodeCache(); // Save geocode cache at the end
 
         $this->command->info("Cambridge Crime Data Merge Seeder finished. Total records processed: {$grandTotalRecordsProcessed}. Total locations not found: {$grandTotalNotFoundCount}.");
     }
 
-    private function loadAddressData(): void
-    {
-        $this->command->info("[Merge] Loading Cambridge address data into cache...");
-        $addresses = DB::table('cambridge_addresses')
-            ->select('street_number', 'stname', 'latitude', 'longitude')
-            ->whereNotNull('stname')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->get();
-
-        foreach ($addresses as $address) {
-            $normalizedStName = strtolower($this->normalizeStreetName($address->stname));
-            if (empty($normalizedStName)) {
-                continue;
-            }
-            $streetNumberNumeric = intval($address->street_number);
-
-            $this->addressCache[$normalizedStName][] = [
-                'number' => $streetNumberNumeric,
-                'original_number' => $address->street_number,
-                'latitude' => (float)$address->latitude,
-                'longitude' => (float)$address->longitude,
-            ];
-        }
-
-        foreach ($this->addressCache as $streetName => $addressList) {
-            usort($this->addressCache[$streetName], function ($a, $b) {
-                return $a['number'] <=> $b['number'];
-            });
-        }
-        $this->command->info("[Merge] Finished loading " . count($addresses) . " addresses into cache, grouped by " . count($this->addressCache) . " unique street names.");
-    }
-
-    private function loadIntersectionData(): void
-    {
-        $this->command->info("[Merge] Loading Cambridge intersection data into cache...");
-        $intersections = DB::table('cambridge_intersections')
-            ->select('intersection', 'latitude', 'longitude')
-            ->whereNotNull('intersection')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->get();
-
-        foreach ($intersections as $intersection) {
-            $this->intersectionCache[strtolower($intersection->intersection)] = [ // Assuming intersection name is already normalized and sorted in DB
-                'latitude' => (float)$intersection->latitude,
-                'longitude' => (float)$intersection->longitude,
-            ];
-        }
-        $this->command->info("[Merge] Finished loading " . count($intersections) . " intersections into cache.");
-    }
-
-
-    private function normalizeStreetName(string $streetName): string
-    {
-        $processedName = strtoupper(trim($streetName));
-        $processedName = preg_replace('/\s+/', ' ', $processedName); 
-        // Remove "THE " from the beginning
-        $processedName = preg_replace('/^THE\s+/', '', $processedName);
-
-        foreach (self::STREET_ABBREVIATIONS as $search => $replace) {
-            $processedName = preg_replace('/\b' . preg_quote($search, '/') . '\b/i', $replace, $processedName);
-        }
-        $processedName = rtrim($processedName, '.'); 
-        return trim($processedName);
-    }
-
-    private function normalizeAndLookupIntersection(string $intersectionQueryString): ?array
-    {
-        $this->command->comment("---> [Merge] Attempting Intersection Lookup for: '{$intersectionQueryString}'");
-        $logBuffer = [];
-
-        $parts = preg_split('/\s+&\s+|\s+AND\s+/i', $intersectionQueryString, 2, PREG_SPLIT_NO_EMPTY);
-
-        if (count($parts) !== 2) {
-            $logBuffer[] = "     [Merge] Could not parse '{$intersectionQueryString}' into two distinct street names.";
-            // $this->command->warn(implode("\n", $logBuffer)); // Can be too verbose
-            return null;
-        }
-        $street1_original = trim($parts[0]);
-        $street2_original = trim($parts[1]);
-        $street1_processed = $this->normalizeStreetName($street1_original);
-        $street2_processed = $this->normalizeStreetName($street2_original);
-
-        $streetsForPrimaryLookup = [$street1_processed, $street2_processed];
-        sort($streetsForPrimaryLookup, SORT_STRING | SORT_FLAG_CASE); 
-        $primaryLookupString = strtolower($streetsForPrimaryLookup[0] . ' & ' . $streetsForPrimaryLookup[1]);
-        
-        if (isset($this->intersectionCache[$primaryLookupString])) {
-            // $this->command->info("     [Merge] SUCCESS (Primary Cache Match): '{$intersectionQueryString}' found as '{$primaryLookupString}'.");
-            return $this->intersectionCache[$primaryLookupString];
-        }
-        $logBuffer[] = "     [Merge] Primary cache lookup FAILED for '{$primaryLookupString}'.";
-        
-        $secondaryLookupString = strtolower($streetsForPrimaryLookup[1] . ' & ' . $streetsForPrimaryLookup[0]);
-        if ($primaryLookupString !== $secondaryLookupString && isset($this->intersectionCache[$secondaryLookupString])) {
-            // $this->command->info("     [Merge] SUCCESS (Secondary Cache Match - swapped): '{$intersectionQueryString}' found as '{$secondaryLookupString}'.");
-            return $this->intersectionCache[$secondaryLookupString];
-        }
-        if ($primaryLookupString !== $secondaryLookupString) {
-            $logBuffer[] = "     [Merge] Secondary cache lookup FAILED for '{$secondaryLookupString}'.";
-        }
-
-        if (!empty($street1_processed)) {
-            $cachedAddressesStreet1 = $this->addressCache[strtolower($street1_processed)] ?? [];
-            if (!empty($cachedAddressesStreet1)) {
-                $addressStreet1 = $cachedAddressesStreet1[0]; // Lowest address
-                // $this->command->info("     [Merge] SUCCESS (Street 1 Fallback - Cache): Used lowest address on '{$street1_processed}'.");
-                return ['latitude' => $addressStreet1['latitude'], 'longitude' => $addressStreet1['longitude']];
-            }
-            $logBuffer[] = "     [Merge] Street 1 fallback (Cache) FAILED for '{$street1_processed}'.";
-        }
-
-        if (!empty($street2_processed)) {
-            $cachedAddressesStreet2 = $this->addressCache[strtolower($street2_processed)] ?? [];
-            if (!empty($cachedAddressesStreet2)) {
-                $addressStreet2 = $cachedAddressesStreet2[0]; // Lowest address
-                // $this->command->info("     [Merge] SUCCESS (Street 2 Fallback - Cache): Used lowest address on '{$street2_processed}'.");
-                return ['latitude' => $addressStreet2['latitude'], 'longitude' => $addressStreet2['longitude']];
-            }
-            $logBuffer[] = "     [Merge] Street 2 fallback (Cache) FAILED for '{$street2_processed}'.";
-        }
-        
-        // $this->command->warn(implode("\n", $logBuffer)); // Can be too verbose
-        // $this->command->warn("     [Merge] All intersection lookup strategies FAILED for '{$intersectionQueryString}'.");
-        return null;
-    }
-
-    private function parseCrimeLocationAddress(string $locationString): ?array
-    {
-        // Regex to capture number and street part, handles "BLOCK" prefix/suffix.
-        if (preg_match('/^(\d+[A-Z]?(-\d+[A-Z]?)?(\s+BLOCK)?)\s+(.*)$/i', $locationString, $matches) ||
-            preg_match('/^(BLOCK\s+\d+[A-Z]?(-\d+[A-Z]?)?)\s+(.*)$/i', $locationString, $matches) || 
-            preg_match('/^(\d+[A-Z]?(-\d+[A-Z]?)?)\s+(.*)$/i', $locationString, $matches)
-           ) {
-            $numberPart = trim($matches[1]); 
-            $rawStreetNamePart = trim(end($matches)); 
-
-            $numericStreetNumberToMatch = intval(preg_replace('/(\s*BLOCK\s*)/i', '', $numberPart));
-            $normalizedStreetName = $this->normalizeStreetName($rawStreetNamePart);
-            
-            if (!empty($normalizedStreetName)) { 
-                return [
-                    'number' => $numericStreetNumberToMatch, 
-                    'name' => $normalizedStreetName,         
-                    'original_number_part' => $numberPart   
-                ];
-            }
-        }
-        // $this->command->comment(" -> [Merge] Could not parse address: '{$locationString}' into number and street."); // Can be too verbose
-        return null;
-    }
+    // loadAddressData method removed
+    // loadIntersectionData method removed
+    // normalizeStreetName method removed
+    // normalizeAndLookupIntersection method removed
+    // parseCrimeLocationAddress method removed
     
     private function parseReportDate($dateString) // New method for 'date_of_report'
     {
@@ -289,7 +137,7 @@ class CambridgeCrimeDataSeederMerge extends Seeder
         }
     }
 
-    private function processAndInsertRecordsChunk(array $rawCsvRecords): array
+    private function processAndInsertRecordsChunk(array $rawCsvRecords, int $baseIncidentCountForUnknown = 0): array
     {
         $dataBatch = [];
         $recordsProcessedInChunk = 0;
@@ -333,63 +181,30 @@ class CambridgeCrimeDataSeederMerge extends Seeder
                 $crime_end_val = $crime_start_val; 
             }
             
-            $raw_location = trim($record['location'] ?? '');
+            $raw_location_from_csv = trim($record['location'] ?? '');
             $coords = ['latitude' => null, 'longitude' => null];
             $street_for_db = null;
+            $locationSource = 'not_provided';
             
-            if (!empty($raw_location)) {
-                $location_for_db_lookup = preg_replace('/, Cambridge, MA$/i', '', $raw_location);
-                $location_for_db_lookup = trim($location_for_db_lookup);
+            if (!empty($raw_location_from_csv)) {
+                // The service's getCoordinatesForLocation handles cleaning like removing ", Cambridge, MA"
+                $locationInfo = $this->addressLookupService->getCoordinatesForLocation($raw_location_from_csv);
+                
+                $coords['latitude'] = $locationInfo['latitude'];
+                $coords['longitude'] = $locationInfo['longitude'];
+                $street_for_db = $locationInfo['street_for_db'];
+                $locationSource = $locationInfo['source'];
 
-                if (strpos($location_for_db_lookup, '&') !== false || stripos($location_for_db_lookup, ' AND ') !== false) {
-                    $normalized_coords = $this->normalizeAndLookupIntersection($location_for_db_lookup);
-                    if ($normalized_coords) {
-                        $coords = $normalized_coords;
-                    }
-                    $street_for_db = $this->normalizeStreetName($location_for_db_lookup); // Normalize the intersection string itself
-                } else {
-                    $parsedAddressInfo = $this->parseCrimeLocationAddress($location_for_db_lookup);
-                    if ($parsedAddressInfo) {
-                        $crimeStreetNumber = $parsedAddressInfo['number'];
-                        $crimeStreetName = $parsedAddressInfo['name'];
-                        $street_for_db = $crimeStreetName;
-
-                        $cachedAddressesOnStreet = $this->addressCache[strtolower($crimeStreetName)] ?? [];
-                        if (!empty($cachedAddressesOnStreet)) {
-                            $closestMatch = null; $minDifference = PHP_INT_MAX;
-                            foreach ($cachedAddressesOnStreet as $cachedAddr) {
-                                if ($cachedAddr['number'] >= 0) { // Allow 0 for block addresses
-                                    $difference = abs($crimeStreetNumber - $cachedAddr['number']);
-                                    if ($difference < $minDifference) {
-                                        $minDifference = $difference; $closestMatch = $cachedAddr;
-                                    } elseif ($difference === $minDifference && $closestMatch && $cachedAddr['number'] < $closestMatch['number']) {
-                                        $closestMatch = $cachedAddr;
-                                    }
-                                }
-                            }
-                            if ($closestMatch) {
-                                 $coords = ['latitude' => $closestMatch['latitude'], 'longitude' => $closestMatch['longitude']];
-                            }
-                        }
-                    }
-                    // Fallback if address parsing failed or no match, try lowest address on street
-                    if (empty($coords['latitude']) && $parsedAddressInfo && !empty($parsedAddressInfo['name'])) {
-                        $cachedStreetAddresses = $this->addressCache[strtolower($parsedAddressInfo['name'])] ?? [];
-                        if (!empty($cachedStreetAddresses)) {
-                            $lowestAddress = $cachedStreetAddresses[0]; // Cache is sorted
-                            $coords = ['latitude' => $lowestAddress['latitude'], 'longitude' => $lowestAddress['longitude']];
-                            // $this->command->comment(" -> [Merge] Fallback to lowest address on street '{$parsedAddressInfo['name']}'.");
-                        }
-                    }
-                }
-                if (empty($coords['latitude'])) {
+                if (empty($coords['latitude']) || empty($coords['longitude'])) {
                     $notFoundInChunk++;
+                    // Log if needed
                 }
             } else {
                 $notFoundInChunk++;
+                $locationSource = 'empty_input';
             }
 
-            $incident_number = 'CAM-' . ($record['file_number'] ?? ('UNKNOWN-' . ($grandTotalRecordsProcessed + $recordsProcessedInChunk))); // Ensure more unique unknown ID
+            $incident_number = 'CAM-' . ($record['file_number'] ?? ('UNKNOWN-' . ($baseIncidentCountForUnknown + $recordsProcessedInChunk)));
 
             $dataBatch[] = [
                 'incident_number'     => $incident_number,
@@ -408,12 +223,13 @@ class CambridgeCrimeDataSeederMerge extends Seeder
                 'street'              => $street_for_db,
                 'lat'                 => $coords['latitude'] ? round((float)$coords['latitude'], 7) : null,
                 'long'                => $coords['longitude'] ? round((float)$coords['longitude'], 7) : null,
-                'location'            => $raw_location,
+                'location'            => $raw_location_from_csv, // Store original location from CSV
                 'crime_start_time'    => $crime_start_val,
                 'crime_end_time'      => $crime_end_val,
                 'crime_details'       => null, // This seeder does not have 'crime_details' from source
                 'created_at'          => now(),
                 'updated_at'          => now(),
+                'source_city'         => 'Cambridge'
             ];
 
             if (count($dataBatch) >= self::BATCH_SIZE) {
@@ -439,8 +255,9 @@ class CambridgeCrimeDataSeederMerge extends Seeder
             'offense_code', 'offense_code_group', 'offense_description', 'district', 
             'reporting_area', 'shooting', 'occurred_on_date', 'year', 'month', 
             'day_of_week', 'hour', 'ucr_part', 'street', 'lat', 'long', 'location', 
-            'crime_start_time', 'crime_end_time', // Add new columns here
-            'updated_at'
+            'crime_start_time', 'crime_end_time',
+            'updated_at',
+            'source_city'
         ];
 
         DB::table('crime_data')->upsert(

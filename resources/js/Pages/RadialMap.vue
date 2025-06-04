@@ -35,7 +35,22 @@
         @load-saved-location="handleLoadLocation"
       />
     </div>
+    <div class="reportRadius-slider-input">
+      <label for="reportRadius" class="block text-sm font-medium text-gray-700">
+        {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.reportRadiusLabel || 'Report Radius (miles)' }}
+      </label>
+      <input
+        id="reportRadius"
+        type="range"
+        min="0.1"
+        max="1"
+        step="0.01"
+        v-model.number="reportRadius"
+        class="mt-1 block w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+      />
+      <span class="text-sm text-gray-600">{{ reportRadius.toFixed(2) }} miles</span>
 
+    </div>
     
     <div class="map-controls-container">
       <MapDisplay
@@ -337,6 +352,7 @@ const fetchData = async () => {
     const response = await axios.post('/api/map-data', {
       centralLocation: centralLocation.value,
       language_codes: requestLanguageCodes,
+      radius: reportRadius.value,
     }, {
       headers: { 'X-CSRF-TOKEN': csrfToken },
     });
@@ -544,7 +560,12 @@ watch(centralLocation, (newLoc) => {
     mapCenter.value = [newLoc.latitude, newLoc.longitude];
 }, { deep: true });
 
-
+//watch the radius and fetch data when it changes after a 1 second delay
+watch(reportRadius, (newRadius) => {
+    setTimeout(() => {
+        fetchData();
+    }, 500);
+}, { immediate: true });
 
 
 onMounted(async () => {

@@ -360,6 +360,16 @@ class DataMapController extends Controller
             }
         }
 
+        // Add this block after the foreach loop to handle search_term
+        if (!empty($filters['search_term']) && !empty($searchableColumns)) {
+            $searchTerm = $filters['search_term'];
+            $query->where(function ($q) use ($searchableColumns, $searchTerm) {
+                foreach ($searchableColumns as $col) {
+                    $q->orWhere($col, 'LIKE', '%' . $searchTerm . '%');
+                }
+            });
+        }
+
         $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int)$filters['limit'] : 1000;
         // Tier-based limit adjustments could be added here if needed
         // Example:

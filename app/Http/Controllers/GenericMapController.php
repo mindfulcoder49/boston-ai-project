@@ -125,6 +125,9 @@ class GenericMapController extends Controller
         Log::info('Language codes to include.', ['language_codes' => $language_codes]);
 
         $radius = $request->input('radius', .25);
+        //clamp radius to a maximum of 1
+        $radius = min(max($radius, 0.01), .50); // Clamp between 0.01 and 1 mile
+        Log::info('Radius for radial search.', ['radius' => $radius]);
         // The individual $crimeDays, $caseDays etc. are no longer primary drivers for date filtering,
         // $cutoffDateTime based on subscription will be used.
         // These can be removed or kept if there's a different specific use case for them later.
