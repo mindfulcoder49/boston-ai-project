@@ -43,10 +43,11 @@
             <svg v-if="!isCenterSelectionActive" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 3.293A1 1 0 0118 4v12a1 1 0 01-1.707.707L10 10.414l-6.293 6.293A1 1 0 012 16V4a1 1 0 011.707-.707L10 9.586l6.293-6.293a1 1 0 011.000 0z" clip-rule="evenodd" /></svg>
             <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd" /></svg>
             <span class="">{{ isCenterSelectionActive ? (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].cancelMapSelectionButton || 'Cancel Map Selection') : (translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].selectByMapClickButton || 'Select by Map Click') }}</span>
-          </button>
-          <p v-if="isCenterSelectionActive" class="text-center text-blue-600 mt-1 md:mt-2 text-xs md:text-sm animate-pulse">
-            {{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].clickOnMapInstruction || 'Now, click on the map to choose your center!' }}
+            <p v-if="isCenterSelectionActive" class="text-center text-xs md:text-sm animate-pulse">
+            {{ translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].clickOnMapInstruction || 'Click on the map to choose your center!' }}
           </p>
+          </button>
+
         </div>
 
         <!-- Method 3: Use Current Location -->

@@ -42,8 +42,8 @@
       <input
         id="reportRadius"
         type="range"
-        min="0.1"
-        max="1"
+        min="0.01"
+        max="0.5"
         step="0.01"
         v-model.number="reportRadius"
         class="mt-1 block w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
