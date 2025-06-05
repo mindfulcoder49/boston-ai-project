@@ -55,9 +55,15 @@
         </div>
       </div>
     </div>
-    <div v-if="loading" class="loading-indicator text-gray-400 mt-4 italic">
-      <p>...</p>
-    </div>
+    <div v-if="loading" class="loading-indicator text-center p-3 text-gray-300">
+      <div v-if="detailedLoadingInfo && detailedLoadingInfo.text">
+          <p class="font-mono text-lg mt-1 animate-pulse">{{ detailedLoadingInfo.seconds }}s</p>
+      </div>
+      <div v-else>
+          <!-- Your original "..." loader, or a simple one -->
+          <p class="assistant-thinking-animation text-lg">...</p> 
+      </div>
+  </div>
   </div>
 </template>
 
@@ -71,6 +77,10 @@ const props = defineProps({
   editedMessageContent: String,
   welcomeMessage: String,
   renderMarkdown: Function,
+  detailedLoadingInfo: {
+    type: Object, // Expected shape: { text: String, seconds: Number }
+    default: null,
+  },
 });
 
 const emit = defineEmits([

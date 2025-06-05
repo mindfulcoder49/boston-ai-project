@@ -36,13 +36,8 @@ class AiAssistantController extends Controller
         $model = $request->input('model'); // Get the requested model
 
         // Add the context to the beginning of the conversation history
-        //$history = array_merge([['role' => 'user', 'content' => $context]], $history);
-
-        //actually instead parse the context json to put each data point in it's own message
-        $contextArray = json_decode($context, true);
-        foreach ($contextArray as $dataPoint) {
-            $history[] = ['role' => 'user', 'content' => JSON_encode($dataPoint)];
-        }
+        $history = array_merge([['role' => 'user', 'content' => 'This is the relevant information to focus on in this conversation. Any
+        reference to events, incidents, occurences, data, etc, is referring to this context:'.  $context]], $history);
 
         // Add the user's message to the conversation history
         $history[] = ['role' => 'user', 'content' => $userMessage];

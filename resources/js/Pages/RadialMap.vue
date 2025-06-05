@@ -94,7 +94,7 @@
       :radius="reportRadius"
       :currentMapLanguage="currentReportLanguage"
     ></AiAssistant>
-    <GenericDataList :totalData="filteredDataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" :language_codes="language_codes" />
+    <GenericDataList :totalData="dataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" :language_codes="language_codes" />
 
   </PageTemplate>
 </template>
@@ -366,8 +366,12 @@ const fetchData = async () => {
       const subObject = dataPoint[dataType.toLowerCase().replace(/ /g, '_').replace('311','three_one_one') + '_data'];
       
       if (subObject) {
-        // Remove the sub-object from the dataPoint
-        //delete dataPoint[dataType.toLowerCase() + '_data'];
+        // Remove all subobjects
+        Object.keys(dataPoint).forEach(key => {
+          if (key.endsWith('_data') && key !== (dataType.toLowerCase().replace(/ /g, '_').replace('311','three_one_one') + '_data')) {
+            delete dataPoint[key];
+          }
+        });
         // Merge top-level fields with the sub-object
         
         return { ...dataPoint, ...subObject };
@@ -518,7 +522,16 @@ const applyFiltersAndData = () => {
 
 
 const filteredDataPoints = computed(() => {
-  return dataPoints.value;
+  //remove subobject that ends with _data from each dataPoint
+  return dataPoints.value.map(dataPoint => {
+    const filteredDataPoint = { ...dataPoint };
+    Object.keys(filteredDataPoint).forEach(key => {
+      if (key.endsWith('_data')) {
+        delete filteredDataPoint[key];
+      }
+    });
+    return filteredDataPoint;
+  });
 });
 
 const handleMarkerClick = (dataPoint) => {
