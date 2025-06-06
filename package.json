@@ -23,6 +23,7 @@
     "dependencies": {
         "echarts": "^5.4.3",
         "leaflet.markercluster": "^1.5.3",
+        "lodash-es": "^4.17.21",
         "markdown-it": "^14.1.0",
         "markdown-it-link-attributes": "^4.0.1",
         "vue-chartjs": "^5.3.2",

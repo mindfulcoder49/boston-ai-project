@@ -47,28 +47,33 @@ class DataMapController extends Controller
         return $modelClass;
     }
 
-    public function getMinDateForUser(string $dataType)
+    public function getMinDateForUser(string $dataType) // dataType might be useful if restrictions vary by type
     {
-        $modelClass = $this->getModelClass($dataType);
+        // $modelClass = $this->getModelClass($dataType); // Not strictly needed if tier logic is global
         $user = Auth::user();
-        $tierMinDate = null;
+        $tierMinDate = null; // Default: no restriction (e.g., for guests or if logic changes)
 
-        if ($user && !$user->subscribed('default')) {
-            // Authenticated free user
-            $tierMinDate = Carbon::now()->subMonths(2);
-        } elseif ($user && $user->subscribed('default')) {
-            $subscription = $user->subscription('default');
-            if ($subscription && $subscription->stripe_price === config('stripe.prices.basic_plan')) {
-                $tierMinDate = Carbon::now()->subMonths(6);
-            } elseif ($subscription && $subscription->stripe_price === config('stripe.prices.pro_plan')) {
-                // Pro users have no date restriction from tier
-                $tierMinDate = null; 
-            } else {
-                 // Fallback for subscribed users without a recognized plan (treat as free)
-                $tierMinDate = Carbon::now()->subMonths(2);
-            }
+        if (!$user) {
+            // Guest user: For now, let's assume they get a very limited view or are blocked by middleware.
+            // If allowed, set a strict limit, e.g., Carbon::now()->subDays(7);
+            // This method is typically called for authenticated users.
+            return Carbon::now()->subMonths(1); // Example: Guests get 1 month of data
         }
 
+        $effectiveTierDetails = $user->getEffectiveTierDetails();
+        $effectiveTier = $effectiveTierDetails['tier'];
+
+        if ($effectiveTier === 'free') {
+            $tierMinDate = Carbon::now()->subMonths(2);
+        } elseif ($effectiveTier === 'basic') {
+            $tierMinDate = Carbon::now()->subMonths(6);
+        } elseif ($effectiveTier === 'pro') {
+            $tierMinDate = null; // Pro users have no date restriction from tier
+        } else {
+            // Fallback for any unknown tier or if user is null and not caught above
+            $tierMinDate = Carbon::now()->subMonths(1);
+        }
+        
         return $tierMinDate;
     }
 
@@ -193,34 +198,9 @@ class DataMapController extends Controller
 
         $user = Auth::user();
         $dateField = $modelClass::getDateField();
-        $tierMinDate = null;
-
-        if (!$user) {
-            // Guest users - for now, let's assume they can't access this endpoint
-            // Or, apply a very strict limit, e.g., 1 day.
-            // This should ideally be handled by route middleware.
-            // If allowing guests, set $tierMinDate = Carbon::now()->subDay();
-            // For now, we assume 'auth' middleware protects this route.
-            // If a guest somehow reaches here, they'll get no date restriction from this logic,
-            // but also won't have a plan.
-            // A more robust solution would be to explicitly deny or provide sample data.
-            // For this iteration, we'll rely on middleware. If user is null, no tier-specific date limits apply here.
-        } else if ($user && !$user->subscribed('default')) {
-            // Authenticated free user
-            $tierMinDate = Carbon::now()->subMonths(2);
-        } elseif ($user && $user->subscribed('default')) {
-            $subscription = $user->subscription('default');
-            if ($subscription && $subscription->stripe_price === config('stripe.prices.basic_plan')) {
-                $tierMinDate = Carbon::now()->subMonths(6);
-            } elseif ($subscription && $subscription->stripe_price === config('stripe.prices.pro_plan')) {
-                // Pro users have no date restriction from tier
-                $tierMinDate = null; 
-            } else {
-                 // Fallback for subscribed users without a recognized plan (treat as free)
-                $tierMinDate = Carbon::now()->subMonths(2);
-            }
-        }
-
+        
+        // Get tier-based minimum date using the centralized helper method
+        $tierMinDate = $this->getMinDateForUser($dataType);
 
         $searchableColumns = $modelClass::getSearchableColumns(); // From Mappable
         // $dateField is already defined above

@@ -33,6 +33,10 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('/search-address', [TrashScheduleByAddressController::class, 'search']);
 
+// Google Places API proxy routes
+Route::post('/api/google-places-autocomplete', [TrashScheduleByAddressController::class, 'googleAutocomplete']); // Or your preferred auth
+Route::post('/api/geocode-google-place', [TrashScheduleByAddressController::class, 'geocodeGooglePlace']); // Or your preferred auth
+
 
 // Serve the Vue component directly
 Route::get('/', function () {
@@ -55,6 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/redeem-code', [ProfileController::class, 'redeemSubscriptionCode'])->name('profile.redeemCode'); // New route
 
     // Report History Routes
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

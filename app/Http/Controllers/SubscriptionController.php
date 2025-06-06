@@ -15,15 +15,9 @@ class SubscriptionController extends Controller
         $user = $request->user();
         $currentPlan = null;
 
-        if ($user && $user->subscribed('default')) {
-            // This is a simplified check. You might need to map Stripe Price ID to your plan names.
-            // For a robust solution, store the plan name or tier in your database when subscription is created/updated via webhooks.
-            $subscription = $user->subscription('default');
-            if ($subscription && $subscription->stripe_price === config('stripe.prices.basic_plan')) {
-                $currentPlan = 'basic';
-            } elseif ($subscription && $subscription->stripe_price === config('stripe.prices.pro_plan')) {
-                $currentPlan = 'pro';
-            }
+        if ($user) {
+            $effectiveTierDetails = $user->getEffectiveTierDetails();
+            $currentPlan = $effectiveTierDetails['tier']; // 'free', 'basic', 'pro'
         }
 
         return Inertia::render('Subscription', [

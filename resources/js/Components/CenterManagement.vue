@@ -27,7 +27,7 @@
     <div class="mb-2">
       <!-- Method 1: Search Address -->
       <div class="p-2 md:p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white mb-2 md:mb-4">
-        <AddressSearch @address-selected="handleAddressSelected" :language_codes="language_codes" :placeholder_text="translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].searchAddressPlaceholder || 'Search for an address'" />
+        <GoogleAddressSearch @address-selected="handleAddressSelected" :language_codes="language_codes" :placeholder_text="translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].searchAddressPlaceholder || 'Search for an address'" />
       </div>
 
       <!-- Container for the two buttons: Click on Map and Use Current Location -->
@@ -76,7 +76,7 @@
 
 <script setup>
 import { defineProps, defineEmits, computed, ref } from 'vue';
-import AddressSearch from '@/Components/AddressSearch.vue';
+import GoogleAddressSearch from '@/Components/GoogleAddressSearch.vue';
 import SaveLocation from '@/Components/SaveLocation.vue';
 
 const props = defineProps({

@@ -39,17 +39,17 @@ class LocationController extends Controller
         }
 
         $currentLocationCount = $user->locations()->count();
-        $maxLocations = 1; // Default for free users
+        $maxLocations = 1; // Default for free tier
 
-        if ($user->subscribed('default')) {
-            $subscription = $user->subscription('default');
-            if ($subscription && $subscription->stripe_price === config('stripe.prices.basic_plan')) {
-                $maxLocations = 3;
-            } elseif ($subscription && $subscription->stripe_price === config('stripe.prices.pro_plan')) {
-                $maxLocations = 10;
-            }
+        $effectiveTierDetails = $user->getEffectiveTierDetails();
+        $effectiveTier = $effectiveTierDetails['tier'];
+
+        if ($effectiveTier === 'basic') {
+            $maxLocations = 3;
+        } elseif ($effectiveTier === 'pro') {
+            $maxLocations = 10;
         }
-        // If user is authenticated but not subscribed to basic or pro, they are on the free tier (maxLocations remains 1)
+        // If $effectiveTier is 'free', $maxLocations remains 1.
 
         if ($currentLocationCount >= $maxLocations) {
             return response()->json(['error' => 'Maximum number of locations reached for your current plan.'], 403);

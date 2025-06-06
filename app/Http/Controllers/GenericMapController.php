@@ -59,28 +59,28 @@ class GenericMapController extends Controller
     public function getRadialMapData(Request $request)
     {
         $user = Auth::user();
-        $currentPlan = null;
+        $currentPlanTier = 'free'; // Default for unauthenticated or free users
         $daysToFilter = 7; // Default for unauthenticated users
         $targetTable = 'data_points'; // Default table
 
         if ($user) {
-            $daysToFilter = 14; // Authenticated free user
-            if ($user->subscribed('default')) {
-                $subscription = $user->subscription('default');
-                if ($subscription) {
-                    if ($subscription->stripe_price === config('stripe.prices.basic_plan')) {
-                        $currentPlan = 'basic';
-                        $daysToFilter = 21; // Basic plan gets ~6 months from data_points
-                        $targetTable = 'data_points';
-                    } elseif ($subscription->stripe_price === config('stripe.prices.pro_plan')) {
-                        $currentPlan = 'pro';
-                        $targetTable = 'data_points'; // Pro plan uses all_time_data_points
-                        // No date filtering for pro plan on all_time_data_points, or a very long period if needed for performance.
-                        // For true "all time", $daysToFilter is not strictly applied to the query on this table.
-                        // We can set it to a very large number or null to signify no filtering.
-                        $daysToFilter = 31; // Or a very large number like 365 * 20 (20 years)
-                    }
-                }
+            $effectiveTierDetails = $user->getEffectiveTierDetails();
+            $currentPlanTier = $effectiveTierDetails['tier'];
+
+            if ($currentPlanTier === 'free') {
+                $daysToFilter = 14; // Authenticated free user
+                $targetTable = 'data_points';
+            } elseif ($currentPlanTier === 'basic') {
+                $daysToFilter = 21; // Basic plan
+                $targetTable = 'data_points';
+            } elseif ($currentPlanTier === 'pro') {
+                $targetTable = 'data_points'; // Pro plan uses data_points (or could be all_time_data_points if that exists)
+                // For Pro, effectively all time from data_points, or a very long period.
+                // If using data_points, $daysToFilter could be set very large or logic adapted.
+                // For simplicity, let's set a larger number of days for pro on data_points.
+                $daysToFilter = 31; // Pro plan gets more days from data_points
+                                     // Or, if 'all_time_data_points' table is used for Pro, set $daysToFilter = null
+                                     // and adjust the query logic. Assuming data_points for now.
             }
         }
 
@@ -88,7 +88,7 @@ class GenericMapController extends Controller
 
         Log::info('User authentication status for data filtering.', [
             'authenticated' => (bool)$user,
-            'currentPlan' => $currentPlan,
+            'currentPlanTier' => $currentPlanTier,
             'targetTable' => $targetTable,
             'daysToFilter' => $daysToFilter,
             'cutoffDateTime' => $cutoffDateTime ? $cutoffDateTime->toDateTimeString() : 'N/A (all time)',

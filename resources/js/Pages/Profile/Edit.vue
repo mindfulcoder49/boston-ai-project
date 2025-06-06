@@ -3,19 +3,42 @@ import PageTemplate from '@/Components/PageTemplate.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3'; // Import useForm
 import { computed, inject, ref } from 'vue';
+import InputError from '@/Components/InputError.vue'; // For displaying form errors
+import InputLabel from '@/Components/InputLabel.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import TextInput from '@/Components/TextInput.vue';
 
 const props = defineProps({
     mustVerifyEmail: Boolean,
     status: String,
-    // currentPlanKey: String, // Removed, planKey is now per subscription
-    subscriptionsList: Array, // Changed from subscriptionDetails: Object
+    subscriptionsList: Array,
     socialLoginDetails: Object,
+    errors: Object, // Inertia passes validation errors here
+    status_error: String, // Custom prop for redeem code error message if not using errors bag
 });
 
 const translations = inject('translations');
 const language_codes = ref(['en-US']);
+
+const redeemForm = useForm({ // Form for redeeming code
+    redeem_code: '',
+});
+
+const submitRedeemCode = () => {
+    redeemForm.post(route('profile.redeemCode'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            redeemForm.reset('redeem_code');
+            // props.status will be updated by the backend redirect's flash message
+        },
+        onError: () => {
+            // Errors are automatically populated in props.errors or redeemForm.errors
+            // If redeemForm.errors.redeem_code is not showing, ensure backend sends it correctly
+        }
+    });
+};
 
 const getSingleLanguageCode = computed(() => {
     return (translations.LabelsByLanguageCode && translations.LabelsByLanguageCode[language_codes.value[0]]) ? language_codes.value[0] : 'en-US';
@@ -47,6 +70,9 @@ const getFormattedSubscriptionStatus = (subscription) => {
     }
     if (status === 'active') {
         return translations.LabelsByLanguageCode[langCode]?.statusActive || 'Active';
+    }
+    if (status === 'active_manual') { // New case for manually assigned active plans
+        return translations.LabelsByLanguageCode[langCode]?.statusActiveManual || 'Active (Manual)';
     }
     if (status === 'past_due') {
         return translations.LabelsByLanguageCode[langCode]?.statusPastDue || 'Past Due';
@@ -85,16 +111,26 @@ if (translations.LabelsByLanguageCode && translations.LabelsByLanguageCode['en-U
         statusCanceledOnGrace: (endDate) => `Canceled (access until ${endDate})`,
         statusIncomplete: 'Incomplete',
         statusFree: 'Free Tier',
+        statusActiveManual: 'Active (Manually Assigned)', // New translation
 
         freeTierTitle: 'Registered User Features (Free)',
         basicPlanTitle: 'Resident Awareness',
         proPlanTitle: 'Pro Insights',
+        redeemCodeTitle: 'Redeem Subscription Code',
+        redeemCodeInputLabel: 'Enter Code',
+        redeemCodeButton: 'Redeem Code',
+        redeemCodeSuccess: 'Code redeemed successfully!', // Generic, backend provides specific
+        redeemCodeError: 'Invalid or expired redemption code.', // Generic, backend provides specific
     };
 }
 
 const hasActivePaidSubscription = computed(() => {
     if (!props.subscriptionsList) return false;
-    return props.subscriptionsList.some(sub => sub.isActive || sub.isOnGracePeriod || sub.status === 'past_due' || sub.status === 'incomplete');
+    // Show "Manage Billing" only for active Stripe subscriptions
+    return props.subscriptionsList.some(sub =>
+        sub.source === 'stripe' &&
+        (sub.isActive || sub.isOnGracePeriod || sub.status === 'past_due' || sub.status === 'incomplete')
+    );
 });
 
 </script>
@@ -109,6 +145,16 @@ const hasActivePaidSubscription = computed(() => {
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+                <!-- Display general status messages (e.g., profile updated, code redeemed successfully) -->
+                <div v-if="status && !status_error && !redeemForm.hasErrors" class="mb-4 font-medium text-sm text-green-600 bg-green-100 p-3 rounded-md">
+                    {{ status }}
+                </div>
+                <!-- Display redeem code specific error from status_error (if backend sets it) -->
+                 <div v-if="status_error" class="mb-4 font-medium text-sm text-red-600 bg-red-100 p-3 rounded-md">
+                    {{ status_error }}
+                </div>
+
+
                 <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
@@ -149,13 +195,19 @@ const hasActivePaidSubscription = computed(() => {
 
                         <div v-if="subscriptionsList && subscriptionsList.length > 0">
                             <div v-for="(subscription, index) in subscriptionsList" :key="index" class="mt-4 pt-4 border-t first:border-t-0 first:pt-0">
+                                <!-- ... existing subscription details display ... -->
                                 <div class="space-y-2">
                                     <div>
                                         <span class="font-medium text-gray-700">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.profileSubscriptionNameLabel || 'Subscription Type' }}:</span>
-                                        <span class="ml-2 text-gray-600 capitalize">{{ subscription.name.replace('_', ' ') }}</span>
+                                        <!-- subscription.name will be 'manual', 'stripe', or 'default' -->
+                                        <span class="ml-2 text-gray-600 capitalize">{{ subscription.name.replace('_', ' ') }}
+                                            <span v-if="subscription.source === 'manual'" class="text-sm text-gray-500">({{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.sourceManual || 'Manual' }})</span>
+                                            <span v-else-if="subscription.source === 'stripe'" class="text-sm text-gray-500">({{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.sourceStripe || 'Stripe' }})</span>
+                                        </span>
                                     </div>
                                     <div>
                                         <span class="font-medium text-gray-700">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.profileCurrentPlanLabel || 'Plan' }}:</span>
+                                        <!-- getPlanDisplayName will use subscription.planName for manual plans, which is descriptive -->
                                         <span class="ml-2 text-gray-600">{{ getPlanDisplayName(subscription.planKey, subscription.planName) }}</span>
                                     </div>
                                     <div>
@@ -193,6 +245,46 @@ const hasActivePaidSubscription = computed(() => {
                                 {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.profileViewPlansButton || 'View Subscription Plans' }}
                             </Link>
                         </div>
+                    </section>
+
+                    <!-- Redeem Code Section -->
+                    <section class="mt-8 pt-6 border-t">
+                        <header>
+                             <h2 class="text-lg font-medium text-gray-900">
+                                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.redeemCodeTitle || 'Redeem Subscription Code' }}
+                            </h2>
+                            <p class="mt-1 text-sm text-gray-600">
+                                If you have a redemption code, enter it here to update your subscription.
+                            </p>
+                        </header>
+
+                        <form @submit.prevent="submitRedeemCode" class="mt-6 space-y-6 max-w-xl">
+                            <div>
+                                <InputLabel for="redeem_code" :value="translations.LabelsByLanguageCode[getSingleLanguageCode]?.redeemCodeInputLabel || 'Enter Code'" />
+                                <TextInput
+                                    id="redeem_code"
+                                    v-model="redeemForm.redeem_code"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    required
+                                    autocomplete="off"
+                                />
+                                <InputError :message="redeemForm.errors.redeem_code || (errors && errors.redeem_code ? errors.redeem_code[0] : '')" class="mt-2" />
+
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <PrimaryButton :disabled="redeemForm.processing">
+                                    {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.redeemCodeButton || 'Redeem Code' }}
+                                </PrimaryButton>
+
+                                <Transition enter-from-class="opacity-0" leave-to-class="opacity-0" class="transition ease-in-out">
+                                    <p v-if="redeemForm.recentlySuccessful" class="text-sm text-gray-600">
+                                        {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.redeemCodeSuccess || 'Code redeemed successfully!' }}
+                                    </p>
+                                </Transition>
+                            </div>
+                        </form>
                     </section>
                 </div>
 

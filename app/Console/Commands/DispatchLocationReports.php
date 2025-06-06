@@ -7,7 +7,8 @@ use App\Models\Location;
 use App\Models\User; // Import User model
 use App\Jobs\SendLocationReportEmail;
 use Illuminate\Support\Facades\Log; // For logging
-use Illuminate\Support\Facades\Config; // To access stripe price IDs
+// Config is still used by User::getEffectiveTierDetails indirectly, so no need to remove its use here if other parts of the app rely on it.
+// use Illuminate\Support\Facades\Config; 
 
 class DispatchLocationReports extends Command
 {
@@ -30,91 +31,62 @@ class DispatchLocationReports extends Command
      */
     public function handle()
     {
-        $this->info('Starting to dispatch report jobs...');
+        $this->info('Starting to dispatch report jobs based on effective user tiers...');
         $dispatchedCount = 0;
 
-        // Get Stripe Price IDs from config
-        $basicPlanPriceId = Config::get('stripe.prices.basic_plan');
-        $proPlanPriceId = Config::get('stripe.prices.pro_plan');
+        // Fetch all users who have locations. This is an optimization.
+        // If users without locations can have report-eligible tiers, fetch all User::all()
+        // and then check for locations inside the loop.
+        // For now, assuming only users with locations are relevant.
+        $usersWithLocations = User::whereHas('locations')->with('locations')->get();
 
-        if (!$basicPlanPriceId || !$proPlanPriceId) {
-            $this->error('Stripe Price IDs for basic or pro plan are not configured. Please check config/stripe.php and your .env file.');
-            Log::error('Stripe Price IDs for basic or pro plan are not configured in DispatchLocationReports command.');
-            return 1; // Indicate an error
-        }
-
-        // Get all users who have an active 'default' subscription.
-        // Eager load their 'default' subscription and all their locations.
-        $subscribedUsers = User::whereHas('subscriptions', function ($query) {
-            $query->where('name', 'default')->whereNull('ends_at'); // Active 'default' subscription
-        })->with(['subscriptions' => function ($query) {
-            $query->where('name', 'default')->whereNull('ends_at'); // Ensure we only get the active default subscription
-        }, 'locations'])->get();
-
-        if ($subscribedUsers->isEmpty()) {
-            $this->info('No subscribed users found with active plans that include reports.');
+        if ($usersWithLocations->isEmpty()) {
+            $this->info('No users with locations found to process for reports.');
             return 0;
         }
 
-        $this->info("Found {$subscribedUsers->count()} subscribed users to process.");
+        $this->info("Found {$usersWithLocations->count()} users with locations to process.");
 
-        foreach ($subscribedUsers as $user) {
-            // Get the specific 'default' active subscription for this user
-            // The eager loading helps, but we access it directly via the collection
-            $activeSubscription = $user->subscriptions->firstWhere('name', 'default');
+        foreach ($usersWithLocations as $user) {
+            $effectiveTierDetails = $user->getEffectiveTierDetails();
+            $userTier = $effectiveTierDetails['tier']; // 'free', 'basic', 'pro'
+            $tierSource = $effectiveTierDetails['source']; // 'default', 'manual', 'stripe'
 
-            if (!$activeSubscription) {
-                Log::info("User ID: {$user->id} iterated but no active 'default' subscription found (should not happen with current query), skipping.");
+            if (!in_array($userTier, ['basic', 'pro'])) {
+                // Skip users on free tier or any other tier not eligible for reports
+                Log::info("User ID: {$user->id} is on '{$userTier}' (source: {$tierSource}), not eligible for reports. Skipping.");
                 continue;
             }
 
-            $userPlan = null;
-            if ($activeSubscription->stripe_price === $basicPlanPriceId) {
-                $userPlan = 'basic';
-            } elseif ($activeSubscription->stripe_price === $proPlanPriceId) {
-                $userPlan = 'pro';
-            }
-
-            if (!$userPlan) {
-                Log::warning("User ID: {$user->id} is subscribed, but their plan (Price ID: {$activeSubscription->stripe_price}) is not recognized for reports. Skipping.");
-                continue;
-            }
-
-            $this->line("Processing User ID: {$user->id} on '{$userPlan}' plan.");
+            $this->line("Processing User ID: {$user->id} on '{$userTier}' plan (source: {$tierSource}).");
 
             // Base query for user's locations configured for reports
-            $userLocationsQuery = $user->locations()->where(function ($query) {
-                $query->where('report', 'daily');
-                if (now()->isSunday()) {
-                    $query->orWhere('report', 'weekly');
-                }
+            // Locations are already eager-loaded.
+            $configuredLocations = $user->locations->filter(function ($location) {
+                return $location->report === 'daily' || (now()->isSunday() && $location->report === 'weekly');
             });
 
-            if ($userPlan === 'basic') {
+            if ($configuredLocations->isEmpty()) {
+                $this->comment("-- User ID: {$user->id} has no locations configured for 'daily' (or 'weekly' on Sunday) reports.");
+                continue;
+            }
+
+            if ($userTier === 'basic') {
                 // Basic plan: Send report for only ONE configured location.
-                // We'll take the first one found (e.g., oldest or by ID).
-                // If a user needs to select WHICH one, that's a feature enhancement.
-                $locationToSend = $userLocationsQuery->orderBy('id', 'asc')->first(); // Get the first one
+                // We'll take the first one found (e.g., by ID or however collection sorts it).
+                $locationToSend = $configuredLocations->sortBy('id')->first();
 
                 if ($locationToSend) {
                     SendLocationReportEmail::dispatch($locationToSend);
                     $this->info("-- Dispatched report for Basic User ID: {$user->id}, Location ID: {$locationToSend->id} ('{$locationToSend->address}')");
                     $dispatchedCount++;
-                } else {
-                    $this->comment("-- Basic User ID: {$user->id} has no locations configured for 'daily' (or 'weekly' on Sunday) reports.");
                 }
-            } elseif ($userPlan === 'pro') {
+            } elseif ($userTier === 'pro') {
                 // Pro plan: Send reports for ALL their configured locations.
-                $locationsToSend = $userLocationsQuery->get();
-
-                if ($locationsToSend->isNotEmpty()) {
-                    foreach ($locationsToSend as $location) {
-                        SendLocationReportEmail::dispatch($location);
-                        $this->info("-- Dispatched report for Pro User ID: {$user->id}, Location ID: {$location->id} ('{$location->address}')");
-                        $dispatchedCount++;
-                    }
-                } else {
-                    $this->comment("-- Pro User ID: {$user->id} has no locations configured for 'daily' (or 'weekly' on Sunday) reports.");
+                foreach ($configuredLocations as $location) {
+                    SendLocationReportEmail::dispatch($location);
+                    $this->info("-- Dispatched report for Pro User ID: {$user->id}, Location ID: {$location->id} ('{$location->address}')");
+                    $dispatchedCount++;
                 }
             }
         }

@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Config;
-use Laravel\Cashier\Subscription; // Import Subscription model
+use Illuminate\Support\Facades\Config; // Keep for stripe prices if still used by User model
 
 class ProfileController extends Controller
 {
@@ -28,61 +27,29 @@ class ProfileController extends Controller
         ];
 
         if ($user) {
-            if ($user->subscriptions->isNotEmpty()) {
-                foreach ($user->subscriptions as $subscription) {
-                    /** @var Subscription $subscription */
-                    $planName = 'Unknown Plan'; // Default plan name
-                    $planKey = 'unknown';
+            $effectiveSubscriptionDetails = $user->getEffectiveTierDetails();
 
-                    // Determine plan name and key based on Stripe price ID
-                    if ($subscription->stripe_price === config('stripe.prices.basic_plan')) {
-                        $planName = 'Resident Awareness'; // Or fetch from translations/config
-                        $planKey = 'basic';
-                    } elseif ($subscription->stripe_price === config('stripe.prices.pro_plan')) {
-                        $planName = 'Pro Insights'; // Or fetch from translations/config
-                        $planKey = 'pro';
-                    }
-                    // Add more plans here if necessary
-
-                    $subscriptionsDetailsList[] = [
-                        'name' => $planKey, // The name of the subscription (e.g., 'default', 'premium')
-                        'planName' => $planName,
-                        'planKey' => $planKey, // To help Vue component map to translations if needed
-                        'status' => $subscription->stripe_status,
-                        'isActive' => $subscription->active(),
-                        'isOnTrial' => $subscription->onTrial(),
-                        'isCancelled' => $subscription->cancelled(),
-                        'isOnGracePeriod' => $subscription->onGracePeriod(),
-                        'endsAt' => $subscription->ends_at ? date('F j, Y', strtotime($subscription->ends_at)) : null,
-                        'trialEndsAt' => $subscription->trial_ends_at ? (date('F j, Y', strtotime($subscription->trial_ends_at))) : null,
-                        'currentPeriodEnd' => $subscription->active() && !$subscription->onTrial() && !$subscription->cancelled() ? date('F j, Y', $subscription->current_period_end) : null,
-                    ];
-                }
-            }
-
-            // If no subscriptions, add a default "free tier" representation
-            if (empty($subscriptionsDetailsList)) {
-                $subscriptionsDetailsList[] = [
-                    'name' => 'free_tier',
-                    'planName' => 'Registered User Features (Free)', // Or fetch from translations/config
-                    'planKey' => 'free',
-                    'status' => 'free',
-                    'isActive' => false,
-                    'isOnTrial' => false,
-                    'isCancelled' => false,
-                    'isOnGracePeriod' => false,
-                    'endsAt' => null,
-                    'trialEndsAt' => null,
-                    'currentPeriodEnd' => null,
-                ];
-            }
+            // The view expects an array of subscriptions. We provide one: the effective one.
+            $subscriptionsDetailsList[] = [
+                'name' => $effectiveSubscriptionDetails['source'] === 'stripe' ? 'default' : $effectiveSubscriptionDetails['source'], // e.g. 'stripe', 'manual'
+                'planName' => $effectiveSubscriptionDetails['planName'],
+                'planKey' => $effectiveSubscriptionDetails['tier'], // 'free', 'basic', 'pro'
+                'status' => $effectiveSubscriptionDetails['status'],
+                'isActive' => $effectiveSubscriptionDetails['isActive'],
+                'isOnTrial' => $effectiveSubscriptionDetails['isOnTrial'],
+                'isCancelled' => $effectiveSubscriptionDetails['isCancelled'],
+                'isOnGracePeriod' => $effectiveSubscriptionDetails['isOnGracePeriod'],
+                'endsAt' => $effectiveSubscriptionDetails['endsAt'],
+                'trialEndsAt' => $effectiveSubscriptionDetails['trialEndsAt'],
+                'currentPeriodEnd' => $effectiveSubscriptionDetails['currentPeriodEnd'],
+                'source' => $effectiveSubscriptionDetails['source'], // Pass source for potential display differences in Vue
+            ];
         }
 
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
-            // 'currentPlanKey' => $currentPlanKey, // This is now ambiguous, replaced by planKey within each subscription item
-            'subscriptionsList' => $subscriptionsDetailsList, // Changed from subscriptionDetails
+            'subscriptionsList' => $subscriptionsDetailsList,
             'socialLoginDetails' => $socialLoginDetails,
         ]);
     }
@@ -100,7 +67,45 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.edit')->with('status', 'Profile information updated.');
+    }
+
+    /**
+     * Redeem a subscription code to update the user's manual tier.
+     */
+    public function redeemSubscriptionCode(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'redeem_code' => 'required|string|max:255',
+        ]);
+
+        $user = $request->user();
+        $submittedCode = $request->input('redeem_code');
+
+        $definedCodes = Config::get('redeem_codes', []);
+
+        if (array_key_exists($submittedCode, $definedCodes)) {
+            $tierToApply = $definedCodes[$submittedCode];
+
+            if (in_array($tierToApply, ['free', 'basic', 'pro'])) {
+                $user->manual_subscription_tier = $tierToApply;
+                $user->save();
+
+                // Provide a descriptive success message
+                $planName = ucfirst($tierToApply);
+                if ($tierToApply === 'free') $planName = 'Free';
+                else if ($tierToApply === 'basic') $planName = 'Resident Awareness (Basic)';
+                else if ($tierToApply === 'pro') $planName = 'Pro Insights (Pro)';
+
+
+                return Redirect::route('profile.edit')->with('status', "Code redeemed successfully! Your plan has been updated to: {$planName}.");
+            } else {
+                // This case should ideally not happen if config is correct
+                return Redirect::route('profile.edit')->with('status', 'Error: The code is valid but maps to an unknown tier.');
+            }
+        } else {
+            return Redirect::route('profile.edit')->withErrors(['redeem_code' => 'Invalid or expired redemption code.'])->with('status_error', 'Invalid or expired redemption code.');
+        }
     }
 
     /**
@@ -152,17 +157,25 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        // If the user is a subscriber, you might want to cancel their Stripe subscription here.
-        if ($user->subscribed('default')) { // Assuming 'default' is your subscription name
+        // If the user is a subscriber (via Stripe), you might want to cancel their Stripe subscription here.
+        // Manual subscriptions don't need Stripe cancellation.
+        // The getEffectiveTierDetails()['source'] could be checked if specific logic for Stripe vs manual is needed.
+        // For now, we only cancel Stripe subscriptions.
+        if ($user->subscribed('default')) { // Checks actual Stripe subscription
             try {
                 $user->subscription('default')->cancelNow(); // Or ->cancel() for end of billing period
-                 // Log::info("User ID {$user->id} subscription canceled due to account deletion.");
+                 // Log::info("User ID {$user->id} Stripe subscription canceled due to account deletion.");
             } catch (\Exception $e) {
                 // Log::error("Failed to cancel Stripe subscription for User ID {$user->id} on account deletion: {$e->getMessage()}");
                 // Decide if you want to halt deletion or proceed. For now, we proceed.
             }
         }
 
+        // Clear manual subscription tier upon account deletion
+        $user->manual_subscription_tier = null;
+        // $user->save(); // User is about to be deleted, so this save might be redundant unless there are observers.
+                         // It's safer to include if there's any logic that might trigger on this field change before deletion.
+                         // However, since the user record is deleted, this field is gone anyway.
 
         $user->delete();
 
