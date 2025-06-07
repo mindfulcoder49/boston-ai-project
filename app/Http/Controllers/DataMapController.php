@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str; // Added
 use Illuminate\Support\Facades\Auth; // Added
 use Carbon\Carbon; // Added
+use App\Models\User; // Ensure User model is imported if not already
+use Illuminate\Support\Facades\Schema; // For schema checks
 
 class DataMapController extends Controller
 {
@@ -24,7 +26,7 @@ class DataMapController extends Controller
         // Add other data types and their models here
     ];
 
-    private const MODELS = [
+    public const MODELS = [
         'crime' => ['lat' => 'lat', 'lng' => 'long', 'id' => 'id', 'date_field' => 'occurred_on_date', 'foreign_key' => 'crime_data_id'],
         '311_cases' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'open_dt', 'foreign_key' => 'three_one_one_case_id'],
         'property_violations' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'status_dttm', 'foreign_key' => 'property_violation_id'],
@@ -32,8 +34,14 @@ class DataMapController extends Controller
         'building_permits' => ['lat' => 'y_latitude', 'lng' => 'x_longitude', 'id' => 'id', 'date_field' => 'issued_date', 'foreign_key' => 'building_permit_id'],
         'food_inspections' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'external_id', 'date_field' => 'resultdttm', 'foreign_key' => 'food_inspection_id'],
     ];
+    // Public accessor for modelMapping
+    public function getModelMapping(): array
+    {
+        return $this->modelMapping;
+    }
 
-    private function getModelClass(string $dataType): ?string
+    // Renamed from getModelClass to avoid conflict if used differently, and made public
+    public function getModelClassForDataType(string $dataType): ?string
     {
         if (!isset($this->modelMapping[$dataType])) {
             abort(404, "Data type '{$dataType}' not found or not configured for mapping.");
@@ -47,20 +55,18 @@ class DataMapController extends Controller
         return $modelClass;
     }
 
-    public function getMinDateForUser(string $dataType) // dataType might be useful if restrictions vary by type
+    // Refactored to accept a user context
+    public function getMinDateForEffectiveUser(string $dataType, ?\App\Models\User $userContext = null)
     {
-        // $modelClass = $this->getModelClass($dataType); // Not strictly needed if tier logic is global
-        $user = Auth::user();
-        $tierMinDate = null; // Default: no restriction (e.g., for guests or if logic changes)
+        $effectiveUser = $userContext ?: Auth::user(); // Default to current authenticated user if none provided
+        $tierMinDate = null;
 
-        if (!$user) {
-            // Guest user: For now, let's assume they get a very limited view or are blocked by middleware.
-            // If allowed, set a strict limit, e.g., Carbon::now()->subDays(7);
-            // This method is typically called for authenticated users.
-            return Carbon::now()->subMonths(1); // Example: Guests get 1 month of data
+        if (!$effectiveUser) {
+            // Guest user or no user context for a non-public scenario
+            return Carbon::now()->subMonths(1); // Default guest access: 1 month
         }
 
-        $effectiveTierDetails = $user->getEffectiveTierDetails();
+        $effectiveTierDetails = $effectiveUser->getEffectiveTierDetails();
         $effectiveTier = $effectiveTierDetails['tier'];
 
         if ($effectiveTier === 'free') {
@@ -70,7 +76,7 @@ class DataMapController extends Controller
         } elseif ($effectiveTier === 'pro') {
             $tierMinDate = null; // Pro users have no date restriction from tier
         } else {
-            // Fallback for any unknown tier or if user is null and not caught above
+            // Fallback for any unknown tier
             $tierMinDate = Carbon::now()->subMonths(1);
         }
         
@@ -79,13 +85,9 @@ class DataMapController extends Controller
 
     public function index(Request $request, string $dataType)
     {
-        $modelClass = $this->getModelClass($dataType);
-        // Fetch initial data with a sensible limit. Filters can override this.
-        //$initialData = $modelClass::limit(100000)->get(); 
-
+        $modelClass = $this->getModelClassForDataType($dataType);
         // Fetch data limited by user's subscription tier
-        $user = Auth::user();
-        $tierMinDate =$this->getMinDateForUser($dataType);
+        $tierMinDate = $this->getMinDateForEffectiveUser($dataType, Auth::user()); // Pass current user
 
         $query = $modelClass::query();
         // Apply tier-based date restriction first
@@ -128,7 +130,7 @@ class DataMapController extends Controller
 
         foreach ($this->modelMapping as $dataType => $modelClassString) {
             /** @var Mappable $modelClass */
-            $modelClass = $this->getModelClass($dataType); // Ensures it uses Mappable
+            $modelClass = $this->getModelClassForDataType($dataType); // Ensures it uses Mappable
             if (!$modelClass) {
                 Log::warning("Skipping data type {$dataType} in combinedIndex as its model class could not be resolved or is not Mappable.");
                 continue;
@@ -147,7 +149,7 @@ class DataMapController extends Controller
                 $query = $modelClass::query();
 
                 // Apply tier-based date restriction first
-                $tierMinDate =$this->getMinDateForUser($dataType);
+                $tierMinDate = $this->getMinDateForEffectiveUser($dataType, Auth::user()); // Pass current user
                 if ($tierMinDate) {
                     $query->where($modelClass::getDateField(), '>=', $tierMinDate->toDateString());
                 }
@@ -169,8 +171,13 @@ class DataMapController extends Controller
             // Potentially fetch data for this fallback initialDataType if not already fetched
             if ($initialData->isEmpty() && $initialDataType) {
                  /** @var Mappable $modelClass */
-                $modelClass = $this->getModelClass($initialDataType);
+                $modelClass = $this->getModelClassForDataType($initialDataType);
                 $query = $modelClass::query();
+                // Apply tier-based date restriction for fallback initial data
+                $tierMinDateOnFallback = $this->getMinDateForEffectiveUser($initialDataType, Auth::user());
+                if ($tierMinDateOnFallback) {
+                    $query->where($modelClass::getDateField(), '>=', $tierMinDateOnFallback->toDateString());
+                }
                 if (isset($initialFilters['limit'])) {
                     $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
                 }
@@ -188,24 +195,13 @@ class DataMapController extends Controller
         ]);
     }
 
-    public function getData(Request $request, string $dataType)
+    public function applyQueryFilters(Builder $query, string $modelClass, array $filters, ?User $userContext)
     {
-        $modelClass = $this->getModelClass($dataType);
-        Log::info("Fetching data for {$dataType} with filters: " . json_encode($request->input('filters')));
-        /** @var Builder $query */
-        $query = $modelClass::query();
-        $filters = $request->input('filters', []);
-
-        $user = Auth::user();
         $dateField = $modelClass::getDateField();
-        
-        // Get tier-based minimum date using the centralized helper method
-        $tierMinDate = $this->getMinDateForUser($dataType);
+        $searchableColumns = $modelClass::getSearchableColumns();
+        $tierMinDate = $this->getMinDateForEffectiveUser($modelClass, $userContext); // Pass modelClass for context if needed by getMinDate
 
-        $searchableColumns = $modelClass::getSearchableColumns(); // From Mappable
-        // $dateField is already defined above
-
-        $processedKeys = []; // To keep track of filter keys that have been handled
+        $processedKeys = [];
 
         // Apply tier-based date restriction first
         if ($tierMinDate) {
@@ -213,58 +209,59 @@ class DataMapController extends Controller
         }
 
         foreach ($filters as $key => $value) {
-            // Skip if already processed, or special keys handled elsewhere, or empty/null values that are not explicit false for booleans
             if (in_array($key, $processedKeys) || $key === 'search_term' || $key === 'limit' ||
                 ($value === null && !is_bool($value)) || ($value === '' && !is_bool($value)) || (is_array($value) && empty(array_filter($value, fn($item) => ($item !== null && $item !== '') || is_bool($item) )))) {
                 continue;
             }
 
-            // 1. Primary date field handling (e.g., 'occurred_on_date' via 'start_date' & 'end_date' filters)
             if ($key === 'start_date' && !empty($value)) {
                 $userStartDate = Carbon::parse($value);
-                // Ensure user's start_date respects tier limitations
+                $effectiveStartDate = $value;
                 if ($tierMinDate && $userStartDate->lt($tierMinDate)) {
-                    $value = $tierMinDate->toDateString(); // Override with tier's minimum date
+                    $effectiveStartDate = $tierMinDate->toDateString();
                 }
 
                 $endDateValue = $filters['end_date'] ?? null;
                 if (!empty($endDateValue)) {
-                    $query->whereBetween($dateField, [$value, $endDateValue]);
-                    $processedKeys[] = 'end_date'; // Mark 'end_date' as handled
+                    $query->whereBetween($dateField, [$effectiveStartDate, $endDateValue]);
+                    $processedKeys[] = 'end_date';
                 } else {
-                    $query->where($dateField, '>=', $value);
+                    $query->where($dateField, '>=', $effectiveStartDate);
                 }
-                $processedKeys[] = 'start_date'; // Mark 'start_date' as handled
+                $processedKeys[] = 'start_date';
                 continue;
             } elseif ($key === 'end_date' && !empty($value) && !isset($filters['start_date'])) {
-                // Only 'end_date' is present for the primary date field
-                // If tierMinDate is set, and no start_date is provided by user,
-                // the query already has `where($dateField, '>=', $tierMinDate)`.
+                // If tierMinDate is set, query already has $dateField >= $tierMinDate
                 // So, we just add the upper bound.
                 $query->where($dateField, '<=', $value);
                 $processedKeys[] = 'end_date';
                 continue;
             }
 
-            // 2. Secondary date fields (e.g., 'some_other_date_start' & 'some_other_date_end')
-            // AND Numeric range fields (e.g., 'age_min' & 'age_max')
             if (Str::endsWith($key, '_start') || Str::endsWith($key, '_min')) {
                 $isDateRange = Str::endsWith($key, '_start');
                 $suffix = $isDateRange ? '_start' : '_min';
                 $correspondingSuffix = $isDateRange ? '_end' : '_max';
 
                 $baseColumn = Str::beforeLast($key, $suffix);
-                $startValue = $value; // or minValue
-                $endKey = $baseColumn . $correspondingSuffix;
-                $endValue = $filters[$endKey] ?? null; // or maxValue
+                // Ensure baseColumn is a valid column for the model to prevent SQL injection if keys are user-generated
+                // This check might be too simplistic if column names can be complex.
+                // Consider checking against $modelClass::getFillable() or Schema::getColumnListing if necessary,
+                // but filters should ideally come from predefined structures (like getFilterableFieldsDescription).
+                if (!Schema::hasColumn($modelClass::make()->getTable(), $baseColumn)) {
+                    Log::warning("Invalid base column '{$baseColumn}' derived from filter key '{$key}' for model {$modelClass}. Skipping.");
+                    continue;
+                }
 
-                // Ensure value is not an empty string before processing
+                $startValue = $value;
+                $endKey = $baseColumn . $correspondingSuffix;
+                $endValue = $filters[$endKey] ?? null;
+
                 if ($startValue === '' && !is_numeric($startValue)) $startValue = null;
                 if ($endValue === '' && !is_numeric($endValue)) $endValue = null;
 
-
                 if ($startValue !== null && $endValue !== null) {
-                    if (!$isDateRange) { // Numeric range
+                    if (!$isDateRange) {
                         $numStartValue = filter_var($startValue, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
                         $numEndValue = filter_var($endValue, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
                         if ($numStartValue !== null && $numEndValue !== null) {
@@ -272,23 +269,23 @@ class DataMapController extends Controller
                         } else {
                             Log::warning("Invalid numeric range values for {$baseColumn}: min='{$startValue}', max='{$endValue}'");
                         }
-                    } else { // Date range
+                    } else {
                         $query->whereBetween($baseColumn, [$startValue, $endValue]);
                     }
-                    $processedKeys[] = $endKey; // Mark corresponding _end or _max key as handled
+                    $processedKeys[] = $endKey;
                 } elseif ($startValue !== null) {
-                    if (!$isDateRange) { // Numeric min
+                    if (!$isDateRange) {
                         $numStartValue = filter_var($startValue, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
                         if ($numStartValue !== null) {
                             $query->where($baseColumn, '>=', $numStartValue);
                         } else {
                              Log::warning("Invalid numeric min value for {$baseColumn}: '{$startValue}'");
                         }
-                    } else { // Date start
+                    } else {
                         $query->where($baseColumn, '>=', $startValue);
                     }
                 }
-                $processedKeys[] = $key; // Mark _start or _min key as handled
+                $processedKeys[] = $key;
                 continue;
             } elseif (Str::endsWith($key, '_end') || Str::endsWith($key, '_max')) {
                 $isDateRange = Str::endsWith($key, '_end');
@@ -296,33 +293,38 @@ class DataMapController extends Controller
                 $correspondingSuffix = $isDateRange ? '_start' : '_min';
 
                 $baseColumn = Str::beforeLast($key, $suffix);
-                $startKeyForThis = $baseColumn . $correspondingSuffix; // or _min
+                if (!Schema::hasColumn($modelClass::make()->getTable(), $baseColumn)) {
+                    Log::warning("Invalid base column '{$baseColumn}' derived from filter key '{$key}' for model {$modelClass}. Skipping.");
+                    continue;
+                }
+                $startKeyForThis = $baseColumn . $correspondingSuffix;
 
                 $currentEndValue = $value;
                 if ($currentEndValue === '' && !is_numeric($currentEndValue)) $currentEndValue = null;
 
-                // Process _end or _max key only if its corresponding _start or _min key was not provided/handled
                 if (!isset($filters[$startKeyForThis]) && $currentEndValue !== null) {
-                    if (!$isDateRange) { // Numeric max
+                    if (!$isDateRange) {
                         $numEndValue = filter_var($currentEndValue, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
                         if ($numEndValue !== null) {
                             $query->where($baseColumn, '<=', $numEndValue);
                         } else {
                             Log::warning("Invalid numeric max value for {$baseColumn}: '{$currentEndValue}'");
                         }
-                    } else { // Date end
+                    } else {
                          $query->where($baseColumn, '<=', $currentEndValue);
                     }
                 }
-                $processedKeys[] = $key; // Mark _end or _max key as handled
+                $processedKeys[] = $key;
                 continue;
             }
             
-            // 3. General column filtering for other types (text, select, boolean, etc.)
-            // These keys should directly correspond to database column names.
-            if (!in_array($key, $processedKeys)) { // Ensure it wasn't handled by date logic
-                 if (is_array($value)) {
-                    // Ensure array values are not empty strings before applying whereIn
+            if (!in_array($key, $processedKeys)) {
+                 // Again, ensure $key is a valid column name before using it directly in a query.
+                if (!Schema::hasColumn($modelClass::make()->getTable(), $key)) {
+                    Log::warning("Invalid filter key '{$key}' (not a column) for model {$modelClass}. Skipping.");
+                    continue;
+                }
+                if (is_array($value)) {
                     $filteredValues = array_filter($value, fn($item) => $item !== null && $item !== '');
                     if (!empty($filteredValues)) {
                         $query->whereIn($key, $filteredValues);
@@ -330,39 +332,47 @@ class DataMapController extends Controller
                 } elseif (is_bool($value)) {
                     $query->where($key, $value);
                 } else {
-                    // For single string/numeric values, typically use LIKE for text.
-                    // For numeric or exact matches, '=' would be better.
-                    // This might need refinement based on column type from metadata if available.
-                    // Defaulting to LIKE for broader matching.
                     $query->where($key, 'LIKE', "%{$value}%");
                 }
                 $processedKeys[] = $key;
             }
         }
 
-        // Add this block after the foreach loop to handle search_term
         if (!empty($filters['search_term']) && !empty($searchableColumns)) {
             $searchTerm = $filters['search_term'];
             $query->where(function ($q) use ($searchableColumns, $searchTerm) {
                 foreach ($searchableColumns as $col) {
-                    $q->orWhere($col, 'LIKE', '%' . $searchTerm . '%');
+                    // Ensure $col is a valid column before using in OR WHERE
+                    // This check might be redundant if $searchableColumns is always sourced from valid schema columns.
+                    // if (Schema::hasColumn(app($modelClass)->getTable(), $col)) {
+                         $q->orWhere($col, 'LIKE', '%' . $searchTerm . '%');
+                    // } else {
+                    //    Log::warning("Searchable column '{$col}' not found in table for model {$modelClass}. Skipping in search_term.");
+                    //}
                 }
             });
         }
+        // Note: The 'limit' filter is handled by the calling method (getData or SavedMapController@view) after this.
+    }
+
+    public function getData(Request $request, string $dataType)
+    {
+        $modelClass = $this->getModelClassForDataType($dataType);
+        Log::info("Fetching data for {$dataType} with filters: " . json_encode($request->input('filters')));
+        
+        $query = $modelClass::query();
+        $filters = $request->input('filters', []);
+        $currentUser = Auth::user(); // User context for getData is always the authenticated user
+
+        $this->applyQueryFilters($query, $modelClass, $filters, $currentUser);
 
         $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int)$filters['limit'] : 1000;
-        // Tier-based limit adjustments could be added here if needed
-        // Example:
-        // if ($user && !$user->subscribed('default')) { $limit = min($limit, 200); } // Free user limit
-        // elseif ($user && $user->subscribed('default') && $user->subscription('default')->stripe_price === config('stripe.prices.basic_plan')) { $limit = min($limit, 1000); } // Basic
-        // Pro users could use the default clamp or a higher one.
-        $query->limit(max(1, min($limit, 100000))); // Clamp limit for performance
+        $query->limit(max(1, min($limit, 100000))); 
 
-        //order by date field
         $query->orderBy($modelClass::getDateField(), 'desc');
         
-        Log::info("Query: " . $query->toSql());
-        Log::info("Query values: " . json_encode($query->getBindings()));
+        Log::info("Query SQL: " . $query->toSql());
+        Log::info("Query bindings: " . json_encode($query->getBindings()));
         $data = $query->get();
 
         $data = $this->enrichData($data, $dataType);
@@ -555,9 +565,9 @@ class DataMapController extends Controller
             return response()->json(['error' => 'Authentication required for natural language queries.'], 401);
         }
         // Tier-based restrictions are handled within getData, which this method calls.
-        // No specific tier logic needed here beyond what getData enforces.
+        // getData itself uses getMinDateForEffectiveUser(dataType, Auth::user())
 
-        $modelClass = $this->getModelClass($dataType);
+        $modelClass = $this->getModelClassForDataType($dataType);
         $queryText = $request->input('query');
 
         if (empty($queryText)) {

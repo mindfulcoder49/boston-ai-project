@@ -5,6 +5,7 @@
     </Head>
 
     <SubscriptionBanner />
+    <FeaturedUserMapsBanner />
 
     <div class="before-map">
       <h1 class="text-2xl font-bold text-gray-800 text-center my-4">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.pageTitle }}
@@ -122,6 +123,7 @@ import MapFiltersControl from '@/Components/MapFiltersControl.vue';
 import FoodInspection from '@/Components/FoodInspection.vue';
 import FoodInspectionTeaser from '@/Components/FoodInspectionTeaser.vue';
 import { usePage } from '@inertiajs/vue3'; // Import usePage
+import FeaturedUserMapsBanner from '@/Components/FeaturedUserMapsBanner.vue';
 
 const page = usePage(); // Get page instance
 

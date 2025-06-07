@@ -78,7 +78,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Report::class);
     }
-
+    
+    public function savedMaps()
+    {
+        return $this->hasMany(SavedMap::class);
+    }
     /**
      * Get the effective subscription tier details for the user.
      * Prioritizes manual tier, then Stripe, then defaults to 'free'.

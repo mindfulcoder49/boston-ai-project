@@ -2,8 +2,15 @@
   <div class="combined-data-map-container p-4">
     <h2 class="text-2xl font-bold text-center mb-6">Combined Data Map</h2>
 
+    <!-- Save Map Button -->
+    <div v-if="!isReadOnly && page.props.auth.user" class="mb-4 text-right">
+      <button @click="showSaveMapModal = true" class="p-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600">
+        Save Current Map View
+      </button>
+    </div>
+
     <!-- NLP Query Section -->
-    <div class="nlp-query-section mb-6 p-4 border rounded-md shadow-sm bg-white">
+    <div v-if="!isReadOnly" class="nlp-query-section mb-6 p-4 border rounded-md shadow-sm bg-white">
       <h3 class="text-xl font-semibold mb-3">Natural Language Query (Combined)</h3>
       <p class="text-sm text-gray-600 mb-2">
         Select data types and ask a question (e.g., "Show incidents and violations last week").
@@ -36,7 +43,11 @@
         </label>
       </div>
       <div v-if="Object.keys(nlpErrorsByType).length > 0" class="mt-2 text-red-500 text-sm">
-        <p v-for="(error, type) in nlpErrorsByType" :key="`nlp-error-${type}`">Error for {{ getModelNameForHumans(type) }}: {{ error }}</p>
+        <p v-for="(error, type) in nlpErrorsByType" :key="`nlp-error-${type}`">
+          <span v-if="error">
+            Error for {{ getModelNameForHumans(type) }}: {{ error }}
+          </span>
+        </p>
       </div>
     </div>
 
@@ -45,7 +56,7 @@
         <h3 class="text-xl font-semibold mb-3">Display Data Types on Map</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
         <label v-for="dt in availableDataTypes" :key="`map-select-${dt}`" class="text-sm inline-flex items-center p-2 border rounded-md hover:bg-gray-50 cursor-pointer">
-            <input type="checkbox" :value="dt" v-model="mapSelectedDataTypes" class="mr-2 form-checkbox h-4 w-4 text-indigo-600">
+            <input type="checkbox" :value="dt" v-model="mapSelectedDataTypes" class="mr-2 form-checkbox h-4 w-4 text-indigo-600" >
             <span
               v-if="getIconClassForDataType(dt)"
               :class="[getIconClassForDataType(dt), 'checkbox-icon-display']"
@@ -69,7 +80,7 @@
     </div>
     
     <!-- Filters Section - Tabbed Interface -->
-    <div class="filters-tab-section mb-6 p-4 border rounded-md shadow-sm bg-white">
+    <div v-if="!isReadOnly" class="filters-tab-section mb-6 p-4 border rounded-md shadow-sm bg-white">
         <h3 class="text-xl font-semibold mb-3">Filters</h3>
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-4 overflow-x-auto" aria-label="Tabs">
@@ -122,7 +133,7 @@
 
     <!-- AI Assistant -->
     <AiAssistant 
-      v-if="combinedDataPointsForMap.length > 0 && !isGlobalLoading"
+      v-if="combinedDataPointsForMap.length > 0 && !isGlobalLoading && !isReadOnly"
       :context="combinedDataPointsForMap" 
       :language_codes="language_codes" 
       :currentMapLanguage="currentReportLanguage"
@@ -141,6 +152,7 @@
     <!-- Download CSV Button -->
     <div class="mt-6 text-right">
       <button 
+        v-if="!isReadOnly"
         @click="downloadCombinedCSV" 
         class="p-2 bg-green-500 text-white rounded-md text-sm hover:bg-green-600"
         :disabled="combinedDataPointsForMap.length === 0"
@@ -148,13 +160,49 @@
         Download Displayed Data as CSV
       </button>
     </div>
+
+     <!-- Save Map Modal -->
+    <div v-if="showSaveMapModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+        <h3 class="text-lg font-semibold mb-4">Save Combined Map</h3>
+        <form @submit.prevent="handleSaveMap">
+          <div class="mb-4">
+            <label for="mapNameCombined" class="block text-sm font-medium text-gray-700">Map Name*</label>
+            <input type="text" v-model="saveMapForm.name" id="mapNameCombined" required class="mt-1 p-2 border rounded-md w-full">
+          </div>
+          <div class="mb-4">
+            <label for="mapDescriptionCombined" class="block text-sm font-medium text-gray-700">Description</label>
+            <textarea v-model="saveMapForm.description" id="mapDescriptionCombined" rows="3" class="mt-1 p-2 border rounded-md w-full"></textarea>
+          </div>
+          <div class="mb-4">
+            <label for="creatorDisplayNameCombined" class="block text-sm font-medium text-gray-700">Creator Display Name (Optional)</label>
+            <input type="text" v-model="saveMapForm.creator_display_name" id="creatorDisplayNameCombined" placeholder="Leave blank to use your account name" class="mt-1 p-2 border rounded-md w-full">
+            <p class="text-xs text-gray-500 mt-1">This name will be shown if the map is public.</p>
+          </div>
+           <div class="mb-4">
+            <label class="inline-flex items-center">
+              <input type="checkbox" v-model="saveMapForm.is_public" class="form-checkbox h-5 w-5 text-indigo-600">
+              <span class="ml-2 text-sm text-gray-700">Make this map public?</span>
+            </label>
+          </div>
+          <div v-if="saveMapError" class="mb-4 text-sm text-red-500">{{ saveMapError }}</div>
+          <div class="flex justify-end space-x-2">
+            <button type="button" @click="showSaveMapModal = false" class="p-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">Cancel</button>
+            <button type="submit" :disabled="isSavingMap" class="p-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50">
+              {{ isSavingMap ? 'Saving...' : 'Save Map' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch, inject } from 'vue';
 import axios from 'axios';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3'; // Added router
 
 import DataMapDisplay from '@/Components/DataMapDisplay.vue';
 import GenericFiltersControl from '@/Components/GenericFiltersControl.vue';
@@ -167,6 +215,19 @@ const props = defineProps({
   initialDataProp: Array,
   initialFiltersProp: Object,
   allDataTypeDetailsProp: Object, // Keyed by dataType: { dateField, externalIdField, filterFieldsDescription, modelNameForHumans }
+  isReadOnly: { // New prop
+    type: Boolean,
+    default: false,
+  },
+  initialMapSettings: { // New prop for viewing saved maps
+    type: Object,
+    default: () => ({ center: [42.3601, -71.0589], zoom: 12, selected_data_types: [] })
+  },
+  // Prop to pass pre-loaded data for multiple types when in read-only mode
+  initialDataSetsProp: {
+    type: Object,
+    default: () => ({})
+  }
 });
 
 const page = usePage();
@@ -190,6 +251,22 @@ const language_codes = ref(['en-US']);
 // const filterVisibility = ref({}); // To toggle filter sections - REMOVED for tabs
 const activeFilterTab = ref(''); // For tabbed filters
 const mapSelectedDataTypes = ref([]); // For selecting which data types appear on map
+
+// Save Map Modal State
+const showSaveMapModal = ref(false);
+const saveMapForm = ref({
+  name: '',
+  description: '',
+  creator_display_name: '', // Added
+  map_type: 'combined',
+  data_type: null, // Not used for combined
+  filters: {}, // Will be currentFiltersByType
+  map_settings: {},
+  is_public: false,
+});
+const isSavingMap = ref(false);
+const saveMapError = ref('');
+
 
 const availableDataTypes = computed(() => Object.keys(props.modelMappingProp || {}));
 
@@ -236,7 +313,7 @@ const combinedDataPointsForMap = computed(() => {
 });
 
 const fetchDataForType = async (dataType, filters) => {
-  if (!dataType) return;
+  if (props.isReadOnly || !dataType) return; // Don't fetch if read-only
   isLoadingByType.value = { ...isLoadingByType.value, [dataType]: true };
   nlpErrorsByType.value = { ...nlpErrorsByType.value, [dataType]: '' };
 
@@ -258,7 +335,7 @@ const fetchDataForType = async (dataType, filters) => {
 };
 
 const submitCombinedNlpQuery = async () => {
-  if (!nlpQueryText.value.trim() || nlpSelectedDataTypes.value.length === 0) return;
+  if (props.isReadOnly || !nlpQueryText.value.trim() || nlpSelectedDataTypes.value.length === 0) return;
   
   nlpQuerySubmitted.value = true;
   nlpErrorsByType.value = {}; // Clear previous errors
@@ -299,6 +376,7 @@ const submitCombinedNlpQuery = async () => {
 };
 
 const handleFiltersUpdatedForType = (dataType, newFilters) => {
+  if (props.isReadOnly) return;
   fetchDataForType(dataType, newFilters);
 };
 
@@ -354,10 +432,77 @@ const downloadCombinedCSV = () => {
   document.body.removeChild(link);
 };
 
+const handleSaveMap = async () => {
+  if (props.isReadOnly) return;
+  isSavingMap.value = true;
+  saveMapError.value = '';
+
+  const mapInstance = dataMapDisplayRef.value?.getMapInstance();
+  let currentMapCenter = props.initialMapSettings.center;
+  let currentMapZoom = props.initialMapSettings.zoom;
+
+  if (mapInstance) {
+    currentMapCenter = [mapInstance.getCenter().lat, mapInstance.getCenter().lng];
+    currentMapZoom = mapInstance.getZoom();
+  }
+  
+  saveMapForm.value.filters = { ...currentFiltersByType.value }; // Save current filters for all types
+  saveMapForm.value.map_settings = {
+    center: currentMapCenter,
+    zoom: currentMapZoom,
+    selected_data_types: [...mapSelectedDataTypes.value], // Save currently selected layers for display
+    active_filter_tab: activeFilterTab.value, // Save current active tab
+  };
+
+  try {
+    router.post(route('saved-maps.store'), saveMapForm.value, {
+      onSuccess: () => {
+        showSaveMapModal.value = false;
+        saveMapForm.value.name = '';
+        saveMapForm.value.description = '';
+        saveMapForm.value.creator_display_name = ''; // Reset
+        saveMapForm.value.is_public = false;
+      },
+      onError: (errors) => {
+        const errorKeys = Object.keys(errors);
+        if (errorKeys.length > 0) {
+            saveMapError.value = errors[errorKeys[0]];
+        } else {
+            saveMapError.value = 'An unknown error occurred while saving the map.';
+        }
+      },
+      onFinish: () => {
+        isSavingMap.value = false;
+      }
+    });
+  } catch (error) {
+    console.error('Failed to save map:', error);
+    saveMapError.value = error.response?.data?.message || 'Failed to save map.';
+    isSavingMap.value = false;
+  }
+};
+
+
 // REMOVED: toggleFilterVisibility as accordion is replaced by tabs
 
 onMounted(async () => {
-  // Initialize with initial data type
+  mapCenter.value = props.initialMapSettings?.center || [42.3601, -71.0589];
+
+  if (props.isReadOnly) {
+    // For read-only mode, data is pre-loaded via initialDataSetsProp
+    allDataPointsByType.value = { ...(props.initialDataSetsProp || {}) };
+    currentFiltersByType.value = { ...(props.initialFiltersProp || {}) }; // These are the saved filters
+    mapSelectedDataTypes.value = props.initialMapSettings?.selected_data_types || availableDataTypes.value;
+    activeFilterTab.value = props.initialMapSettings?.active_filter_tab || availableDataTypes.value[0] || '';
+    
+    // Ensure map view is set
+     if (isMapInitialized.value && dataMapDisplayRef.value?.getMapInstance()) {
+        dataMapDisplayRef.value.getMapInstance().setView(mapCenter.value, props.initialMapSettings?.zoom || 12);
+    }
+    return; // No fetching needed for read-only
+  }
+
+  // Initialize with initial data type if not read-only
   if (props.initialDataTypeProp && props.initialDataProp) {
     allDataPointsByType.value[props.initialDataTypeProp] = props.initialDataProp;
     currentFiltersByType.value[props.initialDataTypeProp] = { ...(props.initialFiltersProp || {}), limit: 100 };
@@ -379,7 +524,7 @@ onMounted(async () => {
   availableDataTypes.value.forEach(dataType => {
     // filterVisibility.value[dataType] = (dataType === props.initialDataTypeProp); // REMOVED
 
-    if (dataType !== props.initialDataTypeProp) {
+    if (dataType !== props.initialDataTypeProp && !props.isReadOnly) { // Don't fetch if read-only
       const defaultFilters = { limit: 100 }; 
       currentFiltersByType.value[dataType] = defaultFilters;
       fetchPromises.push(fetchDataForType(dataType, defaultFilters));
@@ -391,12 +536,12 @@ onMounted(async () => {
   await Promise.all(fetchPromises);
 
   // Set map center based on initial data if available
-  if (props.initialDataProp && props.initialDataProp.length > 0) {
+  if (props.initialDataProp && props.initialDataProp.length > 0 && !props.isReadOnly) {
     const firstPoint = props.initialDataProp[0];
     if (firstPoint.latitude && firstPoint.longitude) {
       mapCenter.value = [parseFloat(firstPoint.latitude), parseFloat(firstPoint.longitude)];
     }
-  } else if (mapSelectedDataTypes.value.length > 0) {
+  } else if (mapSelectedDataTypes.value.length > 0 && !props.isReadOnly) {
     // If no initial data, but some types are selected for map, try to center on first point of first selected type
     const firstMapSelectedType = mapSelectedDataTypes.value[0];
     const dataForFirstType = allDataPointsByType.value[firstMapSelectedType] || [];
@@ -411,8 +556,9 @@ onMounted(async () => {
 
 const handleMapInitialized = (map) => {
     isMapInitialized.value = true;
+    const zoomToUse = props.initialMapSettings?.zoom || 13;
     if (mapCenter.value && map) {
-        map.setView(mapCenter.value, 13);
+        map.setView(mapCenter.value, zoomToUse);
     }
 };
 

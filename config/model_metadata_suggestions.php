@@ -4090,7 +4090,7 @@ return [
             29 => 'source',
             30 => 'ward_number',
             31 => 'language_code',
-            32 => 'description',
+            32 => 'threeoneonedescription',
             33 => 'source_city',
         ],
         'gptSchemaProperties' => [

@@ -17,6 +17,9 @@
                         <NavLink :href="route('map.index')" :active="route().current('map.index')">
                             Home
                         </NavLink>
+                        <NavLink :href="route('saved-maps.index')" :active="route().current('saved-maps.index')">
+                            User Maps
+                        </NavLink>
                         <NavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')">
                             Full Data Map
                         </NavLink>
@@ -118,6 +121,7 @@
         <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="md:hidden">
             <div class="pt-2 pb-3 space-y-1">
                 <ResponsiveNavLink :href="route('map.index')" :active="route().current('map.index')"> Home </ResponsiveNavLink>
+                <ResponsiveNavLink :href="route('saved-maps.index')" :active="route().current('saved-maps.index')"> User Maps </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')"> Full Data Map </ResponsiveNavLink>
                 <ResponsiveNavLink v-if="isAuthenticated" :href="route('reports.index')" :active="route().current('reports.index') || route().current('reports.show')"> Report History </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('subscription.index')" :active="route().current('subscription.index')"> Subscription </ResponsiveNavLink>

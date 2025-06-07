@@ -23,6 +23,8 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Auth\SocialLoginController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ReportController; // Added
+use App\Http\Controllers\SavedMapController; // Added
+use App\Http\Controllers\AdminController; // Added
 
 
 Route::middleware(['auth'])->group(function () {
@@ -66,13 +68,29 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
     Route::get('/reports/{report}/download', [ReportController::class, 'download'])->name('reports.download');
 
+    // Saved Maps Routes
+    
+    Route::post('/saved-maps', [SavedMapController::class, 'store'])->name('saved-maps.store');
+    Route::put('/saved-maps/{savedMap}', [SavedMapController::class, 'update'])->name('saved-maps.update');
+    Route::delete('/saved-maps/{savedMap}', [SavedMapController::class, 'destroy'])->name('saved-maps.destroy');
+    // Add edit route if you plan an edit page: Route::get('/saved-maps/{savedMap}/edit', [SavedMapController::class, 'edit'])->name('saved-maps.edit');
+
 });
 
-
-
+Route::get('/saved-maps', [SavedMapController::class, 'index'])->name('saved-maps.index');
+Route::get('/saved-maps/{savedMap}/view', [SavedMapController::class, 'view'])->name('saved-maps.view'); // Publicly viewable link
+    
 Route::middleware(['auth', 'admin'])->group(function () {
-    //
+    // This group is currently empty, we'll put admin routes outside if using controller-based auth check
+    // Or, define an 'admin' middleware and apply it here if preferred over constructor check
 });
+
+// Admin Routes (using controller-based auth check for now)
+Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::post('/admin/maps/{savedMap}/approve', [AdminController::class, 'approve'])->name('admin.maps.approve');
+Route::post('/admin/maps/{savedMap}/unapprove', [AdminController::class, 'unapprove'])->name('admin.maps.unapprove');
+Route::post('/admin/maps/{savedMap}/feature', [AdminController::class, 'feature'])->name('admin.maps.feature');
+Route::post('/admin/maps/{savedMap}/unfeature', [AdminController::class, 'unfeature'])->name('admin.maps.unfeature');
 
 
 require __DIR__.'/auth.php';
