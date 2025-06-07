@@ -145,30 +145,102 @@ class DownloadCambridgeLogs extends Command
             }
             
             $strongTagNode = $narrNode->filter('strong');
-            if (!$strongTagNode->count()) {
-                $this->warn("Log Entry #" . ($i + 1) . " for {$date}: 'strong' tag not found in narrative. Using full narrative text for location if possible.");
-                $street = $narrNode->text(); // Fallback, though less ideal
-            } else {
-                $street = $strongTagNode->text();
-            }
             $fullText = $narrNode->text(); // Includes the <strong> text and the rest
-            
-            // $this->line("Narrative 'strong' tag (street/intersection): {$street}");
-            // $this->line("Full narrative text:\n{$fullText}");
-
             $loc = '';
-            if (strpos($street, '&') !== false) {
-                $loc = trim($street);
-                // $this->line("Location type: Intersection (from strong tag) -> '{$loc}'");
-            } elseif (preg_match('/the\s+(\d+)\s+block of\s+/i', $fullText, $matches)) {
-                $blockNumber = $matches[1];
-                $loc = $blockNumber . ' ' . trim($street);
-                // $this->line("Location type: Parsed 'block of' (block: {$blockNumber}, street: {trim($street)}) -> '{$loc}'");
+            $streetFromStrong = '';
+
+            if ($strongTagNode->count()) {
+                $streetFromStrong = trim($strongTagNode->text());
+                // Normalize multiple spaces, especially if present in malformed entries
+                $streetFromStrong = preg_replace('/\s+/', ' ', $streetFromStrong);
             } else {
-                // Fallback: Assume it's a street name, prepend "0" as default block number
-                $loc = '0 ' . trim($street);
-                // $this->line("Location type: Fallback (default block 0 for street) -> '{$loc}'");
+                $this->warn("Log Entry #" . ($i + 1) . " for {$date}: 'strong' tag not found in narrative. Attempting to parse location from full narrative.");
             }
+
+            // Define common street suffixes (case-insensitive matching will be used)
+            $suffixes = ['ST', 'STREET', 'AVE', 'AVENUE', 'RD', 'ROAD', 'DR', 'DRIVE', 'LN', 'LANE', 'CT', 'COURT', 'PL', 'PLACE', 'TER', 'TERRACE', 'WAY', 'BLVD', 'BOULEVARD', 'CIR', 'CIRCLE', 'SQ', 'SQUARE', 'PKWY', 'PARKWAY', 'HWY', 'HIGHWAY', 'ALY', 'ALLEY', 'TRL', 'TRAIL', 'XING', 'CROSSING'];
+            $streetSuffixPattern = '(?:' . implode('|', array_map('preg_quote', $suffixes, ['/'])) . ')';
+            $streetNameChars = '[A-Z0-9\.\'\-]+'; // Characters allowed in street names
+            $streetNamePattern = $streetNameChars . '(?:\s+' . $streetNameChars . ')*'; // One or more "words" for a street name
+            $directionPattern = '(?:[NSEW]|NORTH|SOUTH|EAST|WEST|NORTHEAST|NORTHWEST|SOUTHEAST|SOUTHWEST)';
+
+            // Regex for a full street: [Block Number] Street Name SUFFIX [Direction]
+            // Captures: 1=Full Street, 2=Remainder of string after street
+            $fullStreetRegex = '/^((?:\d+\s+)?' . $streetNamePattern . '\s+' . $streetSuffixPattern . '(?:\s+' . $directionPattern . ')?)(\s+.*)?/i';
+            // Regex for an intersection: Street1 & Street2
+            // Captures: 1=Full Intersection, 2=Remainder of string
+            $intersectionRegex = '/^(' . $streetNamePattern . '\s+' . $streetSuffixPattern . '(?:\s+' . $directionPattern . ')?\s*&\s*' . $streetNamePattern . '\s+' . $streetSuffixPattern . '(?:\s+' . $directionPattern . ')?)(\s+.*)?/i';
+            // Regex for "the X block of Y"
+            // Captures: 1=Block Number, 2=Street Name with Suffix and optional Direction
+            $blockOfRegex = '/the\s+(\d+)\s+block of\s+(' . $streetNamePattern . '\s+' . $streetSuffixPattern . '(?:\s+' . $directionPattern . ')?)/i';
+
+            // Attempt 1: Check if streetFromStrong is an intersection
+            if (preg_match($intersectionRegex, $streetFromStrong, $matchesIntersection)) {
+                $potentialLoc = trim($matchesIntersection[1]);
+                $remainder = isset($matchesIntersection[2]) ? trim($matchesIntersection[2]) : '';
+                if (empty($remainder) || !preg_match('/^[a-zA-Z]/', $remainder) || strlen($potentialLoc) > strlen($remainder) * 1.5) {
+                    $loc = $potentialLoc;
+                }
+            }
+
+            // Attempt 2: Check if streetFromStrong starts with a full street address
+            if (empty($loc) && preg_match($fullStreetRegex, $streetFromStrong, $matchesStreet)) {
+                $potentialLoc = trim($matchesStreet[1]);
+                $remainder = isset($matchesStreet[2]) ? trim($matchesStreet[2]) : '';
+
+                if (strlen($potentialLoc) < 80) { // Plausible length for a location string
+                    if (empty($remainder) || (preg_match('/^[A-Z]/', $remainder) && strlen($potentialLoc) < strlen($remainder)) || (strlen($potentialLoc) > 0 && strlen($remainder) < 5)) {
+                        $loc = $potentialLoc;
+                        if (!preg_match('/^\d/', $loc) && strpos($loc, '&') === false) {
+                            $loc = '0 ' . $loc;
+                        }
+                    }
+                }
+            }
+
+            // Attempt 3: If loc is still empty, try to parse "the X block of Y" from the fullText
+            if (empty($loc) && preg_match($blockOfRegex, $fullText, $matchesBlock)) {
+                $blockNumber = $matchesBlock[1];
+                $streetNameAndSuffix = trim($matchesBlock[2]);
+                $loc = $blockNumber . ' ' . $streetNameAndSuffix;
+            }
+
+            // Fallback logic
+            if (empty($loc)) {
+                if (!empty($streetFromStrong)) {
+                    if (strlen($streetFromStrong) < 70 && !preg_match('/\b(Police|Officer|Arrested|Suspect|Victim|Reported|Responded|Found|Unit|Male|Female)\b/i', $streetFromStrong) && !preg_match('/[.,;]$/', $streetFromStrong) && !preg_match('/^\d{2,}\s+OF\s+/i', $streetFromStrong) /* Avoid "36 OF CAMBRIDGE" */) {
+                        $loc = $streetFromStrong;
+                        if (!preg_match('/^\d/', $loc) && strpos($loc, '&') === false && preg_match('/\s(?:' . $streetSuffixPattern . ')/i', $loc)) {
+                            $loc = '0 ' . $loc;
+                        }
+                    } else {
+                        $this->warn("Log Entry #" . ($i + 1) . " for {$date}: Could not reliably determine location from strong tag. Strong: '{$streetFromStrong}'.");
+                        $loc = 'UNKNOWN';
+                    }
+                } else {
+                    $this->warn("Log Entry #" . ($i + 1) . " for {$date}: No strong tag content, location determination relies on full text or is unknown.");
+                    $loc = 'UNKNOWN';
+                }
+
+                if ($loc === 'UNKNOWN' || empty($loc)) {
+                    // Prepositional phrase match from full text
+                    $prepositionalLocationRegex = '/(?:on|at|near|in the area of|from|to)\s+((?:\d+\s+)?' . $streetNamePattern . '\s+' . $streetSuffixPattern . '(?:\s+' . $directionPattern . ')?)/i';
+                    if (preg_match($prepositionalLocationRegex, $fullText, $matchesPrep)) {
+                        $loc = trim($matchesPrep[1]);
+                        if (!preg_match('/^\d/', $loc) && strpos($loc, '&') === false) {
+                            $loc = '0 ' . $loc;
+                        }
+                    } elseif ($loc === 'UNKNOWN') { // Ensure UNKNOWN if no better match found
+                         // $this->line("Location type: Truly unknown or unparsable -> '{$loc}'");
+                    }
+                }
+            }
+            
+            if (empty($loc)) { // Final safety net if all parsing fails
+                $loc = 'UNKNOWN';
+                $this->warn("Log Entry #" . ($i + 1) . " for {$date}: Location parsing resulted in empty, setting to UNKNOWN. Strong: '{$streetFromStrong}', FullText: '{$fullText}'");
+            }
+
 
             $reportDate = '';
             $whenParts = explode(' ', $when, 2);
