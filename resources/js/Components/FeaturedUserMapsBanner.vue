@@ -1,17 +1,17 @@
 <template>
-  <div v-if="showBanner && (featuredMaps.length > 0 || !$page.props.auth.user)" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg shadow-lg my-6">
+  <div v-if="showBanner && (featuredMaps.length > 0 || !$page.props.auth.user)" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-lg shadow-lg my-6">
     <div class="container mx-auto">
       <div v-if="featuredMaps.length > 0">
         <h3 class="text-xl font-semibold mb-2">Featured Community Maps!</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-          <div v-for="map in featuredMaps" :key="map.id" class="bg-white/20 p-3 rounded-md hover:bg-white/30 transition-colors">
+          <div v-for="map in featuredMaps" :key="map.id" class="bg-blue-800 p-3 rounded-md hover:bg-blue-900 transition-colors">
             <Link :href="route('saved-maps.view', map.id)" class="block">
               <h4 class="font-semibold text-white truncate">{{ map.name }}</h4>
-              <p v-if="map.description" class="text-xs text-blue-100 truncate">{{ map.description }}</p>
-              <p class="text-xs text-blue-200 mt-1">
+              <p v-if="map.description" class="text-xs text-blue-200 truncate">{{ map.description }}</p>
+              <p class="text-xs text-blue-300 mt-1">
                 By: {{ map.creator_display_name || map.user?.name || 'Community Member' }}
                  <span v-if="map.creator_tier_display_name" 
-                      :class="['ml-1 px-1 py-0.25 rounded-full text-xs', getTierBadgeClass(map.creator_tier_name, true)]">
+                      :class="['ml-1 px-1 py-0.25 rounded-full text-xs', getTierBadgeClass(map.creator_tier_name, false)]">
                   {{ map.creator_tier_display_name }}
                 </span>
               </p>
@@ -21,7 +21,7 @@
          <div class="mt-4 text-center">
             <Link
               :href="route('saved-maps.index')"
-              class="inline-block px-5 py-2 bg-white text-blue-600 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-sm text-sm"
+              class="inline-block px-5 py-2 bg-white text-blue-700 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-sm text-sm"
               @click="trackBannerClick('view_all_public_maps')"
             >
               View All Public Maps
@@ -30,10 +30,10 @@
       </div>
       <div v-else-if="!$page.props.auth.user" class="text-center">
         <h3 class="text-xl font-semibold">Discover Community Maps!</h3>
-        <p class="text-sm mt-1 mb-3">Explore maps created and shared by our users, or sign up to create your own.</p>
+        <p class="text-sm mt-1 mb-3 text-blue-100">Explore maps created and shared by our users, or sign up to create your own.</p>
         <Link
           :href="route('saved-maps.index')"
-          class="px-6 py-2 bg-white text-blue-600 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-md"
+          class="px-6 py-2 bg-white text-blue-700 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-md"
            @click="trackBannerClick('guest_view_public_maps')"
         >
           Explore Public Maps
@@ -66,10 +66,11 @@ const trackBannerClick = (label) => {
 const getTierBadgeClass = (tierName, isLightText = false) => {
   const tierLower = tierName?.toLowerCase() || '';
   // Adjusted for better visibility on dark banner background if needed
+  // These color combinations (e.g., text-purple-50 on bg-purple-400) are high contrast.
   if (tierLower.includes('pro')) return isLightText ? 'bg-purple-400 text-purple-50' : 'bg-purple-100 text-purple-800';
   if (tierLower.includes('basic')) return isLightText ? 'bg-green-400 text-green-50' : 'bg-green-100 text-green-800';
   if (tierLower.includes('free')) return isLightText ? 'bg-blue-400 text-blue-50' : 'bg-blue-100 text-blue-800';
-  return isLightText ? 'bg-gray-400 text-gray-50' : 'bg-gray-100 text-gray-800';
+  return isLightText ? 'bg-gray-600 text-gray-50' : 'bg-gray-100 text-gray-800';
 };
 
 </script>
