@@ -37,7 +37,7 @@ class SavedMapController extends Controller
         
         $publicMapsQuery = SavedMap::where('is_public', true)
             ->where('is_approved', true) 
-            ->with('user:id,name') 
+            ->with('user:id,name,manual_subscription_tier') // Include manual_subscription_tier
             ->orderBy('created_at', 'desc');
         
         $publicMaps = $publicMapsQuery->get();
@@ -121,7 +121,8 @@ class SavedMapController extends Controller
         }
         
         // Ensure 'creator_display_name' and 'configurable_filter_fields' are available
-        $savedMap->load('user:id,name');
+        // Also load 'manual_subscription_tier' for the user relationship
+        $savedMap->load('user:id,name,manual_subscription_tier');
         // configurable_filter_fields should be automatically cast to array by Laravel if defined in $casts
 
 

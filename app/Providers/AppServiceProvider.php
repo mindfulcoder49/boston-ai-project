@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
                 return SavedMap::where('is_public', true)
                                ->where('is_approved', true)
                                ->where('is_featured', true)
-                               ->with('user:id,name') // Eager load user for display
+                               ->with('user:id,name,manual_subscription_tier') // Eager load user with manual_subscription_tier
                                ->orderBy('updated_at', 'desc') // Or some other ordering for featured maps
                                ->take(5) // Limit the number of featured maps
                                ->get()
