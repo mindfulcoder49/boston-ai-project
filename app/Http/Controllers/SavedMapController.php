@@ -47,6 +47,7 @@ class SavedMapController extends Controller
             // We ensure 'creator_display_name' is part of the $map object.
             if ($map->user) {
                 $tierDetails = $map->user->getEffectiveTierDetails(); 
+                Log::info("Public Map {$map->id} - Creator User ID: {$map->user_id}, Tier Details: " . json_encode($tierDetails));
                 $map->creator_tier_name = $tierDetails['tier'] ?? 'Unknown'; 
                 $tierDisplayMap = [
                     'pro' => 'Pro User',
