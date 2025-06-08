@@ -7,53 +7,55 @@
         {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.reportHistoryTitle || 'Your Report History' }}
       </h1>
 
-      <div v-if="reports.data && reports.data.length > 0" class="bg-white shadow-md rounded-lg overflow-hidden">
-        <table class="min-w-full leading-normal">
-          <thead>
-            <tr>
-              <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.reportTitleHeader || 'Report Title' }}
-              </th>
-              <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.locationHeader || 'Location' }}
-              </th>
-              <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.generatedAtHeader || 'Generated At' }}
-              </th>
-              <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.actionsHeader || 'Actions' }}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="report in reports.data" :key="report.id" class="hover:bg-gray-50">
-              <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                <p class="text-gray-900 whitespace-no-wrap">{{ report.title }}</p>
-              </td>
-              <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                <p class="text-gray-900 whitespace-no-wrap">{{ report.location_name }}</p>
-              </td>
-              <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                <p class="text-gray-900 whitespace-no-wrap">{{ report.generated_at }}</p>
-              </td>
-              <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                <Link :href="report.view_url" class="text-indigo-600 hover:text-indigo-900 mr-3">
-                  {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.viewAction || 'View' }}
-                </Link>
-                <a :href="report.download_url" target="_blank" class="text-green-600 hover:text-green-900">
-                  {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.downloadAction || 'Download' }}
-                </a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div v-if="reports.data && reports.data.length > 0" class="bg-white shadow-md rounded-lg">
+        <div class="overflow-x-auto">
+          <table class="min-w-full leading-normal">
+            <thead>
+              <tr>
+                <th class="px-2 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.reportTitleHeader || 'Report Title' }}
+                </th>
+                <th class="px-2 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.locationHeader || 'Location' }}
+                </th>
+                <th class="px-2 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.generatedAtHeader || 'Generated At' }}
+                </th>
+                <th class="px-2 py-2 sm:px-5 sm:py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.actionsHeader || 'Actions' }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="report in reports.data" :key="report.id" class="hover:bg-gray-50">
+                <td class="px-2 py-3 sm:px-5 sm:py-4 border-b border-gray-200 bg-white text-sm">
+                  <p class="text-gray-900 whitespace-normal">{{ report.title }}</p>
+                </td>
+                <td class="px-2 py-3 sm:px-5 sm:py-4 border-b border-gray-200 bg-white text-sm">
+                  <p class="text-gray-900 whitespace-normal">{{ report.location_name }}</p>
+                </td>
+                <td class="px-2 py-3 sm:px-5 sm:py-4 border-b border-gray-200 bg-white text-sm">
+                  <p class="text-gray-900 whitespace-normal">{{ report.generated_at }}</p>
+                </td>
+                <td class="px-2 py-3 sm:px-5 sm:py-4 border-b border-gray-200 bg-white text-sm">
+                  <Link :href="report.view_url" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                    {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.viewAction || 'View' }}
+                  </Link>
+                  <a :href="report.download_url" target="_blank" class="text-green-600 hover:text-green-900">
+                    {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.downloadAction || 'Download' }}
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
          <!-- Pagination -->
-        <div v-if="reports.links && reports.data.length > 0" class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between">
-            <div class="flex items-center">
+        <div v-if="reports.links && reports.data.length > 0" class="px-3 py-3 sm:px-5 sm:py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between">
+            <div class="flex items-center flex-wrap justify-center xs:justify-start">
                 <template v-for="(link, key) in reports.links" :key="key">
-                    <div v-if="link.url === null" class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border rounded" v-html="link.label" />
+                    <div v-if="link.url === null" class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-sm leading-4 text-gray-400 border rounded" v-html="link.label" />
                     <Link v-else
-                          class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded hover:bg-blue-500 hover:text-white focus:border-indigo-500 focus:text-indigo-500"
+                          class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-sm leading-4 border rounded hover:bg-blue-500 hover:text-white focus:border-indigo-500 focus:text-indigo-500"
                           :class="{ 'bg-blue-500 text-white': link.active }"
                           :href="link.url"
                           v-html="link.label"
