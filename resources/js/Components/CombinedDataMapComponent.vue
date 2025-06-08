@@ -699,7 +699,12 @@ onMounted(async () => {
     clientFilteredDataPointsByType.value = { ...(props.initialDataSetsProp || {}) }; // Initialize client-side with all data
     
     currentFiltersByType.value = {}; // Will be populated only with active configurable filters
-    mapSelectedDataTypes.value = props.initialMapSettings?.selected_data_types || availableDataTypes.value;
+    
+    // Correctly initialize mapSelectedDataTypes for read-only mode
+    mapSelectedDataTypes.value = (props.initialMapSettings?.selected_data_types && props.initialMapSettings.selected_data_types.length > 0) 
+                                  ? [...props.initialMapSettings.selected_data_types] 
+                                  : [...availableDataTypes.value];
+                                  
     activeFilterTab.value = props.initialMapSettings?.active_filter_tab || availableDataTypes.value[0] || '';
 
     // Apply initial saved filters client-side if they are configurable
@@ -728,79 +733,69 @@ onMounted(async () => {
     return; // No fetching needed for read-only
   }
 
-  // Initialize with initial data type if not read-only
-  // if (props.initialDataTypeProp && props.initialDataProp) { // Old logic for single initialDataProp
-  //   allDataPointsByType.value[props.initialDataTypeProp] = props.initialDataProp;
-  //   currentFiltersByType.value[props.initialDataTypeProp] = { ...(props.initialFiltersProp || {}), limit: 100 };
-  // ...
-  // } 
-  // New logic: if initialDataSetsProp is provided (even if not read-only, e.g. for a pre-filled form)
-  if (!props.isReadOnly && Object.keys(props.initialDataSetsProp).length > 0) {
-      allDataPointsByType.value = { ...props.initialDataSetsProp };
-      // currentFiltersByType might be set from initialFiltersProp or defaults
+  // --- Non-Read-Only Logic ---
+
+  // Initialize allDataPointsByType from initialDataSetsProp if provided
+  if (Object.keys(props.initialDataSetsProp).length > 0) {
+    allDataPointsByType.value = { ...props.initialDataSetsProp };
   }
 
+  // Set up active tab and selected types
+  activeFilterTab.value = props.initialDataTypeProp || availableDataTypes.value[0] || '';
+  
+  // Correctly initialize mapSelectedDataTypes for fresh combined map
+  mapSelectedDataTypes.value = (props.initialMapSettings?.selected_data_types && props.initialMapSettings.selected_data_types.length > 0) 
+                                ? [...props.initialMapSettings.selected_data_types] 
+                                : [...availableDataTypes.value];
 
-  if (props.initialDataTypeProp && !props.isReadOnly) { // Ensure this runs only if not read-only and initial type is set
-    activeFilterTab.value = props.initialDataTypeProp;
-    mapSelectedDataTypes.value = availableDataTypes.value; // Default to all types on map
-    nlpSelectedDataTypes.value = availableDataTypes.value; // Default to all types for NLP
+  nlpSelectedDataTypes.value = [...availableDataTypes.value]; // Default NLP targets to all
 
-    // If initialDataSetsProp already populated this type, respect it. Otherwise, set default filters.
-    if (!allDataPointsByType.value[props.initialDataTypeProp]) {
-        currentFiltersByType.value[props.initialDataTypeProp] = { ...(props.initialFiltersProp?.[props.initialDataTypeProp] || {}), limit: 100 };
-    }
-  } else if (availableDataTypes.value.length > 0 && !props.isReadOnly) {
-    // Fallback if no initialDataTypeProp is specified
-    const firstAvailableType = availableDataTypes.value[0];
-    activeFilterTab.value = firstAvailableType;
-    mapSelectedDataTypes.value = [firstAvailableType];
-    nlpSelectedDataTypes.value = [firstAvailableType];
-  }
-
-
-  // Initialize filter visibility and fetch data for other types
   const fetchPromises = [];
   availableDataTypes.value.forEach(dataType => {
-    if (!props.isReadOnly) { 
-      const defaultFilters = { limit: 100 }; 
-      // Only set/fetch if not already populated by initialDataSetsProp
-      if (!allDataPointsByType.value[dataType]) {
-          currentFiltersByType.value[dataType] = props.initialFiltersProp?.[dataType] || defaultFilters;
-          // Only fetch if there are actual filters or if it's the initial active tab and has no data
-          if (Object.keys(currentFiltersByType.value[dataType]).filter(k => k !== 'limit').length > 0 || (dataType === activeFilterTab.value && !allDataPointsByType.value[dataType])) {
-             fetchPromises.push(fetchDataForType(dataType, currentFiltersByType.value[dataType]));
-          } else if (!allDataPointsByType.value[dataType]) { // Ensure empty array if no data and no fetch
-             allDataPointsByType.value[dataType] = [];
-          }
-      } else if (!currentFiltersByType.value[dataType] && props.initialFiltersProp?.[dataType]) {
-          // If data was preloaded but filters not set, set them from props
-          currentFiltersByType.value[dataType] = props.initialFiltersProp[dataType];
-      } else if (!currentFiltersByType.value[dataType]) {
-          currentFiltersByType.value[dataType] = defaultFilters;
-      }
+    // Initialize filters for each type:
+    // Use specific from initialFiltersProp if it's structured per type,
+    // otherwise use initialFiltersProp as a general default, or fallback to { limit: 100 }.
+    // Assuming initialFiltersProp from DataMapController@combinedIndex is a general default like {limit: 100}
+    currentFiltersByType.value[dataType] = { 
+        ...(props.initialFiltersProp?.[dataType] || props.initialFiltersProp || { limit: 100 }) 
+    };
+    
+    // If data for this type was NOT pre-loaded via initialDataSetsProp, then fetch it.
+    if (!allDataPointsByType.value[dataType]) {
+      console.log(`CombinedDataMapComponent: Initial fetch for ${dataType} as it was not in initialDataSetsProp. Filters:`, currentFiltersByType.value[dataType]);
+      fetchPromises.push(fetchDataForType(dataType, currentFiltersByType.value[dataType]));
+    } else {
+      console.log(`CombinedDataMapComponent: Data for ${dataType} was pre-loaded via initialDataSetsProp.`);
     }
   });
 
-  await Promise.all(fetchPromises);
+  if (fetchPromises.length > 0) {
+    await Promise.all(fetchPromises);
+  }
 
-  // Set map center based on initial data if available
-  if (props.initialDataProp && props.initialDataProp.length > 0 && !props.isReadOnly) {
-    const firstPoint = props.initialDataProp[0];
-    if (firstPoint.latitude && firstPoint.longitude) {
-      mapCenter.value = [parseFloat(firstPoint.latitude), parseFloat(firstPoint.longitude)];
-    }
-  } else if (mapSelectedDataTypes.value.length > 0 && !props.isReadOnly) {
-    // If no initial data, but some types are selected for map, try to center on first point of first selected type
-    const firstMapSelectedType = mapSelectedDataTypes.value[0];
-    const dataForFirstType = allDataPointsByType.value[firstMapSelectedType] || [];
-    if (dataForFirstType.length > 0) {
-        const firstPoint = dataForFirstType[0];
-         if (firstPoint.latitude && firstPoint.longitude) {
-            mapCenter.value = [parseFloat(firstPoint.latitude), parseFloat(firstPoint.longitude)];
+  // After all data is potentially fetched or loaded, then set map center.
+  let centered = false;
+  if (props.initialDataTypeProp && (allDataPointsByType.value[props.initialDataTypeProp] || []).length > 0) {
+      const firstPoint = allDataPointsByType.value[props.initialDataTypeProp][0];
+      if (firstPoint && firstPoint.latitude && firstPoint.longitude) {
+          mapCenter.value = [parseFloat(firstPoint.latitude), parseFloat(firstPoint.longitude)];
+          centered = true;
+      }
+  }
+  if (!centered && mapSelectedDataTypes.value.length > 0) {
+    for (const dt of mapSelectedDataTypes.value) {
+        const dataForType = allDataPointsByType.value[dt] || [];
+        if (dataForType.length > 0) {
+            const firstPoint = dataForType[0];
+            if (firstPoint.latitude && firstPoint.longitude) {
+                mapCenter.value = [parseFloat(firstPoint.latitude), parseFloat(firstPoint.longitude)];
+                centered = true;
+                break;
+            }
         }
     }
   }
+  // If still not centered, mapCenter.value remains its default or from initialMapSettings.
 });
 
 const handleMapInitialized = (map) => {

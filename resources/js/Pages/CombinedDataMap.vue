@@ -8,7 +8,7 @@
     <CombinedDataMapComponent
       :model-mapping-prop="modelMapping"
       :initial-data-type-prop="initialDataType"
-      :initial-data-prop="initialData"
+      :initial-data-sets-prop="initialDataSets"
       :initial-filters-prop="initialFilters"
       :all-data-type-details-prop="allDataTypeDetails"
     />
@@ -25,7 +25,7 @@ import { Head } from '@inertiajs/vue3';
 const props = defineProps({
   modelMapping: Object, // The mapping from DataMapController
   initialDataType: String, // The first data type to show
-  initialData: Array, // Data for the initialDataType
+  initialDataSets: Object, // Changed from initialData: Array. Data for initial types, keyed by dataType.
   initialFilters: Object, // Filters for the initialDataType
   allDataTypeDetails: Object, // Object keyed by dataType, containing { dateField, externalIdField, filterFieldsDescription, modelNameForHumans }
 });

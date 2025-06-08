@@ -121,8 +121,9 @@ class DataMapController extends Controller
     {
         $allDataTypeDetails = [];
         $initialDataType = null;
-        $initialData = collect(); // Use Laravel Collection
-        $initialFilters = ['limit' => 100]; // Default initial filters
+        // $initialData = collect(); // Will be part of initialDataSets
+        $initialDataSets = []; // Changed from $initialData
+        $initialFilters = ['limit' => 100]; // Default initial filters, component applies per type
 
         // Determine the initial data type (e.g., the first one in the mapping)
         if (!empty($this->modelMapping)) {
@@ -162,7 +163,10 @@ class DataMapController extends Controller
                 // Add other default filters for initial load if necessary
 
                 
-                $initialData = $this->enrichData($query->get(), $dataType);
+                $dataForInitialType = $this->enrichData($query->get(), $dataType);
+                if (!$dataForInitialType->isEmpty()) {
+                    $initialDataSets[$initialDataType] = $dataForInitialType;
+                }
             }
         }
 
@@ -170,7 +174,7 @@ class DataMapController extends Controller
             // Fallback if initialDataType wasn't set but we have details (e.g. first valid one)
             $initialDataType = array_key_first($allDataTypeDetails);
             // Potentially fetch data for this fallback initialDataType if not already fetched
-            if ($initialData->isEmpty() && $initialDataType) {
+            if (empty($initialDataSets[$initialDataType]) && $initialDataType) { // Check initialDataSets
                  /** @var Mappable $modelClass */
                 $modelClass = $this->getModelClassForDataType($initialDataType);
                 $query = $modelClass::query();
@@ -182,7 +186,10 @@ class DataMapController extends Controller
                 if (isset($initialFilters['limit'])) {
                     $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
                 }
-                $initialData = $this->enrichData($query->get(), $initialDataType);
+                $dataForFallbackInitialType = $this->enrichData($query->get(), $initialDataType);
+                if (!$dataForFallbackInitialType->isEmpty()) {
+                    $initialDataSets[$initialDataType] = $dataForFallbackInitialType;
+                }
             }
         }
 
@@ -190,8 +197,9 @@ class DataMapController extends Controller
         return Inertia::render('CombinedDataMap', [
             'modelMapping' => $this->modelMapping, // Pass the raw mapping
             'initialDataType' => $initialDataType,
-            'initialData' => $initialData,
-            'initialFilters' => $initialFilters, // Pass the filters used for the initial data
+            // 'initialData' => $initialData, // Removed
+            'initialDataSets' => $initialDataSets, // Added: object keyed by dataType
+            'initialFilters' => $initialFilters, // Pass the general default filters
             'allDataTypeDetails' => $allDataTypeDetails,
         ]);
     }

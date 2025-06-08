@@ -33,6 +33,7 @@
           :date-field-prop="allDataTypeDetails[savedMap.data_type]?.dateField"
           :external-id-field-prop="allDataTypeDetails[savedMap.data_type]?.externalIdField"
           :filter-fields-description-prop="allDataTypeDetails[savedMap.data_type]?.filterFieldsDescription"
+          :searchable-columns-prop="allDataTypeDetails[savedMap.data_type]?.searchableColumns || []"
           :is-read-only="true"
           :initial-map-settings="mapSettings"
           :configurable-filter-fields-for-view="savedMap.configurable_filter_fields"

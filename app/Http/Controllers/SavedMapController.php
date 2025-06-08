@@ -178,6 +178,7 @@ class SavedMapController extends Controller
                 'externalIdField' => $modelClass::getExternalIdName(),
                 'filterFieldsDescription' => $filterDesc, // Use decoded value
                 'modelNameForHumans' => $modelClass::getModelNameForHumans(),
+                'searchableColumns' => $modelClass::getSearchableColumns(), // Added searchableColumns
             ];
 
         } elseif ($savedMap->map_type === 'combined') {
@@ -218,6 +219,7 @@ class SavedMapController extends Controller
                     'externalIdField' => $modelClass::getExternalIdName(),
                     'filterFieldsDescription' => $filterDesc, // Use decoded value
                     'modelNameForHumans' => $modelClass::getModelNameForHumans(),
+                    'searchableColumns' => $modelClass::getSearchableColumns(), // Added searchableColumns
                 ];
             }
         }
