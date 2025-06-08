@@ -72,16 +72,19 @@
             </div>
         </div>
         
-        <input 
+        <select
           v-else-if="field.type === 'boolean'"
-          type="checkbox"
           :id="`filter_${field.name}_${dataType}`"
           v-model="localFilters[field.name]"
           @change="emitFiltersUpdate"
-          class="p-2 border rounded-md h-5 w-5 mt-1"
+          class="p-2 border rounded-md text-sm"
         >
-        <!-- Add more filter types as needed: text_array, etc. -->
-         <!-- handle date types-->
+          <option value="">Any</option>
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+        
+        <!-- handle date types-->
         <input 
           v-else-if="field.type === 'date'"
           type="date"
@@ -93,8 +96,8 @@
         
       </div>
 
-       <!-- Limit Filter -->
-        <div class="flex flex-col">
+       <!-- Limit Filter: Only shown if not read-only. If read-only and 'limit' is configurable, it will be rendered by the loop above. -->
+        <div v-if="!isReadOnly" class="flex flex-col">
             <label :for="`limit_${dataType}`" class="font-medium mb-1 text-sm">Record Limit</label>
             <input type="number" :id="`limit_${dataType}`" v-model.number="localFilters.limit" @input="debouncedEmitUpdate" class="p-2 border rounded-md text-sm" placeholder="e.g., 1000">
         </div>
@@ -121,6 +124,10 @@ const props = defineProps({
   },
   dateField: String, // Name of the primary date field for labels, e.g., 'occurred_on_date'
   dataType: String, // To create unique IDs for inputs
+  isReadOnly: {      // Added prop
+    type: Boolean,
+    default: false
+  }
 });
 
 const emit = defineEmits(['filters-updated']);
@@ -165,13 +172,18 @@ const initializeFilters = () => {
     };
     parsedFields.value.forEach(field => {
         if (props.initialFilters && props.initialFilters.hasOwnProperty(field.name)) {
-            newFilters[field.name] = props.initialFilters[field.name];
+            if (field.type === 'boolean') {
+                // Convert boolean from initialFilters to string "true" or "false" for select
+                newFilters[field.name] = String(props.initialFilters[field.name]);
+            } else {
+                newFilters[field.name] = props.initialFilters[field.name];
+            }
         } else {
             // Set default based on type
             if (field.type === 'multiselect') {
                 newFilters[field.name] = [];
             } else if (field.type === 'boolean') {
-                newFilters[field.name] = false; // Or null if you want a "don't care" state
+                newFilters[field.name] = ""; // Default to "Any" (empty string)
             } else {
                 newFilters[field.name] = '';
             }
@@ -194,11 +206,19 @@ const emitFiltersUpdate = () => {
   const filtersToEmit = {};
   for (const key in localFilters.value) {
     const value = localFilters.value[key];
-    if (value !== '' && value !== null && !(Array.isArray(value) && value.length === 0)) {
+    const fieldDescription = parsedFields.value.find(f => f.name === key);
+
+    if (fieldDescription && fieldDescription.type === 'boolean') {
+      if (value === "true") {
+        filtersToEmit[key] = true;
+      } else if (value === "false") {
+        filtersToEmit[key] = false;
+      }
+      // If value is "" (Any), do not add to filtersToEmit
+    } else if (value !== '' && value !== null && !(Array.isArray(value) && value.length === 0)) {
       filtersToEmit[key] = value;
-    } else if (typeof value === 'boolean') { // Keep boolean false
-        filtersToEmit[key] = value;
     }
+    // Note: Booleans are handled above. No need for the `else if (typeof value === 'boolean')` here anymore.
   }
   emit('filters-updated', { ...filtersToEmit });
 };
@@ -227,7 +247,7 @@ const clearAndEmitFilters = () => {
     if (field.type === 'multiselect') {
       clearedFilters[field.name] = [];
     } else if (field.type === 'boolean') {
-      clearedFilters[field.name] = false; // Or null
+      clearedFilters[field.name] = ""; // Clear to "Any"
     } else {
       clearedFilters[field.name] = '';
     }

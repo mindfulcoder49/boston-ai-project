@@ -51,11 +51,18 @@
     <!-- Optionally list top-level fields not contained in sub-objects -->
     <div class="border rounded p-4 bg-gray-100">
       <h2 class="text-xl font-bold mb-2">General Info</h2>
-      <ul>
+      <ul v-if="sections.length">
         <li v-if="data.alcivartech_type"><strong>Type:</strong> {{ data.alcivartech_type }}</li>
         <li v-if="data.alcivartech_date"><strong>Date:</strong> {{ formatValue('alcivartech_date', data.alcivartech_date) }}</li>
         <li v-if="data.latitude"><strong>Latitude:</strong> {{ data.latitude }}</li>
         <li v-if="data.longitude"><strong>Longitude:</strong> {{ data.longitude }}</li>
+      </ul>
+      <!-- if there is no sections display the rest of the top level fields -->
+      <ul v-if="!sections.length">
+        <li v-for="(value, key) in data" :key="key" class="mb-1">
+          <strong>{{ formatLabel(key) }}: </strong>
+          <span>{{ formatValue(key, value) }}</span>
+        </li>
       </ul>
     </div>
   </div>

@@ -9,6 +9,7 @@ import * as L from 'leaflet';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
+import { getIconCustomizations } from '@/Utils/iconUtils'; // Added import
 
 // Fix for default icon path issues with Vite/Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -57,59 +58,73 @@ const iconSettings = {
   popupAnchor: [0, -38]  // Point from which the popup should open relative to the iconAnchor (top-center of anchor)
 };
 
-const getMarkerIcon = (alcivartechType) => {
-  let iconUrl = '/images/leaflet/marker-icon.png'; // Default Leaflet icon as a fallback
-    let iconClassName = 'default-div-icon'; // Default class name for the icon
+const getMarkerIcon = (alcivartechType, dataPoint) => {
+  const transparentPixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  const customizations = getIconCustomizations(dataPoint);
+
+  let determinedIconUrl = customizations.iconUrlOverride || null;
+  // Start with the customization class, then prepend the base class for the type.
+  let determinedClassName = customizations.className || '';
+  let baseClassForType = '';
 
   switch (alcivartechType) {
     case 'Crime':
-      iconUrl = '/images/crimeshieldicon.svg';
-      iconClassName = 'crime-div-icon';
+      baseClassForType = 'crime-div-icon';
       break;
     case '311 Case':
-      iconUrl = '/images/boston311icon.svg';
-      iconClassName = 'case-div-icon';
+      baseClassForType = 'case-div-icon';
       break;
     case 'Building Permit':
-      iconUrl = '/images/permiticon.svg';
-        iconClassName = 'permit-div-icon';
+      baseClassForType = 'permit-div-icon';
       break;
     case 'Property Violation':
-      iconUrl = '/images/propertyviolationicon.svg';
-        iconClassName = 'property-violation-div-icon';
+      baseClassForType = 'property-violation-div-icon';
       break;
     case 'Construction Off Hour':
-      iconUrl = '/images/constructionoffhouricon.svg';
-        iconClassName = 'construction-off-hour-div-icon';
+      baseClassForType = 'construction-off-hour-div-icon';
       break;
     case 'Food Inspection':
-      iconUrl = '/images/foodinspectionicon.svg';
-        iconClassName = 'food-inspection-div-icon';
+      baseClassForType = 'food-inspection-div-icon';
       break;
     default:
-      // console.warn(`No specific icon for type: ${alcivartechType}, using default Leaflet icon.`);
-      // For the default Leaflet icon, we might not need to specify all settings if defaults are fine
-      // However, to ensure consistency if you have a custom default icon:
-      // iconUrl = '/images/custom-default-marker.svg';
-      return L.icon({ // Return Leaflet's default icon if type not matched
-          iconUrl: '/images/leaflet/marker-icon.png', // Standard Leaflet marker
-          iconRetinaUrl: '/images/leaflet/marker-icon-2x.png', // Standard Leaflet marker retina
-          shadowUrl: '/images/leaflet/marker-shadow.png', // Standard Leaflet marker shadow
-          iconSize: [25, 41],
-          iconAnchor: [12, 41],
-          popupAnchor: [1, -34],
-          shadowSize: [41, 41]
+      // Handle unknown type: use Leaflet's default icon, but allow overrides/custom classes.
+      let defaultIconFinalClassName = customizations.className || '';
+      return L.icon({
+        iconUrl: customizations.iconUrlOverride || '/images/leaflet/marker-icon.png',
+        iconRetinaUrl: customizations.iconUrlOverride || '/images/leaflet/marker-icon-2x.png', // Assuming override is SVG or same for retina
+        shadowUrl: '/images/leaflet/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+        className: defaultIconFinalClassName.trim()
       });
   }
 
+  // Prepend the base class for the specific alcivartechType to the determinedClassName
+  if (baseClassForType) {
+    determinedClassName = baseClassForType + (determinedClassName ? ` ${determinedClassName}` : '');
+  }
+
+  // If no explicit iconUrl override is provided, but we have classes for styling,
+  // set the iconUrl to a transparent pixel. This allows the CSS background-image to show.
+  if (!determinedIconUrl && determinedClassName) {
+    determinedIconUrl = transparentPixel;
+  } else if (!determinedIconUrl && !determinedClassName) {
+    // This case should ideally not be hit if all known types have a baseClassForType.
+    // As a fallback, use transparent pixel, assuming some default styling might apply or it's an error.
+    determinedIconUrl = transparentPixel;
+  }
+  // If determinedIconUrl was set by customizations.iconUrlOverride, it will be used.
+
   return L.icon({
-    iconUrl: iconUrl,
-    iconRetinaUrl: iconUrl, // Assuming SVGs or that retina versions are same as standard for these custom icons
+    iconUrl: determinedIconUrl,
+    iconRetinaUrl: determinedIconUrl, // For SVGs, overrides, or transparent pixel, using the same URL is fine.
     iconSize: iconSettings.iconSize,
     iconAnchor: iconSettings.iconAnchor,
     popupAnchor: iconSettings.popupAnchor,
-    shadowUrl: false, // No shadow for custom icons, consistent with previous setup
-    className: iconClassName || 'default-div-icon' // Default class if not specified
+    shadowUrl: false, // No shadow for custom icons styled via CSS or specific SVGs
+    className: determinedClassName.trim()
   });
 };
 
@@ -240,7 +255,7 @@ const updateMarkers = (newDataPoints) => {
         markerClusterGroups.value[alcivartechType] = newClusterGroup;
       }
 
-      const markerIcon = getMarkerIcon(alcivartechType);
+      const markerIcon = getMarkerIcon(alcivartechType, dp); // Pass full dataPoint 'dp'
       const marker = markRaw(L.marker([lat, long], { icon: markerIcon, alcivartechType: alcivartechType }));
       marker.bindPopup(createPopupContent(dp));
       marker.on('click', () => {

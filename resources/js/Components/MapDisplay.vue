@@ -11,6 +11,7 @@
   import 'leaflet.markercluster/dist/MarkerCluster.css';
   import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
   import 'leaflet.markercluster';
+  import { getIconCustomizations } from '@/Utils/iconUtils'; // Added import
   
   const props = defineProps({
     mapCenterCoordinates: Array,
@@ -48,6 +49,7 @@
     let className = 'default-div-icon';
     let type = dataPoint.alcivartech_type;
     let backgroundImage = '';
+    const customizations = getIconCustomizations(dataPoint); // Get customizations
   
     switch (type) {
       case 'Crime':
@@ -71,6 +73,12 @@
       default:
         break;
     }
+
+    if (customizations.className) {
+      className += ` ${customizations.className}`; // Append custom class
+    }
+    // Note: iconUrlOverride from customizations is not directly used here for L.divIcon.
+    // The CSS for the custom class should handle background-image changes.
   
     if (type === "311 Case") {
       if (dataPoint?.submitted_photo) {

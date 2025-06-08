@@ -40,7 +40,7 @@
         <DataMapDisplay
             ref="dataMapDisplayRef"
             :mapCenterCoordinates="mapCenter"
-            :dataPointsToDisplay="dataPoints"
+            :dataPointsToDisplay="displayedDataPoints"
             :externalIdFieldProp="externalIdFieldProp"
             @marker-data-point-clicked="handleMarkerClick"
             @map-initialized-internal="handleMapInitialized"
@@ -65,18 +65,19 @@
     </div>
     <!-- Manual Filters Section -->
     <GenericFiltersControl
-      v-if="!isReadOnly"
-      :filter-fields-description="filterFieldsDescriptionProp"
+      v-if="!isReadOnly || (isReadOnly && filterFieldsForReadOnlyView.length > 0)"
+      :filter-fields-description="filterFieldsForReadOnlyView"
       :initial-filters="currentFilters"
       :date-field="dateFieldProp"
       :data-type="dataTypeProp"
+      :is-read-only="isReadOnly"
       @filters-updated="handleFiltersUpdated"
       class="mb-6"
     />
     <!-- AI Assistant -->
     <AiAssistant 
       v-if="dataPoints.length > 0 && !isLoading && !isReadOnly"
-      :context="dataPoints" 
+      :context="displayedDataPoints" 
       :language_codes="language_codes" 
       :currentMapLanguage="currentReportLanguage"
       class="my-6"
@@ -84,7 +85,7 @@
 
     <!-- Data List Section -->
     <GenericDataList
-      :totalData="dataPoints"
+      :totalData="displayedDataPoints"
       :itemsPerPage="10"
       @handle-goto-marker="handleListItemClick"
       :language_codes="language_codes"
@@ -116,6 +117,18 @@
             <label for="mapDescription" class="block text-sm font-medium text-gray-700">Description</label>
             <textarea v-model="saveMapForm.description" id="mapDescription" rows="3" class="mt-1 p-2 border rounded-md w-full"></textarea>
           </div>
+
+          <div class="mb-4 border-t pt-4">
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Configurable Filters for Viewers:</h4>
+            <p class="text-xs text-gray-500 mb-2">Select which filters viewers of this saved map can adjust (client-side).</p>
+            <div class="max-h-40 overflow-y-auto space-y-1">
+              <label v-for="field in availableFilterFieldsForModal" :key="field.name" class="flex items-center text-sm">
+                <input type="checkbox" :value="field.name" v-model="saveMapForm.configurable_filter_fields" class="form-checkbox h-4 w-4 text-indigo-600 mr-2">
+                {{ field.label }}
+              </label>
+            </div>
+          </div>
+          
           <div class="mb-4">
             <label for="creatorDisplayName" class="block text-sm font-medium text-gray-700">Creator Display Name (Optional)</label>
             <input type="text" v-model="saveMapForm.creator_display_name" id="creatorDisplayName" placeholder="Leave blank to use your account name" class="mt-1 p-2 border rounded-md w-full">
@@ -151,6 +164,7 @@ import DataMapDisplay from '@/Components/DataMapDisplay.vue'; // Added
 import GenericFiltersControl from '@/Components/GenericFiltersControl.vue';
 import AiAssistant from '@/Components/AiAssistant.vue';
 import GenericDataList from '@/Components/GenericDataList.vue';
+import { applyClientFilters } from '@/Utils/clientDataFilter.js'; // Added
 
 const props = defineProps({
   initialDataProp: Array,
@@ -159,13 +173,21 @@ const props = defineProps({
   dateFieldProp: String,
   externalIdFieldProp: String,
   filterFieldsDescriptionProp: [String, Array, Object],
-  isReadOnly: { // New prop
+  searchableColumnsProp: { // Added prop
+    type: Array,
+    default: () => []
+  },
+  isReadOnly: { 
     type: Boolean,
     default: false,
   },
-  initialMapSettings: { // New prop for viewing saved maps
+  initialMapSettings: { 
     type: Object,
-    default: () => ({ center: [42.3601, -71.0589], zoom: 12 }) // Default Boston center & zoom
+    default: () => ({ center: [42.3601, -71.0589], zoom: 12 }) 
+  },
+  configurableFilterFieldsForView: { // New prop for read-only view
+    type: Array,
+    default: () => []
   }
 });
 
@@ -175,6 +197,7 @@ const translations = inject('translations'); // Assuming translations are provid
 
 const dataMapDisplayRef = ref(null); // Renamed from mapDisplayRef
 const dataPoints = ref([]);
+const clientFilteredDataPoints = ref([]); // For client-side filtering in read-only mode
 const currentFilters = ref({});
 const naturalLanguageQuery = ref('');
 const nlpError = ref('');
@@ -190,12 +213,13 @@ const showSaveMapModal = ref(false);
 const saveMapForm = ref({
   name: '',
   description: '',
-  creator_display_name: '', // Added
+  creator_display_name: '', 
   map_type: 'single',
-  data_type: '', // Will be set from props
+  data_type: '', 
   filters: {},
   map_settings: {},
   is_public: false,
+  configurable_filter_fields: [], // Added for configurable filters
 });
 const isSavingMap = ref(false);
 const saveMapError = ref('');
@@ -214,7 +238,107 @@ const currentReportLanguage = computed(() => {
   return mapping[locale] || 'en';
 });
 
+const availableFilterFieldsForModal = computed(() => {
+  console.log('DataMapComponent: availableFilterFieldsForModal START');
+  let descriptionProp = props.filterFieldsDescriptionProp;
+  console.log('DataMapComponent: props.filterFieldsDescriptionProp raw:', descriptionProp);
+
+  if (typeof descriptionProp === 'string') {
+    try {
+      descriptionProp = JSON.parse(descriptionProp);
+      console.log('DataMapComponent: Parsed filterFieldsDescriptionProp from string:', descriptionProp);
+    } catch (e) {
+      console.error('DataMapComponent: Failed to parse filterFieldsDescriptionProp string:', e);
+      return [];
+    }
+  }
+
+  if (!descriptionProp) {
+    console.log('DataMapComponent: No filterFieldsDescriptionProp, returning [].');
+    return [];
+  }
+
+  if (Array.isArray(descriptionProp)) {
+    console.log(`DataMapComponent: filterFieldsDescriptionProp is an array. Length: ${descriptionProp.length}`);
+    return descriptionProp;
+  }
+
+  if (typeof descriptionProp === 'object' && descriptionProp !== null) {
+    console.log('DataMapComponent: filterFieldsDescriptionProp is an object. Converting to array.');
+    const mappedFields = Object.entries(descriptionProp).map(([key, value]) => ({
+      name: key,
+      label: value.label || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      type: value.type || 'text',
+      options: value.options || [],
+    }));
+    console.log(`DataMapComponent: Mapped fields from object. Length: ${mappedFields.length}`);
+    return mappedFields;
+  }
+
+  console.log('DataMapComponent: filterFieldsDescriptionProp is not array or object, returning [].');
+  return [];
+});
+
+const displayedDataPoints = computed(() => {
+  if (props.isReadOnly) {
+    return clientFilteredDataPoints.value;
+  }
+  return dataPoints.value;
+});
+
+const filterFieldsForReadOnlyView = computed(() => {
+  let baseDescriptionArray = [];
+  if (props.filterFieldsDescriptionProp) {
+    let parsedDesc = props.filterFieldsDescriptionProp;
+    if (typeof parsedDesc === 'string') {
+      try {
+        parsedDesc = JSON.parse(parsedDesc);
+      } catch (e) {
+        console.error('DataMapComponent: Failed to parse filterFieldsDescriptionProp string for read-only view:', e);
+        parsedDesc = [];
+      }
+    }
+
+    if (Array.isArray(parsedDesc)) {
+      baseDescriptionArray = parsedDesc;
+    } else if (typeof parsedDesc === 'object' && parsedDesc !== null) {
+      baseDescriptionArray = Object.entries(parsedDesc).map(([key, value]) => ({
+        name: key,
+        label: value.label || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        type: value.type || 'text',
+        options: value.options || [],
+        // Copy other potential properties from value if necessary
+        ...(typeof value === 'object' && value !== null && value) 
+      }));
+    }
+  }
+
+  if (!props.isReadOnly) {
+    return baseDescriptionArray; // Return parsed base description if not read-only
+  }
+
+  // If read-only, filter based on configurableFilterFieldsForView
+  if (!props.configurableFilterFieldsForView || props.configurableFilterFieldsForView.length === 0) {
+    return []; // No fields are configurable if array is empty or not provided
+  }
+  
+  const configurableSet = new Set(props.configurableFilterFieldsForView);
+  let filteredDesc = baseDescriptionArray.filter(field => configurableSet.has(field.name));
+
+  // If 'limit' is configurable and not already in the filtered description from the model
+  if (configurableSet.has('limit') && !filteredDesc.some(field => field.name === 'limit')) {
+    filteredDesc.push({ name: 'limit', label: 'Record Limit', type: 'number', placeholder: 'e.g., 1000' });
+  }
+  
+  return filteredDesc;
+});
+
+
 const fetchData = async (filtersToApply) => {
+  if (props.isReadOnly) { // Do not fetch if read-only, client-side filtering will handle it
+    applyClientSideFilters(filtersToApply);
+    return;
+  }
   if (!props.dataTypeProp) return;
   isLoading.value = true;
   nlpError.value = '';
@@ -224,7 +348,11 @@ const fetchData = async (filtersToApply) => {
     }, {
       headers: { 'X-CSRF-TOKEN': csrfToken.value },
     });
-    dataPoints.value = response.data.data || [];
+    const fetchedData = response.data.data || [];
+    dataPoints.value = fetchedData;
+    if (props.isReadOnly) { // Though this block might not be hit if isReadOnly check is at start
+        clientFilteredDataPoints.value = fetchedData; // Initialize client-side data
+    }
     if (dataPoints.value.length > 0 && !props.isReadOnly) { // Only auto-center if not read-only (saved map has its own center)
         // Recenter map if data points exist and map is initialized
         if (isMapInitialized.value && dataMapDisplayRef.value?.getMapInstance()) {
@@ -262,7 +390,11 @@ const submitNlpQuery = async () => {
     }, {
       headers: { 'X-CSRF-TOKEN': csrfToken.value },
     });
-    dataPoints.value = response.data.data || [];
+    const nlpData = response.data.data || [];
+    dataPoints.value = nlpData;
+     if (props.isReadOnly) { // Though this block might not be hit
+        clientFilteredDataPoints.value = nlpData;
+    }
     // Update currentFilters based on what the NLP query resolved to, if provided
     if (response.data.filtersApplied) {
       currentFilters.value = { ...response.data.filtersApplied };
@@ -288,10 +420,33 @@ const submitNlpQuery = async () => {
   }
 };
 
+const applyClientSideFilters = (filters) => {
+  if (!props.isReadOnly) return;
+
+  const dataTypeDetails = {
+    dateField: props.dateFieldProp,
+    searchableColumns: props.searchableColumnsProp,
+    filterFieldsDescription: availableFilterFieldsForModal.value // Use the parsed description
+  };
+  
+  clientFilteredDataPoints.value = applyClientFilters(
+    props.initialDataProp || [], 
+    filters, 
+    dataTypeDetails
+  );
+  
+  // Optionally, re-center map based on filtered data if needed, though usually not for read-only views.
+  // For now, map center is fixed by initialMapSettings in read-only.
+};
+
+
 const handleFiltersUpdated = (newFilters) => {
-  if (props.isReadOnly) return;
   currentFilters.value = { ...newFilters };
-  fetchData(currentFilters.value);
+  if (props.isReadOnly) {
+    applyClientSideFilters(currentFilters.value);
+  } else {
+    fetchData(currentFilters.value);
+  }
 };
 
 const handleMarkerClick = (dataPoint) => {
@@ -397,12 +552,28 @@ const handleSaveMap = async () => {
 onMounted(() => {
   mapCenter.value = props.initialMapSettings?.center || [42.3601, -71.0589];
 
-  dataPoints.value = props.initialDataProp || [];
+  const initialData = props.initialDataProp || [];
+  dataPoints.value = initialData; // Store original full dataset for non-readonly
+  
   currentFilters.value = { ...(props.pageFiltersProp || {}), limit: 1000 }; 
 
-  // If it's read-only, data is assumed to be pre-loaded via props by ViewSavedMapPage.
-  // No initial fetch unless specifically told to (e.g. if initialDataProp is empty but filters exist)
-  if (!props.isReadOnly) {
+  if (props.isReadOnly) {
+    clientFilteredDataPoints.value = initialData; // Initialize with all data for client-side filtering
+    // Apply initial saved filters client-side if any are configurable
+    if (props.configurableFilterFieldsForView && props.configurableFilterFieldsForView.length > 0) {
+        const initialConfigurableFilters = {};
+        Object.keys(props.pageFiltersProp || {}).forEach(key => {
+            if (props.configurableFilterFieldsForView.includes(key) || 
+                (key === 'date_range' && (props.configurableFilterFieldsForView.includes(props.dateFieldProp) || props.configurableFilterFieldsForView.includes('date_range')))) { // Special handling for date_range if date field is configurable
+                initialConfigurableFilters[key] = props.pageFiltersProp[key];
+            }
+        });
+        currentFilters.value = initialConfigurableFilters; // Set currentFilters to only the configurable ones that were saved
+        applyClientSideFilters(currentFilters.value);
+    } else {
+        currentFilters.value = {}; // No configurable filters, so no active filters on view page
+    }
+  } else {
     const initialFetchRequired = Object.keys(currentFilters.value).filter(k => k !== 'limit').length > 0 || dataPoints.value.length === 0;
     if (initialFetchRequired) {
         fetchData(currentFilters.value);
@@ -415,13 +586,6 @@ onMounted(() => {
                    mapCenter.value = [lat, lon];
               }
           }
-    }
-  } else {
-    // For read-only, mapCenter is already set by initialMapSettings.
-    // Data is passed via initialDataProp.
-    // Ensure map view is set correctly if map is already initialized.
-    if (isMapInitialized.value && dataMapDisplayRef.value?.getMapInstance()) {
-        dataMapDisplayRef.value.getMapInstance().setView(mapCenter.value, props.initialMapSettings?.zoom || 12);
     }
   }
 });
@@ -443,8 +607,8 @@ watch(() => props.dataTypeProp, (newDataType, oldDataType) => {
   if (newDataType !== oldDataType && !props.isReadOnly) { // Don't refetch if read-only
     naturalLanguageQuery.value = '';
     selectedDataPoint.value = null;
-    // Reset filters or fetch new filter descriptions if they change with dataType
-    currentFilters.value = { limit: 1000 }; // Reset to default
+    currentFilters.value = { limit: 1000 }; 
+    saveMapForm.value.configurable_filter_fields = []; // Reset configurable fields on type change
     fetchData(currentFilters.value);
   }
 });

@@ -19,6 +19,7 @@ class SavedMap extends Model
         'data_type',
         'filters',
         'map_settings',
+        'configurable_filter_fields', // Added
         'is_public',
         'is_approved', // Added
         'is_featured', // Added
@@ -27,6 +28,7 @@ class SavedMap extends Model
     protected $casts = [
         'filters' => 'array',
         'map_settings' => 'array',
+        'configurable_filter_fields' => 'array', // Added
         'is_public' => 'boolean',
         'is_approved' => 'boolean', // Added
         'is_featured' => 'boolean', // Added

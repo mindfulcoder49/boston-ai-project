@@ -113,6 +113,7 @@ class DataMapController extends Controller
             'externalIdField' => $modelClass::getExternalIdName(), // From Mappable trait
             // getFilterableFieldsDescription should return a JSON string or array
             'filterFieldsDescription' => $modelClass::getFilterableFieldsDescription(), // From Mappable trait
+            'searchableColumns' => $modelClass::getSearchableColumns(), // Added
         ]);
     }
 

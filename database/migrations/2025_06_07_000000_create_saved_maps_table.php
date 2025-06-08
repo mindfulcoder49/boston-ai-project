@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('data_type')->nullable(); // For 'single' type, e.g., '311_cases'
             $table->json('filters'); // Stores the filter criteria
             $table->json('map_settings')->nullable(); // Stores map center, zoom, selected layers for combined
+            $table->json('configurable_filter_fields')->nullable(); // Stores which filter fields are user-configurable on view page
             $table->boolean('is_public')->default(false);
             $table->boolean('is_approved')->default(false);
             $table->boolean('is_featured')->default(false);

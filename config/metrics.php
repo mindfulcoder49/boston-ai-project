@@ -1,35 +1,35 @@
 <?php
 
 return array (
-  'last_updated' => '2025-05-31 23:51:33',
+  'last_updated' => '2025-06-06 23:38:00',
   'data' => 
   array (
     0 => 
     array (
       'modelName' => 'Crime Data',
       'tableName' => 'crime_data',
-      'totalRecords' => 300073,
+      'totalRecords' => 303922,
       'minDate' => '2009-01-01',
-      'maxDate' => '2025-05-30',
-      'recordsLast30Days' => 6246,
-      'recordsLast90Days' => 25220,
-      'recordsLast1Year' => 95340,
+      'maxDate' => '2025-06-06',
+      'recordsLast30Days' => 8860,
+      'recordsLast90Days' => 27910,
+      'recordsLast1Year' => 98205,
       'offenseGroupDistribution' => 
       array (
         0 => 
         array (
           'offense_description' => 'INVESTIGATE PERSON',
-          'total' => 18007,
+          'total' => 18330,
         ),
         1 => 
         array (
           'offense_description' => 'SICK ASSIST',
-          'total' => 16261,
+          'total' => 16502,
         ),
         2 => 
         array (
           'offense_description' => 'M/V - LEAVING SCENE - PROPERTY DAMAGE',
-          'total' => 11042,
+          'total' => 11202,
         ),
         3 => 
         array (
@@ -39,27 +39,27 @@ return array (
         4 => 
         array (
           'offense_description' => 'INVESTIGATE PROPERTY',
-          'total' => 8308,
+          'total' => 8423,
         ),
         5 => 
         array (
           'offense_description' => 'LARCENY SHOPLIFTING',
-          'total' => 8247,
+          'total' => 8380,
         ),
         6 => 
         array (
           'offense_description' => 'TOWED MOTOR VEHICLE',
-          'total' => 8035,
+          'total' => 8175,
         ),
         7 => 
         array (
-          'offense_description' => 'Larceny from MV',
-          'total' => 7665,
+          'offense_description' => 'ASSAULT - SIMPLE',
+          'total' => 7701,
         ),
         8 => 
         array (
-          'offense_description' => 'ASSAULT - SIMPLE',
-          'total' => 7584,
+          'offense_description' => 'Larceny from MV',
+          'total' => 7665,
         ),
         9 => 
         array (
@@ -67,79 +67,79 @@ return array (
           'total' => 6794,
         ),
       ),
-      'shootingIncidents' => 1311,
+      'shootingIncidents' => 1318,
     ),
     1 => 
     array (
       'modelName' => 'Three One One Case',
       'tableName' => 'three_one_one_cases',
-      'totalRecords' => 112790,
+      'totalRecords' => 124561,
       'minDate' => '2025-01-01',
-      'maxDate' => '2025-05-31',
-      'recordsLast30Days' => 17282,
-      'recordsLast90Days' => 64660,
-      'recordsLast1Year' => 112790,
+      'maxDate' => '2025-06-06',
+      'recordsLast30Days' => 25463,
+      'recordsLast90Days' => 73515,
+      'recordsLast1Year' => 124561,
       'caseStatusDistribution' => 
       array (
         0 => 
         array (
           'case_status' => 'Closed',
-          'total' => 75931,
+          'total' => 84354,
         ),
         1 => 
         array (
           'case_status' => 'Open',
-          'total' => 30591,
+          'total' => 33742,
         ),
         2 => 
         array (
           'case_status' => 'Archived',
-          'total' => 5713,
+          'total' => 5891,
         ),
         3 => 
         array (
           'case_status' => 'Acknowledged',
-          'total' => 555,
+          'total' => 574,
         ),
       ),
-      'averageClosureTimeHours' => 75.58,
+      'averageClosureTimeHours' => 78.99,
     ),
     2 => 
     array (
       'modelName' => 'Food Inspection',
       'tableName' => 'food_inspections',
-      'totalRecords' => 838690,
+      'totalRecords' => 840356,
       'minDate' => '2006-04-04',
-      'maxDate' => '2025-05-30',
-      'recordsLast30Days' => 2494,
-      'recordsLast90Days' => 9541,
-      'recordsLast1Year' => 42521,
+      'maxDate' => '2025-06-06',
+      'recordsLast30Days' => 3438,
+      'recordsLast90Days' => 10932,
+      'recordsLast1Year' => 43528,
       'resultDistribution' => 
       array (
         0 => 
         array (
           'result' => 'HE_Fail',
-          'total' => 350057,
+          'total' => 350674,
         ),
         1 => 
         array (
           'result' => 'HE_Pass',
-          'total' => 267071,
+          'total' => 267692,
         ),
         2 => 
         array (
           'result' => 'HE_Filed',
-          'total' => 90878,
+          'total' => 90912,
         ),
         3 => 
         array (
           'result' => 'HE_FailExt',
-          'total' => 65598,
+          'total' => 65873,
         ),
         4 => 
         array (
           'result' => 'HE_Hearing',
-          'total' => 26073,
+          'total' => 26116,
         ),
       ),
       'violationLevelDistribution' => 
@@ -147,22 +147,22 @@ return array (
         0 => 
         array (
           'viol_level' => 'Low',
-          'total' => 551821,
+          'total' => 552700,
         ),
         1 => 
         array (
           'viol_level' => 'High',
-          'total' => 121250,
+          'total' => 121433,
         ),
         2 => 
         array (
           'viol_level' => 'Medium',
-          'total' => 97585,
+          'total' => 98077,
         ),
         3 => 
         array (
           'viol_level' => 'Other',
-          'total' => 7478,
+          'total' => 7498,
         ),
       ),
     ),
@@ -170,18 +170,18 @@ return array (
     array (
       'modelName' => 'Property Violation',
       'tableName' => 'property_violations',
-      'totalRecords' => 19092,
+      'totalRecords' => 19115,
       'minDate' => '2009-12-01',
-      'maxDate' => '2025-05-30',
-      'recordsLast30Days' => 85,
-      'recordsLast90Days' => 281,
-      'recordsLast1Year' => 1283,
+      'maxDate' => '2025-06-06',
+      'recordsLast30Days' => 68,
+      'recordsLast90Days' => 298,
+      'recordsLast1Year' => 1292,
       'statusDistribution' => 
       array (
         0 => 
         array (
           'status' => 'Closed',
-          'total' => 15166,
+          'total' => 15205,
         ),
         1 => 
         array (
@@ -191,17 +191,17 @@ return array (
         2 => 
         array (
           'status' => 'Open',
-          'total' => 1271,
+          'total' => 1255,
         ),
         3 => 
         array (
           'status' => 'Cited',
-          'total' => 1198,
+          'total' => 1197,
         ),
         4 => 
         array (
           'status' => 'In Progress',
-          'total' => 38,
+          'total' => 39,
         ),
       ),
       'topViolationCodes' => 
@@ -210,7 +210,7 @@ return array (
         array (
           'code' => '105.1',
           'description' => 'Failure to Obtain Permit',
-          'total' => 4024,
+          'total' => 4036,
         ),
         1 => 
         array (
@@ -222,25 +222,25 @@ return array (
         array (
           'code' => '102.8',
           'description' => 'Maintenance',
-          'total' => 1134,
+          'total' => 1137,
         ),
         3 => 
         array (
           'code' => '1001.3.2',
           'description' => 'Testing & Certification',
-          'total' => 879,
+          'total' => 880,
         ),
         4 => 
         array (
           'code' => '116.1',
           'description' => 'Unsafe and Dangerous',
-          'total' => 849,
+          'total' => 850,
         ),
         5 => 
         array (
           'code' => '116',
           'description' => 'Unsafe Structures',
-          'total' => 587,
+          'total' => 589,
         ),
         6 => 
         array (
@@ -258,13 +258,13 @@ return array (
         array (
           'code' => '107.4',
           'description' => 'Failed to comply w permit term',
-          'total' => 447,
+          'total' => 448,
         ),
         9 => 
         array (
           'code' => '101.4.4',
           'description' => 'Maintenance',
-          'total' => 315,
+          'total' => 316,
         ),
       ),
     ),
@@ -272,63 +272,63 @@ return array (
     array (
       'modelName' => 'Building Permit',
       'tableName' => 'building_permits',
-      'totalRecords' => 628004,
+      'totalRecords' => 629353,
       'minDate' => '2006-09-26',
-      'maxDate' => '2025-05-30',
-      'recordsLast30Days' => 2330,
-      'recordsLast90Days' => 8324,
-      'recordsLast1Year' => 36993,
+      'maxDate' => '2025-06-06',
+      'recordsLast30Days' => 3019,
+      'recordsLast90Days' => 9371,
+      'recordsLast1Year' => 37660,
       'workTypeDistribution' => 
       array (
         0 => 
         array (
           'worktype' => 'ELECTRICAL',
-          'total' => 124829,
+          'total' => 125081,
         ),
         1 => 
         array (
           'worktype' => 'PLUMBING',
-          'total' => 83480,
+          'total' => 83702,
         ),
         2 => 
         array (
           'worktype' => 'GAS',
-          'total' => 61266,
+          'total' => 61379,
         ),
         3 => 
         array (
           'worktype' => 'INTREN',
-          'total' => 52806,
+          'total' => 52907,
         ),
         4 => 
         array (
           'worktype' => 'LVOLT',
-          'total' => 42150,
+          'total' => 42179,
         ),
         5 => 
         array (
           'worktype' => 'INTEXT',
-          'total' => 36963,
+          'total' => 37063,
         ),
         6 => 
         array (
           'worktype' => 'FA',
-          'total' => 32862,
+          'total' => 32920,
         ),
         7 => 
         array (
           'worktype' => 'OTHER',
-          'total' => 23318,
+          'total' => 23395,
         ),
         8 => 
         array (
           'worktype' => 'ROOF',
-          'total' => 22892,
+          'total' => 22954,
         ),
         9 => 
         array (
           'worktype' => 'EXTREN',
-          'total' => 21655,
+          'total' => 21686,
         ),
       ),
       'permitStatusDistribution' => 
@@ -336,12 +336,12 @@ return array (
         0 => 
         array (
           'status' => 'Open',
-          'total' => 362381,
+          'total' => 362923,
         ),
         1 => 
         array (
           'status' => 'Closed',
-          'total' => 253315,
+          'total' => 254122,
         ),
         2 => 
         array (

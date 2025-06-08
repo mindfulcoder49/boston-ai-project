@@ -3522,14 +3522,18 @@ return [
                         'label' => '5',
                     ],
                     18 => [
+                        'value' => '6',
+                        'label' => '6',
+                    ],
+                    19 => [
                         'value' => '7',
                         'label' => '7',
                     ],
-                    19 => [
+                    20 => [
                         'value' => '8',
                         'label' => '8',
                     ],
-                    20 => [
+                    21 => [
                         'value' => '9',
                         'label' => '9',
                     ],
@@ -4188,7 +4192,7 @@ return [
             ],
             'pwd_district' => [
                 'type' => 'string',
-                'description' => 'Filter by Pwd District. Possible values:  , 02, 03, 04, 05, 06, 07, 08, 09, 10A, 10B, 1A, 1B, 1C, 2, 3, 4, 5, 7, 8, 9.',
+                'description' => 'Filter by Pwd District. Possible values:  , 02, 03, 04, 05, 06, 07, 08, 09, 10A, 10B, 1A, 1B, 1C, 2, 3, 4, 5, 6, 7, 8, 9.',
             ],
             'city_council_district' => [
                 'type' => 'string',

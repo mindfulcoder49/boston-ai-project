@@ -243,6 +243,74 @@ a {
   position: relative;
 }
 
+/* Custom Icon Exception Styling */
+
+/* Crime - Collision with Injury */
+/* Targets L.divIcon structure and L.icon's <img> tag if class is applied */
+.crime-collision-injury-icon div, /* For L.divIcon's inner div if that's styled */
+.crime-collision-injury-icon {    /* For L.divIcon outer or L.icon <img> */
+  background-image: url("/images/crime-collision-injury.svg") !important; /* Create this SVG */
+  /* Or, if not changing image, add other visual distinction: */
+  /* border: 3px solid red !important; */
+  /* background-color: darkred !important; */ /* Example */
+}
+
+/* Crime - Collision no Injury */
+.crime-collision-no-injury-icon div,
+.crime-collision-no-injury-icon {
+  background-image: url("/images/crime-collision-no-injury.svg") !important; /* Create this SVG */
+  /* background-color: orange !important; */ /* Example */
+}
+
+/* Crime - Assault */
+.crime-assault-icon div,
+.crime-assault-icon {
+  background-image: url("/images/crime-assault.svg") !important; /* Create this SVG */
+  /* background-color: purple !important; */ /* Example */
+}
+
+/* 311 Case - Open */
+.case-open-icon div,
+.case-open-icon {
+  /* Example: Add a green pulsing border or a specific overlay */
+  /* background-color: lightgreen !important; */ /* Example */
+  box-shadow: 0 0 8px 3px rgba(0, 255, 0, 0.7) !important;
+  /* Consider animation for open cases */
+}
+
+/* 311 Case - Closed */
+.case-closed-icon div,
+.case-closed-icon {
+  /* Example: Make it slightly faded or add a grey tint */
+  /* opacity: 0.7 !important; */
+  /* filter: grayscale(50%) !important; */
+   background-color: var(--case-icon-color) !important; /* Ensure it keeps its color but maybe less prominent than open */
+   box-shadow: none !important; /* Remove any 'open' styling */
+}
+
+
+/* Building Permit - High Value */
+.permit-high-value-icon div,
+.permit-high-value-icon {
+  /* Example: Add a gold border or a small badge */
+  border: 3px solid gold !important;
+  /* background-color: gold !important; */ /* Example */
+}
+/* Optional: Badge for high value - more complex for L.icon's <img> */
+.permit-high-value-icon div::after { /* For L.divIcon's inner div */
+  content: "$M+";
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background-color: gold;
+  color: black;
+  border-radius: 50%;
+  padding: 1px 3px;
+  font-size: 0.6em;
+  font-weight: bold;
+  border: 1px solid black;
+}
+
 .case-div-icon div, .case-div-icon {
   background-color: var(--case-icon-color);
   background-size: contain;
@@ -255,7 +323,8 @@ a {
   position: relative;
 }
 
-.case-div-icon.no-photo div, .case-div-icon.no-photo  {
+.case-div-icon:not(.submitted-photo):not(.closed-photo) div, 
+.case-div-icon:not(.submitted-photo):not(.closed-photo) {
   background-image: url("/images/boston311icon.svg");
 }
 

@@ -80,7 +80,7 @@
     </div>
     
     <!-- Filters Section - Tabbed Interface -->
-    <div v-if="!isReadOnly" class="filters-tab-section mb-6 p-4 border rounded-md shadow-sm bg-white">
+    <div class="filters-tab-section mb-6 p-4 border rounded-md shadow-sm bg-white">
         <h3 class="text-xl font-semibold mb-3">Filters</h3>
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-4 overflow-x-auto" aria-label="Tabs">
@@ -107,10 +107,11 @@
             <div v-for="dataType in availableDataTypes" :key="`filter-content-${dataType}`">
                 <GenericFiltersControl
                     v-show="activeFilterTab === dataType"
-                    :filter-fields-description="allDataTypeDetailsProp[dataType]?.filterFieldsDescription || []"
+                    :filter-fields-description="filterFieldsForReadOnlyView(dataType)"
                     :initial-filters="currentFiltersByType[dataType] || {}"
                     :date-field="allDataTypeDetailsProp[dataType]?.dateField"
                     :data-type="dataType" 
+                    :is-read-only="isReadOnly"
                     @filters-updated="(newFilters) => handleFiltersUpdatedForType(dataType, newFilters)"
                     class="mt-2"
                 />
@@ -174,7 +175,30 @@
             <label for="mapDescriptionCombined" class="block text-sm font-medium text-gray-700">Description</label>
             <textarea v-model="saveMapForm.description" id="mapDescriptionCombined" rows="3" class="mt-1 p-2 border rounded-md w-full"></textarea>
           </div>
-          <div class="mb-4">
+
+          <div class="mb-4 border-t pt-4">
+            <h4 class="text-sm font-medium text-gray-700 mb-2">Configurable Filters for Viewers:</h4>
+            <p class="text-xs text-gray-500 mb-2">Select which filters viewers of this saved map can adjust (client-side) for each data type.</p>
+            <div class="max-h-60 overflow-y-auto space-y-3">
+              <div v-for="dt in availableDataTypes" :key="`config-filter-${dt}`">
+                <h5 class="text-xs font-semibold text-gray-600 mb-1">{{ getModelNameForHumans(dt) }}</h5>
+                <div class="pl-2 space-y-1">
+                    <label v-for="field in availableFilterFieldsForModal[dt]" :key="`${dt}-${field.name}`" class="flex items-center text-sm">
+                        <input 
+                            type="checkbox" 
+                            :value="field.name" 
+                            v-model="saveMapForm.configurable_filter_fields[dt]" 
+                            @change="() => { if (!saveMapForm.configurable_filter_fields[dt]) saveMapForm.configurable_filter_fields[dt] = [] }"
+                            class="form-checkbox h-4 w-4 text-indigo-600 mr-2">
+                        {{ field.label }}
+                    </label>
+                     <p v-if="!availableFilterFieldsForModal[dt] || availableFilterFieldsForModal[dt].length === 0" class="text-xs text-gray-400">No filterable fields for this type.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+           <div class="mb-4">
             <label for="creatorDisplayNameCombined" class="block text-sm font-medium text-gray-700">Creator Display Name (Optional)</label>
             <input type="text" v-model="saveMapForm.creator_display_name" id="creatorDisplayNameCombined" placeholder="Leave blank to use your account name" class="mt-1 p-2 border rounded-md w-full">
             <p class="text-xs text-gray-500 mt-1">This name will be shown if the map is public.</p>
@@ -208,23 +232,27 @@ import DataMapDisplay from '@/Components/DataMapDisplay.vue';
 import GenericFiltersControl from '@/Components/GenericFiltersControl.vue';
 import AiAssistant from '@/Components/AiAssistant.vue';
 import GenericDataList from '@/Components/GenericDataList.vue';
+import { applyClientFilters } from '@/Utils/clientDataFilter.js'; // Added
 
 const props = defineProps({
   modelMappingProp: Object,
   initialDataTypeProp: String,
-  initialDataProp: Array,
-  initialFiltersProp: Object,
-  allDataTypeDetailsProp: Object, // Keyed by dataType: { dateField, externalIdField, filterFieldsDescription, modelNameForHumans }
-  isReadOnly: { // New prop
+  // initialDataProp: Array, // This was for single initial type, now using initialDataSetsProp
+  initialFiltersProp: Object, // These are the filters saved with the map
+  allDataTypeDetailsProp: Object, 
+  isReadOnly: { 
     type: Boolean,
     default: false,
   },
-  initialMapSettings: { // New prop for viewing saved maps
+  initialMapSettings: { 
     type: Object,
     default: () => ({ center: [42.3601, -71.0589], zoom: 12, selected_data_types: [] })
   },
-  // Prop to pass pre-loaded data for multiple types when in read-only mode
-  initialDataSetsProp: {
+  initialDataSetsProp: { // Pre-loaded data for multiple types in read-only mode
+    type: Object,
+    default: () => ({})
+  },
+  configurableFilterFieldsForView: { // New prop for read-only view { dataType: ['field1', 'field2'] }
     type: Object,
     default: () => ({})
   }
@@ -234,7 +262,9 @@ const page = usePage();
 const csrfToken = computed(() => page.props.csrf_token || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'));
 
 const dataMapDisplayRef = ref(null);
-const allDataPointsByType = ref({}); // { dataType1: [], dataType2: [] }
+const allDataPointsByType = ref({}); // { dataType1: [], dataType2: [] } - Holds original data in read-only
+const clientFilteredDataPointsByType = ref({}); // { dataType1: [], dataType2: [] } - For client-side filtering
+
 const currentFiltersByType = ref({}); // { dataType1: {}, dataType2: {} }
 const isLoadingByType = ref({}); // { dataType1: false, dataType2: true }
 const nlpErrorsByType = ref({}); // { dataType1: "error message" }
@@ -257,12 +287,13 @@ const showSaveMapModal = ref(false);
 const saveMapForm = ref({
   name: '',
   description: '',
-  creator_display_name: '', // Added
+  creator_display_name: '', 
   map_type: 'combined',
-  data_type: null, // Not used for combined
-  filters: {}, // Will be currentFiltersByType
+  data_type: null, 
+  filters: {}, 
   map_settings: {},
   is_public: false,
+  configurable_filter_fields: {}, // Added: { dataType1: ['fieldA'], dataType2: ['fieldB'] }
 });
 const isSavingMap = ref(false);
 const saveMapError = ref('');
@@ -297,11 +328,121 @@ const currentReportLanguage = computed(() => {
   return mapping[locale] || 'en';
 });
 
+const availableFilterFieldsForModal = computed(() => {
+  console.log('CombinedDataMapComponent: availableFilterFieldsForModal START');
+  const fields = {};
+  const allDetails = props.allDataTypeDetailsProp;
+  console.log('CombinedDataMapComponent: props.allDataTypeDetailsProp raw:', allDetails);
+
+  if (!allDetails) {
+    console.log('CombinedDataMapComponent: No allDataTypeDetailsProp. Returning {}.');
+    return fields;
+  }
+
+  for (const dataType in allDetails) {
+    console.log(`CombinedDataMapComponent: Processing dataType: ${dataType}`);
+    let desc = allDetails[dataType]?.filterFieldsDescription;
+
+    if (typeof desc === 'string') {
+      try {
+        desc = JSON.parse(desc);
+        console.log(`CombinedDataMapComponent: Parsed filterFieldsDescription for ${dataType} from string:`, desc);
+      } catch (e) {
+        console.error(`CombinedDataMapComponent: Failed to parse filterFieldsDescription string for ${dataType}:`, e);
+        fields[dataType] = [];
+        continue;
+      }
+    }
+
+    if (!desc) {
+      console.log(`CombinedDataMapComponent: No filterFieldsDescription for ${dataType}. Setting empty array.`);
+      fields[dataType] = [];
+      continue;
+    }
+
+    if (Array.isArray(desc)) {
+      console.log(`CombinedDataMapComponent: Filter description for ${dataType} is an array. Length: ${desc.length}`);
+      fields[dataType] = desc;
+      console.log(`CombinedDataMapComponent: Assigned fields[${dataType}]. Length now: ${fields[dataType]?.length}`);
+    } else if (typeof desc === 'object' && desc !== null) { // Handle if it's an object needing conversion
+      console.log(`CombinedDataMapComponent: Filter description for ${dataType} is an object. Converting to array.`);
+      fields[dataType] = Object.entries(desc).map(([key, value]) => ({
+        name: key,
+        label: value.label || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        type: value.type || 'text',
+        options: value.options || [],
+      }));
+      console.log(`CombinedDataMapComponent: Assigned mapped fields[${dataType}]. Length now: ${fields[dataType]?.length}`);
+    } else {
+      console.warn(`CombinedDataMapComponent: Filter description for ${dataType} is not array or object. Type: ${typeof desc}. Value:`, desc);
+      fields[dataType] = [];
+    }
+  }
+
+  console.log('CombinedDataMapComponent: Generated availableFilterFieldsForModal (snapshot):', JSON.parse(JSON.stringify(fields)));
+  console.log('CombinedDataMapComponent: availableFilterFieldsForModal END');
+  return fields;
+});
+
+const filterFieldsForReadOnlyView = (dataType) => {
+  console.log(`CombinedDataMapComponent: filterFieldsForReadOnlyView for ${dataType}`);
+  
+  const baseDescription = props.allDataTypeDetailsProp[dataType]?.filterFieldsDescription;
+  let baseDescriptionArray = [];
+
+  if (baseDescription) {
+    let parsedDesc = baseDescription;
+    if (typeof parsedDesc === 'string') {
+      try {
+        parsedDesc = JSON.parse(parsedDesc);
+      } catch (e) {
+        console.error(`CombinedDataMapComponent: Failed to parse filterFieldsDescription string for ${dataType} in read-only view:`, e);
+        parsedDesc = [];
+      }
+    }
+    if (Array.isArray(parsedDesc)) {
+      baseDescriptionArray = parsedDesc;
+    } else if (typeof parsedDesc === 'object' && parsedDesc !== null) {
+      baseDescriptionArray = Object.entries(parsedDesc).map(([key, value]) => ({
+        name: key,
+        label: value.label || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        type: value.type || 'text',
+        options: value.options || [],
+        ...(typeof value === 'object' && value !== null && value)
+      }));
+    }
+  }
+  
+  if (!props.isReadOnly) {
+    return baseDescriptionArray; // Return parsed base description if not read-only
+  }
+
+  // If read-only, filter based on configurableFilterFieldsForView for the specific dataType
+  const configurableForDataType = props.configurableFilterFieldsForView?.[dataType];
+  if (!configurableForDataType || configurableForDataType.length === 0) {
+    return []; // No fields are configurable for this dataType
+  }
+
+  const configurableSet = new Set(configurableForDataType);
+  let filteredDesc = baseDescriptionArray.filter(field => configurableSet.has(field.name));
+
+  // If 'limit' is configurable for this dataType and not already in its filtered description
+  if (configurableSet.has('limit') && !filteredDesc.some(field => field.name === 'limit')) {
+    filteredDesc.push({ name: 'limit', label: 'Record Limit', type: 'number', placeholder: 'e.g., 1000' });
+  }
+  
+  console.log(`CombinedDataMapComponent: Final filterFieldsForReadOnlyView for ${dataType}:`, filteredDesc);
+  return filteredDesc;
+};
+
+
 const combinedDataPointsForMap = computed(() => {
   let combined = [];
-  for (const dataType of mapSelectedDataTypes.value) { // Filter by mapSelectedDataTypes
-    if (availableDataTypes.value.includes(dataType)) { // Ensure it's a valid type
-        const points = allDataPointsByType.value[dataType] || [];
+  const sourceData = props.isReadOnly ? clientFilteredDataPointsByType.value : allDataPointsByType.value;
+
+  for (const dataType of mapSelectedDataTypes.value) { 
+    if (availableDataTypes.value.includes(dataType)) { 
+        const points = sourceData[dataType] || [];
         combined.push(...points.map(p => ({ 
             ...p, 
             alcivartech_external_id: `${dataType}-${p[props.allDataTypeDetailsProp[dataType]?.externalIdField || 'id']}`,
@@ -313,7 +454,10 @@ const combinedDataPointsForMap = computed(() => {
 });
 
 const fetchDataForType = async (dataType, filters) => {
-  if (props.isReadOnly || !dataType) return; // Don't fetch if read-only
+  if (props.isReadOnly) { // Do not fetch if read-only
+    applyClientSideFiltersForType(dataType, filters);
+    return;
+  }
   isLoadingByType.value = { ...isLoadingByType.value, [dataType]: true };
   nlpErrorsByType.value = { ...nlpErrorsByType.value, [dataType]: '' };
 
@@ -323,7 +467,11 @@ const fetchDataForType = async (dataType, filters) => {
     }, {
       headers: { 'X-CSRF-TOKEN': csrfToken.value },
     });
-    allDataPointsByType.value = { ...allDataPointsByType.value, [dataType]: response.data.data || [] };
+    const fetchedData = response.data.data || [];
+    allDataPointsByType.value = { ...allDataPointsByType.value, [dataType]: fetchedData };
+    if (props.isReadOnly) { // Should not be hit due to check at start
+        clientFilteredDataPointsByType.value = { ...clientFilteredDataPointsByType.value, [dataType]: fetchedData };
+    }
     currentFiltersByType.value = { ...currentFiltersByType.value, [dataType]: filters }; // Store applied filters
   } catch (error) {
     console.error(`Error fetching ${dataType} data:`, error);
@@ -348,7 +496,11 @@ const submitCombinedNlpQuery = async () => {
       }, {
         headers: { 'X-CSRF-TOKEN': csrfToken.value },
       });
-      allDataPointsByType.value = { ...allDataPointsByType.value, [dataType]: response.data.data || [] };
+      const nlpData = response.data.data || [];
+      allDataPointsByType.value = { ...allDataPointsByType.value, [dataType]: nlpData };
+      if (props.isReadOnly) { // Should not be hit
+          clientFilteredDataPointsByType.value = { ...clientFilteredDataPointsByType.value, [dataType]: nlpData };
+      }
       if (response.data.filtersApplied) {
         currentFiltersByType.value = { ...currentFiltersByType.value, [dataType]: response.data.filtersApplied };
       }
@@ -375,9 +527,45 @@ const submitCombinedNlpQuery = async () => {
   }
 };
 
+const applyClientSideFiltersForType = (dataType, filters) => {
+  if (!props.isReadOnly || !allDataPointsByType.value[dataType]) return;
+
+  const typeDetails = props.allDataTypeDetailsProp[dataType];
+  if (!typeDetails) {
+    console.warn(`No dataTypeDetails found for ${dataType} in applyClientSideFiltersForType.`);
+    clientFilteredDataPointsByType.value = {
+      ...clientFilteredDataPointsByType.value,
+      [dataType]: [...(allDataPointsByType.value[dataType] || [])], // Return original if no details
+    };
+    return;
+  }
+  
+  const dataTypeSpecificDetails = {
+    dateField: typeDetails.dateField,
+    searchableColumns: typeDetails.searchableColumns || [], // Ensure searchableColumns exists
+    filterFieldsDescription: typeDetails.filterFieldsDescription // Pass the already parsed/correct description
+  };
+
+  const filteredData = applyClientFilters(
+    allDataPointsByType.value[dataType] || [],
+    filters,
+    dataTypeSpecificDetails
+  );
+
+  clientFilteredDataPointsByType.value = {
+    ...clientFilteredDataPointsByType.value,
+    [dataType]: filteredData,
+  };
+};
+
+
 const handleFiltersUpdatedForType = (dataType, newFilters) => {
-  if (props.isReadOnly) return;
-  fetchDataForType(dataType, newFilters);
+  currentFiltersByType.value = { ...currentFiltersByType.value, [dataType]: newFilters };
+  if (props.isReadOnly) {
+    applyClientSideFiltersForType(dataType, newFilters);
+  } else {
+    fetchDataForType(dataType, newFilters);
+  }
 };
 
 const handleMarkerClick = (dataPoint) => {
@@ -485,32 +673,84 @@ const handleSaveMap = async () => {
 
 // REMOVED: toggleFilterVisibility as accordion is replaced by tabs
 
+watch(() => props.modelMappingProp, (newMapping) => {
+  const newConfigurableFields = {};
+  if (newMapping) {
+    Object.keys(newMapping).forEach(dt => {
+      newConfigurableFields[dt] = saveMapForm.value.configurable_filter_fields[dt] || [];
+    });
+  }
+  saveMapForm.value.configurable_filter_fields = newConfigurableFields;
+  console.log('CombinedDataMapComponent: Initialized/Updated saveMapForm.configurable_filter_fields', saveMapForm.value.configurable_filter_fields);
+}, { immediate: true, deep: true });
+
 onMounted(async () => {
   mapCenter.value = props.initialMapSettings?.center || [42.3601, -71.0589];
 
+  availableDataTypes.value.forEach(dt => {
+    if (!saveMapForm.value.configurable_filter_fields[dt]) {
+         saveMapForm.value.configurable_filter_fields[dt] = []; // Initialize for checkboxes
+    }
+  });
+
+
   if (props.isReadOnly) {
-    // For read-only mode, data is pre-loaded via initialDataSetsProp
-    allDataPointsByType.value = { ...(props.initialDataSetsProp || {}) };
-    currentFiltersByType.value = { ...(props.initialFiltersProp || {}) }; // These are the saved filters
+    allDataPointsByType.value = { ...(props.initialDataSetsProp || {}) }; // Store original full datasets
+    clientFilteredDataPointsByType.value = { ...(props.initialDataSetsProp || {}) }; // Initialize client-side with all data
+    
+    currentFiltersByType.value = {}; // Will be populated only with active configurable filters
     mapSelectedDataTypes.value = props.initialMapSettings?.selected_data_types || availableDataTypes.value;
     activeFilterTab.value = props.initialMapSettings?.active_filter_tab || availableDataTypes.value[0] || '';
+
+    // Apply initial saved filters client-side if they are configurable
+    availableDataTypes.value.forEach(dataType => {
+        const savedTypeFilters = props.initialFiltersProp?.[dataType] || {};
+        const configurableForType = props.configurableFilterFieldsForView?.[dataType] || [];
+        const initialActiveConfigurableFilters = {};
+
+        if (configurableForType.length > 0) {
+            Object.keys(savedTypeFilters).forEach(key => {
+                const dateField = props.allDataTypeDetailsProp[dataType]?.dateField;
+                if (configurableForType.includes(key) || (key === 'date_range' && (configurableForType.includes(dateField) || configurableForType.includes('date_range')))) {
+                    initialActiveConfigurableFilters[key] = savedTypeFilters[key];
+                }
+            });
+        }
+        currentFiltersByType.value[dataType] = initialActiveConfigurableFilters;
+        if (Object.keys(initialActiveConfigurableFilters).length > 0) {
+            applyClientSideFiltersForType(dataType, initialActiveConfigurableFilters);
+        }
+    });
     
-    // Ensure map view is set
-     if (isMapInitialized.value && dataMapDisplayRef.value?.getMapInstance()) {
+    if (isMapInitialized.value && dataMapDisplayRef.value?.getMapInstance()) {
         dataMapDisplayRef.value.getMapInstance().setView(mapCenter.value, props.initialMapSettings?.zoom || 12);
     }
     return; // No fetching needed for read-only
   }
 
   // Initialize with initial data type if not read-only
-  if (props.initialDataTypeProp && props.initialDataProp) {
-    allDataPointsByType.value[props.initialDataTypeProp] = props.initialDataProp;
-    currentFiltersByType.value[props.initialDataTypeProp] = { ...(props.initialFiltersProp || {}), limit: 100 };
-    nlpSelectedDataTypes.value =  availableDataTypes.value;
-    activeFilterTab.value = props.initialDataTypeProp; // Set initial active tab
-    // enable all data types
-    mapSelectedDataTypes.value = availableDataTypes.value;
-  } else if (availableDataTypes.value.length > 0) {
+  // if (props.initialDataTypeProp && props.initialDataProp) { // Old logic for single initialDataProp
+  //   allDataPointsByType.value[props.initialDataTypeProp] = props.initialDataProp;
+  //   currentFiltersByType.value[props.initialDataTypeProp] = { ...(props.initialFiltersProp || {}), limit: 100 };
+  // ...
+  // } 
+  // New logic: if initialDataSetsProp is provided (even if not read-only, e.g. for a pre-filled form)
+  if (!props.isReadOnly && Object.keys(props.initialDataSetsProp).length > 0) {
+      allDataPointsByType.value = { ...props.initialDataSetsProp };
+      // currentFiltersByType might be set from initialFiltersProp or defaults
+  }
+
+
+  if (props.initialDataTypeProp && !props.isReadOnly) { // Ensure this runs only if not read-only and initial type is set
+    activeFilterTab.value = props.initialDataTypeProp;
+    mapSelectedDataTypes.value = availableDataTypes.value; // Default to all types on map
+    nlpSelectedDataTypes.value = availableDataTypes.value; // Default to all types for NLP
+
+    // If initialDataSetsProp already populated this type, respect it. Otherwise, set default filters.
+    if (!allDataPointsByType.value[props.initialDataTypeProp]) {
+        currentFiltersByType.value[props.initialDataTypeProp] = { ...(props.initialFiltersProp?.[props.initialDataTypeProp] || {}), limit: 100 };
+    }
+  } else if (availableDataTypes.value.length > 0 && !props.isReadOnly) {
     // Fallback if no initialDataTypeProp is specified
     const firstAvailableType = availableDataTypes.value[0];
     activeFilterTab.value = firstAvailableType;
@@ -522,14 +762,23 @@ onMounted(async () => {
   // Initialize filter visibility and fetch data for other types
   const fetchPromises = [];
   availableDataTypes.value.forEach(dataType => {
-    // filterVisibility.value[dataType] = (dataType === props.initialDataTypeProp); // REMOVED
-
-    if (dataType !== props.initialDataTypeProp && !props.isReadOnly) { // Don't fetch if read-only
+    if (!props.isReadOnly) { 
       const defaultFilters = { limit: 100 }; 
-      currentFiltersByType.value[dataType] = defaultFilters;
-      fetchPromises.push(fetchDataForType(dataType, defaultFilters));
-    } else if (props.initialDataProp && props.initialDataProp.length === 0 && Object.keys(currentFiltersByType.value[props.initialDataTypeProp] || {}).length > 0) {
-        fetchPromises.push(fetchDataForType(props.initialDataTypeProp, currentFiltersByType.value[props.initialDataTypeProp]));
+      // Only set/fetch if not already populated by initialDataSetsProp
+      if (!allDataPointsByType.value[dataType]) {
+          currentFiltersByType.value[dataType] = props.initialFiltersProp?.[dataType] || defaultFilters;
+          // Only fetch if there are actual filters or if it's the initial active tab and has no data
+          if (Object.keys(currentFiltersByType.value[dataType]).filter(k => k !== 'limit').length > 0 || (dataType === activeFilterTab.value && !allDataPointsByType.value[dataType])) {
+             fetchPromises.push(fetchDataForType(dataType, currentFiltersByType.value[dataType]));
+          } else if (!allDataPointsByType.value[dataType]) { // Ensure empty array if no data and no fetch
+             allDataPointsByType.value[dataType] = [];
+          }
+      } else if (!currentFiltersByType.value[dataType] && props.initialFiltersProp?.[dataType]) {
+          // If data was preloaded but filters not set, set them from props
+          currentFiltersByType.value[dataType] = props.initialFiltersProp[dataType];
+      } else if (!currentFiltersByType.value[dataType]) {
+          currentFiltersByType.value[dataType] = defaultFilters;
+      }
     }
   });
 

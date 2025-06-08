@@ -1,16 +1,15 @@
 <template>
   <PageTemplate>
     <Head :title="`View Map: ${savedMap.name}`" />
-    <SubscriptionBanner />
-    <MapToolbar /> <!-- Consider if toolbar actions are relevant for read-only maps -->
     
     <div class="p-4">
-      <div class="mb-4 p-4 border rounded-md shadow-sm bg-white">
-        <h1 class="text-2xl font-semibold">{{ savedMap.name }}</h1>
-        <p v-if="savedMap.description" class="text-sm text-gray-600 mt-1">{{ savedMap.description }}</p>
-        <p class="text-xs text-gray-500 mt-1">Saved by: {{ savedMap.user?.name || 'Unknown User' }}</p>
-        <p class="text-xs text-gray-500">Visibility: {{ savedMap.is_public ? 'Public' : 'Private' }}</p>
-      </div>
+
+      <!-- Display Original Saved Filters -->
+      <SavedFiltersDisplay 
+        :filters="savedMap.filters"
+        :map-type="savedMap.map_type"
+        :all-data-type-details="allDataTypeDetails"
+      />
 
       <div class="mb-4">
         <h1 class="text-3xl font-bold">{{ savedMap.name }}</h1>
@@ -36,6 +35,7 @@
           :filter-fields-description-prop="allDataTypeDetails[savedMap.data_type]?.filterFieldsDescription"
           :is-read-only="true"
           :initial-map-settings="mapSettings"
+          :configurable-filter-fields-for-view="savedMap.configurable_filter_fields"
         />
       </div>
       <div v-else-if="savedMap.map_type === 'combined'">
@@ -47,6 +47,7 @@
           :all-data-type-details-prop="allDataTypeDetails"
           :is-read-only="true"
           :initial-map-settings="mapSettings"
+          :configurable-filter-fields-for-view="savedMap.configurable_filter_fields"
         />
       </div>
       <div v-else class="text-red-500 p-4">
@@ -62,11 +63,12 @@ import CombinedDataMapComponent from '@/Components/CombinedDataMapComponent.vue'
 import PageTemplate from '@/Components/PageTemplate.vue';
 import MapToolbar from '@/Components/MapToolbar.vue';
 import SubscriptionBanner from '@/Components/SubscriptionBanner.vue';
+import SavedFiltersDisplay from '@/Components/SavedFiltersDisplay.vue'; // Import new component
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
-  savedMap: Object, // Contains name, description, map_type, data_type (if single), filters, user
+  savedMap: Object, // Contains name, description, map_type, data_type (if single), filters, user, configurable_filter_fields
   mapDataSets: Object, // Keyed by dataType, contains array of data points
   allDataTypeDetails: Object, // Keyed by dataType, contains { dateField, externalIdField, filterFieldsDescription, modelNameForHumans }
   mapSettings: Object, // Contains { center, zoom, selected_data_types (for combined), active_filter_tab (for combined) }

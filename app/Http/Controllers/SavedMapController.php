@@ -84,12 +84,17 @@ class SavedMapController extends Controller
             'filters' => 'required|array',
             'map_settings' => 'nullable|array',
             'is_public' => 'sometimes|boolean',
+            'configurable_filter_fields' => 'nullable|array', // Added for configurable filters
             // 'is_approved' is not set here by user, defaults to false in DB
         ]);
 
         if ($validated['map_type'] === 'single' && empty($validated['data_type'])) {
             return back()->withErrors(['data_type' => 'Data type is required for single maps.'])->withInput();
         }
+
+        // Ensure configurable_filter_fields is at least an empty array/object if null
+        $validated['configurable_filter_fields'] = $validated['configurable_filter_fields'] ?? ($validated['map_type'] === 'combined' ? (object)[] : []);
+
 
         $savedMap = Auth::user()->savedMaps()->create($validated);
 
@@ -114,8 +119,9 @@ class SavedMapController extends Controller
             abort(403, 'You are not authorized to view this map.');
         }
         
-        // Ensure 'creator_display_name' is available along with user relationship
+        // Ensure 'creator_display_name' and 'configurable_filter_fields' are available
         $savedMap->load('user:id,name');
+        // configurable_filter_fields should be automatically cast to array by Laravel if defined in $casts
 
 
         $effectiveUserForTier = $savedMap->is_public ? $savedMap->user : Auth::user();
@@ -162,10 +168,15 @@ class SavedMapController extends Controller
             $data = $query->get();
             $mapDataSets[$dataType] = $this->dataMapController->enrichData($data, $dataType);
 
+            $filterDesc = $modelClass::getFilterableFieldsDescription();
+            if (is_string($filterDesc)) {
+                $filterDesc = json_decode($filterDesc, true);
+            }
+
             $allDataTypeDetails[$dataType] = [
                 'dateField' => $modelClass::getDateField(),
                 'externalIdField' => $modelClass::getExternalIdName(),
-                'filterFieldsDescription' => $modelClass::getFilterableFieldsDescription(),
+                'filterFieldsDescription' => $filterDesc, // Use decoded value
                 'modelNameForHumans' => $modelClass::getModelNameForHumans(),
             ];
 
@@ -197,17 +208,22 @@ class SavedMapController extends Controller
                 $data = $query->get();
                 $mapDataSets[$dataType] = $this->dataMapController->enrichData($data, $dataType);
 
+                $filterDesc = $modelClass::getFilterableFieldsDescription();
+                if (is_string($filterDesc)) {
+                    $filterDesc = json_decode($filterDesc, true);
+                }
+
                 $allDataTypeDetails[$dataType] = [
                     'dateField' => $modelClass::getDateField(),
                     'externalIdField' => $modelClass::getExternalIdName(),
-                    'filterFieldsDescription' => $modelClass::getFilterableFieldsDescription(),
+                    'filterFieldsDescription' => $filterDesc, // Use decoded value
                     'modelNameForHumans' => $modelClass::getModelNameForHumans(),
                 ];
             }
         }
 
         return Inertia::render('ViewSavedMapPage', [
-            'savedMap' => $savedMap, // Now includes creator_display_name directly
+            'savedMap' => $savedMap, // Now includes creator_display_name and configurable_filter_fields
             'mapDataSets' => $mapDataSets, 
             'allDataTypeDetails' => $allDataTypeDetails, 
             'mapSettings' => $savedMap->map_settings, // Center, zoom, selected layers
@@ -229,9 +245,14 @@ class SavedMapController extends Controller
             'description' => 'nullable|string',
             'creator_display_name' => 'sometimes|nullable|string|max:100', // Allow updating display name
             'is_public' => 'sometimes|boolean',
+            'configurable_filter_fields' => 'sometimes|nullable|array', // Allow updating configurable filters
             // 'filters' => 'sometimes|required|array', // If allowing filter updates
             // 'map_settings' => 'sometimes|nullable|array', // If allowing map settings updates
         ]);
+        
+        if (isset($validated['configurable_filter_fields'])) {
+             $validated['configurable_filter_fields'] = $validated['configurable_filter_fields'] ?? ($savedMap->map_type === 'combined' ? (object)[] : []);
+        }
 
         // If the map is being made private, it should also be unapproved and unfeatured.
         // Admin approval is for public maps. If user makes it private, admin approval is moot.
