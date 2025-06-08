@@ -1,6 +1,6 @@
 <template>
     <div v-if="!isAuthenticated || (isAuthenticated && !isSubscribed)"
-         class="bg-gradient-to-r from-blue-900 to-green-700 text-white p-6 shadow-xl my-6 flex flex-col md:flex-row items-center justify-between">
+         class="bg-gradient-to-r from-blue-900 to-green-700 text-white p-6 shadow-xl my-6 flex flex-col md:flex-row items-center justify-between rounded-md">
       <div>
         <h2 class="text-2xl font-bold mb-2">
           {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerTitle || 'Enhance Your Experience!' }}

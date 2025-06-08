@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showBanner && (featuredMaps.length > 0 || !$page.props.auth.user)" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-lg shadow-lg my-6">
+  <div v-if="showBanner && (featuredMaps.length > 0 || !$page.props.auth.user)" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg shadow-lg my-6">
     <div class="container mx-auto">
       <div v-if="featuredMaps.length > 0">
         <h3 class="text-xl font-semibold mb-2">Featured Community Maps!</h3>
@@ -7,8 +7,8 @@
           <div v-for="map in featuredMaps" :key="map.id" class="bg-white/20 p-3 rounded-md hover:bg-white/30 transition-colors">
             <Link :href="route('saved-maps.view', map.id)" class="block">
               <h4 class="font-semibold text-white truncate">{{ map.name }}</h4>
-              <p v-if="map.description" class="text-xs text-indigo-100 truncate">{{ map.description }}</p>
-              <p class="text-xs text-indigo-200 mt-1">
+              <p v-if="map.description" class="text-xs text-blue-100 truncate">{{ map.description }}</p>
+              <p class="text-xs text-blue-200 mt-1">
                 By: {{ map.creator_display_name || map.user?.name || 'Community Member' }}
                  <span v-if="map.creator_tier_display_name" 
                       :class="['ml-1 px-1 py-0.25 rounded-full text-xs', getTierBadgeClass(map.creator_tier_name, true)]">
@@ -21,7 +21,7 @@
          <div class="mt-4 text-center">
             <Link
               :href="route('saved-maps.index')"
-              class="inline-block px-5 py-2 bg-white text-indigo-600 font-semibold rounded-md hover:bg-indigo-50 transition-colors duration-150 ease-in-out shadow-sm text-sm"
+              class="inline-block px-5 py-2 bg-white text-blue-600 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-sm text-sm"
               @click="trackBannerClick('view_all_public_maps')"
             >
               View All Public Maps
@@ -33,7 +33,7 @@
         <p class="text-sm mt-1 mb-3">Explore maps created and shared by our users, or sign up to create your own.</p>
         <Link
           :href="route('saved-maps.index')"
-          class="px-6 py-2 bg-white text-indigo-600 font-semibold rounded-md hover:bg-indigo-50 transition-colors duration-150 ease-in-out shadow-md"
+          class="px-6 py-2 bg-white text-blue-600 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-md"
            @click="trackBannerClick('guest_view_public_maps')"
         >
           Explore Public Maps
