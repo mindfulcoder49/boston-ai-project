@@ -58,6 +58,10 @@ return [
         'api_key' => env('GOOGLE_PLACES_API_KEY'),
     ],
 
+    'google_geocoding' => [
+        'api_key' => env('GOOGLE_GEOCODING_API_KEY'),
+    ],
+
     'scraper_service' => [
         'base_url' => env('SCRAPER_API_BASE_URL', 'http://localhost:8000'),
         'user_id' => env('SCRAPER_X_USER_ID', '1'),

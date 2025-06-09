@@ -25,6 +25,8 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ReportController; // Added
 use App\Http\Controllers\SavedMapController; // Added
 use App\Http\Controllers\AdminController; // Added
+use App\Http\Controllers\AdminMapController; // Added
+use App\Http\Controllers\AdminLocationController; // Added
 
 
 Route::middleware(['auth'])->group(function () {
@@ -86,11 +88,43 @@ Route::middleware(['auth', 'admin'])->group(function () {
 });
 
 // Admin Routes (using controller-based auth check for now)
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
-Route::post('/admin/maps/{savedMap}/approve', [AdminController::class, 'approve'])->name('admin.maps.approve');
-Route::post('/admin/maps/{savedMap}/unapprove', [AdminController::class, 'unapprove'])->name('admin.maps.unapprove');
-Route::post('/admin/maps/{savedMap}/feature', [AdminController::class, 'feature'])->name('admin.maps.feature');
-Route::post('/admin/maps/{savedMap}/unfeature', [AdminController::class, 'unfeature'])->name('admin.maps.unfeature');
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminController::class, 'index'])->name('index');
+
+    // Map Management (moved to AdminMapController)
+    Route::prefix('maps')->name('maps.')->group(function () {
+        Route::get('/', [AdminMapController::class, 'index'])->name('index');
+        Route::post('/{savedMap}/approve', [AdminMapController::class, 'approve'])->name('approve');
+        Route::post('/{savedMap}/unapprove', [AdminMapController::class, 'unapprove'])->name('unapprove');
+        Route::post('/{savedMap}/feature', [AdminMapController::class, 'feature'])->name('feature');
+        Route::post('/{savedMap}/unfeature', [AdminMapController::class, 'unfeature'])->name('unfeature');
+        Route::put('/{savedMap}', [AdminMapController::class, 'update'])->name('update');
+        Route::delete('/{savedMap}', [AdminMapController::class, 'destroy'])->name('destroy');
+    });
+    
+    // User Management
+    Route::get('/users', [AdminController::class, 'usersIndex'])->name('users.index');
+    Route::post('/users/{user}/tier', [AdminController::class, 'updateUserTier'])->name('users.updateTier'); // Kept for specific tier updates if still used directly
+    Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+
+    // Location Management (New)
+    Route::prefix('locations')->name('locations.')->group(function () {
+        Route::get('/', [AdminLocationController::class, 'index'])->name('index');
+        Route::put('/{location}', [AdminLocationController::class, 'update'])->name('update');
+        Route::delete('/{location}', [AdminLocationController::class, 'destroy'])->name('destroy');
+    });
+
+    // Pipeline Monitoring (File-based)
+    Route::get('/pipeline-file-logs', [AdminController::class, 'pipelineFileLogsIndex'])->name('pipeline.fileLogs.index');
+    Route::get('/pipeline-file-logs/{runId}', [AdminController::class, 'showPipelineFileLogRun'])->name('pipeline.fileLogs.show');
+    Route::get('/pipeline-file-logs/{runId}/command-log/{logFileName}', [AdminController::class, 'getPipelineCommandFileLogContent'])->name('pipeline.fileLogs.commandLogContent');
+    Route::delete('/pipeline-file-logs/{runId}', [AdminController::class, 'deletePipelineFileRun'])->name('pipeline.fileLogs.delete');
+
+    // Remove or comment out old DB-based pipeline routes if they exist
+    // Route::get('/pipeline-runs', [AdminController::class, 'pipelineRunsIndex'])->name('pipeline.runs.index');
+    // Route::get('/pipeline-runs/{pipelineRun}', [AdminController::class, 'showPipelineRun'])->name('pipeline.runs.show');
+});
 
 
 require __DIR__.'/auth.php';

@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+//add config
+use Illuminate\Support\Facades\Config; // For accessing config values
 
 class ProcessEverettDataCommand extends Command
 {
@@ -61,7 +63,7 @@ class ProcessEverettDataCommand extends Command
 
         // Part 2: Geocode addresses
         $this->info("Starting geocoding process...");
-        $apiKey = env('GOOGLE_GEOCODING_API_KEY');
+        $apiKey = Config::get('services.google_geocoding.api_key');
         if (!$apiKey || $apiKey === 'YOUR_GOOGLE_GEOCODING_API_KEY_HERE') {
             $this->error("GOOGLE_GEOCODING_API_KEY is not set in .env file or is set to placeholder.");
             return 1;

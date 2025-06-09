@@ -27,6 +27,7 @@ class User extends Authenticatable
         'provider_name',     // Add
         'provider_avatar',   // Add
         'manual_subscription_tier', // Add this
+        'role', // Added for admin editability
     ];
 
     /**
