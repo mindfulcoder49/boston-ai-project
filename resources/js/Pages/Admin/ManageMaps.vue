@@ -2,9 +2,9 @@
   <AdminLayout>
     <Head title="Admin - Manage Maps" />
     <div class="container mx-auto">
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
         <h1 class="text-2xl font-semibold text-gray-800">Manage All Maps</h1>
-        <Link :href="route('admin.index')" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Back to Admin Dashboard</Link>
+        <Link :href="route('admin.index')" class="text-sm text-indigo-600 hover:text-indigo-800 self-end sm:self-center">&larr; Back to Admin Dashboard</Link>
       </div>
 
       <div v-if="$page.props.flash.success" class="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
@@ -14,71 +14,71 @@
         {{ $page.props.flash.error }}
       </div>
 
-      <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Map Name</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creator</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="map in maps.data" :key="map.id">
-              <td class="px-4 py-4">
-                <div class="text-sm font-medium text-gray-900 hover:text-indigo-600">
-                    <a :href="map.view_url" target="_blank" :title="map.description || map.name">{{ map.name }}</a>
-                </div>
-                <div class="text-xs text-gray-500 truncate max-w-xs" :title="map.description">{{ map.description }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ map.user_name }}</div>
-                <div class="text-xs text-gray-500">{{ map.user_email }}</div>
-                <div class="text-xs text-gray-500">Display: {{ map.creator_display_name || '(Not set)' }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <span :class="map.is_public ? 'text-green-600' : 'text-red-600'" class="text-xs font-semibold block">
-                  {{ map.is_public ? 'Public' : 'Private' }}
+      <div v-if="maps.data && maps.data.length > 0" class="space-y-4">
+        <div v-for="map_item in maps.data" :key="map_item.id" class="bg-white shadow-md rounded-lg p-4">
+          <div class="mb-3">
+            <a :href="map_item.view_url" target="_blank" class="text-lg font-semibold text-indigo-700 hover:underline truncate block" :title="map_item.name">{{ map_item.name }}</a>
+            <p class="text-xs text-gray-500 truncate" :title="map_item.description">{{ map_item.description || 'No description' }}</p>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
+            <div>
+              <strong class="text-gray-600">Creator:</strong>
+              <p class="text-gray-800 truncate" :title="`${map_item.user_name} (${map_item.user_email})`">
+                {{ map_item.user_name }} <span class="text-gray-500">({{ map_item.user_email }})</span>
+              </p>
+              <p class="text-xs text-gray-500">Display: {{ map_item.creator_display_name || '(Not set)' }}</p>
+            </div>
+            <div>
+              <strong class="text-gray-600">Status:</strong>
+              <div class="text-xs space-y-0.5 mt-0.5">
+                <span :class="map_item.is_public ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="px-2 py-0.5 inline-flex font-semibold rounded-full">
+                  {{ map_item.is_public ? 'Public' : 'Private' }}
                 </span>
-                <span :class="map.is_approved ? 'text-green-600' : 'text-yellow-600'" class="text-xs font-semibold block">
-                  {{ map.is_approved ? 'Approved' : 'Pending Approval' }}
+                <span :class="map_item.is_approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'" class="ml-1 px-2 py-0.5 inline-flex font-semibold rounded-full">
+                  {{ map_item.is_approved ? 'Approved' : 'Pending' }}
                 </span>
-                <span :class="map.is_featured ? 'text-purple-600' : 'text-gray-500'" class="text-xs font-semibold block">
-                  {{ map.is_featured ? 'Featured' : 'Not Featured' }}
+                <span :class="map_item.is_featured ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'" class="ml-1 px-2 py-0.5 inline-flex font-semibold rounded-full">
+                  {{ map_item.is_featured ? 'Featured' : 'Not Featured' }}
                 </span>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(map.updated_at) }}</td>
-              <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex flex-col space-y-1 items-start md:flex-row md:space-y-0 md:space-x-1">
-                    <button @click="openEditModal(map)" class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 w-full md:w-auto text-center">Edit</button>
-                    <button v-if="!map.is_approved && map.is_public" @click="approveMap(map.id)" class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 w-full md:w-auto text-center">Approve</button>
-                    <button v-if="map.is_approved" @click="unapproveMap(map.id)" class="px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 w-full md:w-auto text-center">Unapprove</button>
-                    <button v-if="map.is_public && map.is_approved && !map.is_featured" @click="featureMap(map.id)" class="px-2 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 w-full md:w-auto text-center">Feature</button>
-                    <button v-if="map.is_featured" @click="unfeatureMap(map.id)" class="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 w-full md:w-auto text-center">Unfeature</button>
-                    <button @click="confirmDeleteMap(map)" class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 w-full md:w-auto text-center">Delete</button>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="maps.data.length === 0">
-              <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No maps found.</td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+            </div>
+            <div>
+              <strong class="text-gray-600">Last Updated:</strong>
+              <p class="text-gray-800">{{ formatDate(map_item.updated_at) }}</p>
+            </div>
+             <div>
+              <strong class="text-gray-600">Views:</strong>
+              <p class="text-gray-800">{{ map_item.view_count }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-col space-y-2 sm:flex-row sm:flex-wrap sm:space-y-0 sm:gap-2">
+            <button @click="openEditModal(map_item)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Edit</button>
+            <button v-if="!map_item.is_approved && map_item.is_public" @click="approveMap(map_item.id)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600">Approve</button>
+            <button v-if="map_item.is_approved" @click="unapproveMap(map_item.id)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-yellow-500 rounded-md hover:bg-yellow-600">Unapprove</button>
+            <button v-if="map_item.is_public && map_item.is_approved && !map_item.is_featured" @click="featureMap(map_item.id)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-purple-500 rounded-md hover:bg-purple-600">Feature</button>
+            <button v-if="map_item.is_featured" @click="unfeatureMap(map_item.id)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700">Unfeature</button>
+            <button @click="confirmDeleteMap(map_item)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Delete</button>
+          </div>
+        </div>
       </div>
-        <!-- Pagination -->
+      <div v-else class="bg-white shadow-md rounded-lg p-6 text-center">
+        <p class="text-gray-500">No maps found.</p>
+      </div>
+
+      <!-- Pagination -->
       <div v-if="maps.links.length > 3" class="mt-6 flex justify-center">
         <div class="flex flex-wrap -mb-1">
           <template v-for="(link, key) in maps.links" :key="key">
             <div
               v-if="link.url === null"
-              class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border rounded"
+              class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm leading-4 text-gray-400 border rounded"
               v-html="link.label"
             />
             <Link
               v-else
-              class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded hover:bg-white focus:border-indigo-500 focus:text-indigo-500"
+              class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm leading-4 border rounded hover:bg-white focus:border-indigo-500 focus:text-indigo-500"
               :class="{ 'bg-white': link.active }"
               :href="link.url"
               v-html="link.label"
@@ -116,8 +116,8 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleString();
 };
 
-const openEditModal = (map) => {
-  selectedMap.value = JSON.parse(JSON.stringify(map)); // Deep copy
+const openEditModal = (map_item) => {
+  selectedMap.value = JSON.parse(JSON.stringify(map_item)); // Deep copy
   showEditMapModal.value = true;
 };
 
@@ -150,11 +150,11 @@ const unfeatureMap = (mapId) => {
   }
 };
 
-const confirmDeleteMap = (map) => {
-  if (confirm(`Are you sure you want to delete the map "${map.name}"? This action cannot be undone.`)) {
-    router.delete(route('admin.maps.destroy', map.id), {
+const confirmDeleteMap = (map_item) => {
+  if (confirm(`Are you sure you want to delete the map "${map_item.name}"? This action cannot be undone.`)) {
+    router.delete(route('admin.maps.destroy', map_item.id), {
       preserveScroll: true,
-      onSuccess: () => page.props.flash.success = `Map "${map.name}" deleted successfully.`,
+      onSuccess: () => page.props.flash.success = `Map "${map_item.name}" deleted successfully.`,
       onError: (errors) => page.props.flash.error = Object.values(errors).join(' ') || 'Failed to delete map.',
     });
   }

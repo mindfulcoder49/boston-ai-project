@@ -34,9 +34,12 @@ class RunAllDataPipelineCommand extends Command
         $this->runLogDir = storage_path('logs/pipeline_runs/' . $this->runId);
         File::ensureDirectoryExists($this->runLogDir);
 
+        $stagesOption = $this->option('stages');
+        $stagesInName = $stagesOption ? ' (' . $stagesOption . ')' : '';
+
         $this->runSummary = [
             'run_id' => $this->runId,
-            'name' => $this->signature,
+            'name' => 'app:run-all-data-pipeline' . $stagesInName,
             'start_time' => Carbon::now()->toIso8601String(),
             'end_time' => null,
             'status' => 'running',

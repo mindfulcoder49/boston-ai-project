@@ -11,9 +11,9 @@ return array (
       'totalRecords' => 304500,
       'minDate' => '2009-01-01',
       'maxDate' => '2025-06-08',
-      'recordsLast30Days' => 8950,
-      'recordsLast90Days' => 27877,
-      'recordsLast1Year' => 98368,
+      'recordsLast30Days' => 8948,
+      'recordsLast90Days' => 27871,
+      'recordsLast1Year' => 98366,
       'offenseGroupDistribution' => 
       array (
         0 => 
@@ -76,8 +76,8 @@ return array (
       'totalRecords' => 125939,
       'minDate' => '2025-01-01',
       'maxDate' => '2025-06-09',
-      'recordsLast30Days' => 25615,
-      'recordsLast90Days' => 73026,
+      'recordsLast30Days' => 25608,
+      'recordsLast90Days' => 73024,
       'recordsLast1Year' => 125939,
       'caseStatusDistribution' => 
       array (
@@ -112,7 +112,7 @@ return array (
       'minDate' => '2006-04-04',
       'maxDate' => '2025-06-06',
       'recordsLast30Days' => 3257,
-      'recordsLast90Days' => 10743,
+      'recordsLast90Days' => 10736,
       'recordsLast1Year' => 43556,
       'resultDistribution' => 
       array (
@@ -275,8 +275,8 @@ return array (
       'totalRecords' => 629406,
       'minDate' => '2006-09-26',
       'maxDate' => '2025-06-08',
-      'recordsLast30Days' => 2936,
-      'recordsLast90Days' => 9043,
+      'recordsLast30Days' => 2935,
+      'recordsLast90Days' => 9042,
       'recordsLast1Year' => 37701,
       'workTypeDistribution' => 
       array (

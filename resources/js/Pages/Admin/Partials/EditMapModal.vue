@@ -72,11 +72,6 @@
         
         <!-- JSON Fields -->
         <div>
-          <label for="map_data_json" class="block text-sm font-medium text-gray-700">Map Data JSON</label>
-          <textarea id="map_data_json" v-model="map_data_json_string" rows="5" class="mt-1 block w-full font-mono text-xs" placeholder="Enter valid JSON or leave empty"></textarea>
-          <div v-if="form.errors.map_data_json" class="text-red-500 text-xs mt-1">{{ form.errors.map_data_json }}</div>
-        </div>
-        <div>
           <label for="map_filters" class="block text-sm font-medium text-gray-700">Filters JSON</label>
           <textarea id="map_filters" v-model="filters_string" rows="3" class="mt-1 block w-full font-mono text-xs" placeholder="Enter valid JSON or leave empty"></textarea>
           <div v-if="form.errors.filters" class="text-red-500 text-xs mt-1">{{ form.errors.filters }}</div>
@@ -127,14 +122,12 @@ const form = useForm({
   zoom_level: 10,
   slug: '',
   view_count: 0,
-  map_data_json: '', // Will hold the JSON string for submission
   filters: '',       // Will hold the JSON string for submission
   map_settings: '',  // Will hold the JSON string for submission
   configurable_filter_fields: '', // Will hold the JSON string for submission
 });
 
 // Refs for textarea v-model bindings
-const map_data_json_string = ref('');
 const filters_string = ref('');
 const map_settings_string = ref('');
 const configurable_filter_fields_string = ref('');
@@ -160,14 +153,12 @@ watch(() => props.map_data, (newMapData) => {
 
     // Update the string refs for JSON textareas
     // These refs are v-model bound to the textareas
-    map_data_json_string.value = newMapData.map_data_json ? JSON.stringify(newMapData.map_data_json, null, 2) : '';
     filters_string.value = newMapData.filters ? JSON.stringify(newMapData.filters, null, 2) : '';
     map_settings_string.value = newMapData.map_settings ? JSON.stringify(newMapData.map_settings, null, 2) : '';
     configurable_filter_fields_string.value = newMapData.configurable_filter_fields ? JSON.stringify(newMapData.configurable_filter_fields, null, 2) : '';
 
   } else {
     // If newMapData is null (e.g. modal closed and re-opened without data), clear string refs
-    map_data_json_string.value = '';
     filters_string.value = '';
     map_settings_string.value = '';
     configurable_filter_fields_string.value = '';
@@ -192,13 +183,11 @@ const submitForm = () => {
   if (!props.map_data) return;
 
   // Assign the current values from textareas (which are bound to string refs) to the form object for submission
-  form.map_data_json = map_data_json_string.value;
   form.filters = filters_string.value;
   form.map_settings = map_settings_string.value;
   form.configurable_filter_fields = configurable_filter_fields_string.value;
   
   // Clear specific JSON errors if string is empty, as nullable allows empty
-  if (!map_data_json_string.value.trim()) form.clearErrors('map_data_json');
   if (!filters_string.value.trim()) form.clearErrors('filters');
   if (!map_settings_string.value.trim()) form.clearErrors('map_settings');
   if (!configurable_filter_fields_string.value.trim()) form.clearErrors('configurable_filter_fields');

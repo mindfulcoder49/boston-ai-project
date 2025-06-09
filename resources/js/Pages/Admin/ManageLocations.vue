@@ -2,8 +2,9 @@
   <AdminLayout>
     <Head title="Admin - Manage Locations" />
     <div class="container mx-auto">
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
         <h1 class="text-2xl font-semibold text-gray-800">Manage Locations</h1>
+         <Link :href="route('admin.index')" class="text-sm text-indigo-600 hover:text-indigo-800 self-end sm:self-center">&larr; Back to Admin Dashboard</Link>
       </div>
 
       <div v-if="$page.props.flash.success" class="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
@@ -13,58 +14,55 @@
         {{ $page.props.flash.error }}
       </div>
 
-      <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name / Address</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coordinates</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Language</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="location in locations.data" :key="location.id">
-              <td class="px-4 py-4">
-                <div class="text-sm font-medium text-gray-900">{{ location.name }}</div>
-                <div class="text-xs text-gray-500 truncate max-w-xs" :title="location.address">{{ location.address }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap text-xs text-gray-500">
-                Lat: {{ location.latitude?.toFixed(5) }}<br>Lng: {{ location.longitude?.toFixed(5) }}
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">{{ location.user_name }}</div>
-                <div class="text-xs text-gray-500">{{ location.user_email }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ location.language || 'N/A' }}</td>
-              <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(location.created_at) }}</td>
-              <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex space-x-2">
-                    <button @click="openEditModal(location)" class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
-                    <button @click="confirmDeleteLocation(location)" class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="locations.data.length === 0">
-              <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No locations found.</td>
-            </tr>
-          </tbody>
-        </table>
+      <div v-if="locations.data && locations.data.length > 0" class="space-y-4">
+        <div v-for="location in locations.data" :key="location.id" class="bg-white shadow-md rounded-lg p-4">
+          <h2 class="text-lg font-semibold text-indigo-700 mb-2 truncate" :title="location.name">{{ location.name }}</h2>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
+            <div>
+              <strong class="text-gray-600">Address:</strong>
+              <p class="text-gray-800 truncate" :title="location.address">{{ location.address }}</p>
+            </div>
+            <div>
+              <strong class="text-gray-600">Coordinates:</strong>
+              <p class="text-gray-800">Lat: {{ location.latitude?.toFixed(5) }}, Lng: {{ location.longitude?.toFixed(5) }}</p>
+            </div>
+            <div>
+              <strong class="text-gray-600">User:</strong>
+              <p class="text-gray-800 truncate" :title="`${location.user_name} (${location.user_email})`">{{ location.user_name }} <span class="text-gray-500">({{ location.user_email }})</span></p>
+            </div>
+            <div>
+              <strong class="text-gray-600">Language:</strong>
+              <p class="text-gray-800">{{ location.language || 'N/A' }}</p>
+            </div>
+            <div>
+              <strong class="text-gray-600">Created:</strong>
+              <p class="text-gray-800">{{ formatDate(location.created_at) }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
+            <button @click="openEditModal(location)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Edit</button>
+            <button @click="confirmDeleteLocation(location)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Delete</button>
+          </div>
+        </div>
       </div>
+      <div v-else class="bg-white shadow-md rounded-lg p-6 text-center">
+        <p class="text-gray-500">No locations found.</p>
+      </div>
+
         <!-- Pagination -->
       <div v-if="locations.links.length > 3" class="mt-6 flex justify-center">
         <div class="flex flex-wrap -mb-1">
           <template v-for="(link, key) in locations.links" :key="key">
             <div
               v-if="link.url === null"
-              class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border rounded"
+              class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm leading-4 text-gray-400 border rounded"
               v-html="link.label"
             />
             <Link
               v-else
-              class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded hover:bg-white focus:border-indigo-500 focus:text-indigo-500"
+              class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm leading-4 border rounded hover:bg-white focus:border-indigo-500 focus:text-indigo-500"
               :class="{ 'bg-white': link.active }"
               :href="link.url"
               v-html="link.label"

@@ -1,10 +1,10 @@
 <template>
-  <AdminLayout> <!-- Changed from PageTemplate -->
+  <AdminLayout>
     <Head title="Admin - Manage Users" />
-    <div class="container mx-auto"> <!-- Removed p-4 sm:p-6 lg:p-8 -->
-      <div class="flex justify-between items-center mb-6">
+    <div class="container mx-auto">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
         <h1 class="text-2xl font-semibold text-gray-800">Manage Users</h1>
-        <Link :href="route('admin.index')" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Back to Admin Dashboard</Link>
+        <Link :href="route('admin.index')" class="text-sm text-indigo-600 hover:text-indigo-800 self-end sm:self-center">&larr; Back to Admin Dashboard</Link>
       </div>
 
       <div v-if="$page.props.flash.success" class="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
@@ -14,72 +14,75 @@
         {{ $page.props.flash.error }}
       </div>
 
-      <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="user in users" :key="user.id">
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ user.name }}</div>
-                <div class="text-xs text-gray-500">{{ user.email }}</div>
-                <div class="text-xs text-gray-500">Role: <span class="font-semibold">{{ user.role }}</span></div>
-                <div class="text-xs text-gray-500">Registered: {{ user.created_at }}</div>
-                <div class="text-xs text-gray-500">Email Verified: {{ user.email_verified_at }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900">
-                  Effective: <span class="font-semibold">{{ user.effective_tier_details.planName }}</span>
-                  <span class="text-xs"> ({{ user.effective_tier_details.source }})</span>
-                </div>
-                <div class="text-xs text-gray-500">
-                  Manual Tier: <span class="font-semibold">{{ user.manual_subscription_tier || 'None' }}</span>
-                </div>
-                 <div v-if="user.effective_tier_details.source === 'stripe'">
-                    <div class="text-xs text-gray-500">Stripe Status: <span class="font-semibold">{{ user.effective_tier_details.status }}</span></div>
-                    <div v-if="user.effective_tier_details.isOnGracePeriod" class="text-xs text-yellow-600">Ends: {{ user.effective_tier_details.endsAt }} (Grace)</div>
-                    <div v-else-if="user.effective_tier_details.isCancelled && user.effective_tier_details.endsAt" class="text-xs text-red-600">Cancelled, Ends: {{ user.effective_tier_details.endsAt }}</div>
-                     <div v-else-if="user.effective_tier_details.currentPeriodEnd" class="text-xs text-gray-500">Renews/Ends: {{ user.effective_tier_details.currentPeriodEnd }}</div>
-                    <div v-if="user.effective_tier_details.isOnTrial" class="text-xs text-blue-600">Trial Ends: {{ user.effective_tier_details.trialEndsAt }}</div>
-                </div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-xs text-gray-700">
-                  <strong class="block">Locations ({{ user.locations.length }}):</strong>
-                  <ul v-if="user.locations.length" class="list-disc list-inside max-h-20 overflow-y-auto">
+      <div v-if="users && users.length > 0" class="space-y-4">
+        <div v-for="user in users" :key="user.id" class="bg-white shadow-md rounded-lg p-4">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-start mb-3">
+            <div>
+              <h2 class="text-lg font-semibold text-indigo-700 truncate" :title="user.name">{{ user.name }}</h2>
+              <p class="text-xs text-gray-500 truncate" :title="user.email">{{ user.email }}</p>
+            </div>
+            <span class="mt-1 sm:mt-0 text-xs font-semibold px-2 py-1 bg-gray-200 text-gray-700 rounded-full self-start sm:self-center">
+              Role: {{ user.role }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 text-sm mb-3">
+            <div>
+              <strong class="text-gray-600 block">Subscription:</strong>
+              <p class="text-gray-800">
+                Effective: <span class="font-semibold">{{ user.effective_tier_details.planName }}</span>
+                <span class="text-xs text-gray-500"> ({{ user.effective_tier_details.source }})</span>
+              </p>
+              <p class="text-xs text-gray-500">
+                Manual Tier: <span class="font-semibold">{{ user.manual_subscription_tier || 'None' }}</span>
+              </p>
+              <div v-if="user.effective_tier_details.source === 'stripe'" class="text-xs mt-1">
+                <p class="text-gray-500">Stripe Status: <span class="font-semibold">{{ user.effective_tier_details.status }}</span></p>
+                <p v-if="user.effective_tier_details.isOnGracePeriod" class="text-yellow-600">Ends: {{ user.effective_tier_details.endsAt }} (Grace)</p>
+                <p v-else-if="user.effective_tier_details.isCancelled && user.effective_tier_details.endsAt" class="text-red-600">Cancelled, Ends: {{ user.effective_tier_details.endsAt }}</p>
+                <p v-else-if="user.effective_tier_details.currentPeriodEnd" class="text-gray-500">Renews/Ends: {{ user.effective_tier_details.currentPeriodEnd }}</p>
+                <p v-if="user.effective_tier_details.isOnTrial" class="text-blue-600">Trial Ends: {{ user.effective_tier_details.trialEndsAt }}</p>
+              </div>
+            </div>
+            
+            <div>
+              <strong class="text-gray-600 block">Details:</strong>
+              <p class="text-xs text-gray-500">Registered: {{ user.created_at }}</p>
+              <p class="text-xs text-gray-500">Email Verified: {{ user.email_verified_at || 'No' }}</p>
+            </div>
+
+            <div class="md:col-span-2">
+              <strong class="text-gray-600 block mb-1">Locations ({{ user.locations.length }}):</strong>
+              <div v-if="user.locations.length" class="max-h-24 overflow-y-auto text-xs space-y-1">
+                <ul class="list-disc list-inside pl-1">
                     <li v-for="loc in user.locations" :key="loc.id" class="truncate" :title="loc.name + ' - ' + loc.address">{{ loc.name }}</li>
-                  </ul>
-                  <span v-else>None</span>
-                </div>
-                <div class="text-xs text-gray-700 mt-2">
-                  <strong class="block">Saved Maps ({{ user.saved_maps.length }}):</strong>
-                   <ul v-if="user.saved_maps.length" class="list-disc list-inside max-h-20 overflow-y-auto">
-                    <li v-for="map in user.saved_maps" :key="map.id" class="truncate">
-                        <a :href="map.view_url" target="_blank" class="text-indigo-600 hover:underline" :title="map.name">{{ map.name }}</a>
-                        <span class="text-gray-500 text-xxs"> ({{ map.is_public ? 'Public' : 'Private' }}{{ map.is_approved ? ', Approved' : '' }}{{ map.is_featured ? ', Featured' : '' }})</span>
+                </ul>
+              </div>
+              <p v-else class="text-xs text-gray-500">None</p>
+            </div>
+
+            <div class="md:col-span-2">
+              <strong class="text-gray-600 block mb-1">Saved Maps ({{ user.saved_maps.length }}):</strong>
+              <div v-if="user.saved_maps.length" class="max-h-24 overflow-y-auto text-xs space-y-1">
+                 <ul class="list-disc list-inside pl-1">
+                    <li v-for="map_item in user.saved_maps" :key="map_item.id" class="truncate">
+                        <a :href="map_item.view_url" target="_blank" class="text-indigo-600 hover:underline" :title="map_item.name">{{ map_item.name }}</a>
+                        <span class="text-gray-500 text-xxs"> ({{ map_item.is_public ? 'Public' : 'Private' }}{{ map_item.is_approved ? ', Approved' : '' }}{{ map_item.is_featured ? ', Featured' : '' }})</span>
                     </li>
                   </ul>
-                  <span v-else>None</span>
-                </div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                <div class="flex flex-col space-y-1 items-start">
-                    <button @click="openEditModal(user)" class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600">Edit User</button>
-                    <button @click="confirmDeleteUser(user)" class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Delete User</button>
-                </div>
-              </td>
-            </tr>
-             <tr v-if="users.length === 0">
-                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">No users found.</td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+              <p v-else class="text-xs text-gray-500">None</p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
+            <button @click="openEditModal(user)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Edit User</button>
+            <button @click="confirmDeleteUser(user)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Delete User</button>
+          </div>
+        </div>
+      </div>
+      <div v-else class="bg-white shadow-md rounded-lg p-6 text-center">
+        <p class="text-gray-500">No users found.</p>
       </div>
     </div>
 
@@ -91,7 +94,7 @@
         @close="closeEditModal" 
     />
 
-  </AdminLayout> <!-- Changed from PageTemplate -->
+  </AdminLayout>
 </template>
 
 <script setup>
@@ -134,7 +137,6 @@ const confirmDeleteUser = (user) => {
     });
   }
 };
-
 </script>
 <style scoped>
 .text-xxs {

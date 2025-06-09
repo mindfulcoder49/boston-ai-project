@@ -18,14 +18,12 @@ class SavedMap extends Model
         'latitude',
         'longitude',
         'zoom_level',
-        'map_data_json', // Added
         'creator_display_name',
         'is_public',
         'is_approved',
         'is_featured',
         'slug',
         'view_count',
-        // Add other fields if they exist and should be mass-assignable by admin
         'filters', 
         'map_settings',
         'configurable_filter_fields',
@@ -42,7 +40,6 @@ class SavedMap extends Model
         'longitude' => 'float',
         'zoom_level' => 'integer',
         'view_count' => 'integer',
-        'map_data_json' => 'array', // Or 'json' if you prefer objects
     ];
 
     public function user(): BelongsTo

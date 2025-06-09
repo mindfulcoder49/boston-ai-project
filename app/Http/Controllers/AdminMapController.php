@@ -45,6 +45,14 @@ class AdminMapController extends Controller
                 'updated_at' => $map->updated_at->toIso8601String(),
                 'created_at' => $map->created_at->toIso8601String(),
                 'view_url' => route('saved-maps.view', $map->slug ?: $map->id),
+                'filters' => $map->filters,
+                'map_settings' => $map->map_settings,
+                'configurable_filter_fields' => $map->configurable_filter_fields,
+                'latitude' => $map->latitude,
+                'longitude' => $map->longitude,
+                'zoom_level' => $map->zoom_level,
+                'slug' => $map->slug,
+                'view_count' => $map->view_count,
             ]);
 
         return Inertia::render('Admin/ManageMaps', [
@@ -97,7 +105,6 @@ class AdminMapController extends Controller
             'zoom_level' => ['required', 'integer', 'min:1', 'max:22'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('saved_maps')->ignore($savedMap->id)],
             'view_count' => ['required', 'integer', 'min:0'],
-            'map_data_json' => ['nullable', 'json'], // Validate as JSON string
              // Assuming these are JSON fields or will be cast by the model
             'filters' => ['nullable', 'json'],
             'map_settings' => ['nullable', 'json'],
@@ -116,7 +123,7 @@ class AdminMapController extends Controller
         // Handle JSON fields: decode if they are strings, or ensure they are arrays/objects
         // The model's $casts should handle this if 'json' type is used,
         // but if they come as strings from the form, ensure they are decoded for the update.
-        foreach (['map_data_json', 'filters', 'map_settings', 'configurable_filter_fields'] as $jsonField) {
+        foreach (['filters', 'map_settings', 'configurable_filter_fields'] as $jsonField) { // Removed 'map_data_json' from this loop
             if (isset($validated[$jsonField]) && is_string($validated[$jsonField])) {
                 $decoded = json_decode($validated[$jsonField], true);
                 if (json_last_error() === JSON_ERROR_NONE) {

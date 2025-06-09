@@ -5,53 +5,46 @@
       <div class="mb-6">
         <Link :href="route('admin.pipeline.fileLogs.index')" class="text-indigo-600 hover:text-indigo-800">&larr; Back to Pipeline Runs</Link>
       </div>
-      <h1 class="text-2xl font-semibold text-gray-800 mb-2">Pipeline Run Details</h1>
-      <p class="text-sm text-gray-500 mb-6">Run ID: {{ runId }}</p>
+      <h1 class="text-2xl font-semibold text-gray-800 mb-2 break-words">Pipeline Run Details</h1>
+      <p class="text-sm text-gray-500 mb-6 break-all">Run ID: {{ runId }}</p>
 
-      <div v-if="runDetails" class="bg-white shadow-md rounded-lg p-6 mb-6">
+      <div v-if="runDetails" class="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6">
         <h2 class="text-xl font-semibold text-gray-700 mb-4">Run Summary</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div><strong>Name:</strong> {{ runDetails.name }}</div>
-          <div><strong>Status:</strong> <span :class="statusClass(runDetails.status)" class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full">{{ runDetails.status }}</span></div>
-          <div><strong>Start Time:</strong> {{ formatDateTime(runDetails.start_time) }}</div>
-          <div><strong>End Time:</strong> {{ runDetails.end_time ? formatDateTime(runDetails.end_time) : 'N/A' }}</div>
-          <div><strong>Summary File:</strong> {{ runDetails.summary_file_path }}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+          <div><strong class="text-gray-600">Name:</strong> <span class="break-words">{{ runDetails.name }}</span></div>
+          <div>
+            <strong class="text-gray-600">Status:</strong>
+            <span :class="statusClass(runDetails.status)" class="ml-2 px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full">{{ runDetails.status }}</span>
+          </div>
+          <div><strong class="text-gray-600">Start Time:</strong> {{ formatDateTime(runDetails.start_time) }}</div>
+          <div><strong class="text-gray-600">End Time:</strong> {{ runDetails.end_time ? formatDateTime(runDetails.end_time) : 'N/A' }}</div>
+          <div class="md:col-span-2 break-all"><strong class="text-gray-600">Summary File:</strong> {{ runDetails.summary_file_path }}</div>
         </div>
       </div>
 
-      <div v-if="runDetails && runDetails.commands && runDetails.commands.length > 0" class="bg-white shadow-md rounded-lg">
-        <h2 class="text-xl font-semibold text-gray-700 mb-4 px-6 pt-6">Commands Executed</h2>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Command</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Log File</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <!-- Corrected: Iterate over runDetails.commands -->
-              <tr v-for="(command, index) in runDetails.commands" :key="index">
-                <td class="px-6 py-4">
-                  <div class="text-sm font-medium text-gray-900">{{ command.command_name }}</div>
-                  <div class="text-xs text-gray-500 truncate max-w-md" :title="JSON.stringify(command.parameters)">Params: {{ JSON.stringify(command.parameters) }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                  <span :class="statusClass(command.status)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
-                    {{ command.status }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ command.duration_seconds }}s</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-indigo-600 hover:text-indigo-900">
-                  <button @click="fetchLogContent(command.log_file)" class="underline">
-                    {{ command.log_file }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div v-if="runDetails && runDetails.commands && runDetails.commands.length > 0" class="bg-white shadow-md rounded-lg p-4 sm:p-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Commands Executed</h2>
+        <div class="space-y-4">
+          <div v-for="(command, index) in runDetails.commands" :key="index" class="border border-gray-200 rounded-md p-4">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+              <h3 class="text-md font-semibold text-gray-800 truncate min-w-0" :title="command.command_name">{{ command.command_name }}</h3>
+              <span :class="statusClass(command.status)" class="mt-1 sm:mt-0 px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full self-start sm:self-center sm:ml-2">
+                {{ command.status }}
+              </span>
+            </div>
+            <div class="text-xs text-gray-500 mb-1 truncate break-all" :title="JSON.stringify(command.parameters)">
+              <strong class="text-gray-600">Params:</strong> {{ JSON.stringify(command.parameters) }}
+            </div>
+            <div class="text-sm text-gray-700 mb-1">
+              <strong class="text-gray-600">Duration:</strong> {{ command.duration_seconds }}s
+            </div>
+            <div class="text-sm">
+              <strong class="text-gray-600">Log File:</strong>
+              <button @click="fetchLogContent(command.log_file)" class="ml-1 text-indigo-600 hover:text-indigo-900 underline break-all text-left">
+                {{ command.log_file }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div v-else-if="runDetails" class="bg-white shadow-md rounded-lg p-6">
@@ -62,13 +55,13 @@
       </div>
 
       <!-- Log Content Modal -->
-      <div v-if="showLogModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75" @click.self="closeLogModal">
+      <div v-if="showLogModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4" @click.self="closeLogModal">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col">
           <div class="flex justify-between items-center p-4 border-b">
-            <h3 class="text-lg font-semibold">Log: {{ selectedLogFile }}</h3>
-            <button @click="closeLogModal" class="text-gray-500 hover:text-gray-700">&times;</button>
+            <h3 class="text-lg font-semibold truncate min-w-0" :title="selectedLogFile">Log: {{ selectedLogFile }}</h3>
+            <button @click="closeLogModal" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
           </div>
-          <pre class="p-4 overflow-auto flex-grow text-xs bg-gray-800 text-white">{{ logContent }}</pre>
+          <pre class="p-4 overflow-auto flex-grow text-xs bg-gray-800 text-white rounded-b-lg">{{ logContent }}</pre>
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 <template>
   <AdminLayout> <!-- Use AdminLayout -->
     <Head title="Admin Dashboard" />
-    <div class="container mx-auto"> <!-- Removed p-4 sm:p-6 lg:p-8 as AdminLayout handles padding -->
+    <div class="container mx-auto"> <!-- AdminLayout handles padding -->
       <h1 class="text-2xl font-semibold text-gray-800 mb-6">Admin Dashboard</h1>
 
       <div v-if="$page.props.flash.success" class="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
@@ -11,7 +11,7 @@
         {{ $page.props.flash.error }}
       </div>
 
-      <div class="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link :href="route('admin.maps.index')" class="block p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
           <h2 class="text-lg font-semibold text-indigo-600">Manage Maps</h2>
           <p class="text-sm text-gray-500 mt-1">View, edit, approve, and feature all maps.</p>

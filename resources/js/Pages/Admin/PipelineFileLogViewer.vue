@@ -2,9 +2,9 @@
   <AdminLayout>
     <Head title="Admin - Pipeline File Logs" />
     <div class="container mx-auto">
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
         <h1 class="text-2xl font-semibold text-gray-800">Pipeline Run Logs (File-Based)</h1>
-        <Link :href="route('admin.index')" class="text-sm text-indigo-600 hover:text-indigo-800">&larr; Back to Admin Dashboard</Link>
+        <Link :href="route('admin.index')" class="text-sm text-indigo-600 hover:text-indigo-800 self-end sm:self-center">&larr; Back to Admin Dashboard</Link>
       </div>
 
       <div v-if="$page.props.flash.success" class="mb-4 p-4 bg-green-100 text-green-700 rounded-md">
@@ -14,39 +14,38 @@
         {{ $page.props.flash.error }}
       </div>
 
-      <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Run ID</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="run in pipelineRuns" :key="run.run_id">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ run.run_id }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ run.name }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(run.start_time) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(run.end_time) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span :class="statusClass(run.status)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
-                  {{ run.status }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                <Link :href="route('admin.pipeline.fileLogs.show', run.run_id)" class="text-indigo-600 hover:text-indigo-900">View Details</Link>
-                <button @click="confirmDeleteRun(run.run_id)" class="text-red-600 hover:text-red-900">Delete</button>
-              </td>
-            </tr>
-            <tr v-if="!pipelineRuns || pipelineRuns.length === 0">
-                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No pipeline runs found in history.</td>
-            </tr>
-          </tbody>
-        </table>
+      <div v-if="pipelineRuns && pipelineRuns.length > 0" class="space-y-4">
+        <div v-for="run in pipelineRuns" :key="run.run_id" class="bg-white shadow-md rounded-lg p-4">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-3">
+            <h2 class="text-lg font-semibold text-indigo-700 truncate min-w-0" :title="run.run_id">Run ID: {{ run.run_id }}</h2>
+            <span :class="statusClass(run.status)" class="px-2 py-0.5 mt-1 sm:mt-0 inline-flex text-xs leading-5 font-semibold rounded-full self-start sm:self-center sm:ml-2">
+              {{ run.status }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
+            <div>
+              <strong class="text-gray-600">Name:</strong>
+              <p class="text-gray-800">{{ run.name }}</p>
+            </div>
+            <div>
+              <strong class="text-gray-600">Start Time:</strong>
+              <p class="text-gray-800">{{ formatDate(run.start_time) }}</p>
+            </div>
+            <div>
+              <strong class="text-gray-600">End Time:</strong>
+              <p class="text-gray-800">{{ formatDate(run.end_time) }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
+            <Link :href="route('admin.pipeline.fileLogs.show', run.run_id)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">View Details</Link>
+            <button @click="confirmDeleteRun(run.run_id)" class="w-full sm:w-auto text-center px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Delete</button>
+          </div>
+        </div>
+      </div>
+      <div v-else class="bg-white shadow-md rounded-lg p-6 text-center">
+        <p class="text-gray-500">No pipeline runs found in history.</p>
       </div>
     </div>
   </AdminLayout>
