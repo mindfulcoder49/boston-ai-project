@@ -17,7 +17,7 @@
       <div v-if="pipelineRuns && pipelineRuns.length > 0" class="space-y-4">
         <div v-for="run in pipelineRuns" :key="run.run_id" class="bg-white shadow-md rounded-lg p-4">
           <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-3">
-            <h2 class="text-lg font-semibold text-indigo-700 truncate min-w-0" :title="run.run_id">Run ID: {{ run.run_id }}</h2>
+            <h2 class="text-lg font-semibold text-indigo-700 truncate min-w-0 break-all" :title="run.run_id">Run ID: {{ run.run_id }}</h2>
             <span :class="statusClass(run.status)" class="px-2 py-0.5 mt-1 sm:mt-0 inline-flex text-xs leading-5 font-semibold rounded-full self-start sm:self-center sm:ml-2">
               {{ run.status }}
             </span>

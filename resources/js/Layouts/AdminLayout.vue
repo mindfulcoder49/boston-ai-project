@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="min-h-screen bg-gray-100 flex flex-col">
     <nav class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -37,7 +37,7 @@
       </div>
     </nav>
 
-    <div class="flex">
+    <div class="flex flex-1">
       <!-- Sidebar -->
       <aside class="w-64 bg-white border-r border-gray-200 p-4 space-y-2 hidden md:block">
         <NavLink :href="route('admin.index')" :active="route().current('admin.index')">Dashboard</NavLink>
@@ -48,7 +48,7 @@
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-1 p-4 sm:p-6 lg:p-8">
+      <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
         <slot />
       </main>
     </div>
