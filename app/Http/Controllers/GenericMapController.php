@@ -2,23 +2,69 @@
 
 namespace App\Http\Controllers;
 
+// Import all necessary models.
+// It's better to have these explicitly listed or managed via a config/registry.
 use App\Models\CrimeData;
 use App\Models\ThreeOneOneCase;
 use App\Models\BuildingPermit;
 use App\Models\PropertyViolation;
 use App\Models\ConstructionOffHour;
-use App\Models\DataPoint;
-use App\Models\FoodInspection; // Corrected model name from FoodEstablishmentViolation
-use App\Models\EverettCrimeData; // Added EverettCrimeData model
+use App\Models\FoodInspection;
+use App\Models\EverettCrimeData;
+use App\Models\CambridgeThreeOneOneCase;
+use App\Models\CambridgeBuildingPermitData;
+use App\Models\CambridgeCrimeReportData;
+use App\Models\CambridgeHousingViolationData;
+use App\Models\CambridgeSanitaryInspectionData;
+// DataPoint model is not directly joined but is the base table.
+// use App\Models\DataPoint; 
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str; // Added for string manipulation
 
 class GenericMapController extends Controller
 {
+    /**
+     * Define the Mappable models that data_points can link to.
+     * This should ideally be consistent with DataPointSeeder::MODELS_TO_PROCESS.
+     * Key: Fully qualified model class name. Value: simple key or alias if needed, otherwise class name itself.
+     */
+    private const LINKABLE_MODELS = [
+        // Boston Models
+        \App\Models\CrimeData::class,
+        \App\Models\ThreeOneOneCase::class,
+        \App\Models\PropertyViolation::class,
+        \App\Models\ConstructionOffHour::class,
+        \App\Models\BuildingPermit::class,
+        \App\Models\FoodInspection::class,
+
+        // Everett Models
+        \App\Models\EverettCrimeData::class,
+
+        // Cambridge Models
+        \App\Models\CambridgeThreeOneOneCase::class,
+        \App\Models\CambridgeBuildingPermitData::class,
+        \App\Models\CambridgeCrimeReportData::class,
+        \App\Models\CambridgeHousingViolationData::class,
+        \App\Models\CambridgeSanitaryInspectionData::class,
+    ];
+
+    // Helper to get model class from table name (data_points.type)
+    protected function getModelClassFromTableName(string $tableName): ?string
+    {
+        foreach (self::LINKABLE_MODELS as $modelClass) {
+            if (app($modelClass)->getTable() === $tableName) {
+                return $modelClass;
+            }
+        }
+        return null;
+    }
+
 
     protected function getJsonSelectForModel($modelClass, $jsonAlias)
     {
@@ -36,12 +82,17 @@ class GenericMapController extends Controller
             }
         }
 
-        // FoodInspection uses violdttm and resultdttm. Both should be in fillable.
-        // If not, add them explicitly. Current FoodInspection model has them in fillable.
-        // Example:
-        // if ($modelClass === \App\Models\FoodInspection::class) {
-        //     if(!in_array('violdttm', $fields)) $fields[] = 'violdttm';
-        // }
+        // Ensure specific fields needed for display logic are included
+        if ($modelClass === \App\Models\FoodInspection::class) {
+            if(!in_array('violdttm', $fields)) $fields[] = 'violdttm';
+            if(!in_array('resultdttm', $fields)) $fields[] = 'resultdttm';
+            if(!in_array('licenseno', $fields)) $fields[] = 'licenseno';
+            if(!in_array('businessname', $fields)) $fields[] = 'businessname';
+            if(!in_array('violdesc', $fields)) $fields[] = 'violdesc';
+            if(!in_array('result', $fields)) $fields[] = 'result';
+        }
+        // Add similar checks for other models if they have specific fields
+        // used in the frontend popup logic that might not be in $fillable.
 
         $fields = array_unique(array_filter($fields)); // Remove duplicates and empty values
 
@@ -146,129 +197,92 @@ class GenericMapController extends Controller
             ->select(
                 $targetTable.'.id as data_point_id', 
                 DB::raw("ST_AsText({$targetTable}.location) as location_wkt"),
-                $targetTable.'.type as alcivartech_type_raw', // Keep raw type for switch, rename to avoid clash if alcivartech_type is also a field in JSON
-                // $targetTable.'.alcivartech_date as data_point_alcivartech_date', // This can be used if alcivartech_date in data_points is the source of truth
+                $targetTable.'.type as alcivartech_type_raw', // This is the source table name
+                $targetTable.'.alcivartech_date as data_point_alcivartech_date_from_dp_table' // Date from data_points table itself
+            );
 
-                DB::raw($this->getJsonSelectForModel(\App\Models\CrimeData::class, 'crime_data_json')),
-                DB::raw($this->getJsonSelectForModel(\App\Models\ThreeOneOneCase::class, 'three_one_one_case_json')),
-                DB::raw($this->getJsonSelectForModel(\App\Models\PropertyViolation::class, 'property_violation_json')),
-                DB::raw($this->getJsonSelectForModel(\App\Models\ConstructionOffHour::class, 'construction_off_hour_json')),
-                DB::raw($this->getJsonSelectForModel(\App\Models\BuildingPermit::class, 'building_permit_json')),
-                DB::raw($this->getJsonSelectForModel(\App\Models\FoodInspection::class, 'food_inspection_json')),
-                DB::raw($this->getJsonSelectForModel(\App\Models\EverettCrimeData::class, 'everett_crime_data_json')) // Added EverettCrimeData
-            )
-            ->leftJoin('crime_data', $targetTable.'.crime_data_id', '=', 'crime_data.id')
-            ->leftJoin('three_one_one_cases', $targetTable.'.three_one_one_case_id', '=', 'three_one_one_cases.id')
-            ->leftJoin('property_violations', $targetTable.'.property_violation_id', '=', 'property_violations.id')
-            ->leftJoin('construction_off_hours', $targetTable.'.construction_off_hour_id', '=', 'construction_off_hours.id')
-            ->leftJoin('building_permits', $targetTable.'.building_permit_id', '=', 'building_permits.id')
-            ->leftJoin('food_inspections', $targetTable.'.food_inspection_id', '=', 'food_inspections.id')
-            ->leftJoin('everett_crime_data', $targetTable.'.everett_crime_data_id', '=', 'everett_crime_data.id') // Added join for EverettCrimeData
-            ->whereRaw("ST_Distance_Sphere({$targetTable}.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters]);
+        // Dynamically add JSON selects and LEFT JOINs
+        foreach (self::LINKABLE_MODELS as $modelClass) {
+            if (!class_exists($modelClass) || !in_array(\App\Models\Concerns\Mappable::class, class_uses_recursive($modelClass))) {
+                Log::warning("GenericMapController: Model {$modelClass} is not Mappable or does not exist. Skipping for JOIN/SELECT.");
+                continue;
+            }
+            $modelInstance = new $modelClass();
+            $sourceTableName = $modelInstance->getTable();
+            $jsonAlias = Str::snake(class_basename($modelClass)) . '_json';
+            $fkColumnInDataPoints = Str::snake(class_basename($modelClass)) . '_id';
+
+            $query->addSelect(DB::raw($this->getJsonSelectForModel($modelClass, $jsonAlias)));
+            $query->leftJoin($sourceTableName, $targetTable.'.'.$fkColumnInDataPoints, '=', $sourceTableName.'.'.$modelInstance->getKeyName());
+        }
+            
+        $query->whereRaw("ST_Distance_Sphere({$targetTable}.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters]);
 
         if ($cutoffDateTime && $targetTable === 'data_points') { 
-            // Apply date filtering based on the main date of the data_point itself
             $query->where($targetTable.'.alcivartech_date', '>=', $cutoffDateTime);
         }
         
         $dataPoints = $query->get();    
 
         $dataPoints = $dataPoints->map(function ($point) {
-            // Decode JSON strings into objects
-            $point->crime_data = $point->crime_data_json ? json_decode($point->crime_data_json) : null;
-            unset($point->crime_data_json);
-            $point->three_one_one_case_data = $point->three_one_one_case_json ? json_decode($point->three_one_one_case_json) : null;
-            unset($point->three_one_one_case_json);
-            $point->property_violation_data = $point->property_violation_json ? json_decode($point->property_violation_json) : null;
-            unset($point->property_violation_json);
-            $point->construction_off_hour_data = $point->construction_off_hour_json ? json_decode($point->construction_off_hour_json) : null;
-            unset($point->construction_off_hour_json);
-            $point->building_permit_data = $point->building_permit_json ? json_decode($point->building_permit_json) : null;
-            unset($point->building_permit_json);
-            $point->food_inspection_data = $point->food_inspection_json ? json_decode($point->food_inspection_json) : null;
-            unset($point->food_inspection_json);
-            $point->everett_crime_data = $point->everett_crime_data_json ? json_decode($point->everett_crime_data_json) : null; // Added EverettCrimeData
-            unset($point->everett_crime_data_json);
+            // Dynamically decode JSON and set properties
+            $sourceTableName = $point->alcivartech_type_raw; // e.g., 'crime_data', 'cambridge_311_service_requests'
+            $modelClass = $this->getModelClassFromTableName($sourceTableName);
+
+            if ($modelClass) {
+                $jsonAlias = Str::snake(class_basename($modelClass)) . '_json';
+                $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data'; // e.g., crime_data_data
+
+                if (property_exists($point, $jsonAlias) && $point->{$jsonAlias}) {
+                    $point->{$dataObjectKey} = json_decode($point->{$jsonAlias});
+                } else {
+                    $point->{$dataObjectKey} = null;
+                }
+                unset($point->{$jsonAlias});
+
+                $point->alcivartech_type = $modelClass::getAlcivartechTypeForStyling(); // Human-readable type for styling/display
+                
+                // Set alcivartech_date from the source model's data object
+                $dateFieldInSource = $modelClass::getDateField();
+                if ($point->{$dataObjectKey} && property_exists($point->{$dataObjectKey}, $dateFieldInSource)) {
+                    $point->alcivartech_date = $point->{$dataObjectKey}->{$dateFieldInSource};
+                } else {
+                    // Fallback to the date stored in data_points table if source model's date is not available
+                    $point->alcivartech_date = $point->data_point_alcivartech_date_from_dp_table;
+                }
+            } else {
+                // Fallback if modelClass couldn't be determined
+                $point->alcivartech_type = 'Unknown';
+                $point->alcivartech_date = $point->data_point_alcivartech_date_from_dp_table;
+                // Try to clean up any potential _json fields if model is unknown
+                foreach (self::LINKABLE_MODELS as $mc) {
+                    $jsonAliasFallback = Str::snake(class_basename($mc)) . '_json';
+                    if (property_exists($point, $jsonAliasFallback)) {
+                        unset($point->{$jsonAliasFallback});
+                    }
+                }
+            }
+            unset($point->data_point_alcivartech_date_from_dp_table);
+
 
             preg_match('/POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)/', $point->location_wkt, $matches);
             $point->longitude = isset($matches[1]) ? floatval($matches[1]) : null;
             $point->latitude = isset($matches[2]) ? floatval($matches[2]) : null;
             unset($point->location_wkt); 
 
-            $humanReadableType = 'Unknown';
-            $point->alcivartech_model = $point->alcivartech_type_raw; // Set the model from the raw type
-
-            switch ($point->alcivartech_type_raw) {
-                case 'crime_data':
-                    $humanReadableType = 'Crime';
-                    break;
-                case 'everett_crime_data': // Added case for Everett crime
-                    $humanReadableType = 'Crime'; // Keep human-readable type as 'Crime'
-                    break;
-                case 'three_one_one_cases':
-                    $humanReadableType = '311 Case';
-                    break;
-                case 'building_permits':
-                    $humanReadableType = 'Building Permit';
-                    break;
-                case 'property_violations':
-                    $humanReadableType = 'Property Violation';
-                    break;
-                case 'construction_off_hours':
-                    $humanReadableType = 'Construction Off Hour';
-                    break;
-                case 'food_inspections': 
-                    $humanReadableType = 'Food Inspection';
-                    break;
-            }
-            $point->alcivartech_type = $humanReadableType;
+            $point->alcivartech_model = $point->alcivartech_type_raw; // Keep original table name as model identifier
             unset($point->alcivartech_type_raw);
 
-            switch ($humanReadableType) { // This switch should now use the humanReadableType
-                case 'Crime':
-                    // Differentiate based on the model (raw type)
-                    if ($point->alcivartech_model === 'everett_crime_data' && $point->everett_crime_data) {
-                        $point->alcivartech_date = $point->everett_crime_data->occurred_on_datetime ?? null;
-                    } elseif ($point->alcivartech_model === 'crime_data' && $point->crime_data) {
-                        $point->alcivartech_date = $point->crime_data->occurred_on_date ?? null;
-                    } else {
-                        $point->alcivartech_date = null;
-                    }
-                    break;
-                case '311 Case':
-                    // Assuming 'open_dt' is the field in ThreeOneOneCase model
-                    $point->alcivartech_date = $point->three_one_one_case_data->open_dt ?? null; 
-                    break;
-                case 'Building Permit':
-                    $point->alcivartech_date = $point->building_permit_data->issued_date ?? null;
-                    break;
-                case 'Property Violation':
-                    $point->alcivartech_date = $point->property_violation_data->status_dttm ?? null;
-                    break;
-                case 'Construction Off Hour':
-                    $point->alcivartech_date = $point->construction_off_hour_data->start_datetime ?? null;
-                    break;
-                case 'Food Inspection': 
-                    if ($point->food_inspection_data && !empty($point->food_inspection_data->violdttm)) {
-                        $point->alcivartech_date = $point->food_inspection_data->violdttm;
-                    } elseif ($point->food_inspection_data && !empty($point->food_inspection_data->resultdttm)) {
-                        $point->alcivartech_date = $point->food_inspection_data->resultdttm;
-                    } else {
-                        $point->alcivartech_date = null;
-                    }
-                    break;
-                default:
-                    $point->alcivartech_date = null;
-            }
 
-            if (!Auth::check() && $humanReadableType === 'Food Inspection') {
+            // Specific handling for FoodInspection if user is not authenticated
+            if (!Auth::check() && $modelClass === \App\Models\FoodInspection::class) {
                 $restrictedMessage = "Log In to See Food Inspection Information";
-                
-                if ($point->food_inspection_data) {
-                    $foodData = (array)$point->food_inspection_data;
+                $foodDataKey = Str::snake(class_basename(\App\Models\FoodInspection::class)) . '_data';
+
+                if ($point->{$foodDataKey}) {
+                    $foodData = (array)$point->{$foodDataKey};
                     $newFoodData = new \stdClass();
                     foreach ($foodData as $key => $value) {
-                        // Remove specific location fields from food_inspection_data itself
                         if (in_array($key, ['latitude', 'longitude', 'location', 'lat', 'lng', 'gpsy', 'gpsx', 'y_latitude', 'x_longitude'])) {
                             continue; 
                         }
@@ -280,9 +294,8 @@ class GenericMapController extends Controller
                             $newFoodData->$key = $value;
                         }
                     }
-                    $point->food_inspection_data = $newFoodData;
+                    $point->{$foodDataKey} = $newFoodData;
                 }
-                // Unset top-level lat/lng for this data point if it's a food inspection and user is not authed
                 unset($point->latitude);
                 unset($point->longitude);
             }
@@ -310,94 +323,66 @@ class GenericMapController extends Controller
             Log::info('Data point', [$dataPoint]);
         });
 
-        $dataPointModelConfig = [
-            'crime_data' => [
-              'dataObjectKey' => 'crime_data',
-              'mainIdentifierLabel' => 'Incident Number',
-              'mainIdentifierField' => 'incident_number',
-              'descriptionLabel' => 'Description',
-              'descriptionField' => 'offense_description',
-              'additionalFields' => [
-                ['label' => 'District', 'key' => 'district'],
-                ['label' => 'Shooting', 'key' => 'shooting', 'condition' => 'boolean_true_only'],
-              ]
-            ],
-            'everett_crime_data' => [
-              'dataObjectKey' => 'everett_crime_data',
-              'mainIdentifierLabel' => 'Case Number',
-              'mainIdentifierField' => 'case_number',
-              'descriptionLabel' => 'Description',
-              'descriptionField' => 'incident_description',
-              'additionalFields' => [
-                ['label' => 'Incident Type', 'key' => 'incident_type'],
-                ['label' => 'Arrest Name', 'key' => 'arrest_name', 'condition' => 'not_empty_string'],
-                ['label' => 'Arrest Charges', 'key' => 'arrest_charges', 'condition' => 'not_empty_string'],
-              ]
-            ],
-            'three_one_one_cases' => [
-              'dataObjectKey' => 'three_one_one_case_data',
-              'mainIdentifierLabel' => 'Case ID',
-              'mainIdentifierField' => 'case_enquiry_id',
-              'descriptionLabel' => 'Title',
-              'descriptionField' => 'case_title',
-              'additionalFields' => [
-                  ['label' => 'Status', 'key' => 'case_status'],
-                  ['label' => 'Address', 'key' => 'location_street_name'],
-              ]
-            ],
-            'building_permits' => [
-              'dataObjectKey' => 'building_permit_data',
-              'mainIdentifierLabel' => 'Permit Number',
-              'mainIdentifierField' => 'permitnumber',
-              'descriptionLabel' => 'Description',
-              'descriptionField' => 'description',
-              'additionalFields' => [
-                ['label' => 'Permit Type', 'key' => 'permit_type'],
-                ['label' => 'Status', 'key' => 'status'],
-                ['label' => 'Address', 'key' => 'address'],
-              ]
-            ],
-            'property_violations' => [
-              'dataObjectKey' => 'property_violation_data',
-              'mainIdentifierLabel' => 'Ticket Number',
-              'mainIdentifierField' => 'ticket_number',
-              'descriptionLabel' => 'Description',
-              'descriptionField' => 'description',
-              'additionalFields' => [
-                ['label' => 'Violation Type', 'key' => 'violation_type'],
-                ['label' => 'Status', 'key' => 'status'],
-                ['label' => 'Address', 'key' => 'address'],
-              ]
-            ],
-            'construction_off_hours' => [
-              'dataObjectKey' => 'construction_off_hour_data',
-              'mainIdentifierLabel' => 'Application Number',
-              'mainIdentifierField' => 'app_no',
-              'descriptionLabel' => 'Address',
-              'descriptionField' => 'address',
-              'additionalFields' => [
-                  ['label' => 'Permit Type', 'key' => 'permit_type'],
-                  ['label' => 'Hours Requested', 'key' => 'hours_req'],
-              ]
-            ],
-            'food_inspections' => [
-              'dataObjectKey' => 'food_inspection_data',
-              'customPopupHandler' => true, 
-              'mainIdentifierLabel' => 'License No',
-              'mainIdentifierField' => 'licenseno',
-              'descriptionLabel' => 'Business Name',
-              'descriptionField' => 'businessname',
-               'additionalFields' => [
-                ['label' => 'Violation', 'key' => 'violdesc'],
-                ['label' => 'Result', 'key' => 'result'],
-                ['label' => 'Address', 'key' => 'address'],
-              ]
-            ]
-        ];
+        // The dataPointModelConfig needs to be generated dynamically or its keys must match data_points.type
+        $dataPointModelConfig = [];
+        foreach (self::LINKABLE_MODELS as $modelClass) {
+             if (!class_exists($modelClass) || !in_array(\App\Models\Concerns\Mappable::class, class_uses_recursive($modelClass))) {
+                continue;
+            }
+            $modelInstance = new $modelClass();
+            $tableName = $modelInstance->getTable(); // This will be the key, e.g., 'crime_data'
+            $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data';
+
+            // Basic structure, can be expanded with more dynamic info from Mappable trait if needed
+            // This is a simplified example; you might need more specific configurations per model.
+            // The original config had very specific field names. This would require more sophisticated
+            // metadata from each model or a more complex config structure.
+            // For now, let's create a basic entry.
+            // You'll need to adapt your frontend to use these dynamic keys or enhance this config generation.
+
+            $configEntry = [
+                'dataObjectKey' => $dataObjectKey,
+                'mainIdentifierLabel' => 'ID', // Generic default
+                'mainIdentifierField' => $modelInstance->getKeyName(), // Default to PK
+                'descriptionLabel' => 'Details', // Generic default
+                'descriptionField' => 'description', // Common field, but might not exist
+                'additionalFields' => [],
+            ];
+
+            // Example of trying to get more specific info (needs to be robust)
+            if (method_exists($modelClass, 'getPopupConfig')) { // Hypothetical method in Mappable/Model
+                $configEntry = array_merge($configEntry, $modelClass::getPopupConfig());
+            } else {
+                // Fallback or use hardcoded map for known models if dynamic is too complex for now
+                // For example, to match your original structure:
+                if ($tableName === 'crime_data') {
+                    $configEntry['mainIdentifierLabel'] = 'Incident Number';
+                    $configEntry['mainIdentifierField'] = 'incident_number';
+                    $configEntry['descriptionLabel'] = 'Description';
+                    $configEntry['descriptionField'] = 'offense_description';
+                    $configEntry['additionalFields'] = [
+                        ['label' => 'District', 'key' => 'district'],
+                        ['label' => 'Shooting', 'key' => 'shooting', 'condition' => 'boolean_true_only'],
+                    ];
+                } // Add other else if blocks for other tables from your original config
+                else if ($tableName === 'cambridge_311_service_requests') { // Example for a Cambridge model
+                     $configEntry['mainIdentifierLabel'] = 'Ticket ID';
+                     $configEntry['mainIdentifierField'] = 'ticket_id_external';
+                     $configEntry['descriptionLabel'] = 'Issue Type';
+                     $configEntry['descriptionField'] = 'issue_type';
+                     $configEntry['additionalFields'] = [
+                         ['label' => 'Status', 'key' => 'ticket_status'],
+                         ['label' => 'Address', 'key' => 'address'],
+                     ];
+                }
+                // ... and so on for all models from your original config
+            }
+            $dataPointModelConfig[$tableName] = $configEntry;
+        }
+
 
         $mapConfiguration = [
             'dataPointModelConfig' => $dataPointModelConfig,
-            // Add other map-wide configurations here if needed in the future
         ];
 
         return response()->json([

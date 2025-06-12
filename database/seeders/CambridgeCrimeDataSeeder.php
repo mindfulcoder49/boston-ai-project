@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use League\Csv\Reader;
+use App\Models\CambridgeCrimeReportData; // Added
 
 class CambridgeCrimeDataSeeder extends Seeder
 {
@@ -222,19 +223,38 @@ class CambridgeCrimeDataSeeder extends Seeder
             foreach ($records as $record) {
                 $progress++;
 
-                $timeField = $record['crime_date_time'] ?? '';
-                if (strpos($timeField, ' - ') !== false) {
-                    [$start, $end] = explode(' - ', $timeField, 2);
-                } else {
-                    $start = $end = $timeField;
+                $crimeDateTimeRaw = trim($record['crime_date_time'] ?? '');
+                $crimeStart = null;
+                $crimeEnd = null;
+
+                if (strpos($crimeDateTimeRaw, ' - ') !== false) {
+                    [$startPart, $endPart] = array_map('trim', explode(' - ', $crimeDateTimeRaw, 2));
+                    $crimeStart = $this->parseCrimeTimestampInternal($startPart);
+                    if ($crimeStart && !empty($endPart)) {
+                        if (preg_match('/^\d{1,2}:\d{2}$/', $endPart) && preg_match('/^(\d{1,2}\/\d{1,2}\/\d{4})\s/', $startPart, $dateMatches)) {
+                            $fullEndPart = $dateMatches[1] . ' ' . $endPart;
+                            $crimeEnd = $this->parseCrimeTimestampInternal($fullEndPart);
+                        } else {
+                            $crimeEnd = $this->parseCrimeTimestampInternal($endPart);
+                        }
+                    } elseif ($crimeStart && empty($endPart)) {
+                        $crimeEnd = $crimeStart;
+                    }
+                } elseif (!empty($crimeDateTimeRaw)) {
+                    $crimeStart = $this->parseCrimeTimestampInternal($crimeDateTimeRaw);
+                    $crimeEnd = $crimeStart;
                 }
-                $crimeStart = $this->parseCrimeTime($start);
-                $crimeEnd = $this->parseCrimeTime($end);
+                
+                $fileNumberExternal = ($record['file_number'] === '') ? null : ($record['file_number'] ?? null);
+                if (empty($fileNumberExternal)) {
+                    $this->command->warn("Skipping record with empty file_number: " . json_encode($record));
+                    continue;
+                }
 
                 $raw_location = trim($record['location'] ?? '');
                 $coords = ['latitude' => null, 'longitude' => null];
                 $location_found = false;
-                $parsedAddressInfo = null; // To store parsing result for logging
+                $parsedAddressInfo = null; 
 
                 if (!empty($raw_location)) {
                     $this->command->info("Processing raw location: '{$raw_location}'");
@@ -347,34 +367,35 @@ class CambridgeCrimeDataSeeder extends Seeder
                         $notFoundCount++;
                     }
                 } else { // Empty raw_location
-                     $this->command->warn("Empty location string for record: " . ($record['file_number'] ?? 'N/A'));
+                     $this->command->warn("Empty location string for record: " . ($fileNumberExternal ?? 'N/A'));
                      $notFoundCount++;
                 }
 
                 $dataBatch[] = [
-                    'file_number'       => $record['file_number'] ?? null,
-                    'date_of_report'    => $this->parseIsoDate($record['date_of_report'] ?? null),
-                    'crime_start_time'  => $crimeStart,
-                    'crime_end_time'    => $crimeEnd,
-                    'crime'             => $record['crime'] ?? null,
-                    'reporting_area'    => $record['reporting_area'] ?? null,
-                    'neighborhood'      => $record['neighborhood'] ?? null,
-                    'location'          => $raw_location, // Store the original location
-                    'latitude'          => $coords['latitude'],
-                    'longitude'         => $coords['longitude'],
-                    'created_at'        => now(),
-                    'updated_at'        => now(),
+                    'file_number_external'  => $fileNumberExternal,
+                    'date_of_report'        => $this->formatDate($record['date_of_report'] ?? null),
+                    'crime_datetime_raw'    => ($crimeDateTimeRaw === '') ? null : $crimeDateTimeRaw,
+                    'crime_start_time'      => $crimeStart,
+                    'crime_end_time'        => $crimeEnd,
+                    'crime'                 => ($record['crime'] === '') ? null : ($record['crime'] ?? null),
+                    'reporting_area'        => ($record['reporting_area'] === '') ? null : ($record['reporting_area'] ?? null),
+                    'neighborhood'          => ($record['neighborhood'] === '') ? null : ($record['neighborhood'] ?? null),
+                    'location_address'      => ($raw_location === '') ? null : $raw_location,
+                    'latitude'              => $coords['latitude'], // Already handles null if not found
+                    'longitude'             => $coords['longitude'], // Already handles null if not found
+                    'created_at'            => now(),
+                    'updated_at'            => now(),
                 ];
 
                 if ($progress % self::BATCH_SIZE === 0) {
-                    $this->insertBatch($dataBatch);
+                    $this->insertOrUpdateBatch($dataBatch);
                     $dataBatch = [];
                     $this->command->info("Processed {$progress} records... ({$notFoundCount} locations not found so far)");
                 }
             }
 
             if (!empty($dataBatch)) {
-                $this->insertBatch($dataBatch);
+                $this->insertOrUpdateBatch($dataBatch);
             }
             $this->command->info("File processed: " . basename($filePath) . ". Total locations not found: {$notFoundCount}");
         } catch (\Exception $e) {
@@ -407,41 +428,59 @@ class CambridgeCrimeDataSeeder extends Seeder
         return null; 
     }
 
-    private function parseCrimeTime($timeString)
+    private function parseCrimeTimestampInternal($timeString): ?string // Renamed and updated
     {
         $timeString = trim($timeString);
-        if (!$timeString) {
-            return null;
-        }
-        // Expected format "m/d/Y H:i", e.g., "01/18/2009 22:00"
+        if (!$timeString) return null;
         try {
+            // Expected format "m/d/Y H:i", e.g., "01/18/2009 22:00"
             return Carbon::createFromFormat('m/d/Y H:i', $timeString)->format('Y-m-d H:i:s');
         } catch (\Exception $e) {
-            return null;
+            // Fallback for "m/d/Y g:i A" e.g. "01/18/2009 10:00 PM"
+             try {
+                return Carbon::createFromFormat('m/d/Y g:i A', $timeString)->format('Y-m-d H:i:s');
+            } catch (\Exception $e2) {
+                $this->command->warn("Could not parse crime timestamp: '{$timeString}'. Error: " . $e->getMessage());
+                return null;
+            }
         }
     }
     
-    private function parseIsoDate($isoDate)
+    private function formatDate($dateString): ?string // Renamed and updated
     {
-        if (!$isoDate) {
+        if (empty($dateString) || strtolower($dateString) === 'nan') {
             return null;
         }
         try {
-            return Carbon::parse($isoDate)->format('Y-m-d H:i:s');
+            // Handles ISO 8601 format like "2009-01-21T16:32:00.000"
+            // Also handles "m/d/Y" if that's the format for date_of_report
+            if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $dateString)) { // Matches m/d/Y
+                 return Carbon::createFromFormat('m/d/Y', $dateString)->startOfDay()->format('Y-m-d H:i:s');
+            }
+            return Carbon::parse($dateString)->format('Y-m-d H:i:s');
         } catch (\Exception $e) {
+            $this->command->warn("Could not parse date: {$dateString}");
             return null;
         }
     }
 
-    private function insertBatch(array $dataBatch)
+    private function insertOrUpdateBatch(array $dataBatch): void // Renamed and updated
     {
-        // Filter out records with null file_number if it's a primary/unique key concern for upsert
-        // For simple insert, this might not be necessary unless file_number is NOT NULL
-        $validBatch = array_filter($dataBatch, fn($item) => !empty($item['file_number']));
+        $validBatch = array_filter($dataBatch, fn($item) => !empty($item['file_number_external']));
         if (empty($validBatch)) {
             return;
         }
-        // Using simple insert as per previous version. If upsert is needed, define unique key and update columns.
-        DB::table('cambridge_crime_data')->insert($validBatch);
+        
+        $model = new CambridgeCrimeReportData();
+        $fillable = $model->getFillable();
+        $updateColumns = array_filter($fillable, function ($col) {
+            return !in_array($col, ['file_number_external']);
+        });
+
+        DB::table($model->getTable())->upsert(
+            $validBatch,
+            ['file_number_external'],
+            array_values($updateColumns)
+        );
     }
 }

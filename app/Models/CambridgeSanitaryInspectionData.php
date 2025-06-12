@@ -47,12 +47,12 @@ class CambridgeSanitaryInspectionData extends Model
 
     public static function getIconClass(): string
     {
-        return 'fas fa-utensils'; // Example icon for food/sanitary
+        return 'food-inspection-div-icon'; // Example icon for food/sanitary
     }
 
     public static function getAlcivartechTypeForStyling(): string
     {
-        return 'FoodInspection'; // Or 'SanitaryInspection'
+        return 'Food Inspection'; // Or 'SanitaryInspection'
     }
 
     public static function getLatitudeField(): string

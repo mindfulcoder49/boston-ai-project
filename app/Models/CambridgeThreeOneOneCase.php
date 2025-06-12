@@ -48,12 +48,12 @@ class CambridgeThreeOneOneCase extends Model
 
     public static function getIconClass(): string
     {
-        return 'fas fa-bullhorn'; // Example icon
+        return 'case-div-icon'; // Example icon
     }
 
     public static function getAlcivartechTypeForStyling(): string
     {
-        return '311_case'; // Consistent with other 311 types if any
+        return '311 Case'; // Consistent with other 311 types if any
     }
 
     public static function getLatitudeField(): string

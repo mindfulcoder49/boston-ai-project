@@ -5,71 +5,36 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log; // Add Log facade
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str; // Added Str facade
 
 class DataPointSeeder extends Seeder
 {
-    private const DAYS_TO_KEEP = 183; // Approx 6 months (6 * 30.5)
-    private const BATCH_SIZE = 1000; // Number of records to upsert in each batch
+    private const DAYS_TO_KEEP = 183; // Approx 6 months
+    private const BATCH_SIZE = 1000; // Number of records to process/upsert in each batch
 
-    private const MODELS = [
-        'crime_data' => [
-            'lat' => 'lat', 'lng' => 'long',
-            'id_field_for_generic_fk' => 'id', // Source column for data_points.generic_foreign_id
-            'id_field_for_specific_fk' => 'id', // Source column for data_points.crime_data_id
-            'foreign_key' => 'crime_data_id',   // Column name in data_points for specific FK
-            'date_field_for_source_filter' => 'occurred_on_date', // Date field in source table for filtering recent items
-            'alcivartech_date_field' => 'occurred_on_date' // Source column for data_points.alcivartech_date
-        ],
-        'three_one_one_cases' => [
-            'lat' => 'latitude', 'lng' => 'longitude',
-            'id_field_for_generic_fk' => 'id',
-            'id_field_for_specific_fk' => 'id',
-            'foreign_key' => 'three_one_one_case_id',
-            'date_field_for_source_filter' => 'open_dt',
-            'alcivartech_date_field' => 'open_dt'
-        ],
-        'property_violations' => [
-            'lat' => 'latitude', 'lng' => 'longitude',
-            'id_field_for_generic_fk' => 'id',
-            'id_field_for_specific_fk' => 'id',
-            'foreign_key' => 'property_violation_id',
-            'date_field_for_source_filter' => 'status_dttm',
-            'alcivartech_date_field' => 'status_dttm'
-        ],
-        'construction_off_hours' => [
-            'lat' => 'latitude', 'lng' => 'longitude',
-            'id_field_for_generic_fk' => 'id',
-            'id_field_for_specific_fk' => 'id',
-            'foreign_key' => 'construction_off_hour_id',
-            'date_field_for_source_filter' => 'start_datetime',
-            'alcivartech_date_field' => 'start_datetime'
-        ],
-        'building_permits' => [
-            'lat' => 'y_latitude', 'lng' => 'x_longitude',
-            'id_field_for_generic_fk' => 'id',
-            'id_field_for_specific_fk' => 'id',
-            'foreign_key' => 'building_permit_id',
-            'date_field_for_source_filter' => 'issued_date',
-            'alcivartech_date_field' => 'issued_date'
-        ],
-        'food_inspections' => [ // Corrected from food_establishment_violations and using food_inspections table structure
-            'lat' => 'latitude', 'lng' => 'longitude',
-            'id_field_for_generic_fk' => 'external_id', // external_id from food_inspections for generic_foreign_id
-            'id_field_for_specific_fk' => 'id',        // PK id from food_inspections for food_inspection_id
-            'foreign_key' => 'food_inspection_id',
-            'date_field_for_source_filter' => 'resultdttm', // Using resultdttm as the primary date
-            'alcivartech_date_field' => 'resultdttm'
-        ],
-        'everett_crime_data' => [
-            'lat' => 'incident_latitude',
-            'lng' => 'incident_longitude',
-            'id_field_for_generic_fk' => 'case_number', // Using case_number as the unique external identifier
-            'id_field_for_specific_fk' => 'id',         // Primary key of everett_crime_data table
-            'foreign_key' => 'everett_crime_data_id',   // New FK column in data_points table
-            'date_field_for_source_filter' => 'occurred_on_datetime',
-            'alcivartech_date_field' => 'occurred_on_datetime'
-        ],
+    /**
+     * Define the Mappable models to process.
+     * Each entry should be the fully qualified class name of the model.
+     */
+    private const MODELS_TO_PROCESS = [
+        // Boston Models (ensure these implement Mappable)
+        \App\Models\CrimeData::class,
+        \App\Models\ThreeOneOneCase::class,
+        \App\Models\PropertyViolation::class,
+        // \App\Models\ConstructionOffHour::class, // Assuming model name, replace if different
+        \App\Models\BuildingPermit::class, // Boston Building Permits
+        \App\Models\FoodInspection::class,
+
+        // Everett Models
+        \App\Models\EverettCrimeData::class,
+
+        // Cambridge Models
+        \App\Models\CambridgeThreeOneOneCase::class,
+        \App\Models\CambridgeBuildingPermitData::class,
+        \App\Models\CambridgeCrimeReportData::class,
+        \App\Models\CambridgeHousingViolationData::class,
+        \App\Models\CambridgeSanitaryInspectionData::class,
     ];
 
     public function run()
@@ -78,7 +43,6 @@ class DataPointSeeder extends Seeder
         Log::info("DataPointSeeder: Run started.");
         $cutoffDate = Carbon::now()->subDays(self::DAYS_TO_KEEP)->toDateTimeString();
 
-        // Delete old records from `data_points` based on alcivartech_date
         try {
             $deletedCount = DB::table('data_points')->where('alcivartech_date', '<', $cutoffDate)->delete();
             $this->command->info("Successfully deleted {$deletedCount} old data points with alcivartech_date older than " . self::DAYS_TO_KEEP . " days.");
@@ -88,39 +52,60 @@ class DataPointSeeder extends Seeder
             Log::error("DataPointSeeder: Error deleting old data points.", ['exception' => $e]);
         }
 
-        foreach (self::MODELS as $table => $fields) {
-            $this->syncDataPoints($table, $fields, $cutoffDate);
+        foreach (self::MODELS_TO_PROCESS as $modelClass) {
+            if (!class_exists($modelClass)) {
+                $this->command->error("Model class not found: {$modelClass}. Skipping.");
+                Log::error("DataPointSeeder: Model class not found: {$modelClass}. Skipping.");
+                continue;
+            }
+            // Check if model uses Mappable trait
+            if (!in_array(\App\Models\Concerns\Mappable::class, class_uses_recursive($modelClass))) {
+                $this->command->error("Model {$modelClass} does not use the Mappable trait. Skipping.");
+                Log::error("DataPointSeeder: Model {$modelClass} does not use the Mappable trait. Skipping.");
+                continue;
+            }
+            $this->syncDataPointsForModel($modelClass, $cutoffDate);
         }
         $this->command->info("DataPointSeeder finished.");
         Log::info("DataPointSeeder: Run finished.");
     }
 
-    private function syncDataPoints(string $table, array $fields, string $cutoffDate)
+    private function syncDataPointsForModel(string $modelClass, string $cutoffDate)
     {
-        $this->command->info("Processing data for table: {$table}");
-        Log::info("DataPointSeeder: Starting sync for table '{$table}'. Cutoff date for source: {$cutoffDate}");
-        Log::info("DataPointSeeder: Fields used for table '{$table}'", $fields);
+        $modelInstance = new $modelClass();
+        $sourceTableName = $modelInstance->getTable();
+        $humanName = $modelClass::getHumanName();
+
+        $this->command->info("Processing data for model: {$humanName} (table: {$sourceTableName})");
+        Log::info("DataPointSeeder: Starting sync for model '{$modelClass}' (table '{$sourceTableName}'). Cutoff date for source: {$cutoffDate}");
 
         try {
-            $sourceDateField = $fields['date_field_for_source_filter'];
+            $latField = $modelClass::getLatitudeField();
+            $lngField = $modelClass::getLongitudeField();
+            $genericFkSourceField = $modelClass::getExternalIdName(); // Field in source table for generic_foreign_id
+            $specificFkSourceField = $modelInstance->getKeyName(); // Primary key of the source table
+            $specificFkColumnInDataPoints = Str::snake(class_basename($modelClass)) . '_id'; // e.g., 'crime_data_id'
+            $dateField = $modelClass::getDateField(); // Date field in source for filtering and alcivartech_date
             
             $totalProcessedCount = 0;
             $totalUpsertedCount = 0;
             $totalSkippedCount = 0;
 
-            // Process in chunks from the source table to avoid memory issues with very large source tables
-            DB::table($table)
-                ->where($sourceDateField, '>=', $cutoffDate)
-                ->orderBy($fields['id_field_for_specific_fk']) // Order by PK for consistent chunking
-                ->chunkById(self::BATCH_SIZE, function ($newDataChunk) use ($table, $fields, &$totalProcessedCount, &$totalUpsertedCount, &$totalSkippedCount) {
+            DB::table($sourceTableName)
+                ->where($dateField, '>=', $cutoffDate)
+                ->orderBy($specificFkSourceField) // Order by PK for consistent chunking
+                ->chunkById(self::BATCH_SIZE, function ($newDataChunk) use (
+                    $modelClass, $sourceTableName, $latField, $lngField, $genericFkSourceField, $specificFkSourceField, $specificFkColumnInDataPoints, $dateField,
+                    &$totalProcessedCount, &$totalUpsertedCount, &$totalSkippedCount
+                ) {
                     
-                    $this->command->info("Processing chunk of " . $newDataChunk->count() . " records from {$table}.");
-                    Log::info("DataPointSeeder: Processing chunk of " . $newDataChunk->count() . " records from '{$table}'.");
+                    $this->command->info("Processing chunk of " . $newDataChunk->count() . " records from {$sourceTableName}.");
+                    Log::info("DataPointSeeder: Processing chunk of " . $newDataChunk->count() . " records from '{$sourceTableName}'.");
 
                     if ($newDataChunk->isEmpty()) {
-                        $this->command->warn("Empty chunk encountered for {$table}.");
-                        Log::warning("DataPointSeeder: Empty chunk encountered for '{$table}'.");
-                        return true; // Continue to next chunk
+                        $this->command->warn("Empty chunk encountered for {$sourceTableName}.");
+                        Log::warning("DataPointSeeder: Empty chunk encountered for '{$sourceTableName}'.");
+                        return true;
                     }
 
                     $batchInsert = [];
@@ -128,29 +113,29 @@ class DataPointSeeder extends Seeder
 
                     foreach ($newDataChunk as $row) {
                         $totalProcessedCount++;
-                        $genericFkValue = $row->{$fields['id_field_for_generic_fk']} ?? null;
-                        $specificFkValue = $row->{$fields['id_field_for_specific_fk']} ?? null;
-                        $alcivartechDateValue = $row->{$fields['alcivartech_date_field']} ?? null;
+                        $genericFkValue = $row->{$genericFkSourceField} ?? null;
+                        $specificFkValue = $row->{$specificFkSourceField} ?? null;
+                        $alcivartechDateValue = $row->{$dateField} ?? null;
+                        $latitudeValue = $row->{$latField} ?? null;
+                        $longitudeValue = $row->{$lngField} ?? null;
 
-                        if (!isset($row->{$fields['lat']}) || is_null($row->{$fields['lat']}) ||
-                            !isset($row->{$fields['lng']}) || is_null($row->{$fields['lng']}) ||
+                        if (is_null($latitudeValue) || is_null($longitudeValue) ||
                             is_null($genericFkValue) || is_null($specificFkValue) || is_null($alcivartechDateValue)) {
                             
                             $identifier = $genericFkValue ?? $specificFkValue ?? 'unknown_id_in_chunk';
-                            // Log only a few of these to avoid flooding logs, or use a counter
-                            if ($chunkSkippedCount < 5) { // Log first 5 skipped in a chunk
-                                Log::warning("DataPointSeeder: Skipping record from '{$table}' (ID: {$identifier}) in chunk due to missing essential data.", ['row_data_sample' => $row]);
+                            if ($chunkSkippedCount < 5) {
+                                Log::warning("DataPointSeeder: Skipping record from '{$sourceTableName}' (ID: {$identifier}) in chunk due to missing essential data.", ['row_sample' => array_slice((array)$row, 0, 5)]);
                             }
                             $chunkSkippedCount++;
                             continue;
                         }
 
-                        if (!is_numeric($row->{$fields['lat']}) || !is_numeric($row->{$fields['lng']})) {
+                        if (!is_numeric($latitudeValue) || !is_numeric($longitudeValue)) {
                             $identifier = $genericFkValue;
                              if ($chunkSkippedCount < 5) {
-                                Log::warning("DataPointSeeder: Skipping record from '{$table}' (ID: {$identifier}) in chunk due to non-numeric lat/lng.", [
-                                    'lat' => $row->{$fields['lat']},
-                                    'lng' => $row->{$fields['lng']}
+                                Log::warning("DataPointSeeder: Skipping record from '{$sourceTableName}' (ID: {$identifier}) in chunk due to non-numeric lat/lng.", [
+                                    'lat' => $latitudeValue,
+                                    'lng' => $longitudeValue
                                 ]);
                             }
                             $chunkSkippedCount++;
@@ -162,17 +147,17 @@ class DataPointSeeder extends Seeder
                         } catch (\Exception $e) {
                             $identifier = $genericFkValue;
                             if ($chunkSkippedCount < 5) {
-                                Log::warning("DataPointSeeder: Invalid date format in chunk for '{$table}' (ID: {$identifier}).", ['date_value' => $alcivartechDateValue]);
+                                Log::warning("DataPointSeeder: Invalid date format in chunk for '{$sourceTableName}' (ID: {$identifier}).", ['date_value' => $alcivartechDateValue]);
                             }
                             $chunkSkippedCount++;
                             continue;
                         }
 
                         $batchInsert[] = [
-                            'type' => $table,
-                            'location' => DB::raw("ST_GeomFromText('POINT({$row->{$fields['lng']}} {$row->{$fields['lat']}})')"),
-                            $fields['foreign_key'] => $specificFkValue,
-                            'generic_foreign_id' => $genericFkValue,
+                            'type' => $sourceTableName, // Using table name as type
+                            'location' => DB::raw("ST_GeomFromText('POINT({$longitudeValue} {$latitudeValue})')"),
+                            $specificFkColumnInDataPoints => $specificFkValue,
+                            'generic_foreign_id' => (string)$genericFkValue, // Ensure generic_foreign_id is string
                             'alcivartech_date' => $parsedDate,
                             'created_at' => now(),
                             'updated_at' => now(),
@@ -181,42 +166,41 @@ class DataPointSeeder extends Seeder
                     
                     $totalSkippedCount += $chunkSkippedCount;
                     if ($chunkSkippedCount > 0) {
-                        $this->command->info("Skipped {$chunkSkippedCount} records from the current chunk of {$table}.");
-                        Log::info("DataPointSeeder: Skipped {$chunkSkippedCount} records from the current chunk of '{$table}'.");
+                        $this->command->info("Skipped {$chunkSkippedCount} records from the current chunk of {$sourceTableName}.");
+                        Log::info("DataPointSeeder: Skipped {$chunkSkippedCount} records from the current chunk of '{$sourceTableName}'.");
                     }
 
                     if (!empty($batchInsert)) {
-                        $this->command->info("Preparing to upsert batch of " . count($batchInsert) . " valid records for {$table}.");
-                        Log::info("DataPointSeeder: Preparing to upsert batch of " . count($batchInsert) . " valid records for '{$table}'.");
+                        $this->command->info("Preparing to upsert batch of " . count($batchInsert) . " valid records for {$sourceTableName}.");
+                        Log::info("DataPointSeeder: Preparing to upsert batch of " . count($batchInsert) . " valid records for '{$sourceTableName}'.");
                         try {
                             DB::table('data_points')->upsert(
                                 $batchInsert,
-                                ['type', 'generic_foreign_id'],
-                                ['location', 'updated_at', $fields['foreign_key'], 'alcivartech_date']
+                                ['type', 'generic_foreign_id'], // Unique keys for upsert
+                                ['location', 'updated_at', $specificFkColumnInDataPoints, 'alcivartech_date'] // Columns to update
                             );
                             $totalUpsertedCount += count($batchInsert);
-                            $this->command->info("Successfully upserted batch of " . count($batchInsert) . " records for {$table}. Total upserted so far: {$totalUpsertedCount}");
-                            Log::info("DataPointSeeder: Successfully upserted batch of " . count($batchInsert) . " records for '{$table}'. Total upserted so far for this table: {$totalUpsertedCount}");
+                            $this->command->info("Successfully upserted batch of " . count($batchInsert) . " records for {$sourceTableName}. Total upserted so far: {$totalUpsertedCount}");
+                            Log::info("DataPointSeeder: Successfully upserted batch of " . count($batchInsert) . " records for '{$sourceTableName}'. Total upserted so far for this model: {$totalUpsertedCount}");
                         } catch (\Exception $e) {
-                            $this->command->error("Error upserting batch for {$table}: " . $e->getMessage());
-                            Log::error("DataPointSeeder: Error upserting batch for '{$table}'.", ['exception' => $e, 'batch_size' => count($batchInsert)]);
-                            // Optionally, decide if you want to stop or continue on batch error
+                            $this->command->error("Error upserting batch for {$sourceTableName}: " . $e->getMessage());
+                            Log::error("DataPointSeeder: Error upserting batch for '{$sourceTableName}'.", ['exception' => $e, 'batch_size' => count($batchInsert)]);
                         }
                     } else {
-                        $this->command->info("No valid records to insert in this batch for {$table}.");
-                        Log::info("DataPointSeeder: No valid records to insert in this batch for '{$table}'.");
+                        $this->command->info("No valid records to insert in this batch for {$sourceTableName}.");
+                        Log::info("DataPointSeeder: No valid records to insert in this batch for '{$sourceTableName}'.");
                     }
-                    return true; // Continue to the next chunk
-                }, $fields['id_field_for_specific_fk']); // Column to use for chunking, usually the primary key
+                    return true; 
+                }, $specificFkSourceField); 
 
-            $this->command->info("Finished processing for {$table}. Total records processed: {$totalProcessedCount}, Total records upserted: {$totalUpsertedCount}, Total records skipped: {$totalSkippedCount}.");
-            Log::info("DataPointSeeder: Finished processing for '{$table}'. Processed: {$totalProcessedCount}, Upserted: {$totalUpsertedCount}, Skipped: {$totalSkippedCount}.");
+            $this->command->info("Finished processing for {$modelClass::getHumanName()}. Total records processed: {$totalProcessedCount}, Total records upserted: {$totalUpsertedCount}, Total records skipped: {$totalSkippedCount}.");
+            Log::info("DataPointSeeder: Finished processing for '{$modelClass}'. Processed: {$totalProcessedCount}, Upserted: {$totalUpsertedCount}, Skipped: {$totalSkippedCount}.");
 
         } catch (\Exception $e) {
-            $this->command->error("Failed to process data for table {$table}: " . $e->getMessage());
-            Log::error("DataPointSeeder: Failed to process data for table '{$table}'.", ['exception' => $e]);
+            $this->command->error("Failed to process data for model {$modelClass}: " . $e->getMessage());
+            Log::error("DataPointSeeder: Failed to process data for model '{$modelClass}'.", ['exception' => $e]);
         }
-        $this->command->info("Finished sync logic for table: {$table}");
-        Log::info("DataPointSeeder: Finished sync logic for table '{$table}'.");
+        $this->command->info("Finished sync logic for model: {$modelClass::getHumanName()}");
+        Log::info("DataPointSeeder: Finished sync logic for model '{$modelClass}'.");
     }
 }

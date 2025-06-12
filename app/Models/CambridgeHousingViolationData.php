@@ -43,12 +43,12 @@ class CambridgeHousingViolationData extends Model
 
     public static function getIconClass(): string
     {
-        return 'fas fa-home-user'; // Example icon
+        return 'property-violation-div-icon'; // Example icon
     }
 
     public static function getAlcivartechTypeForStyling(): string
     {
-        return 'HousingViolation';
+        return 'Property Violation';
     }
 
     public static function getLatitudeField(): string

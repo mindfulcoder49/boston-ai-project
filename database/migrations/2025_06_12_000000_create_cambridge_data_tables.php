@@ -29,9 +29,9 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->text('location_text')->nullable()->comment('From CSV location field');
-            $table->string('image_url', 512)->nullable();
+            $table->string('image_url', 2048)->nullable();
             $table->dateTime('acknowledged_at')->nullable();
-            $table->string('html_url', 512)->nullable();
+            $table->string('html_url', 2048)->nullable();
             $table->timestamps();
         });
 

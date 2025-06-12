@@ -51,12 +51,12 @@ class CambridgeBuildingPermitData extends Model
 
     public static function getIconClass(): string
     {
-        return 'fas fa-hard-hat'; // Example icon
+        return 'permit-div-icon'; // Example icon
     }
 
     public static function getAlcivartechTypeForStyling(): string
     {
-        return 'BuildingPermit';
+        return 'Building Permit';
     }
 
     public static function getLatitudeField(): string

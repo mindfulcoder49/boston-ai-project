@@ -9,7 +9,7 @@ class AddUniqueConstraintToDataPointsTable extends Migration
     public function up()
     {
         Schema::table('data_points', function (Blueprint $table) {
-            // Add the new generic_foreign_id column
+            // Add the new generic_foreign_id column as unsignedBigInteger
             $table->unsignedBigInteger('generic_foreign_id')->nullable()->after('type');
 
             // Add a unique constraint on type and generic_foreign_id
