@@ -93,4 +93,30 @@ class EverettCrimeData extends Model
     {
         return $this->case_number;
     }
+
+    // Mappable Trait Implementations
+    public static function getHumanName(): string
+    {
+        return 'Everett Crime';
+    }
+
+    public static function getIconClass(): string
+    {
+        return 'crime-div-icon'; // Shares icon style
+    }
+
+    public static function getAlcivartechTypeForStyling(): string
+    {
+        return 'Crime'; // Shares styling type
+    }
+
+    public static function getLatitudeField(): string
+    {
+        return 'incident_latitude';
+    }
+
+    public static function getLongitudeField(): string
+    {
+        return 'incident_longitude';
+    }
 }

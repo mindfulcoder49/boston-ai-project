@@ -49,26 +49,6 @@ class CrimeData extends Model
         'ucr_part', 'street', 'location', 'language_code', 'crime_details', 'crime_start_time', 'crime_end_time'
     ];
 
-    public static function getDateField(): string
-    {
-        return 'occurred_on_date';
-    }
-
-    public function getDate(): string
-    {
-        return $this->occurred_on_date;
-    }
-
-    public static function getExternalIdName(): string
-    {
-        return 'incident_number';
-    }
-
-    public function getExternalId(): string
-    {
-        return $this->incident_number;
-    }
-
     //define string constants for the crime data context sent to GPT
     const CONTEXT_CRIME_DATA = <<<EOT
                 CODE	NAME
@@ -657,6 +637,53 @@ class CrimeData extends Model
     {
         // Clean up the context data slightly for better processing if needed
         return preg_replace('/\s+/', ' ', self::CONTEXT_CRIME_DATA);
+    }
+
+    // Mappable Trait Implementations
+    public static function getHumanName(): string
+    {
+        return 'Boston Crime';
+    }
+
+    public static function getIconClass(): string
+    {
+        return 'crime-div-icon';
+    }
+
+    public static function getAlcivartechTypeForStyling(): string
+    {
+        return 'Crime';
+    }
+
+    public static function getLatitudeField(): string
+    {
+        return 'lat';
+    }
+
+    public static function getLongitudeField(): string
+    {
+        return 'long';
+    }
+
+    public static function getDateField(): string
+    {
+        return 'occurred_on_date'; // Placeholder: Adjust to your actual date field
+    }
+
+    public function getDate(): ?string
+    {
+        // Placeholder: Adjust to your actual date field and access method
+        return $this->occurred_on_date ? (is_string($this->occurred_on_date) ? $this->occurred_on_date : $this->occurred_on_date->toDateString()) : null;
+    }
+
+    public static function getExternalIdName(): string
+    {
+        return 'incident_number'; // Placeholder: Adjust to your actual external ID field name
+    }
+
+    public function getExternalId(): string
+    {
+        return $this->incident_number; // Placeholder: Adjust to your actual external ID field
     }
 
 }

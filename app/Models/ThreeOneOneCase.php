@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Concerns\Mappable; // Added
+use App\Models\Concerns\Mappable;
 
 class ThreeOneOneCase extends Model
 {
-    use Mappable; // Added
+    use Mappable;
 
     /**
      * The primary key associated with the table.
@@ -64,12 +63,12 @@ class ThreeOneOneCase extends Model
         'source', 
         'ward_number', 
         'language_code',
-        'threeoneonedescription', // Added
-        'source_city', // Added
+        'threeoneonedescription',
+        'source_city',
     ];
 
     const SEARCHABLE_COLUMNS = [
-        'id', 'case_enquiry_id', 'open_dt', 'sla_target_dt', 'closed_dt', 'on_time', 'case_status', 'closure_reason', 'case_title', 'subject', 'reason', 'type', 'queue', 'department', 'submitted_photo', 'closed_photo', 'location', 'fire_district', 'pwd_district', 'city_council_district', 'police_district', 'neighborhood', 'neighborhood_services_district', 'ward', 'precinct', 'location_street_name', 'location_zipcode', 'latitude', 'longitude', 'source', 'ward_number', 'language_code', 'threeoneonedescription', 'source_city', // Added description and source_city
+        'id', 'case_enquiry_id', 'open_dt', 'sla_target_dt', 'closed_dt', 'on_time', 'case_status', 'closure_reason', 'case_title', 'subject', 'reason', 'type', 'queue', 'department', 'submitted_photo', 'closed_photo', 'location', 'fire_district', 'pwd_district', 'city_council_district', 'police_district', 'neighborhood', 'neighborhood_services_district', 'ward', 'precinct', 'location_street_name', 'location_zipcode', 'latitude', 'longitude', 'source', 'ward_number', 'language_code', 'threeoneonedescription', 'source_city',
     ];
     
     //function to check case survival time
@@ -91,14 +90,40 @@ class ThreeOneOneCase extends Model
         return $diff / (60 * 60);
     }
 
+    // Mappable Trait Implementations
+    public static function getHumanName(): string
+    {
+        return '311 Cases';
+    }
+
+    public static function getIconClass(): string
+    {
+        return 'case-div-icon no-photo';
+    }
+
+    public static function getAlcivartechTypeForStyling(): string
+    {
+        return '311 Case';
+    }
+
+    public static function getLatitudeField(): string
+    {
+        return 'latitude';
+    }
+
+    public static function getLongitudeField(): string
+    {
+        return 'longitude';
+    }
+
     public static function getDateField(): string
     {
         return 'open_dt';
     }
 
-    public function getDate(): string
+    public function getDate(): ?string
     {
-        return $this->open_dt;
+        return $this->open_dt ? (is_string($this->open_dt) ? $this->open_dt : $this->open_dt->toDateString()) : null;
     }
 
     public static function getExternalIdName(): string
@@ -111,9 +136,7 @@ class ThreeOneOneCase extends Model
         return $this->case_enquiry_id;
     }
 
-    // Mappable Trait Implementations
-    // getFilterableFieldsDescription() method removed
-    // getContextData() method removed
-    // getSearchableColumns() method removed (trait will use SEARCHABLE_COLUMNS constant if defined, or suggestions)
-    // getGptFunctionSchema() method removed
+    // getFilterableFieldsDescription(), getContextData(), getSearchableColumns(), getGptFunctionSchema()
+    // will use the Mappable trait's versions, which can be overridden here if needed,
+    // or configured via config/model_metadata_suggestions.php
 }

@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\DataMapController; // For getModelClass, enrichData, getMinDateForEffectiveUser
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use App\Models\Concerns\Mappable; // Ensure Mappable is imported
 
 
 class SavedMapController extends Controller
@@ -120,119 +121,116 @@ class SavedMapController extends Controller
             abort(403, 'You are not authorized to view this map.');
         }
         
-        // Ensure 'creator_display_name' and 'configurable_filter_fields' are available
-        // Also load 'manual_subscription_tier' for the user relationship
         $savedMap->load('user:id,name,manual_subscription_tier');
-        // configurable_filter_fields should be automatically cast to array by Laravel if defined in $casts
-
 
         $effectiveUserForTier = $savedMap->is_public ? $savedMap->user : Auth::user();
         
-        // This check is important if a map is public but its creator user record is somehow missing.
         if ($savedMap->is_public && !$savedMap->user) {
             Log::error("SavedMap {$savedMap->id} is public but creator user {$savedMap->user_id} not found. EffectiveUserForTier cannot be determined for tier limits.");
-            // If admin is viewing, they might still want to see the map structure, but data limits might be guest-level.
-            // If a regular user is viewing, this is a problem.
-            // For simplicity, if creator is missing for a public map, data tier might default or be restricted.
-            // The current logic will make $effectiveUserForTier null here.
-            // The applyQueryFilters method in DataMapController needs to handle a null $effectiveUserForTier gracefully (e.g., apply guest limits).
-            // For now, we'll proceed, but this is an edge case to be aware of for data tiering.
         }
-        
-        // If it's a private map, $effectiveUserForTier is Auth::user(). If Auth::user() is null (guest),
-        // the initial authorization check ($isOwner) would have already failed.
-        // So, $effectiveUserForTier should generally be non-null here if authorization passed for private maps.
-
 
         $mapDataSets = [];
         $allDataTypeDetails = [];
+        $finalModelMapping = []; // For passing to the view
+
+        $fullModelRegistry = $this->dataMapController->getModelMapping(); // Get key => class string map
 
         if ($savedMap->map_type === 'single') {
             $dataType = $savedMap->data_type;
-            if (!$dataType) {
-                abort(404, "Data type for single map not specified.");
+            if (!$dataType || !isset($fullModelRegistry[$dataType])) {
+                abort(404, "Data type for single map not specified or invalid.");
             }
-            $modelClass = $this->dataMapController->getModelClassForDataType($dataType);
-            
+            $modelClass = $fullModelRegistry[$dataType];
+            if (!class_exists($modelClass) || !in_array(Mappable::class, class_uses_recursive($modelClass))) {
+                 abort(500, "Model class for {$dataType} is not properly configured or mappable.");
+            }
+            $finalModelMapping[$dataType] = $modelClass;
+
             $query = $modelClass::query();
             $filtersToApply = $savedMap->filters;
-
-            // Apply filters using the centralized method from DataMapController
-            // The applyQueryFilters method now handles the tierMinDate internally.
             $this->dataMapController->applyQueryFilters($query, $modelClass, $filtersToApply, $effectiveUserForTier);
             
             $limit = $filtersToApply['limit'] ?? 1000;
             $query->limit(max(1, min((int)$limit, 100000)));
             $query->orderBy($modelClass::getDateField(), 'desc');
-
-            Log::info("SavedMap Single View - Query SQL for {$dataType}: " . $query->toSql());
-            Log::info("SavedMap Single View - Query bindings for {$dataType}: " . json_encode($query->getBindings()));
+            
             $data = $query->get();
-            $mapDataSets[$dataType] = $this->dataMapController->enrichData($data, $dataType);
+            $mapDataSets[$dataType] = $this->dataMapController->enrichData($data, $dataType, $modelClass);
 
             $filterDesc = $modelClass::getFilterableFieldsDescription();
             if (is_string($filterDesc)) {
-                $filterDesc = json_decode($filterDesc, true);
+                try { $filterDesc = json_decode($filterDesc, true, 512, JSON_THROW_ON_ERROR); } catch (\JsonException $e) { $filterDesc = []; }
             }
 
             $allDataTypeDetails[$dataType] = [
+                'humanName' => $modelClass::getHumanName(),
+                'iconClass' => $modelClass::getIconClass(),
+                'alcivartech_type_for_styling' => $modelClass::getAlcivartechTypeForStyling(),
+                'latitudeField' => $modelClass::getLatitudeField(),
+                'longitudeField' => $modelClass::getLongitudeField(),
                 'dateField' => $modelClass::getDateField(),
                 'externalIdField' => $modelClass::getExternalIdName(),
-                'filterFieldsDescription' => $filterDesc, // Use decoded value
-                'modelNameForHumans' => $modelClass::getModelNameForHumans(),
-                'searchableColumns' => $modelClass::getSearchableColumns(), // Added searchableColumns
+                'filterFieldsDescription' => $filterDesc,
+                'searchableColumns' => $modelClass::getSearchableColumns(),
             ];
 
         } elseif ($savedMap->map_type === 'combined') {
-            $savedFiltersByType = $savedMap->filters; 
+            $savedFiltersByType = $savedMap->filters ?? [];
+            $selectedDataTypes = $savedMap->map_settings['selected_data_types'] ?? [];
+
+            if (empty($selectedDataTypes)) {
+                Log::warning("SavedMap Combined View - map_settings.selected_data_types is empty for SavedMap ID: {$savedMap->id}.");
+            }
             
-            foreach ($this->dataMapController->getModelMapping() as $dataType => $modelClassString) { 
-                // Skip if no filters for this type in saved map OR if the dataType is not part of the saved map's filters
-                if (!isset($savedFiltersByType[$dataType])) {
-                    // If you want to display all types from modelMapping regardless of saved filters,
-                    // then initialize $filtersToApply = [] for types not in $savedFiltersByType.
-                    // For now, only processing types that have filters in the saved map.
+            foreach ($selectedDataTypes as $dataType) {
+                if (!isset($fullModelRegistry[$dataType])) {
+                    Log::warning("SavedMap Combined View - DataType '{$dataType}' from selected_data_types not found in full model registry. Skipping.");
                     continue;
                 }
+                $modelClass = $fullModelRegistry[$dataType];
+                 if (!class_exists($modelClass) || !in_array(Mappable::class, class_uses_recursive($modelClass))) {
+                    Log::error("SavedMap Combined View - Model class for {$dataType} is not properly configured or mappable. Skipping.");
+                    continue;
+                }
+                $finalModelMapping[$dataType] = $modelClass;
 
-                $modelClass = $this->dataMapController->getModelClassForDataType($dataType);
+                $filtersToApplyForType = $savedFiltersByType[$dataType] ?? ['limit' => 1000];
                 $query = $modelClass::query();
-                $filtersToApplyForType = $savedFiltersByType[$dataType];
-
-                // Apply filters using the centralized method
                 $this->dataMapController->applyQueryFilters($query, $modelClass, $filtersToApplyForType, $effectiveUserForTier);
                 
                 $limit = $filtersToApplyForType['limit'] ?? 1000;
                 $query->limit(max(1, min((int)$limit, 100000)));
                 $query->orderBy($modelClass::getDateField(), 'desc');
                 
-                Log::info("SavedMap Combined View - Query SQL for {$dataType}: " . $query->toSql());
-                Log::info("SavedMap Combined View - Query bindings for {$dataType}: " . json_encode($query->getBindings()));
                 $data = $query->get();
-                $mapDataSets[$dataType] = $this->dataMapController->enrichData($data, $dataType);
+                $mapDataSets[$dataType] = $this->dataMapController->enrichData($data, $dataType, $modelClass);
 
                 $filterDesc = $modelClass::getFilterableFieldsDescription();
                 if (is_string($filterDesc)) {
-                    $filterDesc = json_decode($filterDesc, true);
+                     try { $filterDesc = json_decode($filterDesc, true, 512, JSON_THROW_ON_ERROR); } catch (\JsonException $e) { $filterDesc = []; }
                 }
 
                 $allDataTypeDetails[$dataType] = [
+                    'humanName' => $modelClass::getHumanName(),
+                    'iconClass' => $modelClass::getIconClass(),
+                    'alcivartech_type_for_styling' => $modelClass::getAlcivartechTypeForStyling(),
+                    'latitudeField' => $modelClass::getLatitudeField(),
+                    'longitudeField' => $modelClass::getLongitudeField(),
                     'dateField' => $modelClass::getDateField(),
                     'externalIdField' => $modelClass::getExternalIdName(),
-                    'filterFieldsDescription' => $filterDesc, // Use decoded value
-                    'modelNameForHumans' => $modelClass::getModelNameForHumans(),
-                    'searchableColumns' => $modelClass::getSearchableColumns(), // Added searchableColumns
+                    'filterFieldsDescription' => $filterDesc,
+                    'searchableColumns' => $modelClass::getSearchableColumns(),
                 ];
             }
         }
 
         return Inertia::render('ViewSavedMapPage', [
-            'savedMap' => $savedMap, // Now includes creator_display_name and configurable_filter_fields
+            'savedMap' => $savedMap,
             'mapDataSets' => $mapDataSets, 
             'allDataTypeDetails' => $allDataTypeDetails, 
-            'mapSettings' => $savedMap->map_settings, // Center, zoom, selected layers
+            'mapSettings' => $savedMap->map_settings,
             'isReadOnly' => true,
-            'modelMapping' => $this->dataMapController->getModelMapping(), // Add this line
+            'modelMapping' => $finalModelMapping, // Pass the potentially filtered modelMapping
         ]);
     }
 

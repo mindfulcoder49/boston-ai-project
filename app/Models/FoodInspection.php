@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Concerns\Mappable; // Added
+use App\Models\Concerns\Mappable;
 
 class FoodInspection extends Model
 {
-    use HasFactory, Mappable; // Added Mappable
+    use HasFactory, Mappable;
 
-    protected $table = 'food_inspections'; // Assuming it uses the same table
+    protected $table = 'food_inspections';
 
     protected $fillable = [
-        'external_id',
+        'external_id', // Assuming this is the primary external ID, was licenseno in placeholder
         'businessname',
         'dbaname',
         'legalowner',
@@ -44,7 +44,7 @@ class FoodInspection extends Model
         'language_code',
     ];
 
-    const SEARCHABLE_COLUMNS = [ // Added
+    const SEARCHABLE_COLUMNS = [
         'external_id', 'businessname', 'dbaname', 'licenseno', 'licstatus', 'licensecat',
         'result', 'viol_level', 'viol_status', 'address', 'city', 'zip', 'property_id', 'language_code',
     ];
@@ -57,6 +57,32 @@ class FoodInspection extends Model
         'status_date' => 'datetime',
     ];
 
+    // Mappable Trait Implementations
+    public static function getHumanName(): string
+    {
+        return 'Food Inspections';
+    }
+
+    public static function getIconClass(): string
+    {
+        return 'food-inspection-div-icon';
+    }
+
+    public static function getAlcivartechTypeForStyling(): string
+    {
+        return 'Food Inspection';
+    }
+
+    public static function getLatitudeField(): string
+    {
+        return 'latitude';
+    }
+
+    public static function getLongitudeField(): string
+    {
+        return 'longitude';
+    }
+
     public static function getDateField(): string
     {
         return 'resultdttm';
@@ -64,22 +90,16 @@ class FoodInspection extends Model
 
     public function getDate(): ?string
     {
-        return $this->resultdttm ? $this->resultdttm->toDateTimeString() : null;
+        return $this->resultdttm ? $this->resultdttm->toDateString() : null;
     }
 
     public static function getExternalIdName(): string
     {
-        return 'external_id';
+        return 'external_id'; // Corrected from placeholder 'licenseno'
     }
 
     public function getExternalId(): string
     {
-        return (string)$this->external_id;
+        return (string)$this->external_id; // Corrected from placeholder 'licenseno'
     }
-
-    // Mappable Trait Implementations
-    // getFilterableFieldsDescription() method removed
-    // getContextData() method removed
-    // getSearchableColumns() method removed (trait will use SEARCHABLE_COLUMNS constant if defined, or suggestions)
-    // getGptFunctionSchema() method removed
 }

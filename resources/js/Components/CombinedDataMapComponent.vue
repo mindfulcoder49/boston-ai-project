@@ -297,7 +297,15 @@ const isSavingMap = ref(false);
 const saveMapError = ref('');
 
 
-const availableModels = computed(() => Object.keys(props.modelMappingProp || {}));
+const availableModels = computed(() => {
+  if (props.isReadOnly) {
+    // In read-only mode (viewing a saved map), available models are strictly those
+    // for which details are provided by the controller (already filtered).
+    return Object.keys(props.allDataTypeDetailsProp || {});
+  }
+  // In interactive/creation mode, available models come from the full model mapping.
+  return Object.keys(props.modelMappingProp || {});
+});
 
 const isGlobalLoading = computed(() => {
   return Object.values(isLoadingByModel.value).some(loading => loading) || nlpQuerySubmitted.value;
@@ -633,13 +641,27 @@ const handleSaveMap = async () => {
 
 watch(() => props.modelMappingProp, (newMapping) => {
   const newConfigurableFields = {};
-  if (newMapping) {
-    Object.keys(newMapping).forEach(modelKey => { 
-      newConfigurableFields[modelKey] = saveMapForm.value.configurable_filter_fields[modelKey] || [];
-    });
-  }
+  // When in read-only mode, newMapping (which is props.modelMappingProp) will be filtered by the controller.
+  // availableModels (derived from allDataTypeDetailsProp in read-only) should be the source of truth for keys.
+  const relevantModelKeys = props.isReadOnly ? Object.keys(props.allDataTypeDetailsProp || {}) : Object.keys(newMapping || {});
+
+  relevantModelKeys.forEach(modelKey => { 
+    newConfigurableFields[modelKey] = saveMapForm.value.configurable_filter_fields[modelKey] || [];
+  });
   saveMapForm.value.configurable_filter_fields = newConfigurableFields;
 }, { immediate: true, deep: true });
+
+watch(() => props.allDataTypeDetailsProp, (newDetails) => {
+    if (props.isReadOnly) {
+        const newConfigurableFields = {};
+        const relevantModelKeys = Object.keys(newDetails || {});
+        relevantModelKeys.forEach(modelKey => {
+            newConfigurableFields[modelKey] = saveMapForm.value.configurable_filter_fields[modelKey] || [];
+        });
+        saveMapForm.value.configurable_filter_fields = newConfigurableFields;
+    }
+}, { immediate: true, deep: true });
+
 
 onMounted(async () => {
   mapCenter.value = props.initialMapSettings?.center || [42.3601, -71.0589];
@@ -657,12 +679,15 @@ onMounted(async () => {
     
     currentFiltersByModel.value = {}; 
     
-    mapSelectedModels.value = (props.initialMapSettings?.selected_data_types && props.initialMapSettings.selected_data_types.length > 0) 
-                                  ? [...props.initialMapSettings.selected_data_types] // These are modelKeys
-                                  : [...availableModels.value]; 
+    // mapSelectedModels should be exactly what's in initialMapSettings.selected_data_types,
+    // as these are the models the controller has prepared data and details for.
+    mapSelectedModels.value = props.initialMapSettings?.selected_data_types 
+      ? [...props.initialMapSettings.selected_data_types] 
+      : []; // If not set, default to empty, as availableModels will also be based on controller-provided data.
                                   
     activeFilterTab.value = props.initialMapSettings?.active_filter_tab || availableModels.value[0] || ''; 
 
+    // availableModels.value here is derived from props.allDataTypeDetailsProp (filtered by controller)
     availableModels.value.forEach(modelKey => { 
         const savedModelFilters = props.initialFiltersProp?.[modelKey] || {}; 
         const configurableForModel = props.configurableFilterFieldsForView?.[modelKey] || []; 

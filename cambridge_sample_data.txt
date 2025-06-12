@@ -1,0 +1,112 @@
+--- Dataset: cambridge-311-service-requests ---
+Source File: cambridge-311-service-requests_20250609_162443.csv
+"ticket_id","city","issue_type","issue_category","ticket_status","issue_description","ticket_closed_date_time","ticket_created_date_time","ticket_last_updated_date_time","address","lat","lng","location","image","acknowledged_at","html_url"
+"17658842","Cambridge","Missed Yard Waste Pickup","Missed Yard Waste Pickup","Archived",,"2024-10-08T15:16:00.000","2024-10-07T17:07:04.000","2024-10-08T15:16:00.000","58 Haskell St Cambridge, MA 02140, USA","42.391599","-71.1273727","
+,  
+(42.391599, -71.1273727)",,,"https://seeclickfix.com/issues/17658842"
+"17528384","Cambridge","Graffiti","Graffiti","Archived","On retaining wall of Star Market parking lot","2024-09-25T11:24:25.000","2024-09-17T17:09:39.000","2024-09-25T11:24:25.000","651 Mt Auburn St Cambridge MA 02138, United States","42.37521500074267","-71.1476415804493","
+,  
+(42.37521500074267, -71.1476415804493)",,"2024-09-25T07:00:08.000","https://seeclickfix.com/issues/17528384"
+"17496793","Cambridge","Missed Yard Waste Pickup","Missed Yard Waste Pickup","Archived","All other barrels were picked up but not yard waste 1726175365","2024-09-13T07:24:54.000","2024-09-12T17:09:25.000","2024-09-13T07:24:54.000","43 Harding St","42.3738","-71.09047","
+,  
+(42.3738, -71.09047)",,"2024-09-12T17:58:10.000","https://seeclickfix.com/issues/17496793"
+"17483410","Cambridge","Roadkill / Dead Animal","Roadkill / Dead Animal","Archived",,"2024-09-12T05:05:57.000","2024-09-11T08:43:21.000","2024-09-12T05:05:57.000","7 Roberts Rd Cambridge MA 02138, United States","42.37540857679588","-71.10876431494432","
+
+
+
+--- Dataset: cambridge-building-permits ---
+Source File: cambridge-building-permits_20250609_162521.csv
+"id","address","address_geocoded","latitude","longitude","status","applicant_submit_date","issue_date","number_of_residential_units","number_of_units_to_be_removed","current_number_of_dwelling","unit_increase","unit_decrease","change_residential_units","current_property_use","proposed_property_use","will_the_property_use_change","building_cost_of_construction","electrical_cost_of","plumbing_cost_of_construction","gas_cost_of_construction","hvac_cost_of_construction","total_cost_of_construction","final_cost_of_construction","additional_cost","fire_prevention_cost_of","detailed_description_of_work","isd_approved_description","size_of_the_new_addition","floor_area_change","exterior_change","large_area_change","food_establishment","bicycle_change","energy_code","leed_certification","hers_rating","industrial_sewer_connection","commercial_sewer_connection","residential_sewer_connection","drains","storm_sewer","dewatering","public_right","basement_plumbing","half_area","firm_name","construction_debris_will","description_of_demolition","method_of_removal","would_you_like_to_apply_for","type_of_demolition","construction_debris_removal","outbuilding_description","reconstruction_or_change","exterior_stairs","openings_or_doors","construction_of_a_deck","location_of_deck","porch_balcony_dormer","exterior_stairs_type","excavation_of_a_basement","change_any_floor_or_ceiling","outbuilding","stories_above_grade","building_height_feet","gross_square_footage","building_use","owner_occupied","condo_association","building_construction_type","off_street_parking","proposed_loading_bays","existing_off_street_vehicle_parking","existing_off_street_bicycle_parking_long_term","proposed_off_street_bicycle_parking_long_term","existing_off_street_bicycle_parking_short_term","proposed_off_street_bicycle_parking_short_term","off_street_parking_change","curb_cut","other_cooking_equipment","finish_materials","open_air_cafe","cooking_equipment_type","certificate_of_occupancy","bza_number","planning_board_number","bza","planning_board","maplot_number","bicycle_parking_change","id_field","viewpoint_id","num_new_residential_units","civil_site_plan","footprint_change","high_hazard","residential_change","commercial_educational","commercial_factory_industrial","commercial_high_hazard","commercial_institutional","commercial_mercantile","commercial_other","commercial_other_please_describe","commercial_current_use","commercial_residential","commercial_storage","credit_from_energov","enter_number_credits","community_development_review","conservation_commission_review","fire_department_review","historical_commission_review","public_works_review","traffic_parking_review","water_department_review","new_surface_parking","accessibility_plan_review","plumbing_plan_review","sanitary_plan_review","zoning_inspection_required","zoning_plan_review","accessory_dwelling_unit","electrical_plan_review"
+"17012","45 Park Ave, Cambridge, MA 02138","45 Park Ave
+Cambridge, MA 02138
+(42.3777, -71.14898)","42.377737","-71.149124","Active","2018-07-02T00:00:00.000","2018-07-03T00:00:00.000",,,"2",,,"false","Two-Family",,"false","3500","0","0","0","0","3500",,"3500","0","replace boards and railing on front and back stairs (stringers to remain)",,,"false","false",,,,,,,,,,"false","false","false","false","false","false",,"gigi construction","pulling old wood boards","Daily Removal",,"Exterior demolition in work area only.","2018-07-31T00:00:00.000",,,,,,,,,,,,,,,"One or Two Family Dwelling","true","false","Wood (Type (IV/V)",,,,,,,,,,,,,,,,,"false","false","253-143","No","17012","17012",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"false",,
+"17034","600 One Kendall Square Complex, Cambridge, MA 02142","600 One Kendall Square
+Cambridge, MA 02142
+(42.36587, -71.09127)","42.36692","-71.090257","Active","2018-07-11T00:00:00.000","2018-08-15T00:00:00.000",,,,,,,,,,"149000","17500","37500","0","17500","227500",,"149000","6000","Interior renovations to provide restrooms serving the Flat Top Johnny's restaurant.","Renovate two bathrooms on 2nd floor bldg. 600",,"false","false",,"false",,,,,,,,"false","false","false","false","false","false","Columbia Construction Company","End of work day.","Remove flooring and underlayment down to concrete slab. Remove wall base. Prep to receive new finish. Remove casework, toilet partitions, and plumbing fixtures. Maintain existing plumbing infrastructure to receive replacement plumbing fixtures. Remove wall tile and substrate down to studs. Prep Hollow Metal door to receive new finish. Remove existing ceilings, lighting, MEP device grilles and covers. Maintain existing MEP/FP infrastructure to receive replacement lighting, MEP/FP device grilles and covers.","Daily Removal",,"Minor interior demolition in work area only","2018-12-28T00:00:00.000",,,,,,,,,,,,"5","55","62083","Commercial / Mixed Use",,,"Steel/Concrete, Non-Combustible (Type I/II)",,,,,,,,,,,,,,,,,"false","false","41-29","No","17034","17034",,,,,,,,,,,,,,,,,,,,,,,,,,"true",,"true",,,,
+"17036","400 One Kendall Square Complex, Cambridge, MA 02142","400 One Kendall Square
+Cambridge, MA 02142
+(42.36587, -71.09127)","42.36665","-71.090205","Active","2018-07-11T00:00:00.000","2018-08-16T00:00:00.000",,,,,,,,,,"133988","25000","60000","0","25000","248188","318856","133988","4200","Interior Renovation to provide a new  toilet core for restrooms serving adjacently to the existing Flat Top Johnny's Restaurant.","Interior Renovation to provide a new  toilet core for restrooms serving adjacent restaurant",,"false","false",,"false",,,,,,,,"false","false","false","false","false","false","Columbia Construction Company","End of work day.","Remove flooring and underlayment to concrete slab. Remove wall base. Prep to receive new finish. Remove existing partitions, doors, windows and frames indicated. Patch and prep any damaged adjacent areas related to the removal of the partition. Remove existing fire hose and prep for installation  in new location. Remove existing ceilings, lighting, MEP device grilles, and covers. Maintain MEP infrastructure to receive replacement lighting, MEP device grilles and covers.","Daily Removal",,"Minor interior demolition in work area only","2018-11-30T00:00:00.000",,,,"true",,,,,"false","true",,"5","60","63634","Commercial / Mixed Use",,,"Steel/Concrete, Non-Combustible (Type I/II)",,,,,,,,,,,,,,,,,"false","false","41-38","No","17036","17036",,,,,,,,,,,,,,,,,,,,,,,,,,"true","false","true",,,,
+"17038","33 Line St, Unit 1, Cambridge, MA 02138","33 Line St
+
+
+
+--- Dataset: cambridge-crime-reports ---
+Source File: cambridge-crime-reports_20250609_162621.csv
+"file_number","date_of_report","crime_date_time","crime","reporting_area","neighborhood","location"
+"2009-00520","2009-01-21T16:32:00.000","01/18/2009 22:00 - 01/19/2009 07:00","Mal. Dest. Property","503","Cambridgeport","300 Sidney St, Cambridge, MA"
+"2009-00521","2009-01-21T16:12:00.000","01/21/2009 15:40 - 15:55","Peeping & Spying","504","Cambridgeport","0 Pearl St, Cambridge, MA"
+"2009-00528","2009-01-21T18:50:00.000","01/21/2009 14:23 - 14:53","Shoplifting","505","Cambridgeport","700 Memorial Dr, Cambridge, MA"
+"2009-00533","2009-01-22T01:38:00.000","01/21/2009 18:45 - 23:30","Hit and Run","411","The Port","Bishop Allen Dr & Columbia St, Cambridge, MA"
+"2009-00535","2009-01-22T03:52:00.000","01/22/2009 03:52 - 03:56","Commercial Break","411","The Port","100 Prospect St, Cambridge, MA"
+"2009-00536","2009-01-22T06:53:00.000","01/22/2009 06:53","Warrant Arrest","301","Inman/Harrington","900 Cambridge St, Cambridge, MA"
+"2009-00545","2009-01-22T10:07:00.000","01/22/2009 08:45 - 09:50","Larceny from Building","903","Peabody","0 Linnaean St, Cambridge, MA"
+"2009-00551","2009-01-22T14:29:00.000","01/22/2009 12:00 - 14:30","Larceny from MV","611","Mid-Cambridge","100 Prescott St, Cambridge, MA"
+"2009-00564","2009-01-22T21:43:00.000","01/22/2009 21:43","Disorderly","411","The Port","500 Massachusetts Ave, Cambridge, MA"
+"2009-00573","2009-01-23T10:16:00.000","01/21/2009 10:00 - 01/22/2009 09:00","Hit and Run","603","Mid-Cambridge","Inman Pl & West Pl, Cambridge, MA"
+
+
+
+--- Dataset: cambridge-housing-code-violations ---
+Source File: cambridge-housing-code-violations_20250609_162528.csv
+"recordid","fulladdress","parcel_number","code","description","corrective_action","correction_required_by","status_x","application_submit_date","issue_date","longitude","latitude","point"
+"28159","",,,"",,,,"11/30/2018","11/30/2018",,,
+"28323","",,,"",,,,"12/03/2018","12/03/2018",,,
+"28347","795 Massachusetts Ave, Cambridge, MA 02139","118-33",,"",,,,"12/03/2018","12/03/2018","-71.1058","42.367",
+"28392","831 Massachusetts Ave, Cambridge, MA 02139","118-30",,"",,,,"12/03/2018","12/03/2018","-71.1065","42.3672",
+"28408","",,,"",,,,"12/03/2018","12/03/2018",,,
+"28410","77 Park Ave, Cambridge, MA 02138","253-41",,"",,,,"12/03/2018","07/15/2021","-71.1497","42.3772",
+"28516","",,,"",,,,"12/04/2018","12/04/2018",,,
+"28517","77 Park Ave, Unit 1, Cambridge, MA 02138","253-41-1",,"",,,,"12/04/2018","12/04/2018","-71.1497","42.3772",
+"28855","901 Massachusetts Ave, Cambridge, MA 02139","117-28",,"",,,,"12/07/2018","12/19/2018","-71.1084","42.3684",
+"28987","50 Follen St, Unit 106, Cambridge, MA 02138","172-65-106",,"",,,,"12/10/2018","01/02/2020","-71.1212","42.3781",
+
+
+
+--- Dataset: cambridge-master-addresses-list ---
+Source File: cambridge-master-addresses-list_20250609_162635.csv
+"address_id","full_addr","street_number","stname","building_id","maplot","latitude","longitude","type","zip_code","neighborhood","election_ward","election_precinct","election_polling_address","representation_district","senate_district","cad_reporting_district","police_sector","police_car_route","police_walking_route","police_neighborhood","police_business_district","commercial_district","census_tract_2010","census_block_group_2010","census_block_2010","census_block_id_2010","street_sweeping_district","census_tract_2020","census_block_group_2020","census_block_2020","census_block_id_2020"
+"3767","18 Clary St","18","Clary St","339-23","83-69","42.3740014002693","-71.0983444931957","BUILDING","2139","Wellington-Harrington","6","1","344 Broadway","26th Middlesex","Middlesex and Suffolk","302","1","3R","3A","3","3","","352700","3","3000","250173527003000","A","352700","1","1005","250173527001005"
+"3315","16 Springfield St","16","Springfield St","343-5","83-5","42.3741907151639","-71.1005282279075","BUILDING","2139","Wellington-Harrington","6","1","344 Broadway","26th Middlesex","Middlesex and Suffolk","302","1","3R","3A","3","3","Inman Square","352700","3","3003","250173527003003","A","352700","1","1008","250173527001008"
+"524","26 Soden St","26","Soden St","572-6","124-16","42.366136339365","-71.1084071678143","BUILDING","2139","Riverside","4","2","838 Massachusetts Ave","25th Middlesex","Middlesex and Suffolk","702","3","6R","7A","7","6","","353500","1","1001","250173535001001","E","359400","4","4001","250173594004001"
+"525","411 Franklin St","411","Franklin St","558-20","119-65","42.3667922021951","-71.1086705014988","BUILDING","2139","Riverside","4","2","838 Massachusetts Ave","25th Middlesex","Middlesex and Suffolk","702","3","6R","7A","7","6","","353500","1","1000","250173535001000","E","359400","4","4000","250173594004000"
+"559","348 Franklin St","348","Franklin St","594-1","124-63","42.3660093766347","-71.1078285387193","BUILDING","2139","Riverside","4","2","838 Massachusetts Ave","25th Middlesex","Middlesex and Suffolk","702","3","6R","7A","7","6","","353500","1","1005","250173535001005","E","359400","4","4003","250173594004003"
+"560","466 Green St","466","Green St","558-22","119-87","42.3668286244119","-71.1078260257809","BUILDING","2139","Riverside","4","2","838 Massachusetts Ave","25th Middlesex","Middlesex and Suffolk","702","3","6R","7A","7","6","","353500","1","1000","250173535001000","E","359400","4","4000","250173594004000"
+"561","332 Franklin St","332","Franklin St","594-3","124-48","42.3657410845248","-71.1074225437291","BUILDING","2139","Riverside","4","2","838 Massachusetts Ave","25th Middlesex","Middlesex and Suffolk","702","3","6R","7A","7","6","","353500","1","1005","250173535001005","E","359400","4","4003","250173594004003"
+"564","806 Massachusetts Ave","806","Massachusetts Ave","575-2","119-23","42.3667524208206","-71.1062210747102","BUILDING","2139","Riverside","4","2","838 Massachusetts Ave","25th Middlesex","Middlesex and Suffolk","701","3","6R","C12","7","4","Central Square","353000","1","1000","250173530001000","E","359400","5","5004","250173594005004"
+"566","770 Massachusetts Ave","770","Massachusetts Ave","575-4","119-94","42.3664623495872","-71.1058613020728","BUILDING","2139","Riverside","4","2","838 Massachusetts Ave","25th Middlesex","Middlesex and Suffolk","701","3","6R","C12","7","4","Central Square","353000","1","1000","250173530001000","E","359400","5","5004","250173594005004"
+"568","5 Western Ave","5","Western Ave","604-4","105-61","42.3653157950362","-71.1054669917661","BUILDING","2139","Riverside","4","2","838 Massachusetts Ave","25th Middlesex","Middlesex and Suffolk","705","3","6R","7A","7","4","Central Square","353500","1","1003","250173535001003","E","359400","4","4004","250173594004004"
+
+
+
+--- Dataset: cambridge-master-intersections-list ---
+Source File: cambridge-master-intersections-list_20250609_162643.csv
+"nodenumber","intersection","intersectingstreetcount","zip_code","longitude","latitude","neighborhood","election_ward","election_precinct","election_polling_address","representation_district","senate_district","cad_reporting_district","police_sector","police_car_route","police_walking_route","police_neighborhood","police_business_district","street_sweeping_district","census_tract_2010","census_block_group_2010","census_block_2010","census_block_id_2010","commercial_district","census_tract_2020","census_block_group_2020","census_block_2020","census_block_id_2020"
+"2","Alewife Brook Pkwy & Matignon Rd","2","2140","-71.1344578176466","42.4026228911718","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2000","250173550002000",,"355000","2","2000","250173550002000"
+"3","Alewife Brook Pkwy & Murray Hill Rd","2","2140","-71.134776160862","42.4022505735075","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2000","250173550002000",,"355000","2","2000","250173550002000"
+"4","Matignon Rd & Murray Hill Rd","2","2140","-71.1326007975048","42.4017313073942","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2005","250173550002005",,"355000","2","2004","250173550002004"
+"8","Muller Ave & Murray Hill Rd","2","2140","-71.1330126524948","42.4014002891559","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2006","250173550002006",,"355000","2","2006","250173550002006"
+"10","Foch St & Gladstone St","2","2140","-71.1345519878161","42.4013071699322","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2002","250173550002002",,"355000","2","2002","250173550002002"
+"11","Churchill Ave & Matignon Rd","2","2140","-71.1318314649434","42.4010962621529","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2006","250173550002006",,"355000","2","2006","250173550002006"
+"13","Foch St & Newman St","2","2140","-71.1338937011567","42.4010128360048","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2003","250173550002003",,"355000","2","2003","250173550002003"
+"14","Muller Ave & Richard Ave","2","2140","-71.13299939754","42.4009921786829","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2002","250173550002002",,"355000","2","2002","250173550002002"
+"2205","Alewife Brook Pkwy & Massachusetts Ave","2","2140","-71.1360014838644","42.4009464752345","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","1","1000","250173550001000",,"355000","1","1001","250173550001001"
+"2143","Columbus Ave & Massachusetts Ave","2","2140","-71.1354895393922","42.4007051618151","North Cambridge","11","3","50 Churchhill Ave","24th Middlesex","Second Middlesex","1104","5","11R","11D","11","9","G","355000","2","2010","250173550002010","Porter Square/North Massachusetts Ave","355000","2","2009","250173550002009"
+
+
+
+--- Dataset: cambridge-sanitary-inspections ---
+Source File: cambridge-sanitary-inspections_20250609_162525.csv
+"case_number","address","parcel","establishment_name","code_number","code_description","inspector_comments","case_open_date","case_closed_date","date_cited","date_corrected","code_case_status","geocoded_column"
+"145882","795 Massachusetts Ave, Cambridge, MA 02139","118-33","","5-101.11 * ","Drinking Water from and Approved Sources","","2021-09-23T00:00:00.000","2021-09-24T00:00:00.000","2021-09-23T00:00:00.000",,"Complete","POINT (-71.105753 42.367045)"
+"146314","123 Fresh Pond Pkwy, Unit 123, Cambridge, MA 02138","259-15-123","","","","","2021-09-27T00:00:00.000","2022-02-04T00:00:00.000","2021-09-27T00:00:00.000",,"Complete","POINT (-71.144399 42.380634)"
+"146580","25 Columbia St, Cambridge, MA 02139","","","","","","2021-09-28T00:00:00.000","2021-09-28T00:00:00.000","2021-09-28T00:00:00.000",,"Complete","POINT (-71.099687 42.364068)"
+"149816","","","White Hall @ Lesley University","2-201.11-.14 *","Proper, Adequate Handwashing","","2021-10-18T00:00:00.000","2021-10-18T00:00:00.000","2021-10-18T00:00:00.000",,"Complete",
+"149816","","","White Hall @ Lesley University","6-501.111 * ","Controlling Pests","","2021-10-18T00:00:00.000","2021-10-18T00:00:00.000","2021-10-18T00:00:00.000",,"Complete",
+"149816","","","White Hall @ Lesley University","3-501.16 *","Potentially Hazardous Food, Hot and Cold Holding","","2021-10-18T00:00:00.000","2021-10-18T00:00:00.000","2021-10-18T00:00:00.000",,"Complete",
+"161658","","","1369 Coffeehouse","2-201.11-.14 *","Proper, Adequate Handwashing","","2022-02-03T00:00:00.000","2022-02-03T00:00:00.000","2022-02-03T00:00:00.000",,"Complete",
+"161658","","","1369 Coffeehouse"," 6-501.12-.13 ","Cleaning, Frequency and Restrictions for Floors, Walls, and Ceiling","","2022-02-03T00:00:00.000","2022-02-03T00:00:00.000","2022-02-03T00:00:00.000",,"Complete",
+"161658","","","1369 Coffeehouse","3-501.16 *","Potentially Hazardous Food, Hot and Cold Holding","Meatballs found at 98F in warmer","2022-02-03T00:00:00.000","2022-02-03T00:00:00.000","2022-02-03T00:00:00.000",,"Complete",
+"161658","","","1369 Coffeehouse","3-304.14 ","Wiping Cloths, Use Limitation","cloth found sitting out on cutting board.","2022-02-03T00:00:00.000","2022-02-03T00:00:00.000","2022-02-03T00:00:00.000",,"Complete",
+
+
+

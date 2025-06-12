@@ -21,6 +21,32 @@ trait Mappable
     }
 
     /**
+     * Get a human-readable name for the model.
+     * Example: "Crime Data", "311 Cases".
+     */
+    abstract public static function getHumanName(): string;
+
+    /**
+     * Get the CSS class for the map icon.
+     */
+    abstract public static function getIconClass(): string;
+
+    /**
+     * Get the type string used for styling data points on the map (e.g., in DataMapDisplay).
+     */
+    abstract public static function getAlcivartechTypeForStyling(): string;
+
+    /**
+     * Get the name of the latitude field for this model.
+     */
+    abstract public static function getLatitudeField(): string;
+
+    /**
+     * Get the name of the longitude field for this model.
+     */
+    abstract public static function getLongitudeField(): string;
+
+    /**
      * Get the name of the date field used for filtering by date ranges.
      */
     abstract public static function getDateField(): string;
@@ -64,7 +90,7 @@ trait Mappable
             return $suggestions['contextData'];
         }
         Log::warning("Mappable Trait: No 'contextData' suggestions found for model " . static::class);
-        return "Dataset of " . static::getModelNameForHumans() . "."; // Basic fallback
+        return "Dataset of " . static::getHumanName() . "."; // Use new abstract method
     }
 
     /**
@@ -125,7 +151,7 @@ trait Mappable
             'type' => 'function',
             'function' => [
                 'name' => 'generate_data_filters',
-                'description' => 'Generate filters for the data query about ' . static::getModelNameForHumans() . '. Use the properties schema for available filter fields and their types. Context: ' . $contextData,
+                'description' => 'Generate filters for the data query about ' . static::getHumanName() . '. Use the properties schema for available filter fields and their types. Context: ' . $contextData, // Use new abstract method
                 'parameters' => [
                     'type' => 'object',
                     'properties' => [
@@ -139,23 +165,6 @@ trait Mappable
                 ],
             ],
         ];
-    }
-
-    /**
-     * Get a human-readable name for the model.
-     * Example: "Crime Data", "311 Cases".
-     */
-    public static function getModelNameForHumans(): string
-    {
-        // Get the short class name (e.g., "ThreeOneOneCase" from "App\Models\ThreeOneOneCase")
-        $className = (new \ReflectionClass(static::class))->getShortName();
-        // Add spaces before capital letters (e.g., "Three One One Case")
-        $humanReadable = preg_replace('/(?<!^)([A-Z])/', ' $1', $className);
-        // Replace underscores with spaces if any were part of the class name (less common for class names)
-        $humanReadable = str_replace('_', ' ', $humanReadable);
-        // Capitalize words if needed (though preg_replace usually handles this well for CamelCase)
-        // $humanReadable = ucwords(strtolower($humanReadable)); // Optional: if you want "Three one one case" -> "Three One One Case"
-        return trim($humanReadable);
     }
 
     /**

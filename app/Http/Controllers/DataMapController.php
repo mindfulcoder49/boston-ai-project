@@ -6,132 +6,68 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use GuzzleHttp\Client;
 use Illuminate\Database\Eloquent\Builder;
-use App\Models\Concerns\Mappable; // Assuming Mappable trait/interface exists
+use App\Models\Concerns\Mappable;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str; // Added
-use Illuminate\Support\Facades\Auth; // Added
-use Carbon\Carbon; // Added
-use App\Models\User; // Ensure User model is imported if not already
-use Illuminate\Support\Facades\Schema; // For schema checks
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use App\Models\User;
+use Illuminate\Support\Facades\Schema;
 
 class DataMapController extends Controller
 {
-    // Consolidate all model configurations here
-    protected array $modelConfigurations = [];
+    // Registry of model keys to their class strings
+    protected array $modelRegistry = [];
 
     public function __construct()
     {
-        $this->modelConfigurations = [
-            '311_cases' => [
-                'modelClass' => \App\Models\ThreeOneOneCase::class,
-                'humanName' => '311 Cases',
-                'iconClass' => 'case-div-icon no-photo',
-                'alcivartech_type_for_styling' => '311 Case', // Type used for styling in DataMapDisplay
-                'latField' => 'latitude',
-                'lngField' => 'longitude',
-                // dateField, externalIdField, filterFieldsDescription, searchableColumns will be fetched from Mappable trait
-            ],
-            'property_violations' => [
-                'modelClass' => \App\Models\PropertyViolation::class,
-                'humanName' => 'Property Violations',
-                'iconClass' => 'property-violation-div-icon',
-                'alcivartech_type_for_styling' => 'Property Violation',
-                'latField' => 'latitude', // Assuming parsed from 'location'
-                'lngField' => 'longitude', // Assuming parsed from 'location'
-            ],
-            'food_inspections' => [
-                'modelClass' => \App\Models\FoodInspection::class,
-                'humanName' => 'Food Inspections',
-                'iconClass' => 'food-inspection-div-icon',
-                'alcivartech_type_for_styling' => 'Food Inspection',
-                'latField' => 'latitude',
-                'lngField' => 'longitude',
-            ],
-            'construction_off_hours' => [
-                'modelClass' => \App\Models\ConstructionOffHour::class,
-                'humanName' => 'Construction Off Hours',
-                'iconClass' => 'construction-off-hour-div-icon',
-                'alcivartech_type_for_styling' => 'Construction Off Hour',
-                'latField' => 'latitude',
-                'lngField' => 'longitude',
-            ],
-            'building_permits' => [
-                'modelClass' => \App\Models\BuildingPermit::class,
-                'humanName' => 'Building Permits',
-                'iconClass' => 'permit-div-icon', // or building-permit-div-icon
-                'alcivartech_type_for_styling' => 'Building Permit',
-                'latField' => 'y_latitude',
-                'lngField' => 'x_longitude',
-            ],
-            'crime' => [
-                'modelClass' => \App\Models\CrimeData::class,
-                'humanName' => 'Boston Crime',
-                'iconClass' => 'crime-div-icon',
-                'alcivartech_type_for_styling' => 'Crime',
-                'latField' => 'lat',
-                'lngField' => 'long',
-            ],
-            'everett_crime' => [
-                'modelClass' => \App\Models\EverettCrimeData::class,
-                'humanName' => 'Everett Crime',
-                'iconClass' => 'crime-div-icon', // Shares icon style with Boston Crime in UI elements
-                'alcivartech_type_for_styling' => 'Crime', // Shares styling type with Boston Crime on map
-                'latField' => 'incident_latitude',
-                'lngField' => 'incident_longitude',
-            ],
+        $this->modelRegistry = [
+            '311_cases' => \App\Models\ThreeOneOneCase::class,
+            'property_violations' => \App\Models\PropertyViolation::class,
+            'food_inspections' => \App\Models\FoodInspection::class,
+            'construction_off_hours' => \App\Models\ConstructionOffHour::class,
+            'building_permits' => \App\Models\BuildingPermit::class,
+            'crime' => \App\Models\CrimeData::class,
+            'everett_crime' => \App\Models\EverettCrimeData::class,
         ];
 
-        // Dynamically add Mappable trait based properties to each configuration
-        foreach ($this->modelConfigurations as $key => &$config) {
-            $modelInstance = app($config['modelClass']);
-            if (in_array(Mappable::class, class_uses_recursive($modelInstance))) {
-                $config['dateField'] = $modelInstance::getDateField();
-                $config['externalIdField'] = $modelInstance::getExternalIdName();
-                $config['filterFieldsDescription'] = $modelInstance::getFilterableFieldsDescription();
-                $config['searchableColumns'] = $modelInstance::getSearchableColumns();
-                // modelNameForHumans from Mappable can override humanName if desired, or be used as a fallback
-                $config['modelNameForHumansMappable'] = $modelInstance::getModelNameForHumans();
-            } else {
-                // Log error or handle models not using Mappable if they are expected to
-                Log::error("Model {$config['modelClass']} for dataType '{$key}' does not use the Mappable trait.");
-                // Unset or mark as invalid to prevent issues later
-                // For now, we assume all configured models use Mappable for these fields.
+        // Validate that all registered models use the Mappable trait
+        foreach ($this->modelRegistry as $key => $class) {
+            if (!class_exists($class) || !in_array(Mappable::class, class_uses_recursive($class))) {
+                Log::error("Model class {$class} for key '{$key}' either does not exist or does not use the Mappable trait. Please ensure it's correctly configured.");
+                // Optionally, unset $this->modelRegistry[$key] or throw an exception
+                // For now, we'll log an error. This should be addressed during development.
             }
         }
     }
 
-
-    // Removed $modelMapping, will use $this->modelConfigurations['modelClass']
-    // Removed MODELS constant, lat/lng fields are now in $modelConfigurations
-
     public function getModelMapping(): array
     {
-        // Return a simplified mapping if needed elsewhere, or adjust consumers
-        // For now, this returns model keys to model class strings, similar to old $modelMapping
-        return array_map(fn($config) => $config['modelClass'], $this->modelConfigurations);
+        return $this->modelRegistry;
     }
 
     public function getModelClassForDataType(string $dataType): ?string
     {
-        if (!isset($this->modelConfigurations[$dataType])) {
+        if (!isset($this->modelRegistry[$dataType])) {
             abort(404, "Data type '{$dataType}' not found or not configured.");
         }
-        $modelClass = $this->modelConfigurations[$dataType]['modelClass'];
+        $modelClass = $this->modelRegistry[$dataType];
 
-        if (!in_array(Mappable::class, class_uses_recursive($modelClass))) {
-            abort(500, "Model for {$dataType} does not use the Mappable trait/interface.");
+        // This check is now also in constructor, but good for safety here too.
+        if (!class_exists($modelClass) || !in_array(Mappable::class, class_uses_recursive($modelClass))) {
+            abort(500, "Model for {$dataType} ('{$modelClass}') does not exist or use the Mappable trait.");
         }
         return $modelClass;
     }
 
-    // Refactored to accept a user context
-    public function getMinDateForEffectiveUser(string $dataType, ?\App\Models\User $userContext = null)
+    public function getMinDateForEffectiveUser(string $dataTypeOrModelClass, ?\App\Models\User $userContext = null)
     {
-        $effectiveUser = $userContext ?: Auth::user(); // Default to current authenticated user if none provided
+        // $dataTypeOrModelClass is not strictly needed here if tier logic is global.
+        // Kept for signature consistency, might be used if tier rules become model-specific.
+        $effectiveUser = $userContext ?: Auth::user();
         $tierMinDate = null;
 
         if (!$effectiveUser) {
-            // Guest user or no user context for a non-public scenario
             return Carbon::now()->subMonths(1); // Default guest access: 1 month
         }
 
@@ -143,24 +79,50 @@ class DataMapController extends Controller
         } elseif ($effectiveTier === 'basic') {
             $tierMinDate = Carbon::now()->subMonths(6);
         } elseif ($effectiveTier === 'pro') {
-            $tierMinDate = null; // Pro users have no date restriction from tier
+            $tierMinDate = null; 
         } else {
-            // Fallback for any unknown tier
             $tierMinDate = Carbon::now()->subMonths(1);
         }
         
         return $tierMinDate;
     }
 
+    private function getDataTypeConfig(string $modelClass): array
+    {
+        if (!class_exists($modelClass) || !in_array(Mappable::class, class_uses_recursive($modelClass))) {
+            Log::error("Cannot get data type config for non-mappable model: {$modelClass}");
+            return []; // Or throw an exception
+        }
+        $filterDesc = $modelClass::getFilterableFieldsDescription();
+        if (is_string($filterDesc)) {
+            try {
+                $filterDesc = json_decode($filterDesc, true, 512, JSON_THROW_ON_ERROR);
+            } catch (\JsonException $e) {
+                Log::error("Failed to decode filterFieldsDescription for {$modelClass}: " . $e->getMessage());
+                $filterDesc = [];
+            }
+        }
+
+        return [
+            'humanName' => $modelClass::getHumanName(),
+            'iconClass' => $modelClass::getIconClass(),
+            'alcivartech_type_for_styling' => $modelClass::getAlcivartechTypeForStyling(),
+            'latitudeField' => $modelClass::getLatitudeField(), // Note: This is the original field name
+            'longitudeField' => $modelClass::getLongitudeField(), // Note: This is the original field name
+            'dateField' => $modelClass::getDateField(),
+            'externalIdField' => $modelClass::getExternalIdName(),
+            'filterFieldsDescription' => $filterDesc,
+            'searchableColumns' => $modelClass::getSearchableColumns(),
+            // 'modelNameForHumansMappable' is no longer needed as getHumanName is primary
+        ];
+    }
+
     public function index(Request $request, string $dataType)
     {
-        if (!isset($this->modelConfigurations[$dataType])) {
-            abort(404, "Data type '{$dataType}' not configured.");
-        }
-        $config = $this->modelConfigurations[$dataType];
-        $modelClass = $config['modelClass'];
+        $modelClass = $this->getModelClassForDataType($dataType);
+        $config = $this->getDataTypeConfig($modelClass);
 
-        $tierMinDate = $this->getMinDateForEffectiveUser($dataType, Auth::user());
+        $tierMinDate = $this->getMinDateForEffectiveUser($modelClass, Auth::user());
 
         $query = $modelClass::query();
         if ($tierMinDate) {
@@ -170,29 +132,27 @@ class DataMapController extends Controller
         $limit = $request->input('limit', 1000);
         $query->orderBy($config['dateField'], 'desc');
         $initialData = $query->limit(max(1, min($limit, 100000)))->get();
-        $initialData = $this->enrichData($initialData, $dataType);
+        $initialData = $this->enrichData($initialData, $dataType, $modelClass);
 
-        // Pass the full configuration for this dataType
+
+        $allModelConfigurationsForToolbar = [];
+        foreach ($this->modelRegistry as $key => $class) {
+            if (class_exists($class) && in_array(Mappable::class, class_uses_recursive($class))) {
+                 $allModelConfigurationsForToolbar[] = [
+                    'dataType' => $key,
+                    'name' => $class::getHumanName(),
+                    'iconClass' => $class::getIconClass(),
+                ];
+            }
+        }
+        
         $pageProps = [
             'initialData' => $initialData,
             'filters' => $request->all(),
-            'dataType' => $dataType, // modelKey
-            // Specific fields are now part of dataTypeConfig
-            // 'dateField' => $config['dateField'],
-            // 'externalIdField' => $config['externalIdField'],
-            // 'filterFieldsDescription' => $config['filterFieldsDescription'],
-            // 'searchableColumns' => $config['searchableColumns'],
-            'dataTypeConfig' => $config, // Pass the whole config for this dataType
+            'dataType' => $dataType,
+            'dataTypeConfig' => $config,
+            'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar,
         ];
-        // For MapToolbar, we need all model configs for the links
-        $pageProps['allModelConfigurationsForToolbar'] = array_map(function($key, $conf) {
-            return [
-                'dataType' => $key, // modelKey
-                'name' => $conf['humanName'],
-                'iconClass' => $conf['iconClass'],
-            ];
-        }, array_keys($this->modelConfigurations), $this->modelConfigurations);
-
 
         return Inertia::render('DataMap', $pageProps);
     }
@@ -202,89 +162,96 @@ class DataMapController extends Controller
         $allDataTypeDetails = [];
         $initialModelKey = null;
         $initialDataSets = [];
-        $initialFilters = ['limit' => 100];
+        $initialFilters = ['limit' => 100]; // Default initial filter
 
-        if (!empty($this->modelConfigurations)) {
-            $initialModelKey = array_key_first($this->modelConfigurations);
+        if (!empty($this->modelRegistry)) {
+            $initialModelKey = array_key_first($this->modelRegistry);
         }
 
-        foreach ($this->modelConfigurations as $modelKey => $config) {
-            $modelClass = $config['modelClass'];
-            if (!in_array(Mappable::class, class_uses_recursive($modelClass))) {
-                Log::warning("Skipping data type {$modelKey} in combinedIndex as its model class {$modelClass} is not Mappable.");
+        foreach ($this->modelRegistry as $modelKey => $modelClassString) {
+            if (!class_exists($modelClassString) || !in_array(Mappable::class, class_uses_recursive($modelClassString))) {
+                Log::warning("Skipping data type {$modelKey} in combinedIndex as its model class {$modelClassString} is not Mappable or does not exist.");
                 continue;
             }
-
-            // Use the full config, Mappable trait properties are already merged in constructor
-            $allDataTypeDetails[$modelKey] = $config;
-            // Ensure 'modelNameForHumans' is set, prefer 'humanName' from config, fallback to Mappable's
-            $allDataTypeDetails[$modelKey]['modelNameForHumans'] = $config['humanName'] ?? $config['modelNameForHumansMappable'] ?? Str::title(str_replace('_', ' ', $modelKey));
-
+            $allDataTypeDetails[$modelKey] = $this->getDataTypeConfig($modelClassString);
 
             if ($modelKey === $initialModelKey) {
-                $query = $modelClass::query();
-                $tierMinDate = $this->getMinDateForEffectiveUser($modelKey, Auth::user());
+                $config = $allDataTypeDetails[$initialModelKey];
+                $query = $modelClassString::query();
+                $tierMinDate = $this->getMinDateForEffectiveUser($modelClassString, Auth::user());
                 if ($tierMinDate) {
                     $query->where($config['dateField'], '>=', $tierMinDate->toDateString());
                 }
                 if (isset($initialFilters['limit'])) {
-                    $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
+                     $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
                 }
-                $dataForInitialType = $this->enrichData($query->get(), $modelKey);
+                $query->orderBy($config['dateField'], 'desc');
+                $dataForInitialType = $this->enrichData($query->get(), $initialModelKey, $modelClassString);
                 if (!$dataForInitialType->isEmpty()) {
                     $initialDataSets[$initialModelKey] = $dataForInitialType;
                 }
             }
         }
-
-        if (!$initialModelKey && !empty($allDataTypeDetails)) {
-            $initialModelKey = array_key_first($allDataTypeDetails);
-            if (empty($initialDataSets[$initialModelKey]) && $initialModelKey) {
-                $config = $allDataTypeDetails[$initialModelKey];
-                $modelClass = $config['modelClass'];
-                $query = $modelClass::query();
-                $tierMinDateOnFallback = $this->getMinDateForEffectiveUser($initialModelKey, Auth::user());
-                if ($tierMinDateOnFallback) {
-                    $query->where($config['dateField'], '>=', $tierMinDateOnFallback->toDateString());
+        
+        // Fallback if initialModelKey had no data
+        if ($initialModelKey && empty($initialDataSets[$initialModelKey]) && !empty($allDataTypeDetails)) {
+             // Try to find the first model key from $allDataTypeDetails that might have data or is configured
+            $firstAvailableModelKey = array_key_first($allDataTypeDetails);
+            if ($firstAvailableModelKey && $firstAvailableModelKey !== $initialModelKey) { // if different from original initialModelKey
+                $initialModelKey = $firstAvailableModelKey; // Update initialModelKey
+                 if (empty($initialDataSets[$initialModelKey])) { // Check if data needs to be fetched
+                    $config = $allDataTypeDetails[$initialModelKey];
+                    $modelClassString = $this->modelRegistry[$initialModelKey];
+                    $query = $modelClassString::query();
+                    $tierMinDateOnFallback = $this->getMinDateForEffectiveUser($modelClassString, Auth::user());
+                    if ($tierMinDateOnFallback) {
+                        $query->where($config['dateField'], '>=', $tierMinDateOnFallback->toDateString());
+                    }
+                    if (isset($initialFilters['limit'])) {
+                        $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
+                    }
+                    $query->orderBy($config['dateField'], 'desc');
+                    $dataForFallbackInitialType = $this->enrichData($query->get(), $initialModelKey, $modelClassString);
+                    if (!$dataForFallbackInitialType->isEmpty()) {
+                        $initialDataSets[$initialModelKey] = $dataForFallbackInitialType;
+                    }
                 }
-                if (isset($initialFilters['limit'])) {
-                    $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
-                }
-                $dataForFallbackInitialType = $this->enrichData($query->get(), $initialModelKey);
-                if (!$dataForFallbackInitialType->isEmpty()) {
-                    $initialDataSets[$initialModelKey] = $dataForFallbackInitialType;
-                }
+            } elseif (!$firstAvailableModelKey) { // If $allDataTypeDetails was empty or became empty
+                 $initialModelKey = null;
             }
         }
-        
-        // For MapToolbar in CombinedDataMap page
-        $allModelConfigurationsForToolbar = array_map(function($key, $conf) {
-            return [
-                'dataType' => $key, // modelKey
-                'name' => $conf['humanName'],
-                'iconClass' => $conf['iconClass'],
-            ];
-        }, array_keys($this->modelConfigurations), $this->modelConfigurations);
+
+
+        $allModelConfigurationsForToolbar = [];
+        foreach ($this->modelRegistry as $key => $class) {
+             if (class_exists($class) && in_array(Mappable::class, class_uses_recursive($class))) {
+                $allModelConfigurationsForToolbar[] = [
+                    'dataType' => $key,
+                    'name' => $class::getHumanName(),
+                    'iconClass' => $class::getIconClass(),
+                ];
+            }
+        }
 
         return Inertia::render('CombinedDataMap', [
-            'modelMapping' => $this->getModelMapping(), // Keep this for CombinedDataMapComponent's availableModels computed prop
-            'initialDataType' => $initialModelKey, // This is the initial model key
+            'modelMapping' => $this->getModelMapping(),
+            'initialDataType' => $initialModelKey,
             'initialDataSets' => $initialDataSets,
             'initialFilters' => $initialFilters,
-            'allDataTypeDetails' => $allDataTypeDetails, // This now contains the richer configuration for each model
-            'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar, // For MapToolbar
+            'allDataTypeDetails' => $allDataTypeDetails,
+            'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar,
         ]);
     }
 
+// ... applyQueryFilters remains largely the same, it already uses $modelClass::getDateField() etc. ...
     public function applyQueryFilters(Builder $query, string $modelClass, array $filters, ?User $userContext)
     {
         $dateField = $modelClass::getDateField();
         $searchableColumns = $modelClass::getSearchableColumns();
-        $tierMinDate = $this->getMinDateForEffectiveUser($modelClass, $userContext); // Pass modelClass for context if needed by getMinDate
+        $tierMinDate = $this->getMinDateForEffectiveUser($modelClass, $userContext); 
 
         $processedKeys = [];
 
-        // Apply tier-based date restriction first
         if ($tierMinDate) {
             $query->where($dateField, '>=', $tierMinDate->toDateString());
         }
@@ -312,8 +279,6 @@ class DataMapController extends Controller
                 $processedKeys[] = 'start_date';
                 continue;
             } elseif ($key === 'end_date' && !empty($value) && !isset($filters['start_date'])) {
-                // If tierMinDate is set, query already has $dateField >= $tierMinDate
-                // So, we just add the upper bound.
                 $query->where($dateField, '<=', $value);
                 $processedKeys[] = 'end_date';
                 continue;
@@ -325,10 +290,6 @@ class DataMapController extends Controller
                 $correspondingSuffix = $isDateRange ? '_end' : '_max';
 
                 $baseColumn = Str::beforeLast($key, $suffix);
-                // Ensure baseColumn is a valid column for the model to prevent SQL injection if keys are user-generated
-                // This check might be too simplistic if column names can be complex.
-                // Consider checking against $modelClass::getFillable() or Schema::getColumnListing if necessary,
-                // but filters should ideally come from predefined structures (like getFilterableFieldsDescription).
                 if (!Schema::hasColumn($modelClass::make()->getTable(), $baseColumn)) {
                     Log::warning("Invalid base column '{$baseColumn}' derived from filter key '{$key}' for model {$modelClass}. Skipping.");
                     continue;
@@ -400,7 +361,6 @@ class DataMapController extends Controller
             }
             
             if (!in_array($key, $processedKeys)) {
-                 // Again, ensure $key is a valid column name before using it directly in a query.
                 if (!Schema::hasColumn($modelClass::make()->getTable(), $key)) {
                     Log::warning("Invalid filter key '{$key}' (not a column) for model {$modelClass}. Skipping.");
                     continue;
@@ -421,20 +381,18 @@ class DataMapController extends Controller
 
         if (!empty($filters['search_term']) && !empty($searchableColumns)) {
             $searchTerm = $filters['search_term'];
-            $query->where(function ($q) use ($searchableColumns, $searchTerm) {
+            $query->where(function ($q) use ($searchableColumns, $searchTerm, $modelClass) { // Added $modelClass for logging
                 foreach ($searchableColumns as $col) {
-                    // Ensure $col is a valid column before using in OR WHERE
-                    // This check might be redundant if $searchableColumns is always sourced from valid schema columns.
-                    // if (Schema::hasColumn(app($modelClass)->getTable(), $col)) {
+                     if (Schema::hasColumn(app($modelClass)->getTable(), $col)) { // Check column existence
                          $q->orWhere($col, 'LIKE', '%' . $searchTerm . '%');
-                    // } else {
-                    //    Log::warning("Searchable column '{$col}' not found in table for model {$modelClass}. Skipping in search_term.");
-                    //}
+                     } else {
+                        Log::warning("Searchable column '{$col}' not found in table for model {$modelClass}. Skipping in search_term.");
+                    }
                 }
             });
         }
-        // Note: The 'limit' filter is handled by the calling method (getData or SavedMapController@view) after this.
     }
+
 
     public function getData(Request $request, string $dataType)
     {
@@ -443,7 +401,7 @@ class DataMapController extends Controller
         
         $query = $modelClass::query();
         $filters = $request->input('filters', []);
-        $currentUser = Auth::user(); // User context for getData is always the authenticated user
+        $currentUser = Auth::user();
 
         $this->applyQueryFilters($query, $modelClass, $filters, $currentUser);
 
@@ -456,29 +414,30 @@ class DataMapController extends Controller
         Log::info("Query bindings: " . json_encode($query->getBindings()));
         $data = $query->get();
 
-        $data = $this->enrichData($data, $dataType);
+        $data = $this->enrichData($data, $dataType, $modelClass);
 
         return response()->json(['data' => $data, 'filtersApplied' => $filters]);
     }
 
-    public function enrichData( $data, string $dataType)
+    public function enrichData( $data, string $dataType, string $modelClass)
     {
-        if (!isset($this->modelConfigurations[$dataType])) {
-            Log::error("enrichData: Configuration for dataType '{$dataType}' not found.");
-            return $data; // Or handle error appropriately
-        }
-        $config = $this->modelConfigurations[$dataType];
+        // $modelClass is now passed, no need to call getModelClassForDataType again
+        // $config is replaced by direct calls to $modelClass static methods
 
-        $data = $data->map(function ($point) use ($dataType, $config) {
+        $alcivartechTypeForStyling = $modelClass::getAlcivartechTypeForStyling();
+        $latField = $modelClass::getLatitudeField();
+        $lngField = $modelClass::getLongitudeField();
+        $dateFieldFromConfig = $modelClass::getDateField();
+
+
+        $data = $data->map(function ($point) use ($dataType, $modelClass, $alcivartechTypeForStyling, $latField, $lngField, $dateFieldFromConfig) {
             $point->alcivartech_model = $dataType;
-            // Use alcivartech_type_for_styling from the centralized configuration
-            $point->alcivartech_type = $config['alcivartech_type_for_styling'];
-
-            // Normalize latitude and longitude field names using config
-            $latField = $config['latField'];
-            $lngField = $config['lngField'];
+            $point->alcivartech_type = $alcivartechTypeForStyling;
 
             if ($dataType === 'property_violations' && isset($point->location) && !empty($point->location)) {
+                // This specific logic for property_violations might need to be part of PropertyViolation model
+                // or handled via a specific method if it's complex. For now, keeping it here.
+                // Ideally, the model itself should present latitude/longitude consistently.
                 $location = json_decode($point->location, true);
                 if (isset($location['latitude']) && isset($location['longitude'])) {
                     $point->latitude = $location['latitude'];
@@ -490,24 +449,19 @@ class DataMapController extends Controller
                 $point->longitude = $point->{$lngField} ?? null;
             }
             
-            // Set alcivartech_date using dateField from config
-            $dateFieldFromConfig = $config['dateField'];
             $point->alcivartech_date = $point->{$dateFieldFromConfig} ?? null;
 
             return $point;
         });
 
-        // Aggregation logic might need to be aware of the new alcivartech_type if it was previously relying on a switch
-        if ($config['alcivartech_type_for_styling'] === 'Food Inspection') {
+        if ($alcivartechTypeForStyling === 'Food Inspection') {
              $data = $this->aggregateFoodViolations($data);
         }
 
         return $data;
     }
 
-   
-    // This function aggregates food inspection violations by license number
-    // and returns a modified data set with aggregated records.
+// ... aggregateFoodViolations remains the same ...
     public function aggregateFoodViolations($dataPoints)
     {
         $nonFoodInspections = collect();
@@ -565,7 +519,6 @@ class DataMapController extends Controller
                     ];
                 }
 
-                // Process summary items: sort entries, then sort summary items by violdesc
                 $processedSummaryItems = [];
                 foreach ($violationSummaryMap as $descKey => $summaryDetails) {
                     $sortedEntries = collect($summaryDetails['entries'])->sortByDesc(function ($entry) {
@@ -574,7 +527,7 @@ class DataMapController extends Controller
                     })->values()->all();
                     
                     $processedSummaryItems[] = [
-                        'violdesc' => $summaryDetails['violdesc'], // Use from summaryDetails to ensure consistency
+                        'violdesc' => $summaryDetails['violdesc'],
                         'entries' => $sortedEntries
                     ];
                 }
@@ -584,48 +537,36 @@ class DataMapController extends Controller
                 });
                 $violationSummary = $processedSummaryItems;
             }
-
-            // Create the aggregated point, starting with mostRecentRecord's properties
-            $aggregatedPointData = $mostRecentRecord;
-
-
-            Log::info("Aggregated Food Inspection Data: " . json_encode($aggregatedPointData));
-            Log::info("Most Recent Record: " . json_encode($mostRecentRecord));
             
+            // Create a new object for the aggregated point to avoid modifying original objects if they are referenced elsewhere.
+            // Start by cloning the most recent record or creating a new stdClass.
+            $aggregatedPointData = clone $mostRecentRecord; // Shallow clone, careful with nested objects if any.
+                                                            // Or $aggregatedPointData = new \stdClass(); and copy properties.
+
             // Add/override specific fields for aggregation
-            $aggregatedPointData['alcivartech_type'] = "Food Inspection";
-            $aggregatedPointData['alcivartech_date'] = $mostRecentRecord->alcivartech_date; // Ensure it's the most recent date
-            $aggregatedPointData['_is_aggregated_food_violation'] = true;
+            $aggregatedPointData->alcivartech_type = "Food Inspection"; // Ensure this is set
+            $aggregatedPointData->alcivartech_date = $mostRecentRecord->alcivartech_date; 
+            $aggregatedPointData->_is_aggregated_food_violation = true;
 
             if ($violationSummary !== null) {
-                $aggregatedPointData['violation_summary'] = $violationSummary;
+                $aggregatedPointData->violation_summary = $violationSummary;
             }
-            Log::info("Aggregated Food Inspection Data: " . json_encode($aggregatedPointData));
             
-            return (object) $aggregatedPointData;
-        })->filter()->values(); // filter() removes nulls, values() re-indexes collection
+            return $aggregatedPointData; // Return the new/cloned object
+        })->filter()->values();
 
-        // Combine all parts: non-food, food without licenseno (passed through), and aggregated food inspections
         return $nonFoodInspections->toBase()
             ->merge($foodInspectionsWithoutLicenseNo)
             ->merge($aggregatedFoodViolations)
             ->values();
     }
-    // This method is for natural language processing queries
-    // It takes a natural language query and converts it into a structured filter
-    // It uses the OpenAI API to process the query and generate the filters
-    // It also handles the authentication and tier-based restrictions
-
+// ... naturalLanguageQuery and queryGPT remain largely the same ...
     public function naturalLanguageQuery(Request $request, string $dataType)
     {
         $user = Auth::user();
         if (!$user) {
-            // Or handle guest access for NLP differently, e.g., deny or use sample data.
-            // For now, assume 'auth' middleware protects this.
             return response()->json(['error' => 'Authentication required for natural language queries.'], 401);
         }
-        // Tier-based restrictions are handled within getData, which this method calls.
-        // getData itself uses getMinDateForEffectiveUser(dataType, Auth::user())
 
         $modelClass = $this->getModelClassForDataType($dataType);
         $queryText = $request->input('query');
@@ -639,12 +580,7 @@ class DataMapController extends Controller
             $gptResponse = json_decode($gptResponseJson, true);
 
             if (isset($gptResponse['filters'])) {
-                // Pass GPT's filters to the getData method
                 $filterRequest = new Request(['filters' => $gptResponse['filters']]);
-                // Merge original request's query parameters if needed, or just use GPT's
-                // $filterRequest->setMethod('POST'); // getData expects POST or reads from input()
-                
-                // Call getData directly
                 return $this->getData($filterRequest, $dataType);
             }
             return response()->json(['error' => 'Could not parse query filters from AI response.', 'query' => $queryText, 'raw_ai_response' => $gptResponseJson], 400);
@@ -664,12 +600,10 @@ class DataMapController extends Controller
             throw new \Exception('OpenAI API key is not configured.');
         }
 
-        // These methods must exist on the model via Mappable trait or direct implementation
-        // $fieldsDescription = $modelClass::getFilterableFieldsDescription(); // No longer directly used here for schema building
-        $contextData = $modelClass::getContextData(); // Optional additional context, now part of schema description
-        $dateField = $modelClass::getDateField(); // Still useful for system message
+        $dateField = $modelClass::getDateField();
+        $humanName = $modelClass::getHumanName(); // Use new method
 
-        $systemMessage = "You are an AI assistant that converts natural language queries into JSON filter objects for a dataset about {$modelClass::getModelNameForHumans()}. ".
+        $systemMessage = "You are an AI assistant that converts natural language queries into JSON filter objects for a dataset about {$humanName}. ".
                          "The primary date field for filtering is '{$dateField}'. Use 'start_date' and 'end_date' in 'YYYY-MM-DD' format for date ranges on this field. ".
                          "There is also a 'search_term' field which accepts a string for general free-text search across multiple fields. ".
                          "Today's date is " . now()->toDateString() . ". " .
@@ -678,15 +612,9 @@ class DataMapController extends Controller
         $userMessages = [
             ['role' => 'user', 'content' => "Convert this query into data filters: \"{$queryText}\""],
         ];
-        // Context data is now part of the function schema description, but can also be added as a separate message if desired for emphasis.
-        // if (!empty($contextData)) {
-        //     $userMessages[] = ['role' => 'user', 'content' => "Additional context for the dataset: {$contextData}"];
-        // }
-
-        // Get the function schema directly from the model
+        
         $functionTool = $modelClass::getGptFunctionSchema();
 
-        // Validate that the schema was generated correctly (basic check)
         if (!isset($functionTool['type']) || $functionTool['type'] !== 'function' || !isset($functionTool['function']['parameters'])) {
             \Log::error("DataMapController: model {$modelClass}::getGptFunctionSchema() returned an invalid schema.");
             throw new \Exception("Failed to generate a valid function schema for model {$modelClass}.");
@@ -698,9 +626,9 @@ class DataMapController extends Controller
                 'Content-Type' => 'application/json',
             ],
             'json' => [
-                'model' => 'gpt-4o-mini', // Consider updating model if needed
+                'model' => 'gpt-4o-mini',
                 'messages' => array_merge([['role' => 'system', 'content' => $systemMessage]], $userMessages),
-                'tools' => [$functionTool], // Use the schema from the model
+                'tools' => [$functionTool],
                 'tool_choice' => ["type" => "function", "function" => ["name" => $functionTool['function']['name']]], 
             ]
         ]);
