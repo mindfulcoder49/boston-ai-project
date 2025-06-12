@@ -3,11 +3,12 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\CrimeData;
+use App\Models\EverettCrimeData; // Changed from CrimeData
 use League\Csv\Reader;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use DateTime; // Added for date parsing
+use DateTime;
+use Exception; // Added for explicit exception handling
 
 class EverettCrimeDataSeeder extends Seeder
 {
@@ -44,12 +45,10 @@ class EverettCrimeDataSeeder extends Seeder
         $csv = Reader::createFromPath($file);
         $csv->setHeaderOffset(0); // The header is on the first row
 
-        // $records = $csv->getRecords(); // Get records inside the loop to potentially save memory
-
         $dataBatch = [];
         $progress = 0;
         $startTime = microtime(true);
-        $fileCount = count($csv); // More efficient way to count records with league/csv
+        $fileCount = count($csv);
         $skipped = 0;
 
         foreach ($csv->getRecords() as $crime) {
@@ -61,104 +60,140 @@ class EverettCrimeDataSeeder extends Seeder
                 continue;
             }
             
-            if (!is_numeric($crime['incident_latitude']) || !is_numeric($crime['incident_longitude']) || empty($crime['incident_latitude']) || empty($crime['incident_longitude'])) {
-                print_r("Skipping record with invalid or empty lat/long for case " . $crime['case_number'] . ": " . $crime['incident_latitude'] . ", " . $crime['incident_longitude'] . "\n");
+            $latitude = $crime['incident_latitude'] ?? null;
+            $longitude = $crime['incident_longitude'] ?? null;
+
+            if (empty($latitude) || empty($longitude) || !is_numeric($latitude) || !is_numeric($longitude)) {
+                print_r("Skipping record with invalid or empty lat/long for case " . $crime['case_number'] . ": " . $latitude . ", " . $longitude . "\n");
                 $skipped++;
                 continue;
             }
 
-            $occurred_on_datetime_str = null;
+            $occurred_on_datetime = null;
             $year = null;
             $month = null;
             $day_of_week = null;
             $hour = null;
+            $incident_entry_date_parsed = null;
+            $incident_time_parsed = null;
 
             if (!empty($crime['incident_entry_date'])) {
                 $date_str = trim($crime['incident_entry_date']);
-                // Default to midnight if time is missing or empty
                 $time_str = !empty(trim($crime['incident_time'])) ? trim($crime['incident_time']) : '00:00';
 
                 try {
-                    // Attempt to parse MM/DD/YYYY HH:MM
-                    $dateTimeObj = DateTime::createFromFormat('m/d/Y H:i', $date_str . ' ' . $time_str);
-                    if ($dateTimeObj === false) {
-                         // Attempt to parse MM/DD/YYYY (if time parsing failed or time was just '00:00')
-                        $dateTimeObj = DateTime::createFromFormat('m/d/Y', $date_str);
-                         if ($dateTimeObj === false) {
-                            // If primary date format fails, try YYYY-MM-DD as a fallback if applicable, or just throw.
-                            // For now, stick to the m/d/Y format as per CSV example.
-                            throw new \Exception("Invalid date/time format for: '" . $date_str . ' ' . $time_str . "'");
-                         }
-                         // If only date parsed, set time to midnight
-                         $dateTimeObj->setTime(0, 0, 0);
+                    $dateTimeObj = null;
+                    // Try m/d/Y H:i
+                    if (strpos($date_str, '/') !== false && strpos($time_str, ':') !== false) {
+                        $dateTimeObj = DateTime::createFromFormat('m/d/Y H:i', $date_str . ' ' . $time_str);
                     }
-                    $occurred_on_datetime_str = $dateTimeObj->format('Y-m-d H:i:s');
-                    $year = (int)$dateTimeObj->format('Y');
-                    $month = (int)$dateTimeObj->format('m');
-                    $day_of_week = $dateTimeObj->format('l'); // Full textual representation (e.g., Sunday)
-                    $hour = (int)$dateTimeObj->format('H');
-                } catch (\Exception $e) {
-                    print_r("Error parsing date/time: " . $e->getMessage() . ". Setting date fields to null for case: " . $crime['case_number'] . "\n");
+
+                    // If failed or time was default 00:00, try m/d/Y for date and parse time separately or default time
+                    if (!$dateTimeObj || ($dateTimeObj && $time_str === '00:00')) {
+                        $dateOnlyObj = DateTime::createFromFormat('m/d/Y', $date_str);
+                        if ($dateOnlyObj) {
+                            $incident_entry_date_parsed = $dateOnlyObj->format('Y-m-d');
+                            // Attempt to parse time string H:i or H:i:s
+                            $timeParts = date_parse_from_format('H:i', $time_str);
+                            if ($timeParts['error_count'] === 0 && $timeParts['warning_count'] === 0) {
+                                $dateOnlyObj->setTime($timeParts['hour'], $timeParts['minute'], $timeParts['second'] ?? 0);
+                                $incident_time_parsed = $dateOnlyObj->format('H:i:s');
+                            } else {
+                                $dateOnlyObj->setTime(0, 0, 0); // Default to midnight if time is invalid
+                                $incident_time_parsed = '00:00:00';
+                            }
+                            $dateTimeObj = $dateOnlyObj;
+                        }
+                    }
+                    
+                    if ($dateTimeObj instanceof DateTime) {
+                        $occurred_on_datetime = $dateTimeObj->format('Y-m-d H:i:s');
+                        $year = (int)$dateTimeObj->format('Y');
+                        $month = (int)$dateTimeObj->format('m');
+                        $day_of_week = $dateTimeObj->format('l');
+                        $hour = (int)$dateTimeObj->format('H');
+                        if (!$incident_entry_date_parsed) {
+                            $incident_entry_date_parsed = $dateTimeObj->format('Y-m-d');
+                        }
+                        if (!$incident_time_parsed) {
+                             $incident_time_parsed = $dateTimeObj->format('H:i:s');
+                        }
+                    } else {
+                        throw new Exception("Invalid date/time format for: '" . $date_str . ' ' . $time_str . "'");
+                    }
+                } catch (Exception $e) {
+                    print_r("Error parsing date/time for occurred_on_datetime: " . $e->getMessage() . ". Setting related date fields to null for case: " . $crime['case_number'] . "\n");
                 }
             } else {
-                 print_r("Empty incident_entry_date. Setting date fields to null for case: " . $crime['case_number'] . "\n");
+                 print_r("Empty incident_entry_date. Setting occurred_on_datetime fields to null for case: " . $crime['case_number'] . "\n");
             }
 
-            $incidentType = trim($crime['incident_type'] ?? '');
-            $incidentDetails = trim($crime['incident_description'] ?? '');
-            $fullOffenseDescription = null;
-
-            if (!empty($incidentType) && !empty($incidentDetails)) {
-                $fullOffenseDescription = $incidentType . ' - ' . $incidentDetails;
-            } elseif (!empty($incidentType)) {
-                $fullOffenseDescription = $incidentType;
-            } elseif (!empty($incidentDetails)) {
-                $fullOffenseDescription = $incidentDetails;
+            // Parse incident_log_file_date
+            $incident_log_file_date_parsed = null;
+            if (!empty($crime['incident_log_file_date'])) {
+                try {
+                    $dt = DateTime::createFromFormat('m/d/Y', trim($crime['incident_log_file_date']));
+                    if ($dt) {
+                        $incident_log_file_date_parsed = $dt->format('Y-m-d');
+                    }
+                } catch (Exception $e) {
+                    print_r("Error parsing incident_log_file_date: " . $crime['incident_log_file_date'] . " for case: " . $crime['case_number'] . "\n");
+                }
             }
 
-            $streetAddress = trim($crime['incident_address'] ?? '');
-
-            $extraDetails = [];
+            // Parse arrest_date
+            $arrest_date_parsed = null;
+            if (!empty($crime['arrest_date'])) {
+                try {
+                    $dt = DateTime::createFromFormat('m/d/Y', trim($crime['arrest_date']));
+                    if ($dt) {
+                        $arrest_date_parsed = $dt->format('Y-m-d');
+                    }
+                } catch (Exception $e) {
+                    print_r("Error parsing arrest_date: " . $crime['arrest_date'] . " for case: " . $crime['case_number'] . "\n");
+                }
+            }
+            
+            // Concatenate extra details for crime_details_concatenated
+            // This part is similar to your original logic for 'crime_details'
+            $extraDetailsText = [];
             $fieldsToConcat = [
+                // Using original CSV field names as keys for $crime array
                 'incident_log_file_date' => 'Incident Log File Date',
                 'arrest_name' => 'Arrest Name',
                 'arrest_address' => 'Arrest Address',
                 'arrest_age' => 'Arrest Age',
-                'arrest_date' => 'Arrest Date',
+                'arrest_date' => 'Arrest Date', // Original string format from CSV
                 'arrest_charges' => 'Arrest Charges',
             ];
-
             foreach ($fieldsToConcat as $key => $label) {
                 if (!empty($crime[$key])) {
-                    $extraDetails[] = $label . ": " . trim($crime[$key]);
+                    $extraDetailsText[] = $label . ": " . trim($crime[$key]);
                 }
             }
-            $crimeDetails = !empty($extraDetails) ? implode("\n", $extraDetails) : null;
+            $crime_details_concatenated = !empty($extraDetailsText) ? implode("\n", $extraDetailsText) : null;
 
             $dataBatch[] = [
-                'incident_number' => $crime['case_number'],
-                'offense_code' => null, // Not available in Everett data
-                'offense_code_group' => null, // Not available
-                'offense_description' => $fullOffenseDescription,
-                'district' => null, // Not available
-                'reporting_area' => null, // Not available
-                'shooting' => false, // Assuming false as not specified
-                'occurred_on_date' => $occurred_on_datetime_str,
+                'case_number' => $crime['case_number'],
+                'incident_log_file_date' => $incident_log_file_date_parsed,
+                'incident_entry_date_parsed' => $incident_entry_date_parsed,
+                'incident_time_parsed' => $incident_time_parsed,
+                'occurred_on_datetime' => $occurred_on_datetime,
                 'year' => $year,
                 'month' => $month,
                 'day_of_week' => $day_of_week,
                 'hour' => $hour,
-                'ucr_part' => null, // Not available
-                'street' => !empty($streetAddress) ? $streetAddress : null,
-                'lat' => $crime['incident_latitude'],
-                'long' => $crime['incident_longitude'],
-                'location' => '(' . $crime['incident_latitude'] . ', ' . $crime['incident_longitude'] . ')',
-                'language_code' => 'en-US', // Default language code
-                'crime_details' => $crimeDetails,
-                // Assuming crime_start_time and crime_end_time are not available in this CSV
-                // and will remain null or be handled by a different process if needed.
-                'crime_start_time' => $occurred_on_datetime_str, // Or null if not applicable as start time
-                'crime_end_time' => null, // Or derive if possible, otherwise null
+                'incident_type' => trim($crime['incident_type'] ?? ''),
+                'incident_address' => trim($crime['incident_address'] ?? ''),
+                'incident_latitude' => $latitude,
+                'incident_longitude' => $longitude,
+                'incident_description' => trim($crime['incident_description'] ?? ''),
+                'arrest_name' => trim($crime['arrest_name'] ?? ''),
+                'arrest_address' => trim($crime['arrest_address'] ?? ''),
+                'arrest_age' => !empty($crime['arrest_age']) ? (int)$crime['arrest_age'] : null,
+                'arrest_date_parsed' => $arrest_date_parsed,
+                'arrest_charges' => trim($crime['arrest_charges'] ?? ''),
+                'crime_details_concatenated' => $crime_details_concatenated,
                 'source_city' => 'Everett'
             ];
 
@@ -183,28 +218,28 @@ class EverettCrimeDataSeeder extends Seeder
 
     private function insertOrUpdateBatch(array $dataBatch): void
     {
-        DB::table((new CrimeData)->getTable())->upsert($dataBatch, ['incident_number'], [
-            'offense_code',
-            'offense_code_group',
-            'offense_description',
-            'district',
-            'reporting_area',
-            'shooting',
-            'occurred_on_date',
+        DB::table((new EverettCrimeData)->getTable())->upsert($dataBatch, ['case_number'], [
+            'incident_log_file_date',
+            'incident_entry_date_parsed',
+            'incident_time_parsed',
+            'occurred_on_datetime',
             'year',
             'month',
             'day_of_week',
             'hour',
-            'ucr_part',
-            'street',
-            'lat',
-            'long',
-            'location',
-            'language_code',
-            'crime_details',
-            'crime_start_time',
-            'crime_end_time',
-            'source_city'
+            'incident_type',
+            'incident_address',
+            'incident_latitude',
+            'incident_longitude',
+            'incident_description',
+            'arrest_name',
+            'arrest_address',
+            'arrest_age',
+            'arrest_date_parsed',
+            'arrest_charges',
+            'crime_details_concatenated',
+            'source_city',
+            'updated_at' // Ensure updated_at is touched on update
         ]);
     }
 

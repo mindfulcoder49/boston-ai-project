@@ -22,6 +22,7 @@
     tempNewMarkerPlacementCoords: Object, 
     mapIsLoading: Boolean,
     shouldClearTempMarker: Boolean,
+    mapConfiguration: Object, // Added new prop
   });
   
   const emit = defineEmits([
@@ -44,6 +45,78 @@
     zoom: 16 
   });
   
+  const dataPointModelConfig = {
+    'crime_data': {
+      dataObjectKey: 'crime_data',
+      mainIdentifierLabel: 'Incident Number',
+      mainIdentifierField: 'incident_number',
+      descriptionLabel: 'Description',
+      descriptionField: 'offense_description',
+      additionalFields: [
+        // { label: 'District', key: 'district' } // Example if you add more fields
+      ]
+    },
+    'everett_crime_data': {
+      dataObjectKey: 'everett_crime_data',
+      mainIdentifierLabel: 'Case Number',
+      mainIdentifierField: 'case_number',
+      descriptionLabel: 'Description',
+      descriptionField: 'incident_description',
+      additionalFields: [
+        { label: 'Incident Type', key: 'incident_type' },
+        { label: 'Arrest Name', key: 'arrest_name', condition: (val) => val && val.trim() !== '' },
+        { label: 'Arrest Charges', key: 'arrest_charges', condition: (val) => val && val.trim() !== '' },
+      ]
+    },
+    'three_one_one_cases': {
+      dataObjectKey: 'three_one_one_case_data',
+      mainIdentifierLabel: 'Case ID',
+      mainIdentifierField: 'case_enquiry_id',
+      descriptionLabel: 'Title',
+      descriptionField: 'case_title',
+    },
+    'building_permits': {
+      dataObjectKey: 'building_permit_data',
+      mainIdentifierLabel: 'Permit Number',
+      mainIdentifierField: 'permitnumber',
+      descriptionLabel: 'Description',
+      descriptionField: 'description',
+      additionalFields: [
+        { label: 'Permit Type', key: 'permit_type' }
+      ]
+    },
+    'property_violations': {
+      dataObjectKey: 'property_violation_data',
+      mainIdentifierLabel: 'Ticket Number',
+      mainIdentifierField: 'ticket_number',
+      descriptionLabel: 'Description',
+      descriptionField: 'description',
+      additionalFields: [
+        { label: 'Violation Type', key: 'violation_type' }
+      ]
+    },
+    'construction_off_hours': {
+      dataObjectKey: 'construction_off_hour_data',
+      mainIdentifierLabel: 'Application Number',
+      mainIdentifierField: 'app_no',
+      descriptionLabel: 'Address', // Using address as a primary piece of info
+      descriptionField: 'address',
+    },
+    'food_inspections': {
+      dataObjectKey: 'food_inspection_data',
+      // This model has custom popup logic due to aggregation (violation_summary)
+      customPopupHandler: true, 
+      // Fallback fields if not aggregated (though current logic prioritizes custom handler)
+      mainIdentifierLabel: 'License No',
+      mainIdentifierField: 'licenseno',
+      descriptionLabel: 'Business Name',
+      descriptionField: 'businessname',
+       additionalFields: [
+        { label: 'Violation', key: 'violdesc' },
+        { label: 'Result', key: 'result' },
+      ]
+    }
+  };
   
   const getDivIconInternal = (dataPoint) => {
     let className = 'default-div-icon';
@@ -161,209 +234,148 @@
     const createIndividualItemPopupElement = (dataPoint, onBackToClusterCallback = null) => {
       const container = document.createElement('div');
       container.className = 'custom-popup-content individual-item-popup';
-      // Basic styling for the content wrapper, can be enhanced with CSS classes
-      container.style.maxHeight = '350px'; // Increased max height for potentially longer food violation history
+      container.style.maxHeight = '350px';
       container.style.overflowY = 'auto';
-      container.style.paddingRight = '10px'; // Space for scrollbar if needed
-  
+      container.style.paddingRight = '10px';
+
+      const modelKey = dataPoint.alcivartech_model;
+      const config = props.mapConfiguration?.dataPointModelConfig?.[modelKey];
+      const sourceData = dataPoint[config?.dataObjectKey || modelKey]; // Fallback to modelKey if dataObjectKey not in config
+
+      // Date and Type are common
       const dateString = new Date(dataPoint.alcivartech_date).toLocaleString();
       let detailsHtml = `<div style="margin-bottom: 5px;"><strong>${dateString}</strong></div>`;
-    
-      switch (dataPoint.alcivartech_type) {
-        case 'Crime':
-          detailsHtml += `<div>Type: Crime</div><div>Description: ${dataPoint.offense_description || 'N/A'}</div>`;
-          if (dataPoint.incident_number) {
-            detailsHtml += `<div>Incident Number: ${dataPoint.incident_number}</div>`;
-          }
-          break;
-        case '311 Case':
-          detailsHtml += `<div>Type: 311 Case</div><div>Title: ${dataPoint.case_title || 'N/A'}</div>`;
-          if (dataPoint.case_enquiry_id) {
-            detailsHtml += `<div>Case ID: ${dataPoint.case_enquiry_id}</div>`;
-          }
-          break;
-        case 'Building Permit':
-          detailsHtml += `<div>Type: Building Permit</div><div>Description: ${dataPoint.description || 'N/A'}</div>`;
-          if (dataPoint.permitnumber) {
-            detailsHtml += `<div>Permit Number: ${dataPoint.permitnumber}</div>`;
-          }
-          if (dataPoint.permit_type) {
-            detailsHtml += `<div>Permit Type: ${dataPoint.permit_type}</div>`;
-          }
-          break;
-        case 'Property Violation':
-          detailsHtml += `<div>Type: Property Violation</div><div>Description: ${dataPoint.description || 'N/A'}</div>`;
-          if (dataPoint.ticket_number) {
-            detailsHtml += `<div>Ticket Number: ${dataPoint.ticket_number}</div>`;
-          }
-          if (dataPoint.violation_type) {
-            detailsHtml += `<div>Violation Type: ${dataPoint.violation_type}</div>`;
-          }
-          break;
-        case 'Construction Off Hour':
-          detailsHtml += `<div>Type: Construction (Off Hour)</div><div>Address: ${dataPoint.address || 'N/A'}</div>`;
-          if (dataPoint.app_no) {
-            detailsHtml += `<div>Application Number: ${dataPoint.app_no}</div>`;
-          }
-          break;
-        // ...existing code...
-        case 'Food Inspection':
-          console.log('Food Inspection: DataPoint:', JSON.parse(JSON.stringify(dataPoint)));
-          if (dataPoint.violation_summary) { // This is an aggregated point
-            console.log('Food Inspection: Aggregated point detected. Violation summary exists.');
-            let initialDetailsHtml = `<div style="margin-bottom: 5px;"><strong>${new Date(dataPoint.alcivartech_date).toLocaleString()}</strong> (Most Recent Activity)</div>`;
-            initialDetailsHtml += `<div>Type: Food Establishment Record</div>`;
-            if (dataPoint.businessname) {
-              initialDetailsHtml += `<div style="font-size: 1.1em; margin-bottom: 3px;"><strong>Business: ${dataPoint.businessname}</strong></div>`;
-            }
-            if (dataPoint.licenseno) {
-              initialDetailsHtml += `<div>License: ${dataPoint.licenseno}</div>`;
-            }
-            if (dataPoint.address) {
-              initialDetailsHtml += `<div>Address: ${dataPoint.address}</div>`;
-            }
-            container.innerHTML = initialDetailsHtml;
-            console.log('Food Inspection: Initial details HTML set:', initialDetailsHtml);
-  
-            const historyTitle = document.createElement('div');
-            historyTitle.style.marginTop = '10px';
-            historyTitle.style.marginBottom = '5px';
-            const totalRecords = dataPoint.violation_summary.reduce((sum, s) => sum + s.entries.length, 0);
-            historyTitle.innerHTML = `<strong>Violation History (${totalRecords} total records):</strong>`;
-            container.appendChild(historyTitle);
-            console.log('Food Inspection: History title appended. Total records:', totalRecords);
-  
-            const historyContainer = document.createElement('div');
-            historyContainer.style.paddingRight = '5px';
-            console.log('Food Inspection: History container created.');
-  
-  
-            dataPoint.violation_summary.forEach((summaryItem, summaryIndex) => {
-              console.log(`Food Inspection: Processing summaryItem ${summaryIndex + 1}/${dataPoint.violation_summary.length}:`, JSON.parse(JSON.stringify(summaryItem)));
-              const violDescEl = document.createElement('div');
-              violDescEl.style.marginTop = '8px';
-              violDescEl.style.paddingLeft = '5px';
-              // set the violdesc color red or green based on the most recent status
-              const statusColor = summaryItem.entries[0].viol_status === 'Fail' || (summaryItem.entries[0].result && summaryItem.entries[0].result.toLowerCase().includes('fail')) ? '#D32F2F' : '#388E3C';
-              violDescEl.innerHTML = `<strong style="color: ${statusColor};">${summaryItem.violdesc}</strong> (${summaryItem.entries.length} record(s))`;
-              historyContainer.appendChild(violDescEl);
-              console.log(`Food Inspection: Violation description element for "${summaryItem.violdesc}" appended.`);
-  
-              const entriesList = document.createElement('ul');
-              entriesList.style.listStylePosition = 'inside';
-              entriesList.style.paddingLeft = '10px';
-              entriesList.style.marginLeft = '0px';
-              console.log(`Food Inspection: Entries list UL created for "${summaryItem.violdesc}".`);
-  
-  
-              summaryItem.entries.forEach((entry, entryIndex) => {
-                console.log(`Food Inspection: Processing entry ${entryIndex + 1}/${summaryItem.entries.length} for "${summaryItem.violdesc}":`, JSON.parse(JSON.stringify(entry)));
-                const entryItem = document.createElement('li');
-                entryItem.style.fontSize = '0.9em';
-                entryItem.style.marginBottom = '6px';
-                entryItem.style.borderBottom = '1px dashed #eee';
-                entryItem.style.paddingBottom = '4px';
-                
-                let entryHtml = `<div style="font-weight: bold;"><em>${new Date(entry.alcivartech_date).toLocaleString()}</em></div>`;
-                const statusColor = entry.viol_status === 'Fail' || (entry.result && entry.result.toLowerCase().includes('fail')) ? 'red' : 'green';
-                entryHtml += `<div>Status: <span style="font-weight:bold; color: ${statusColor};">${entry.viol_status || 'N/A'}</span> | Result: ${entry.result || 'N/A'} | Level: ${entry.viol_level || 'N/A'}</div>`;
-                if (entry.comments) {
-                  // if passed, note that the comments are from a previous failed inspection and were addressed in order to pass
-                  if (entry.viol_status === 'Pass' || (entry.result && entry.result.toLowerCase().includes('pass'))) {
-                    entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments addressed from previous failed inspection: ${entry.comments}</div>`;
-                  }
-                  else if (entry.viol_status === 'Fail' || (entry.result && entry.result.toLowerCase().includes('fail'))) {
-                    entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments: ${entry.comments}</div>`;
-                  } else {
-                    entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments: ${entry.comments}</div>`;
-                  }
-                 
-                }
-                entryItem.innerHTML = entryHtml;
-                entriesList.appendChild(entryItem);
-                console.log(`Food Inspection: Entry list item LI appended for date "${entry.alcivartech_date}". HTML:`, entryHtml);
-              });
-  
-              if (entriesList.lastChild) {
-                  (entriesList.lastChild).style.borderBottom = 'none';
-                  console.log(`Food Inspection: Removed border from last entry item in list for "${summaryItem.violdesc}".`);
-              } else {
-                  console.log(`Food Inspection: No entries found for "${summaryItem.violdesc}", so no border to remove.`);
-              }
-              historyContainer.appendChild(entriesList);
-              console.log(`Food Inspection: Entries list UL for "${summaryItem.violdesc}" appended to history container.`);
-            });
-            container.appendChild(historyContainer);
-            console.log('Food Inspection: History container appended to main container.');
-            
-            // If this block handles the content, add back button (if needed) and return.
-            if (onBackToClusterCallback) { // This button will likely not show as callback will be null
-              const backButton = document.createElement('button');
-              backButton.textContent = '‹ Back to Cluster List';
-              backButton.className = 'popup-back-button';
-              backButton.style.marginTop = '10px';
-              backButton.style.padding = '5px 10px';
-              backButton.style.cursor = 'pointer';
-              backButton.style.border = '1px solid #ccc';
-              backButton.style.backgroundColor = '#f9f9f9';
-              backButton.style.borderRadius = '3px';
-              backButton.onclick = (e) => {
-                  e.stopPropagation();
-                  onBackToClusterCallback();
-              };
-              container.appendChild(backButton);
-              console.log('Food Inspection: Back button appended.');
-            }
-            return container; // Return early as container is fully built
-  
-          } else {
-            // Fallback for non-aggregated: build up detailsHtml
-            console.log('Food Inspection: Non-aggregated point (violation_summary is missing). Displaying individual details.');
-            detailsHtml += `<div>Type: Food Inspection (Individual)</div>`;
-            if (dataPoint.businessname) {
-              detailsHtml += `<div>Business: ${dataPoint.businessname}</div>`;
-            }
-            if (dataPoint.violdesc) {
-              detailsHtml += `<div>Violation: ${dataPoint.violdesc}</div>`;
-            }
-            if (dataPoint.licenseno) {
-              detailsHtml += `<div>License: ${dataPoint.licenseno}</div>`;
-            }
-            if (dataPoint.result) {
-              detailsHtml += `<div>Result: ${dataPoint.result}</div>`;
-            }
-            console.log('Food Inspection: Individual details HTML to be set (from outer scope):', detailsHtml);
-          }
-          break;
-        // ...existing code...
-        default:
-          detailsHtml += 'No details available.';
+      detailsHtml += `<div>Type: ${dataPoint.alcivartech_type || 'N/A'}</div>`;
+      if (modelKey && modelKey.replace(/_/g, ' ').toLowerCase() !== dataPoint.alcivartech_type.toLowerCase()){
+         detailsHtml += `<div>Source Model: ${modelKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>`;
       }
       
-      // This line will now only execute if the 'Food Inspection' with summary didn't return early.
-      container.innerHTML = detailsHtml;
-    
-      if (onBackToClusterCallback) { // This button will likely not show
-        const backButton = document.createElement('button');
-        backButton.textContent = '‹ Back to Cluster List';
-        backButton.className = 'popup-back-button'; // For styling
-        // Basic styling for the back button
-        backButton.style.marginTop = '10px';
-        backButton.style.padding = '5px 10px';
-        backButton.style.cursor = 'pointer';
-        backButton.style.border = '1px solid #ccc';
-        backButton.style.backgroundColor = '#f9f9f9';
-        backButton.style.borderRadius = '3px';
-        
-        backButton.onclick = (e) => {
-            e.stopPropagation(); // Prevent map click or other underlying events
-            onBackToClusterCallback();
-        };
-        container.appendChild(backButton);
+      // Special handling for Food Inspections with aggregated data (using customPopupHandler flag)
+      if (config?.customPopupHandler && modelKey === 'food_inspections' && sourceData?._is_aggregated_food_violation && sourceData?.violation_summary) {
+          // This is the existing custom logic for aggregated food inspections
+          let initialDetailsHtml = `<div style="margin-bottom: 5px;"><strong>${new Date(sourceData.alcivartech_date || dataPoint.alcivartech_date).toLocaleString()}</strong> (Most Recent Activity)</div>`;
+          initialDetailsHtml += `<div>Type: ${dataPoint.alcivartech_type}</div>`;
+
+          if (sourceData.businessname) {
+            initialDetailsHtml += `<div style="font-size: 1.1em; margin-bottom: 3px;"><strong>Business: ${sourceData.businessname}</strong></div>`;
+          }
+          if (sourceData.licenseno) {
+            initialDetailsHtml += `<div>License: ${sourceData.licenseno}</div>`;
+          }
+          if (sourceData.address) {
+            initialDetailsHtml += `<div>Address: ${sourceData.address}</div>`;
+          }
+          container.innerHTML = initialDetailsHtml;
+
+          const historyTitle = document.createElement('div');
+          historyTitle.style.marginTop = '10px';
+          historyTitle.style.marginBottom = '5px';
+          const totalRecords = sourceData.violation_summary.reduce((sum, s) => sum + s.entries.length, 0);
+          historyTitle.innerHTML = `<strong>Violation History (${totalRecords} total records):</strong>`;
+          container.appendChild(historyTitle);
+
+          const historyContainer = document.createElement('div');
+          historyContainer.style.paddingRight = '5px';
+
+          sourceData.violation_summary.forEach((summaryItem) => {
+            const violDescEl = document.createElement('div');
+            violDescEl.style.marginTop = '8px';
+            violDescEl.style.paddingLeft = '5px';
+            // Determine status color based on the most recent entry in the summary item
+            const mostRecentEntryInSummary = summaryItem.entries[0]; // Entries are pre-sorted by date desc
+            const statusColor = mostRecentEntryInSummary.viol_status === 'Fail' || (mostRecentEntryInSummary.result && mostRecentEntryInSummary.result.toLowerCase().includes('fail')) ? '#D32F2F' : '#388E3C';
+
+            violDescEl.innerHTML = `<strong style="color: ${statusColor};">${summaryItem.violdesc}</strong> (${summaryItem.entries.length} record(s))`;
+            historyContainer.appendChild(violDescEl);
+
+            const entriesList = document.createElement('ul');
+            entriesList.style.listStylePosition = 'inside';
+            entriesList.style.paddingLeft = '10px';
+            entriesList.style.marginLeft = '0px';
+
+            summaryItem.entries.forEach((entry) => {
+              const entryItem = document.createElement('li');
+              entryItem.style.fontSize = '0.9em';
+              entryItem.style.marginBottom = '6px';
+              entryItem.style.borderBottom = '1px dashed #eee';
+              entryItem.style.paddingBottom = '4px';
+              
+              let entryHtml = `<div style="font-weight: bold;"><em>${new Date(entry.alcivartech_date).toLocaleString()}</em></div>`;
+              const entryStatusColor = entry.viol_status === 'Fail' || (entry.result && entry.result.toLowerCase().includes('fail')) ? 'red' : 'green';
+              entryHtml += `<div>Status: <span style="font-weight:bold; color: ${entryStatusColor};">${entry.viol_status || 'N/A'}</span> | Result: ${entry.result || 'N/A'} | Level: ${entry.viol_level || 'N/A'}</div>`;
+              if (entry.comments) {
+                if (entry.viol_status === 'Pass' || (entry.result && entry.result.toLowerCase().includes('pass'))) {
+                  entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments addressed from previous failed inspection: ${entry.comments}</div>`;
+                } else { 
+                  entryHtml += `<div style="font-style: italic; color: #222; margin-top: 2px;">Comments: ${entry.comments}</div>`;
+                }
+              }
+              entryItem.innerHTML = entryHtml;
+              entriesList.appendChild(entryItem);
+            });
+
+            if (entriesList.lastChild) {
+                (entriesList.lastChild).style.borderBottom = 'none';
+            }
+            historyContainer.appendChild(entriesList);
+          });
+          container.appendChild(historyContainer);
+          return container;
+      } else if (config && sourceData) { // General case: use mapConfiguration
+        if (config.mainIdentifierField && sourceData[config.mainIdentifierField]) {
+            detailsHtml += `<div><strong>${config.mainIdentifierLabel || 'ID'}:</strong> ${sourceData[config.mainIdentifierField]}</div>`;
+        }
+        if (config.descriptionField && sourceData[config.descriptionField]) {
+            detailsHtml += `<div><strong>${config.descriptionLabel || 'Description'}:</strong> ${sourceData[config.descriptionField]}</div>`;
+        }
+
+        if (config.additionalFields && Array.isArray(config.additionalFields)) {
+            config.additionalFields.forEach(fieldConfig => {
+                const value = sourceData[fieldConfig.key];
+                let showField = true;
+                if (fieldConfig.condition) {
+                    if (fieldConfig.condition === 'boolean_true_only' && value !== true && String(value).toLowerCase() !== 'true') {
+                        showField = false;
+                    } else if (fieldConfig.condition === 'not_empty_string' && (value === null || String(value).trim() === '')) {
+                        showField = false;
+                    }
+                    // Add more conditions as needed
+                }
+
+                if (showField && value !== undefined && value !== null) {
+                    detailsHtml += `<div><strong>${fieldConfig.label || fieldConfig.key}:</strong> ${value}</div>`;
+                }
+            });
+        }
+        // Display live_details if present (common for 311 cases)
+        if (dataPoint.live_details) {
+            detailsHtml += `<div style="margin-top: 5px; padding-top: 5px; border-top: 1px solid #eee;"><strong>Live Details:</strong></div>`;
+            Object.entries(dataPoint.live_details).forEach(([key, value]) => {
+                const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                let displayValue = value;
+                if (typeof value === 'object' && value !== null) displayValue = JSON.stringify(value);
+                else if (value === null || value === undefined) displayValue = 'N/A';
+                detailsHtml += `<div>${formattedKey}: ${displayValue}</div>`;
+            });
+        }
+        container.innerHTML = detailsHtml;
+
+      } else if (sourceData) { // Fallback if no config, but sourceData exists (original generic display)
+        Object.entries(sourceData).forEach(([key, value]) => {
+          const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          let displayValue = value;
+          if (typeof value === 'object' && value !== null) displayValue = JSON.stringify(value);
+          else if (value === null || value === undefined) displayValue = 'N/A';
+          detailsHtml += `<div>${formattedKey}: ${displayValue}</div>`;
+        });
+        container.innerHTML = detailsHtml;
+      } else {
+        detailsHtml += `<div>No detailed data available for this point. Model: ${modelKey}</div>`;
+        container.innerHTML = detailsHtml;
       }
+    
       return container;
     };
-  // ...existing code...
   
   const initializeMapInternal = (centerArgFromParent = null, viewCenter = false) => {
     nextTick(() => {

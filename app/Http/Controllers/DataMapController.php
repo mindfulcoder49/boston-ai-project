@@ -16,39 +16,108 @@ use Illuminate\Support\Facades\Schema; // For schema checks
 
 class DataMapController extends Controller
 {
-    protected array $modelMapping = [
-        '311_cases' => \App\Models\ThreeOneOneCase::class,
-        'property_violations' => \App\Models\PropertyViolation::class,
-        'food_inspections' => \App\Models\FoodInspection::class,
-        'construction_off_hours' => \App\Models\ConstructionOffHour::class,
-        'building_permits' => \App\Models\BuildingPermit::class,
-        'crime' => \App\Models\CrimeData::class, // Ensure CrimeData is mappable
-        // Add other data types and their models here
-    ];
+    // Consolidate all model configurations here
+    protected array $modelConfigurations = [];
 
-    public const MODELS = [
-        'crime' => ['lat' => 'lat', 'lng' => 'long', 'id' => 'id', 'date_field' => 'occurred_on_date', 'foreign_key' => 'crime_data_id'],
-        '311_cases' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'open_dt', 'foreign_key' => 'three_one_one_case_id'],
-        'property_violations' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'status_dttm', 'foreign_key' => 'property_violation_id'],
-        'construction_off_hours' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'id', 'date_field' => 'start_datetime', 'foreign_key' => 'construction_off_hour_id'],
-        'building_permits' => ['lat' => 'y_latitude', 'lng' => 'x_longitude', 'id' => 'id', 'date_field' => 'issued_date', 'foreign_key' => 'building_permit_id'],
-        'food_inspections' => ['lat' => 'latitude', 'lng' => 'longitude', 'id' => 'external_id', 'date_field' => 'resultdttm', 'foreign_key' => 'food_inspection_id'],
-    ];
-    // Public accessor for modelMapping
-    public function getModelMapping(): array
+    public function __construct()
     {
-        return $this->modelMapping;
+        $this->modelConfigurations = [
+            '311_cases' => [
+                'modelClass' => \App\Models\ThreeOneOneCase::class,
+                'humanName' => '311 Cases',
+                'iconClass' => 'case-div-icon no-photo',
+                'alcivartech_type_for_styling' => '311 Case', // Type used for styling in DataMapDisplay
+                'latField' => 'latitude',
+                'lngField' => 'longitude',
+                // dateField, externalIdField, filterFieldsDescription, searchableColumns will be fetched from Mappable trait
+            ],
+            'property_violations' => [
+                'modelClass' => \App\Models\PropertyViolation::class,
+                'humanName' => 'Property Violations',
+                'iconClass' => 'property-violation-div-icon',
+                'alcivartech_type_for_styling' => 'Property Violation',
+                'latField' => 'latitude', // Assuming parsed from 'location'
+                'lngField' => 'longitude', // Assuming parsed from 'location'
+            ],
+            'food_inspections' => [
+                'modelClass' => \App\Models\FoodInspection::class,
+                'humanName' => 'Food Inspections',
+                'iconClass' => 'food-inspection-div-icon',
+                'alcivartech_type_for_styling' => 'Food Inspection',
+                'latField' => 'latitude',
+                'lngField' => 'longitude',
+            ],
+            'construction_off_hours' => [
+                'modelClass' => \App\Models\ConstructionOffHour::class,
+                'humanName' => 'Construction Off Hours',
+                'iconClass' => 'construction-off-hour-div-icon',
+                'alcivartech_type_for_styling' => 'Construction Off Hour',
+                'latField' => 'latitude',
+                'lngField' => 'longitude',
+            ],
+            'building_permits' => [
+                'modelClass' => \App\Models\BuildingPermit::class,
+                'humanName' => 'Building Permits',
+                'iconClass' => 'permit-div-icon', // or building-permit-div-icon
+                'alcivartech_type_for_styling' => 'Building Permit',
+                'latField' => 'y_latitude',
+                'lngField' => 'x_longitude',
+            ],
+            'crime' => [
+                'modelClass' => \App\Models\CrimeData::class,
+                'humanName' => 'Boston Crime',
+                'iconClass' => 'crime-div-icon',
+                'alcivartech_type_for_styling' => 'Crime',
+                'latField' => 'lat',
+                'lngField' => 'long',
+            ],
+            'everett_crime' => [
+                'modelClass' => \App\Models\EverettCrimeData::class,
+                'humanName' => 'Everett Crime',
+                'iconClass' => 'crime-div-icon', // Shares icon style with Boston Crime in UI elements
+                'alcivartech_type_for_styling' => 'Crime', // Shares styling type with Boston Crime on map
+                'latField' => 'incident_latitude',
+                'lngField' => 'incident_longitude',
+            ],
+        ];
+
+        // Dynamically add Mappable trait based properties to each configuration
+        foreach ($this->modelConfigurations as $key => &$config) {
+            $modelInstance = app($config['modelClass']);
+            if (in_array(Mappable::class, class_uses_recursive($modelInstance))) {
+                $config['dateField'] = $modelInstance::getDateField();
+                $config['externalIdField'] = $modelInstance::getExternalIdName();
+                $config['filterFieldsDescription'] = $modelInstance::getFilterableFieldsDescription();
+                $config['searchableColumns'] = $modelInstance::getSearchableColumns();
+                // modelNameForHumans from Mappable can override humanName if desired, or be used as a fallback
+                $config['modelNameForHumansMappable'] = $modelInstance::getModelNameForHumans();
+            } else {
+                // Log error or handle models not using Mappable if they are expected to
+                Log::error("Model {$config['modelClass']} for dataType '{$key}' does not use the Mappable trait.");
+                // Unset or mark as invalid to prevent issues later
+                // For now, we assume all configured models use Mappable for these fields.
+            }
+        }
     }
 
-    // Renamed from getModelClass to avoid conflict if used differently, and made public
+
+    // Removed $modelMapping, will use $this->modelConfigurations['modelClass']
+    // Removed MODELS constant, lat/lng fields are now in $modelConfigurations
+
+    public function getModelMapping(): array
+    {
+        // Return a simplified mapping if needed elsewhere, or adjust consumers
+        // For now, this returns model keys to model class strings, similar to old $modelMapping
+        return array_map(fn($config) => $config['modelClass'], $this->modelConfigurations);
+    }
+
     public function getModelClassForDataType(string $dataType): ?string
     {
-        if (!isset($this->modelMapping[$dataType])) {
-            abort(404, "Data type '{$dataType}' not found or not configured for mapping.");
+        if (!isset($this->modelConfigurations[$dataType])) {
+            abort(404, "Data type '{$dataType}' not found or not configured.");
         }
-        $modelClass = $this->modelMapping[$dataType];
+        $modelClass = $this->modelConfigurations[$dataType]['modelClass'];
 
-        // Ensure the model uses the Mappable trait or implements a similar interface
         if (!in_array(Mappable::class, class_uses_recursive($modelClass))) {
             abort(500, "Model for {$dataType} does not use the Mappable trait/interface.");
         }
@@ -85,122 +154,125 @@ class DataMapController extends Controller
 
     public function index(Request $request, string $dataType)
     {
-        $modelClass = $this->getModelClassForDataType($dataType);
-        // Fetch data limited by user's subscription tier
-        $tierMinDate = $this->getMinDateForEffectiveUser($dataType, Auth::user()); // Pass current user
+        if (!isset($this->modelConfigurations[$dataType])) {
+            abort(404, "Data type '{$dataType}' not configured.");
+        }
+        $config = $this->modelConfigurations[$dataType];
+        $modelClass = $config['modelClass'];
+
+        $tierMinDate = $this->getMinDateForEffectiveUser($dataType, Auth::user());
 
         $query = $modelClass::query();
-        // Apply tier-based date restriction first
         if ($tierMinDate) {
-            $query->where($modelClass::getDateField(), '>=', $tierMinDate->toDateString());
+            $query->where($config['dateField'], '>=', $tierMinDate->toDateString());
         }
 
-        //get limit from request    
-        $limit = $request->input('limit', 1000); // Default limit
-
-        //order by date field
-        $query->orderBy($modelClass::getDateField(), 'desc');
-        $initialData = $query->limit(max(1, min($limit, 100000)))->get(); // Clamp limit for performance
-
-        // enrich data with additional fields
+        $limit = $request->input('limit', 1000);
+        $query->orderBy($config['dateField'], 'desc');
+        $initialData = $query->limit(max(1, min($limit, 100000)))->get();
         $initialData = $this->enrichData($initialData, $dataType);
 
-        return Inertia::render('DataMap', [
+        // Pass the full configuration for this dataType
+        $pageProps = [
             'initialData' => $initialData,
-            'filters' => $request->all(), // Pass through any query params as initial filters
-            'dataType' => $dataType,
-            'dateField' => $modelClass::getDateField(), // From Mappable trait
-            'externalIdField' => $modelClass::getExternalIdName(), // From Mappable trait
-            // getFilterableFieldsDescription should return a JSON string or array
-            'filterFieldsDescription' => $modelClass::getFilterableFieldsDescription(), // From Mappable trait
-            'searchableColumns' => $modelClass::getSearchableColumns(), // Added
-        ]);
+            'filters' => $request->all(),
+            'dataType' => $dataType, // modelKey
+            // Specific fields are now part of dataTypeConfig
+            // 'dateField' => $config['dateField'],
+            // 'externalIdField' => $config['externalIdField'],
+            // 'filterFieldsDescription' => $config['filterFieldsDescription'],
+            // 'searchableColumns' => $config['searchableColumns'],
+            'dataTypeConfig' => $config, // Pass the whole config for this dataType
+        ];
+        // For MapToolbar, we need all model configs for the links
+        $pageProps['allModelConfigurationsForToolbar'] = array_map(function($key, $conf) {
+            return [
+                'dataType' => $key, // modelKey
+                'name' => $conf['humanName'],
+                'iconClass' => $conf['iconClass'],
+            ];
+        }, array_keys($this->modelConfigurations), $this->modelConfigurations);
+
+
+        return Inertia::render('DataMap', $pageProps);
     }
 
     public function combinedIndex(Request $request)
     {
         $allDataTypeDetails = [];
-        $initialDataType = null;
-        // $initialData = collect(); // Will be part of initialDataSets
-        $initialDataSets = []; // Changed from $initialData
-        $initialFilters = ['limit' => 100]; // Default initial filters, component applies per type
+        $initialModelKey = null;
+        $initialDataSets = [];
+        $initialFilters = ['limit' => 100];
 
-        // Determine the initial data type (e.g., the first one in the mapping)
-        if (!empty($this->modelMapping)) {
-            $initialDataType = array_key_first($this->modelMapping);
+        if (!empty($this->modelConfigurations)) {
+            $initialModelKey = array_key_first($this->modelConfigurations);
         }
 
-        foreach ($this->modelMapping as $dataType => $modelClassString) {
-            /** @var Mappable $modelClass */
-            $modelClass = $this->getModelClassForDataType($dataType); // Ensures it uses Mappable
-            if (!$modelClass) {
-                Log::warning("Skipping data type {$dataType} in combinedIndex as its model class could not be resolved or is not Mappable.");
+        foreach ($this->modelConfigurations as $modelKey => $config) {
+            $modelClass = $config['modelClass'];
+            if (!in_array(Mappable::class, class_uses_recursive($modelClass))) {
+                Log::warning("Skipping data type {$modelKey} in combinedIndex as its model class {$modelClass} is not Mappable.");
                 continue;
             }
 
-            $allDataTypeDetails[$dataType] = [
-                'dateField' => $modelClass::getDateField(),
-                'externalIdField' => $modelClass::getExternalIdName(),
-                'filterFieldsDescription' => $modelClass::getFilterableFieldsDescription(), // Pass as is, component handles parsing
-                'modelNameForHumans' => $modelClass::getModelNameForHumans(),
-                'searchableColumns' => $modelClass::getSearchableColumns(), // Good to have for client-side reference if needed
-            ];
+            // Use the full config, Mappable trait properties are already merged in constructor
+            $allDataTypeDetails[$modelKey] = $config;
+            // Ensure 'modelNameForHumans' is set, prefer 'humanName' from config, fallback to Mappable's
+            $allDataTypeDetails[$modelKey]['modelNameForHumans'] = $config['humanName'] ?? $config['modelNameForHumansMappable'] ?? Str::title(str_replace('_', ' ', $modelKey));
 
-            // Fetch initial data only for the designated initialDataType
-            if ($dataType === $initialDataType) {
+
+            if ($modelKey === $initialModelKey) {
                 $query = $modelClass::query();
-
-                // Apply tier-based date restriction first
-                $tierMinDate = $this->getMinDateForEffectiveUser($dataType, Auth::user()); // Pass current user
+                $tierMinDate = $this->getMinDateForEffectiveUser($modelKey, Auth::user());
                 if ($tierMinDate) {
-                    $query->where($modelClass::getDateField(), '>=', $tierMinDate->toDateString());
+                    $query->where($config['dateField'], '>=', $tierMinDate->toDateString());
                 }
-
-                // Apply initial filters if any (e.g., limit)
                 if (isset($initialFilters['limit'])) {
                     $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
                 }
-                // Add other default filters for initial load if necessary
-
-                
-                $dataForInitialType = $this->enrichData($query->get(), $dataType);
+                $dataForInitialType = $this->enrichData($query->get(), $modelKey);
                 if (!$dataForInitialType->isEmpty()) {
-                    $initialDataSets[$initialDataType] = $dataForInitialType;
+                    $initialDataSets[$initialModelKey] = $dataForInitialType;
                 }
             }
         }
 
-        if (!$initialDataType && !empty($allDataTypeDetails)) {
-            // Fallback if initialDataType wasn't set but we have details (e.g. first valid one)
-            $initialDataType = array_key_first($allDataTypeDetails);
-            // Potentially fetch data for this fallback initialDataType if not already fetched
-            if (empty($initialDataSets[$initialDataType]) && $initialDataType) { // Check initialDataSets
-                 /** @var Mappable $modelClass */
-                $modelClass = $this->getModelClassForDataType($initialDataType);
+        if (!$initialModelKey && !empty($allDataTypeDetails)) {
+            $initialModelKey = array_key_first($allDataTypeDetails);
+            if (empty($initialDataSets[$initialModelKey]) && $initialModelKey) {
+                $config = $allDataTypeDetails[$initialModelKey];
+                $modelClass = $config['modelClass'];
                 $query = $modelClass::query();
-                // Apply tier-based date restriction for fallback initial data
-                $tierMinDateOnFallback = $this->getMinDateForEffectiveUser($initialDataType, Auth::user());
+                $tierMinDateOnFallback = $this->getMinDateForEffectiveUser($initialModelKey, Auth::user());
                 if ($tierMinDateOnFallback) {
-                    $query->where($modelClass::getDateField(), '>=', $tierMinDateOnFallback->toDateString());
+                    $query->where($config['dateField'], '>=', $tierMinDateOnFallback->toDateString());
                 }
                 if (isset($initialFilters['limit'])) {
                     $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
                 }
-                $dataForFallbackInitialType = $this->enrichData($query->get(), $initialDataType);
+                $dataForFallbackInitialType = $this->enrichData($query->get(), $initialModelKey);
                 if (!$dataForFallbackInitialType->isEmpty()) {
-                    $initialDataSets[$initialDataType] = $dataForFallbackInitialType;
+                    $initialDataSets[$initialModelKey] = $dataForFallbackInitialType;
                 }
             }
         }
-
+        
+        // For MapToolbar in CombinedDataMap page
+        $allModelConfigurationsForToolbar = array_map(function($key, $conf) {
+            return [
+                'dataType' => $key, // modelKey
+                'name' => $conf['humanName'],
+                'iconClass' => $conf['iconClass'],
+            ];
+        }, array_keys($this->modelConfigurations), $this->modelConfigurations);
 
         return Inertia::render('CombinedDataMap', [
-            'modelMapping' => $this->modelMapping, // Pass the raw mapping
-            'initialDataType' => $initialDataType,
-            // 'initialData' => $initialData, // Removed
-            'initialDataSets' => $initialDataSets, // Added: object keyed by dataType
-            'initialFilters' => $initialFilters, // Pass the general default filters
-            'allDataTypeDetails' => $allDataTypeDetails,
+            'modelMapping' => $this->getModelMapping(), // Keep this for CombinedDataMapComponent's availableModels computed prop
+            'initialDataType' => $initialModelKey, // This is the initial model key
+            'initialDataSets' => $initialDataSets,
+            'initialFilters' => $initialFilters,
+            'allDataTypeDetails' => $allDataTypeDetails, // This now contains the richer configuration for each model
+            'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar, // For MapToolbar
         ]);
     }
 
@@ -390,66 +462,45 @@ class DataMapController extends Controller
     }
 
     public function enrichData( $data, string $dataType)
-    { 
-                // add alcivartech_type to the data
-        // add alcivartech_type to the data based on the data.type and
-        // also add alcivartech_date to the data based on the data.type
-        // follow the exampled code above and ingnore the location stuff
+    {
+        if (!isset($this->modelConfigurations[$dataType])) {
+            Log::error("enrichData: Configuration for dataType '{$dataType}' not found.");
+            return $data; // Or handle error appropriately
+        }
+        $config = $this->modelConfigurations[$dataType];
 
-        $data = $data->map(function ($point) use ($dataType) {
-            $point->alcivartech_type = $dataType; // Set the type based on the data type
-            //normalize latitude and longitude field name
-            if ($dataType != "property_violations") {
-                $point->latitude = $point->{self::MODELS[$dataType]['lat']};
-                $point->longitude = $point->{self::MODELS[$dataType]['lng']};
-            } else {
-                //parse the location field into latitude and longitude if it exists
-                if( isset($point->location) && !empty($point->location)) {
-                    $location = json_decode($point->location, true);
-                    if (isset($location['latitude']) && isset($location['longitude'])) {
-                        $point->latitude = $location['latitude'];
-                        $point->longitude = $location['longitude'];
-                    }
+        $data = $data->map(function ($point) use ($dataType, $config) {
+            $point->alcivartech_model = $dataType;
+            // Use alcivartech_type_for_styling from the centralized configuration
+            $point->alcivartech_type = $config['alcivartech_type_for_styling'];
+
+            // Normalize latitude and longitude field names using config
+            $latField = $config['latField'];
+            $lngField = $config['lngField'];
+
+            if ($dataType === 'property_violations' && isset($point->location) && !empty($point->location)) {
+                $location = json_decode($point->location, true);
+                if (isset($location['latitude']) && isset($location['longitude'])) {
+                    $point->latitude = $location['latitude'];
+                    $point->longitude = $location['longitude'];
                 }
                 unset($point->location);
-
+            } else {
+                $point->latitude = $point->{$latField} ?? null;
+                $point->longitude = $point->{$lngField} ?? null;
             }
+            
+            // Set alcivartech_date using dateField from config
+            $dateFieldFromConfig = $config['dateField'];
+            $point->alcivartech_date = $point->{$dateFieldFromConfig} ?? null;
 
-            switch ($dataType) {
-                case 'crime':
-                    $point->alcivartech_date = $point->occurred_on_date;
-                    $point->alcivartech_type = 'Crime';
-                    break;
-                case '311_cases':
-                    $point->alcivartech_date = $point->open_dt;
-
-                    $point->alcivartech_type = '311 Case';
-
-                    break;
-                case 'building_permits':
-                    $point->alcivartech_date = $point->issued_date;
-                    $point->alcivartech_type = 'Building Permit';
-                    break;
-                case 'property_violations':
-                    $point->alcivartech_date = $point->status_dttm;
-                    $point->alcivartech_type = 'Property Violation';
-                    break;
-                case 'construction_off_hours':
-                    $point->alcivartech_date = $point->start_datetime;
-                    $point->alcivartech_type = 'Construction Off Hour';
-                    break;
-                case 'food_inspections':
-
-                        $point->alcivartech_date = $point->resultdttm;
-                        $point->alcivartech_type = 'Food Inspection';
-                    break;
-                default:
-                    $point->alcivartech_date = null; // Default case
-            }
             return $point;
         });
 
-        $data = $this->aggregateFoodViolations($data);
+        // Aggregation logic might need to be aware of the new alcivartech_type if it was previously relying on a switch
+        if ($config['alcivartech_type_for_styling'] === 'Food Inspection') {
+             $data = $this->aggregateFoodViolations($data);
+        }
 
         return $data;
     }

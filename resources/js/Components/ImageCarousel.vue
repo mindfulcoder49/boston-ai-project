@@ -3,27 +3,21 @@
         <div class="carousel-wrapper" ref="carouselWrapper">
             <div
                 v-for="(data, index) in filteredDataPoints"
-                :key="data.id || index" 
+                :key="data.data_point_id || index" 
                 class="carousel-slide"
                 :style="{ flexBasis: `calc(100% / ${currentVisibleSlides})` }"
                 @click="onImageClick(data)"
             >
                 <div class="carousel-slide-inner">
                     <img
-                        v-if="data.closed_photo"
-                        :src="data.closed_photo"
-                        alt="Data Point Image"
-                        class="carousel-image"
-                    />
-                    <img
-                        v-else-if="data.submitted_photo"
-                        :src="data.submitted_photo"
+                        v-if="getPhotoUrl(data)"
+                        :src="getPhotoUrl(data)"
                         alt="Data Point Image"
                         class="carousel-image"
                     />
                     
-                    <div v-if="data.type" class="data-type-label">
-                        {{ data.type }}
+                    <div v-if="data.alcivartech_type" class="data-type-label">
+                        {{ data.alcivartech_type }}
                     </div>
                 </div>
             </div>
@@ -65,6 +59,10 @@ const props = defineProps({
         type: String,
         default: '300px', // Default height, can be overridden by prop
     },
+    modelToDataKeyMap: { // Added prop
+        type: Object,
+        default: () => ({})
+    },
     // Define breakpoints and corresponding slides per view
     // Example: { 1024: 4, 768: 3, 600: 2, 0: 1 } (screenWidth: slides)
     // Order from largest to smallest screen width
@@ -85,8 +83,34 @@ const carouselWrapper = ref(null);
 const currentPageIndex = ref(0); // Current page index
 const currentVisibleSlides = ref(props.responsiveBreakpoints[0] || 1); // Number of slides visible at a time
 
+const getPhotoDataObject = (dataPoint) => {
+    if (!dataPoint || !dataPoint.alcivartech_model || !props.modelToDataKeyMap) {
+        return null;
+    }
+    const dataKey = props.modelToDataKeyMap[dataPoint.alcivartech_model];
+    return dataKey ? dataPoint[dataKey] : null;
+};
+
+const getPhotoUrl = (dataPoint) => {
+    const photoData = getPhotoDataObject(dataPoint);
+    if (!photoData) return null;
+
+    let photoUrl = null;
+    if (photoData.closed_photo) {
+        photoUrl = photoData.closed_photo;
+    } else if (photoData.submitted_photo) {
+        photoUrl = photoData.submitted_photo;
+    }
+
+    if (photoUrl && typeof photoUrl === 'string' && photoUrl.includes(' | ')) {
+        return photoUrl.split(' | ')[0];
+    }
+    return photoUrl;
+};
+
+
 const hasImage = (data) => {
-    return data?.closed_photo || data?.submitted_photo;
+    return !!getPhotoUrl(data);
 };
 
 const onImageClick = (data) => {
@@ -94,7 +118,7 @@ const onImageClick = (data) => {
 };
 
 const filteredDataPoints = computed(() => {
-    return props.dataPoints.filter((data) => hasImage(data));
+    return props.dataPoints.filter((data) => !!getPhotoUrl(data));
 });
 
 const hasImages = computed(() => {
@@ -131,8 +155,6 @@ const goToPage = (pageIndex) => {
 
 const scrollToCurrentPage = () => {
     if (carouselWrapper.value && carouselWrapper.value.offsetWidth) {
-        // The amount to scroll is the width of the wrapper (which shows one page)
-        // multiplied by the current page index.
         const scrollAmount = carouselWrapper.value.offsetWidth * currentPageIndex.value;
         carouselWrapper.value.scrollTo({
             left: scrollAmount,
@@ -145,7 +167,6 @@ const updateVisibleSlides = () => {
     const screenWidth = window.innerWidth;
     let slides = props.responsiveBreakpoints[0] || 1; // Default to smallest or first defined
 
-    // Iterate through sorted breakpoints (largest to smallest screen width)
     const sortedBreakpoints = Object.entries(props.responsiveBreakpoints)
                                    .map(([width, count]) => [parseInt(width), count])
                                    .sort((a, b) => b[0] - a[0]); // Sort descending by width
@@ -156,8 +177,6 @@ const updateVisibleSlides = () => {
             break;
         }
     }
-    // If no breakpoint matches (e.g., screenWidth is smaller than all defined min widths)
-    // use the count for the smallest breakpoint (last one in sorted list if not already caught)
     if (slides === (props.responsiveBreakpoints[0] || 1) && sortedBreakpoints.length > 0) {
          const smallestBreakpoint = sortedBreakpoints[sortedBreakpoints.length - 1];
          if (screenWidth < smallestBreakpoint[0]) {
@@ -167,13 +186,9 @@ const updateVisibleSlides = () => {
 
     if (currentVisibleSlides.value !== slides) {
         currentVisibleSlides.value = slides;
-        // Reset to first page if number of visible slides changes,
-        // to avoid being on an out-of-bounds page.
-        // Or, try to maintain the current first visible item
         const firstItemIndexOfCurrentPage = currentPageIndex.value * currentVisibleSlides.value;
         currentPageIndex.value = Math.floor(firstItemIndexOfCurrentPage / slides) || 0;
 
-        // Ensure currentPageIndex is not out of bounds after recalculating
         if(totalPages.value > 0) {
            currentPageIndex.value = Math.min(currentPageIndex.value, totalPages.value - 1);
         } else {
@@ -186,9 +201,6 @@ const updateVisibleSlides = () => {
 onMounted(() => {
     updateVisibleSlides(); // Initial check
     window.addEventListener('resize', updateVisibleSlides);
-    // Ensure initial scroll position is correct if not starting at index 0
-    // Needs a slight delay for DOM to be ready if currentVisibleSlides was calculated
-    // and might have caused a re-render
     setTimeout(scrollToCurrentPage, 0);
 });
 
@@ -200,20 +212,14 @@ watch(currentPageIndex, () => {
     scrollToCurrentPage();
 });
 
-// Watch for changes in data points or visible slides, as they affect totalPages
 watch([filteredDataPoints, currentVisibleSlides], () => {
     if (totalPages.value > 0 && currentPageIndex.value >= totalPages.value) {
         currentPageIndex.value = Math.max(0, totalPages.value - 1);
     } else if (totalPages.value === 0) {
         currentPageIndex.value = 0;
     }
-    // This might be needed if data changes and current page becomes empty or invalid
-    // setTimeout(scrollToCurrentPage, 0); // scroll after DOM updates
 }, { deep: true });
 
-
-// This computed property is not directly used for display but can be helpful for debugging
-// or if you want to apply a style to specifically visible slides.
 const currentlyVisibleItemIndexes = computed(() => {
     const start = currentPageIndex.value * currentVisibleSlides.value;
     const end = start + currentVisibleSlides.value;
@@ -226,7 +232,6 @@ const currentlyVisibleItemIndexes = computed(() => {
 .carousel-container {
     position: relative;
     width: 100%;
-    /* height: 300px; Set by prop carouselHeight */
     overflow: hidden; /* Crucial to contain slides within the fixed height */
 }
 
@@ -245,7 +250,6 @@ const currentlyVisibleItemIndexes = computed(() => {
 }
 
 .carousel-slide {
-    /* flex-basis set dynamically by :style */
     flex-shrink: 0; /* Prevent slides from shrinking */
     height: 100%; /* Make slide take full height of wrapper */
     scroll-snap-align: start; /* Each slide group aligns to the start */
@@ -272,8 +276,6 @@ const currentlyVisibleItemIndexes = computed(() => {
     width: 100%;
     height: 100%;
     object-fit: cover; /* Cover the area, cropping if necessary */
-    /* aspect-ratio: 1/1; */ /* Remove if you want images to fill slide space non-uniformly,
-                                or adjust as needed. 'cover' will maintain aspect ratio. */
 }
 
 .data-type-label {
@@ -292,7 +294,6 @@ const currentlyVisibleItemIndexes = computed(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* height: 300px; Set by prop carouselHeight */
     text-align: center;
     font-style: italic;
     color: #aaa;
@@ -363,8 +364,6 @@ const currentlyVisibleItemIndexes = computed(() => {
     background-color: #555;
 }
 
-/* No specific media queries needed here for slide counts as JS handles it,
-   but you can add them for styling adjustments if necessary. */
 @media screen and (max-width: 600px) {
     .data-type-label {
         font-size: .7rem;

@@ -85,6 +85,10 @@ const props = defineProps({
   language_codes: {
     type: Array,
     default: () => ['en-US']
+  },
+  mapConfiguration: { // Received from RadialMap.vue, originally from GenericMapController
+    type: Object,
+    default: () => ({})
   }
 });
 
@@ -206,10 +210,55 @@ function handleImageClick(photo) {
   // Emit or handle the image click event
   console.log('Image clicked in UniversalDataDisplay:', photo);
 }
+
+const nestedData = computed(() => {
+  if (!props.data || !props.data.alcivartech_model) {
+    return null;
+  }
+  // The key for the nested object is data.alcivartech_model (e.g., 'crime_data', 'everett_crime_data')
+  // This key corresponds to dataObjectKey in GenericMapController's config.
+  return props.data[props.data.alcivartech_model] || null;
+});
+
+const getModelHumanName = (modelKey) => {
+  return props.mapConfiguration[modelKey]?.humanName || modelKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
+const formatKey = (key) => {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return dateString; // Return original if invalid
+  return date.toLocaleString(); // Or any more specific format
+};
+
+const isRedundantOrInternal = (key, value) => {
+  // Hide top-level fields if they are already displayed or are internal
+  const redundantKeys = ['latitude', 'longitude', 'lat', 'lng', 'x_longitude', 'y_latitude', 'location', 'data_point_id', 'alcivartech_type', 'alcivartech_model', 'alcivartech_date'];
+  if (redundantKeys.includes(key.toLowerCase())) return true;
+  
+  // Hide fields from nested object if they are just repeating lat/long already shown from top-level data
+  if (props.data && nestedData.value) {
+    if ((key.toLowerCase() === 'latitude' || key.toLowerCase() === 'lat' || key.toLowerCase() === 'y_latitude' || key.toLowerCase() === 'gpsy') && parseFloat(value) === parseFloat(props.data.latitude)) return true;
+    if ((key.toLowerCase() === 'longitude' || key.toLowerCase() === 'long' || key.toLowerCase() === 'lng' || key.toLowerCase() === 'x_longitude' || key.toLowerCase() === 'gpsx') && parseFloat(value) === parseFloat(props.data.longitude)) return true;
+  }
+
+  // Hide fields that are entirely null or empty strings, unless it's a boolean false
+  if (value === null || value === '') return true;
+  if (typeof value === 'object' && value !== null && Object.keys(value).length === 0 && key !== 'violation_summary') return true;
+
+  return false;
+};
 </script>
 
 <style scoped>
 .universal-display {
   font-size: 0.9rem;
+}
+.universal-data-display strong {
+  color: #374151; /* gray-700 */
 }
 </style>

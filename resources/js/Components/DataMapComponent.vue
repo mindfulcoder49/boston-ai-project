@@ -41,7 +41,7 @@
             ref="dataMapDisplayRef"
             :mapCenterCoordinates="mapCenter"
             :dataPointsToDisplay="displayedDataPoints"
-            :externalIdFieldProp="externalIdFieldProp"
+            :externalIdFieldProp="dataTypeConfigProp?.externalIdField || 'id'"
             @marker-data-point-clicked="handleMarkerClick"
             @map-initialized-internal="handleMapInitialized"
             class="h-[70vh] w-full rounded-md shadow-md generic-map" 
@@ -68,7 +68,7 @@
       v-if="!isReadOnly || (isReadOnly && filterFieldsForReadOnlyView.length > 0)"
       :filter-fields-description="filterFieldsForReadOnlyView"
       :initial-filters="currentFilters"
-      :date-field="dateFieldProp"
+      :date-field="dataTypeConfigProp?.dateField"
       :data-type="dataTypeProp"
       :is-read-only="isReadOnly"
       @filters-updated="handleFiltersUpdated"
@@ -169,14 +169,15 @@ import { applyClientFilters } from '@/Utils/clientDataFilter.js'; // Added
 const props = defineProps({
   initialDataProp: Array,
   pageFiltersProp: Object,
-  dataTypeProp: String,
-  dateFieldProp: String,
-  externalIdFieldProp: String,
-  filterFieldsDescriptionProp: [String, Array, Object],
-  searchableColumnsProp: { // Added prop
-    type: Array,
-    default: () => []
-  },
+  dataTypeProp: String, // modelKey
+  dataTypeConfigProp: Object, // Rich configuration object for the current dataType
+  // dateFieldProp: String, // Replaced by dataTypeConfigProp.dateField
+  // externalIdFieldProp: String, // Replaced by dataTypeConfigProp.externalIdField
+  // filterFieldsDescriptionProp: [String, Array, Object], // Replaced by dataTypeConfigProp.filterFieldsDescription
+  // searchableColumnsProp: { // Replaced by dataTypeConfigProp.searchableColumns
+  //   type: Array,
+  //   default: () => []
+  // },
   isReadOnly: { 
     type: Boolean,
     default: false,
@@ -228,8 +229,7 @@ const saveMapError = ref('');
 const language_codes = ref(['en-US']); // Default, make dynamic if needed
 
 const dataTypeForHumans = computed(() => {
-    if (!props.dataTypeProp) return 'Data';
-    return props.dataTypeProp.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return props.dataTypeConfigProp?.humanName || props.dataTypeProp?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Data';
 });
 
 const currentReportLanguage = computed(() => {
@@ -239,97 +239,58 @@ const currentReportLanguage = computed(() => {
 });
 
 const availableFilterFieldsForModal = computed(() => {
-  console.log('DataMapComponent: availableFilterFieldsForModal START');
-  let descriptionProp = props.filterFieldsDescriptionProp;
-  console.log('DataMapComponent: props.filterFieldsDescriptionProp raw:', descriptionProp);
-
+  let descriptionProp = props.dataTypeConfigProp?.filterFieldsDescription;
   if (typeof descriptionProp === 'string') {
-    try {
-      descriptionProp = JSON.parse(descriptionProp);
-      console.log('DataMapComponent: Parsed filterFieldsDescriptionProp from string:', descriptionProp);
-    } catch (e) {
-      console.error('DataMapComponent: Failed to parse filterFieldsDescriptionProp string:', e);
-      return [];
-    }
+    try { descriptionProp = JSON.parse(descriptionProp); } catch (e) { return []; }
   }
-
-  if (!descriptionProp) {
-    console.log('DataMapComponent: No filterFieldsDescriptionProp, returning [].');
-    return [];
-  }
-
-  if (Array.isArray(descriptionProp)) {
-    console.log(`DataMapComponent: filterFieldsDescriptionProp is an array. Length: ${descriptionProp.length}`);
-    return descriptionProp;
-  }
-
+  if (!descriptionProp) return [];
+  if (Array.isArray(descriptionProp)) return descriptionProp;
   if (typeof descriptionProp === 'object' && descriptionProp !== null) {
-    console.log('DataMapComponent: filterFieldsDescriptionProp is an object. Converting to array.');
-    const mappedFields = Object.entries(descriptionProp).map(([key, value]) => ({
+    return Object.entries(descriptionProp).map(([key, value]) => ({
       name: key,
       label: value.label || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
       type: value.type || 'text',
       options: value.options || [],
     }));
-    console.log(`DataMapComponent: Mapped fields from object. Length: ${mappedFields.length}`);
-    return mappedFields;
   }
-
-  console.log('DataMapComponent: filterFieldsDescriptionProp is not array or object, returning [].');
   return [];
 });
 
 const displayedDataPoints = computed(() => {
-  if (props.isReadOnly) {
-    return clientFilteredDataPoints.value;
-  }
-  return dataPoints.value;
+  return props.isReadOnly ? clientFilteredDataPoints.value : dataPoints.value;
 });
 
 const filterFieldsForReadOnlyView = computed(() => {
   let baseDescriptionArray = [];
-  if (props.filterFieldsDescriptionProp) {
-    let parsedDesc = props.filterFieldsDescriptionProp;
-    if (typeof parsedDesc === 'string') {
-      try {
-        parsedDesc = JSON.parse(parsedDesc);
-      } catch (e) {
-        console.error('DataMapComponent: Failed to parse filterFieldsDescriptionProp string for read-only view:', e);
-        parsedDesc = [];
-      }
-    }
+  let descriptionProp = props.dataTypeConfigProp?.filterFieldsDescription;
 
-    if (Array.isArray(parsedDesc)) {
-      baseDescriptionArray = parsedDesc;
-    } else if (typeof parsedDesc === 'object' && parsedDesc !== null) {
-      baseDescriptionArray = Object.entries(parsedDesc).map(([key, value]) => ({
+  if (descriptionProp) {
+    if (typeof descriptionProp === 'string') {
+      try { descriptionProp = JSON.parse(descriptionProp); } catch (e) { descriptionProp = []; }
+    }
+    if (Array.isArray(descriptionProp)) {
+      baseDescriptionArray = descriptionProp;
+    } else if (typeof descriptionProp === 'object' && descriptionProp !== null) {
+      baseDescriptionArray = Object.entries(descriptionProp).map(([key, value]) => ({
         name: key,
         label: value.label || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         type: value.type || 'text',
         options: value.options || [],
-        // Copy other potential properties from value if necessary
         ...(typeof value === 'object' && value !== null && value) 
       }));
     }
   }
 
-  if (!props.isReadOnly) {
-    return baseDescriptionArray; // Return parsed base description if not read-only
-  }
+  if (!props.isReadOnly) return baseDescriptionArray;
 
-  // If read-only, filter based on configurableFilterFieldsForView
-  if (!props.configurableFilterFieldsForView || props.configurableFilterFieldsForView.length === 0) {
-    return []; // No fields are configurable if array is empty or not provided
-  }
+  if (!props.configurableFilterFieldsForView || props.configurableFilterFieldsForView.length === 0) return [];
   
   const configurableSet = new Set(props.configurableFilterFieldsForView);
   let filteredDesc = baseDescriptionArray.filter(field => configurableSet.has(field.name));
 
-  // If 'limit' is configurable and not already in the filtered description from the model
   if (configurableSet.has('limit') && !filteredDesc.some(field => field.name === 'limit')) {
     filteredDesc.push({ name: 'limit', label: 'Record Limit', type: 'number', placeholder: 'e.g., 1000' });
   }
-  
   return filteredDesc;
 });
 
@@ -424,9 +385,9 @@ const applyClientSideFilters = (filters) => {
   if (!props.isReadOnly) return;
 
   const dataTypeDetails = {
-    dateField: props.dateFieldProp,
-    searchableColumns: props.searchableColumnsProp,
-    filterFieldsDescription: availableFilterFieldsForModal.value // Use the parsed description
+    dateField: props.dataTypeConfigProp?.dateField,
+    searchableColumns: props.dataTypeConfigProp?.searchableColumns || [],
+    filterFieldsDescription: props.dataTypeConfigProp?.filterFieldsDescription // Already parsed or in correct format
   };
   
   clientFilteredDataPoints.value = applyClientFilters(
@@ -459,7 +420,7 @@ const handleListItemClick = (dataPoint) => {
   const lon = parseFloat(dataPoint.longitude || dataPoint.long || dataPoint.lng);
 
   if (dataMapDisplayRef.value && !isNaN(lat) && !isNaN(lon)) {
-    dataMapDisplayRef.value.panToAndOpenPopup(dataPoint, props.externalIdFieldProp);
+    dataMapDisplayRef.value.panToAndOpenPopup(dataPoint, props.dataTypeConfigProp?.externalIdField || 'id');
   }
 };
 
@@ -564,7 +525,7 @@ onMounted(() => {
         const initialConfigurableFilters = {};
         Object.keys(props.pageFiltersProp || {}).forEach(key => {
             if (props.configurableFilterFieldsForView.includes(key) || 
-                (key === 'date_range' && (props.configurableFilterFieldsForView.includes(props.dateFieldProp) || props.configurableFilterFieldsForView.includes('date_range')))) { // Special handling for date_range if date field is configurable
+                (key === 'date_range' && (props.configurableFilterFieldsForView.includes(props.dataTypeConfigProp?.dateField) || props.configurableFilterFieldsForView.includes('date_range')))) { // Special handling for date_range if date field is configurable
                 initialConfigurableFilters[key] = props.pageFiltersProp[key];
             }
         });

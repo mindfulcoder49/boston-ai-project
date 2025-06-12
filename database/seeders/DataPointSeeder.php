@@ -61,6 +61,15 @@ class DataPointSeeder extends Seeder
             'date_field_for_source_filter' => 'resultdttm', // Using resultdttm as the primary date
             'alcivartech_date_field' => 'resultdttm'
         ],
+        'everett_crime_data' => [
+            'lat' => 'incident_latitude',
+            'lng' => 'incident_longitude',
+            'id_field_for_generic_fk' => 'case_number', // Using case_number as the unique external identifier
+            'id_field_for_specific_fk' => 'id',         // Primary key of everett_crime_data table
+            'foreign_key' => 'everett_crime_data_id',   // New FK column in data_points table
+            'date_field_for_source_filter' => 'occurred_on_datetime',
+            'alcivartech_date_field' => 'occurred_on_datetime'
+        ],
     ];
 
     public function run()

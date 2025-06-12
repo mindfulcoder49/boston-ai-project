@@ -27,6 +27,7 @@ class SavedMap extends Model
         'filters', 
         'map_settings',
         'configurable_filter_fields',
+        'map_type',
     ];
 
     protected $casts = [

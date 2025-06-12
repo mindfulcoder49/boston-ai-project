@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BostonScope Flyer - [Specific Focus]</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; color: #333; }
+        .flyer-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+        }
+        .flyer-top, .flyer-bottom {
+            padding: 20px;
+            border-bottom: 2px solid #0056b3; /* Example accent color */
+        }
+        .flyer-bottom { border-bottom: none; }
+        h1, h2 { color: #0056b3; }
+        h1 { text-align: center; font-size: 2em; margin-bottom: 10px; }
+        h2 { font-size: 1.5em; margin-top: 0; margin-bottom: 15px; }
+        p { line-height: 1.6; margin-bottom: 15px; }
+        .screenshots {
+            display: flex; /* For side-by-side images */
+            gap: 15px;     /* Space between images */
+            margin-top: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens if needed */
+        }
+        .screenshots img {
+            width: calc(50% - 7.5px); /* Adjust for gap, for two images */
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        /* If only one screenshot in a section, make it larger */
+        .screenshots.single img {
+            width: 100%;
+        }
+        .feature-callouts ul {
+            list-style-type: '✓ '; /* Or use a FontAwesome icon */
+            padding-left: 20px;
+        }
+        .feature-callouts li { margin-bottom: 5px; }
+
+        /* Specific for bottom sections */
+        .flyer-bottom-crime { background-color: #ffebee; /* Light red tint */ }
+        .flyer-bottom-311 { background-color: #e3f2fd; /* Light blue tint */ }
+        .flyer-bottom-permits { background-color: #e8f5e9; /* Light green tint */ }
+        .flyer-bottom-food { background-color: #fffde7; /* Light yellow tint */ }
+
+    </style>
+</head>
+<body>
+
+    <div class="flyer-container">
+        <div class="flyer-top">
+            <h1>BostonScope: Your City, Unveiled.</h1>
+            <p>BostonScope provides comprehensive, up-to-date information on happenings in your neighborhood and across the city. From safety alerts to development news, stay informed with our powerful mapping and data tools.</p>
+            <div class="feature-callouts">
+                <ul>
+                    <li>Interactive Maps & Data Visualization</li>
+                    <li>Natural Language Queries</li>
+                    <li>Customizable Date & Type Filters</li>
+                    <li>Saved Locations & Personalized Views</li>
+                    <li>Detailed Data Metrics & History</li>
+                    <li>Multi-Lingual Support</li>
+                </ul>
+            </div>
+            <div class="screenshots">
+                <img src="placeholder_top_1.png" alt="BostonScope Combined Data Map">
+            </div>
+            <p style="text-align:center; font-style:italic;">Discover Boston like never before!</p>
+        </div>
+
+        <!-- EXAMPLE: Bottom for Crime Flyer -->
+        <div class="flyer-bottom flyer-bottom-crime">
+            <h2>Stay Aware: Crime Data & Safety Insights</h2>
+            <p>Access detailed crime reports, see incident locations on an interactive map, and filter by date or type. BostonScope helps you understand safety trends in your areas of interest.</p>
+            <div class="screenshots">
+                <img src="placeholder_crime_map.jpg" alt="Crime incident map pop-up">
+                <img src="placeholder_crime_metrics.jpg" alt="Crime data metrics summary">
+            </div>
+        </div>
+
+        <!--
+        Structure for other bottom halves (replace the above .flyer-bottom section):
+
+        <div class="flyer-bottom flyer-bottom-311">
+            <h2>Community Pulse: Track 311 Cases</h2>
+            <p>Stay informed about non-emergency civic issues reported through 311. See what's happening in your community, from service requests to public observations, all mapped and filterable.</p>
+            <div class="screenshots">
+                <img src="placeholder_311_map.jpg" alt="311 cases on map">
+                <img src="placeholder_311_metrics.jpg" alt="311 data metrics summary">
+            </div>
+        </div>
+
+        <div class="flyer-bottom flyer-bottom-permits">
+            <h2>Neighborhood Development: Monitor Building Permits</h2>
+            <p>Keep track of construction and development in Boston. View building permit applications, their status, and locations to understand how your city is evolving.</p>
+            <div class="screenshots">
+                <img src="placeholder_permits_map.jpg" alt="Building permit icons on map">
+                <img src="placeholder_permits_metrics.jpg" alt="Building permit data metrics">
+            </div>
+        </div>
+
+        <div class="flyer-bottom flyer-bottom-food">
+            <h2>Dine with Confidence: Access Food Inspection Reports</h2>
+            <p>Check the latest food inspection results for establishments in Boston. BostonScope provides transparency on food safety, helping you make informed choices.</p>
+            <div class="screenshots">
+                <img src="placeholder_food_map.jpg" alt="Food inspection icons on map">
+                <img src="placeholder_food_metrics.jpg" alt="Food inspection data metrics">
+            </div>
+        </div>
+        -->
+    </div>
+
+</body>
+</html>

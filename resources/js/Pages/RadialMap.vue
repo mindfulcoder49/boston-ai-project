@@ -63,6 +63,7 @@
         :tempNewMarkerPlacementCoords="tempNewMapClickCoords"
         :mapIsLoading="mapLoading"
         :shouldClearTempMarker="cancelNewMarker"
+        :map-configuration="mapConfiguration"
         @map-coordinates-selected-for-new-center="handleMapClickForNewCenter"
         @marker-data-point-clicked="handleMarkerClick"
         @map-initialized-internal="isMapInitialized = true"
@@ -83,10 +84,14 @@
 
     <div class="case-details">
       <h2 class="text-xl font-semibold text-gray-800 text-center my-4">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.caseDetailsTitle || 'Selected Case Details' }}</h2>
-      <UniversalDataDisplay :data="selectedDataPoint" :language_codes="language_codes" />
+      <UniversalDataDisplay :data="selectedDataPoint" :language_codes="language_codes" :map-configuration="mapConfiguration" />
     </div>
 
-    <ImageCarousel :dataPoints="dataPoints" @on-image-click="handleImageClick" />
+    <ImageCarousel 
+      :dataPoints="dataPoints" 
+      :modelToDataKeyMap="modelToSubObjectKeyMap"
+      @on-image-click="handleImageClick" 
+    />
 
     <AiAssistant 
       :context="filteredDataPoints" 
@@ -149,6 +154,7 @@ const maxDate = ref('');
 const selectedDataPoint = ref(null);
 const isMapInitialized = ref(false);
 const mapLoading = ref(false);
+const mapConfiguration = ref({}); // Ensure this is a ref
 
 const isAuthenticated = computed(() => !!page.props.auth.user); // Compute isAuthenticated
 
@@ -156,16 +162,33 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 const translations = inject('translations');
 const language_codes = ref(['en-US']);
 
+// Map from alcivartech_model to the actual key of the sub-object in the raw dataPoint from API
+const modelToSubObjectKeyMap = {
+  'crime_data': 'crime_data',
+  'three_one_one_cases': 'three_one_one_case_data',
+  'property_violations': 'property_violation_data',
+  'construction_off_hours': 'construction_off_hour_data',
+  'building_permits': 'building_permit_data',
+  'food_inspections': 'food_inspection_data',
+  'everett_crime_data': 'everett_crime_data'
+};
+
 const aggregateFoodViolations = (dataPoints) => {
-  const foodViolations = dataPoints.filter(dp => dp.alcivartech_type === 'Food Inspection');
+  const foodInspectionsInput = dataPoints.filter(dp => dp.alcivartech_type === 'Food Inspection');
   const otherDataPoints = dataPoints.filter(dp => dp.alcivartech_type !== 'Food Inspection');
 
-  if (foodViolations.length === 0) {
+  if (foodInspectionsInput.length === 0) {
     return otherDataPoints;
   }
 
-  const groupedByLicense = foodViolations.reduce((acc, viol) => {
-    const key = viol.licenseno;
+  const groupedByLicense = foodInspectionsInput.reduce((acc, viol) => {
+    // Access licenseno from the nested food_inspection_data object
+    const foodData = viol.food_inspection_data;
+    if (!foodData) { // Should not happen if data is structured correctly
+        otherDataPoints.push(viol);
+        return acc;
+    }
+    const key = foodData.licenseno;
     if (!key) { 
         otherDataPoints.push(viol); 
         return acc;
@@ -180,21 +203,25 @@ const aggregateFoodViolations = (dataPoints) => {
   const aggregatedFoodViolations = Object.values(groupedByLicense).map(licenseGroup => {
     if (licenseGroup.length === 0) return null;
 
-    // Sort by date to find the most recent record for representative data (address, name, etc.)
-    licenseGroup.sort((a, b) => new Date(b.alcivartech_date) - new Date(a.alcivartech_date));
+    licenseGroup.sort((a, b) => {
+        const dateA = a.food_inspection_data?.alcivartech_date || a.alcivartech_date;
+        const dateB = b.food_inspection_data?.alcivartech_date || b.alcivartech_date;
+        return new Date(dateB) - new Date(dateA);
+    });
     const mostRecentRecord = licenseGroup[0];
+    const mostRecentFoodData = mostRecentRecord.food_inspection_data;
 
-    // Filter for actual violations within the group (those having violdttm)
-    // Assumes violdttm indicates an actual violation record, vs. just an inspection.
-    const actualViolationEntries = licenseGroup.filter(viol => viol.violdttm);
+    if (!mostRecentFoodData) return null; // Should have food_inspection_data
+
+    // Filter for actual violations within the group
+    const actualViolationEntries = licenseGroup.filter(viol => viol.food_inspection_data && viol.food_inspection_data.violdttm);
 
     let violationSummary = null; 
 
     if (actualViolationEntries.length > 0) {
-      // Create a summary of all actual violations under this license
-      const violationSummaryMap = actualViolationEntries.reduce((acc, viol) => {
-        // violdesc should ideally exist if violdttm exists for a violation
-        const descKey = viol.violdesc || 'Unknown Violation Description'; 
+      const violationSummaryMap = actualViolationEntries.reduce((acc, violEntry) => {
+        const violFoodData = violEntry.food_inspection_data;
+        const descKey = violFoodData.violdesc || 'Unknown Violation Description'; 
         if (!acc[descKey]) {
           acc[descKey] = {
             violdesc: descKey,
@@ -202,12 +229,12 @@ const aggregateFoodViolations = (dataPoints) => {
           };
         }
         acc[descKey].entries.push({
-          alcivartech_date: viol.alcivartech_date, // Date of the specific violation entry
-          viol_status: viol.viol_status,
-          comments: viol.comments,
-          result: viol.result, 
-          viol_level: viol.viol_level,
-          // food_violation_id: viol.food_violation_id // original ID if needed
+          // Ensure date comes from the correct place (controller sets top-level alcivartech_date)
+          alcivartech_date: violEntry.alcivartech_date, 
+          viol_status: violFoodData.viol_status,
+          comments: violFoodData.comments,
+          result: violFoodData.result, 
+          viol_level: violFoodData.viol_level,
         });
         return acc;
       }, {});
@@ -220,20 +247,22 @@ const aggregateFoodViolations = (dataPoints) => {
       violationSummary = tempViolationSummary;
     }
 
+    // Create the aggregated point, ensuring structure is maintained
     const aggregatedPoint = {
-      ...mostRecentRecord, 
-      alcivartech_type: "Food Inspection", 
-      alcivartech_date: mostRecentRecord.alcivartech_date, 
-      _is_aggregated_food_violation: true 
+      ...mostRecentRecord, // Copy top-level properties (lat, lng, data_point_id, alcivartech_model, alcivartech_type, top-level alcivartech_date)
+      food_inspection_data: { // Deep merge or reconstruct food_inspection_data
+        ...mostRecentFoodData, // Copy original details from most_recent_record's food_inspection_data
+        _is_aggregated_food_violation: true, // Add flag inside nested object
+        // violation_summary will be added below if it exists
+      }
     };
-
+    
     if (violationSummary) {
-      aggregatedPoint.violation_summary = violationSummary;
+      aggregatedPoint.food_inspection_data.violation_summary = violationSummary;
     }
-    // If violationSummary remains null (because actualViolationEntries was empty),
-    // the aggregatedPoint will not have the violation_summary property.
-    // The FoodInspection.vue component should then handle it as a record
-    // without a violation summary (e.g., an aggregated inspection record).
+    // Ensure the top-level alcivartech_date is the most recent one from the group
+    aggregatedPoint.alcivartech_date = mostRecentRecord.alcivartech_date;
+
 
     return aggregatedPoint;
   }).filter(Boolean); 
@@ -359,29 +388,14 @@ const fetchData = async () => {
       headers: { 'X-CSRF-TOKEN': csrfToken },
     });
 
-    allDataPoints.value = response.data.dataPoints;
+    // Populate mapConfiguration from the API response
+    mapConfiguration.value = response.data.mapConfiguration || {};
 
-    // keep top level fields and merge in the correct data type subobject and delete all subobjects
-    allDataPoints.value = allDataPoints.value.map((dataPoint) => {
-      const dataType = dataPoint.alcivartech_type;
-      
-      const subObject = dataPoint[dataType.toLowerCase().replace(/ /g, '_').replace('311','three_one_one') + '_data'];
-      
-      if (subObject) {
-        // Remove all subobjects
-        Object.keys(dataPoint).forEach(key => {
-          if (key.endsWith('_data') && key !== (dataType.toLowerCase().replace(/ /g, '_').replace('311','three_one_one') + '_data')) {
-            delete dataPoint[key];
-          }
-        });
-        // Merge top-level fields with the sub-object
-        
-        return { ...dataPoint, ...subObject };
-      }
-      
-      return dataPoint; // Return as is if no sub-object
-    })
-    // Aggregate food violations after fetching
+    // Data from GenericMapController is already correctly structured with nested objects.
+    // No need to flatten it here.
+    allDataPoints.value = response.data.dataPoints || [];
+    
+    // Aggregate food violations after fetching. This function now expects nested structure.
     allDataPoints.value = aggregateFoodViolations(allDataPoints.value);
 
     updateDateRange();
@@ -524,16 +538,9 @@ const applyFiltersAndData = () => {
 
 
 const filteredDataPoints = computed(() => {
-  //remove subobject that ends with _data from each dataPoint
-  return dataPoints.value.map(dataPoint => {
-    const filteredDataPoint = { ...dataPoint };
-    Object.keys(filteredDataPoint).forEach(key => {
-      if (key.endsWith('_data')) {
-        delete filteredDataPoint[key];
-      }
-    });
-    return filteredDataPoint;
-  });
+  // After the transformation in fetchData, dataPoints.value should already be
+  // flattened and cleaned of extraneous _data properties.
+  return dataPoints.value;
 });
 
 const handleMarkerClick = (dataPoint) => {

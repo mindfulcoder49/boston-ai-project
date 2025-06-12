@@ -9,6 +9,7 @@ use App\Models\PropertyViolation;
 use App\Models\ConstructionOffHour;
 use App\Models\DataPoint;
 use App\Models\FoodInspection; // Corrected model name from FoodEstablishmentViolation
+use App\Models\EverettCrimeData; // Added EverettCrimeData model
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -28,10 +29,11 @@ class GenericMapController extends Controller
         $fields[] = $model->getKeyName(); // Add primary key
         
         // Add date field(s) used in logic if not already in fillable
-        // Most models have one main date field returned by getDateField()
-        $dateField = $modelClass::getDateField();
-        if (!in_array($dateField, $fields)) {
-            $fields[] = $dateField;
+        if (method_exists($modelClass, 'getDateField')) {
+            $dateField = $modelClass::getDateField();
+            if (!in_array($dateField, $fields)) {
+                $fields[] = $dateField;
+            }
         }
 
         // FoodInspection uses violdttm and resultdttm. Both should be in fillable.
@@ -152,7 +154,8 @@ class GenericMapController extends Controller
                 DB::raw($this->getJsonSelectForModel(\App\Models\PropertyViolation::class, 'property_violation_json')),
                 DB::raw($this->getJsonSelectForModel(\App\Models\ConstructionOffHour::class, 'construction_off_hour_json')),
                 DB::raw($this->getJsonSelectForModel(\App\Models\BuildingPermit::class, 'building_permit_json')),
-                DB::raw($this->getJsonSelectForModel(\App\Models\FoodInspection::class, 'food_inspection_json'))
+                DB::raw($this->getJsonSelectForModel(\App\Models\FoodInspection::class, 'food_inspection_json')),
+                DB::raw($this->getJsonSelectForModel(\App\Models\EverettCrimeData::class, 'everett_crime_data_json')) // Added EverettCrimeData
             )
             ->leftJoin('crime_data', $targetTable.'.crime_data_id', '=', 'crime_data.id')
             ->leftJoin('three_one_one_cases', $targetTable.'.three_one_one_case_id', '=', 'three_one_one_cases.id')
@@ -160,6 +163,7 @@ class GenericMapController extends Controller
             ->leftJoin('construction_off_hours', $targetTable.'.construction_off_hour_id', '=', 'construction_off_hours.id')
             ->leftJoin('building_permits', $targetTable.'.building_permit_id', '=', 'building_permits.id')
             ->leftJoin('food_inspections', $targetTable.'.food_inspection_id', '=', 'food_inspections.id')
+            ->leftJoin('everett_crime_data', $targetTable.'.everett_crime_data_id', '=', 'everett_crime_data.id') // Added join for EverettCrimeData
             ->whereRaw("ST_Distance_Sphere({$targetTable}.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters]);
 
         if ($cutoffDateTime && $targetTable === 'data_points') { 
@@ -183,6 +187,8 @@ class GenericMapController extends Controller
             unset($point->building_permit_json);
             $point->food_inspection_data = $point->food_inspection_json ? json_decode($point->food_inspection_json) : null;
             unset($point->food_inspection_json);
+            $point->everett_crime_data = $point->everett_crime_data_json ? json_decode($point->everett_crime_data_json) : null; // Added EverettCrimeData
+            unset($point->everett_crime_data_json);
 
             preg_match('/POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)/', $point->location_wkt, $matches);
             $point->longitude = isset($matches[1]) ? floatval($matches[1]) : null;
@@ -190,9 +196,14 @@ class GenericMapController extends Controller
             unset($point->location_wkt); 
 
             $humanReadableType = 'Unknown';
+            $point->alcivartech_model = $point->alcivartech_type_raw; // Set the model from the raw type
+
             switch ($point->alcivartech_type_raw) {
                 case 'crime_data':
                     $humanReadableType = 'Crime';
+                    break;
+                case 'everett_crime_data': // Added case for Everett crime
+                    $humanReadableType = 'Crime'; // Keep human-readable type as 'Crime'
                     break;
                 case 'three_one_one_cases':
                     $humanReadableType = '311 Case';
@@ -213,9 +224,16 @@ class GenericMapController extends Controller
             $point->alcivartech_type = $humanReadableType;
             unset($point->alcivartech_type_raw);
 
-            switch ($humanReadableType) {
+            switch ($humanReadableType) { // This switch should now use the humanReadableType
                 case 'Crime':
-                    $point->alcivartech_date = $point->crime_data->occurred_on_date ?? null;
+                    // Differentiate based on the model (raw type)
+                    if ($point->alcivartech_model === 'everett_crime_data' && $point->everett_crime_data) {
+                        $point->alcivartech_date = $point->everett_crime_data->occurred_on_datetime ?? null;
+                    } elseif ($point->alcivartech_model === 'crime_data' && $point->crime_data) {
+                        $point->alcivartech_date = $point->crime_data->occurred_on_date ?? null;
+                    } else {
+                        $point->alcivartech_date = null;
+                    }
                     break;
                 case '311 Case':
                     // Assuming 'open_dt' is the field in ThreeOneOneCase model
@@ -292,9 +310,100 @@ class GenericMapController extends Controller
             Log::info('Data point', [$dataPoint]);
         });
 
+        $dataPointModelConfig = [
+            'crime_data' => [
+              'dataObjectKey' => 'crime_data',
+              'mainIdentifierLabel' => 'Incident Number',
+              'mainIdentifierField' => 'incident_number',
+              'descriptionLabel' => 'Description',
+              'descriptionField' => 'offense_description',
+              'additionalFields' => [
+                ['label' => 'District', 'key' => 'district'],
+                ['label' => 'Shooting', 'key' => 'shooting', 'condition' => 'boolean_true_only'],
+              ]
+            ],
+            'everett_crime_data' => [
+              'dataObjectKey' => 'everett_crime_data',
+              'mainIdentifierLabel' => 'Case Number',
+              'mainIdentifierField' => 'case_number',
+              'descriptionLabel' => 'Description',
+              'descriptionField' => 'incident_description',
+              'additionalFields' => [
+                ['label' => 'Incident Type', 'key' => 'incident_type'],
+                ['label' => 'Arrest Name', 'key' => 'arrest_name', 'condition' => 'not_empty_string'],
+                ['label' => 'Arrest Charges', 'key' => 'arrest_charges', 'condition' => 'not_empty_string'],
+              ]
+            ],
+            'three_one_one_cases' => [
+              'dataObjectKey' => 'three_one_one_case_data',
+              'mainIdentifierLabel' => 'Case ID',
+              'mainIdentifierField' => 'case_enquiry_id',
+              'descriptionLabel' => 'Title',
+              'descriptionField' => 'case_title',
+              'additionalFields' => [
+                  ['label' => 'Status', 'key' => 'case_status'],
+                  ['label' => 'Address', 'key' => 'location_street_name'],
+              ]
+            ],
+            'building_permits' => [
+              'dataObjectKey' => 'building_permit_data',
+              'mainIdentifierLabel' => 'Permit Number',
+              'mainIdentifierField' => 'permitnumber',
+              'descriptionLabel' => 'Description',
+              'descriptionField' => 'description',
+              'additionalFields' => [
+                ['label' => 'Permit Type', 'key' => 'permit_type'],
+                ['label' => 'Status', 'key' => 'status'],
+                ['label' => 'Address', 'key' => 'address'],
+              ]
+            ],
+            'property_violations' => [
+              'dataObjectKey' => 'property_violation_data',
+              'mainIdentifierLabel' => 'Ticket Number',
+              'mainIdentifierField' => 'ticket_number',
+              'descriptionLabel' => 'Description',
+              'descriptionField' => 'description',
+              'additionalFields' => [
+                ['label' => 'Violation Type', 'key' => 'violation_type'],
+                ['label' => 'Status', 'key' => 'status'],
+                ['label' => 'Address', 'key' => 'address'],
+              ]
+            ],
+            'construction_off_hours' => [
+              'dataObjectKey' => 'construction_off_hour_data',
+              'mainIdentifierLabel' => 'Application Number',
+              'mainIdentifierField' => 'app_no',
+              'descriptionLabel' => 'Address',
+              'descriptionField' => 'address',
+              'additionalFields' => [
+                  ['label' => 'Permit Type', 'key' => 'permit_type'],
+                  ['label' => 'Hours Requested', 'key' => 'hours_req'],
+              ]
+            ],
+            'food_inspections' => [
+              'dataObjectKey' => 'food_inspection_data',
+              'customPopupHandler' => true, 
+              'mainIdentifierLabel' => 'License No',
+              'mainIdentifierField' => 'licenseno',
+              'descriptionLabel' => 'Business Name',
+              'descriptionField' => 'businessname',
+               'additionalFields' => [
+                ['label' => 'Violation', 'key' => 'violdesc'],
+                ['label' => 'Result', 'key' => 'result'],
+                ['label' => 'Address', 'key' => 'address'],
+              ]
+            ]
+        ];
+
+        $mapConfiguration = [
+            'dataPointModelConfig' => $dataPointModelConfig,
+            // Add other map-wide configurations here if needed in the future
+        ];
+
         return response()->json([
             'dataPoints' => $dataPoints,
             'centralLocation' => $centralLocation,
+            'mapConfiguration' => $mapConfiguration, // Add mapConfiguration to the response
         ]);
     }
 }

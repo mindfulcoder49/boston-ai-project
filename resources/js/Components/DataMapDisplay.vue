@@ -129,6 +129,7 @@ const getMarkerIcon = (alcivartechType, dataPoint) => {
 };
 
 const getClusterRadius = (zoom) => {
+  return 1;
   if (zoom < 10) {
     return 80; // Larger radius when zoomed out
   } else if (zoom < 13) {
@@ -242,30 +243,38 @@ const updateMarkers = (newDataPoints) => {
   newDataPoints.forEach(dp => {
     const lat = parseFloat(dp.latitude || dp.lat);
     const long = parseFloat(dp.longitude || dp.long || dp.lng);
-    const alcivartechType = dp.alcivartech_type || 'Unknown'; // Default to 'Unknown' if type is missing
+    const alcivartechModel = dp.alcivartech_model || 'Unknown_Model'; // Use model for grouping
+    const alcivartechType = dp.alcivartech_type || 'Unknown'; // Use type for styling
 
     if (!isNaN(lat) && !isNaN(long)) {
-      // Ensure a cluster group exists for this type
-      if (!markerClusterGroups.value[alcivartechType]) {
+      // Ensure a cluster group exists for this model
+      if (!markerClusterGroups.value[alcivartechModel]) {
         const newClusterGroup = markRaw(L.markerClusterGroup({
           maxClusterRadius: getClusterRadius,
-          iconCreateFunction: createTypedIconCreateFunction(alcivartechType)
+          // Style cluster icons based on alcivartech_type
+          iconCreateFunction: createTypedIconCreateFunction(alcivartechType) 
         }));
         mapInstance.value.addLayer(newClusterGroup);
-        markerClusterGroups.value[alcivartechType] = newClusterGroup;
+        markerClusterGroups.value[alcivartechModel] = newClusterGroup;
       }
 
-      const markerIcon = getMarkerIcon(alcivartechType, dp); // Pass full dataPoint 'dp'
+      const markerIcon = getMarkerIcon(alcivartechType, dp); // Icon based on alcivartech_type
+      // Pass alcivartechType to marker for consistency if any part of icon/popup logic relies on it.
+      // The grouping is now by alcivartechModel.
       const marker = markRaw(L.marker([lat, long], { icon: markerIcon, alcivartechType: alcivartechType }));
       marker.bindPopup(createPopupContent(dp));
       marker.on('click', () => {
         emit('marker-data-point-clicked', dp);
       });
       
-      markerClusterGroups.value[alcivartechType].addLayer(marker);
+      // Add marker to the cluster group corresponding to its model
+      markerClusterGroups.value[alcivartechModel].addLayer(marker);
       
       const externalId = dp[props.externalIdFieldProp];
       if (externalId !== undefined) {
+        // Ensure unique key for activeMarkersMap if externalIdFieldProp might not be unique across models
+        // For combined maps, externalIdFieldProp is usually a composite like 'alcivartech_external_id'
+        // which should already be unique.
         activeMarkersMap.value.set(String(externalId), marker);
       }
     } else {
