@@ -23,18 +23,23 @@ class DataMapController extends Controller
     {
         $this->modelRegistry = [
             '311_cases' => \App\Models\ThreeOneOneCase::class,
+            'cambridge_311_cases' => \App\Models\CambridgeThreeOneOneCase::class,
+
             'property_violations' => \App\Models\PropertyViolation::class,
+            'cambridge_housing_violations' => \App\Models\CambridgeHousingViolationData::class,
+
             'food_inspections' => \App\Models\FoodInspection::class,
+            'cambridge_sanitary_inspections' => \App\Models\CambridgeSanitaryInspectionData::class,
+
             'construction_off_hours' => \App\Models\ConstructionOffHour::class,
+
             'building_permits' => \App\Models\BuildingPermit::class,
+            'cambridge_building_permits' => \App\Models\CambridgeBuildingPermitData::class,
+
             'crime' => \App\Models\CrimeData::class,
             'everett_crime' => \App\Models\EverettCrimeData::class,
-            // Cambridge Models
-            'cambridge_311_cases' => \App\Models\CambridgeThreeOneOneCase::class,
-            'cambridge_building_permits' => \App\Models\CambridgeBuildingPermitData::class,
             'cambridge_crime_reports' => \App\Models\CambridgeCrimeReportData::class,
-            'cambridge_housing_violations' => \App\Models\CambridgeHousingViolationData::class,
-            'cambridge_sanitary_inspections' => \App\Models\CambridgeSanitaryInspectionData::class,
+            // Cambridge Models
         ];
 
         // Validate that all registered models use the Mappable trait
