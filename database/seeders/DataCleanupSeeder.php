@@ -66,8 +66,23 @@ class DataCleanupSeeder extends Seeder
             Log::info("DataCleanupSeeder: Deleted {$deletedBuildingPermits} records from building_permits where city was Cambridge.");
             $this->command->info("Deleted {$deletedBuildingPermits} records from building_permits (Cambridge).");
 
+            // Handle crime_data and their related data_points
+            $nonBostonCrimeDataIds = DB::table('crime_data')
+                ->where(function ($query) {
+                    $query->where('source_city', '!=', 'Boston')
+                          ->orWhereNull('source_city');
+                })
+                ->pluck('id');
+
+            if ($nonBostonCrimeDataIds->isNotEmpty()) {
+                $deletedDataPointsCrime = DB::table('data_points')
+                    ->whereIn('crime_data_id', $nonBostonCrimeDataIds)
+                    ->delete();
+                Log::info("DataCleanupSeeder: Deleted {$deletedDataPointsCrime} related records from data_points for non-Boston crime data.");
+                $this->command->info("Deleted {$deletedDataPointsCrime} related records from data_points for non-Boston crime data.");
+            }
+
             // Delete non-Boston data from crime_data
-            // This will remove records where source_city is not 'Boston' or where source_city is NULL.
             $deletedCrimeData = DB::table('crime_data')
                 ->where(function ($query) {
                     $query->where('source_city', '!=', 'Boston')
