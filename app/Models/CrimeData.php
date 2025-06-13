@@ -36,6 +36,7 @@ class CrimeData extends Model
         'crime_details', // Added
         'crime_start_time', // Added
         'crime_end_time',   // Added
+        'source_city', // Added
     ];
 
     // Cast the occurred_on_date to a date type
@@ -46,7 +47,8 @@ class CrimeData extends Model
     const SEARCHABLE_COLUMNS = [ // Added
         'incident_number', 'offense_code', 'offense_code_group', 'offense_description',
         'district', 'reporting_area', 'shooting', 'year', 'month', 'day_of_week', 'hour',
-        'ucr_part', 'street', 'location', 'language_code', 'crime_details', 'crime_start_time', 'crime_end_time'
+        'ucr_part', 'street', 'location', 'language_code', 'crime_details', 'crime_start_time', 'crime_end_time',
+        'source_city', // Added
     ];
 
     //define string constants for the crime data context sent to GPT

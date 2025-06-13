@@ -119,13 +119,13 @@ class RunAllDataPipelineCommand extends Command
                 ['command' => 'db:seed', 'params' => ['--class' => 'FoodInspectionsSeeder', '--force' => true]],
             ],
             'Cambridge Data Acquisition' => [
-                ['command' => 'app:download-city-dataset', 'params' => []],
+                ['command' => 'app:download-city-dataset', 'params' => []], 
                 ['command' => 'app:download-cambridge-logs', 'params' => []],
             ],
             'Cambridge Data Seeding' => [
                 ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeBuildingPermitsSeeder', '--force' => true]],
                 ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeThreeOneOneSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeSanitaryInspectionSeeder', '--force' => true]],
+                ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeSanitaryInspectionsSeeder', '--force' => true]],
                 ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeHousingViolationsSeeder', '--force' => true]],
                 ['command' => 'db:seed', 'params' => ['--class' => 'CambridgeAddressesSeeder', '--force' => true]],
                 ['command' => 'db:seed', 'params' => ['--class' => 'CambridgeIntersectionsSeeder', '--force' => true]],
