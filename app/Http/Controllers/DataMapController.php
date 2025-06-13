@@ -29,7 +29,6 @@ class DataMapController extends Controller
             'building_permits' => \App\Models\BuildingPermit::class,
             'crime' => \App\Models\CrimeData::class,
             'everett_crime' => \App\Models\EverettCrimeData::class,
-            'cambridge_crime' => \App\Models\CambridgeCrimeReportData::class,
             // Cambridge Models
             'cambridge_311_cases' => \App\Models\CambridgeThreeOneOneCase::class,
             'cambridge_building_permits' => \App\Models\CambridgeBuildingPermitData::class,
