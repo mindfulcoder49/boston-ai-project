@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Log;
 class DataCleanupSeeder extends Seeder
 {
     /**
+     * Define a batch size for chunking delete operations.
+     */
+    private const CLEANUP_BATCH_SIZE = 1000;
+
+    /**
      * Run the database seeds.
      *
      * @return void
@@ -18,14 +23,13 @@ class DataCleanupSeeder extends Seeder
         Log::info('DataCleanupSeeder: Starting data cleanup process.');
         $this->command->info('DataCleanupSeeder: Starting data cleanup process.');
 
+        // --- Cleanup 311 Cases ---
         DB::transaction(function () {
-            // Identify Cambridge 311 case IDs
             $cambridgeThreeOneOneCaseIds = DB::table('three_one_one_cases')
                 ->where('source_city', 'Cambridge')
                 ->pluck('id');
 
             if ($cambridgeThreeOneOneCaseIds->isNotEmpty()) {
-                // Delete related records from data_points
                 $deletedDataPointsThreeOneOne = DB::table('data_points')
                     ->whereIn('three_one_one_case_id', $cambridgeThreeOneOneCaseIds)
                     ->delete();
@@ -33,12 +37,15 @@ class DataCleanupSeeder extends Seeder
                 $this->command->info("Deleted {$deletedDataPointsThreeOneOne} related records from data_points for Cambridge 311 cases.");
             }
 
-            // Delete Cambridge data from three_one_one_cases
             $deletedThreeOneOne = DB::table('three_one_one_cases')->where('source_city', 'Cambridge')->delete();
             Log::info("DataCleanupSeeder: Deleted {$deletedThreeOneOne} records from three_one_one_cases where source_city was Cambridge.");
             $this->command->info("Deleted {$deletedThreeOneOne} records from three_one_one_cases (Cambridge).");
+        });
+        Log::info('DataCleanupSeeder: Finished cleaning 311 cases.');
+        $this->command->info('Finished cleaning 311 cases.');
 
-            // Handle food_inspections and their related data_points
+        // --- Cleanup Food Inspections ---
+        DB::transaction(function () {
             $cambridgeFoodInspectionIds = DB::table('food_inspections')->where('city', 'Cambridge')->pluck('id');
             if ($cambridgeFoodInspectionIds->isNotEmpty()) {
                 $deletedDataPointsFood = DB::table('data_points')->whereIn('food_inspection_id', $cambridgeFoodInspectionIds)->delete();
@@ -46,14 +53,15 @@ class DataCleanupSeeder extends Seeder
                 $this->command->info("Deleted {$deletedDataPointsFood} related records from data_points for Cambridge food inspections.");
             }
             
-            // Delete Cambridge data from food_inspections
             $deletedFoodInspections = DB::table('food_inspections')->where('city', 'Cambridge')->delete();
             Log::info("DataCleanupSeeder: Deleted {$deletedFoodInspections} records from food_inspections where city was Cambridge.");
             $this->command->info("Deleted {$deletedFoodInspections} records from food_inspections (Cambridge).");
+        });
+        Log::info('DataCleanupSeeder: Finished cleaning food inspections.');
+        $this->command->info('Finished cleaning food inspections.');
 
-            // Handle building_permits and their related data_points
-            // Assuming 'id' is the primary key for building_permits table that data_points references.
-            // If data_points references 'permitnumber', adjust pluck('permitnumber') and whereIn('building_permit_permitnumber', ...) accordingly.
+        // --- Cleanup Building Permits ---
+        DB::transaction(function () {
             $cambridgeBuildingPermitIds = DB::table('building_permits')->where('city', 'Cambridge')->pluck('id'); 
             if ($cambridgeBuildingPermitIds->isNotEmpty()) {
                 $deletedDataPointsPermits = DB::table('data_points')->whereIn('building_permit_id', $cambridgeBuildingPermitIds)->delete();
@@ -61,37 +69,52 @@ class DataCleanupSeeder extends Seeder
                 $this->command->info("Deleted {$deletedDataPointsPermits} related records from data_points for Cambridge building permits.");
             }
 
-            // Delete Cambridge data from building_permits
             $deletedBuildingPermits = DB::table('building_permits')->where('city', 'Cambridge')->delete();
             Log::info("DataCleanupSeeder: Deleted {$deletedBuildingPermits} records from building_permits where city was Cambridge.");
             $this->command->info("Deleted {$deletedBuildingPermits} records from building_permits (Cambridge).");
-
-            // Handle crime_data and their related data_points
-            $nonBostonCrimeDataIds = DB::table('crime_data')
-                ->where(function ($query) {
-                    $query->where('source_city', '!=', 'Boston')
-                          ->orWhereNull('source_city');
-                })
-                ->pluck('id');
-
-            if ($nonBostonCrimeDataIds->isNotEmpty()) {
-                $deletedDataPointsCrime = DB::table('data_points')
-                    ->whereIn('crime_data_id', $nonBostonCrimeDataIds)
-                    ->delete();
-                Log::info("DataCleanupSeeder: Deleted {$deletedDataPointsCrime} related records from data_points for non-Boston crime data.");
-                $this->command->info("Deleted {$deletedDataPointsCrime} related records from data_points for non-Boston crime data.");
-            }
-
-            // Delete non-Boston data from crime_data
-            $deletedCrimeData = DB::table('crime_data')
-                ->where(function ($query) {
-                    $query->where('source_city', '!=', 'Boston')
-                          ->orWhereNull('source_city');
-                })
-                ->delete();
-            Log::info("DataCleanupSeeder: Deleted {$deletedCrimeData} records from crime_data where source_city was not Boston or was NULL.");
-            $this->command->info("Deleted {$deletedCrimeData} records from crime_data (non-Boston or NULL source_city).");
         });
+        Log::info('DataCleanupSeeder: Finished cleaning building permits.');
+        $this->command->info('Finished cleaning building permits.');
+
+        // --- Cleanup Crime Data (in chunks) ---
+        DB::transaction(function () {
+            $totalDeletedDataPointsCrime = 0;
+            $totalDeletedCrimeData = 0;
+
+            DB::table('crime_data')
+                ->where(function ($query) {
+                    $query->where('source_city', '!=', 'Boston')
+                          ->orWhereNull('source_city');
+                })
+                ->select('id') // Important: Only select 'id' for chunkById
+                ->orderBy('id') // chunkById requires an ordered column, typically the primary key
+                ->chunkById(self::CLEANUP_BATCH_SIZE, function ($crimeRecordsChunk) use (&$totalDeletedDataPointsCrime, &$totalDeletedCrimeData) {
+                    $idsToDelete = $crimeRecordsChunk->pluck('id');
+
+                    if ($idsToDelete->isNotEmpty()) {
+                        // Delete related data_points for this chunk
+                        $deletedDPChunk = DB::table('data_points')
+                            ->whereIn('crime_data_id', $idsToDelete)
+                            ->delete();
+                        $totalDeletedDataPointsCrime += $deletedDPChunk;
+                        Log::info("DataCleanupSeeder (Chunk): Deleted {$deletedDPChunk} related data_points for non-Boston crime data.");
+                        $this->command->info("Deleted {$deletedDPChunk} data_points (crime chunk).");
+
+                        // Delete crime_data records for this chunk
+                        $deletedCChunk = DB::table('crime_data')->whereIn('id', $idsToDelete)->delete();
+                        $totalDeletedCrimeData += $deletedCChunk;
+                        Log::info("DataCleanupSeeder (Chunk): Deleted {$deletedCChunk} crime_data records.");
+                        $this->command->info("Deleted {$deletedCChunk} crime_data records (chunk).");
+                    }
+                }, 'id'); // Explicitly use 'id' column for chunking
+
+            Log::info("DataCleanupSeeder: Total deleted related records from data_points for non-Boston crime data: {$totalDeletedDataPointsCrime}.");
+            $this->command->info("Total deleted data_points (crime): {$totalDeletedDataPointsCrime}.");
+            Log::info("DataCleanupSeeder: Total deleted records from crime_data where source_city was not Boston or was NULL: {$totalDeletedCrimeData}.");
+            $this->command->info("Total deleted crime_data (non-Boston): {$totalDeletedCrimeData}.");
+        });
+        Log::info('DataCleanupSeeder: Finished cleaning crime data.');
+        $this->command->info('Finished cleaning crime data.');
 
         Log::info('DataCleanupSeeder: Data cleanup process finished.');
         $this->command->info('DataCleanupSeeder: Data cleanup process finished.');
