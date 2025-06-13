@@ -26,6 +26,17 @@ class CacheMetricsDataCommand extends Command
         FoodInspection::class,
         PropertyViolation::class,
         BuildingPermit::class,
+
+        \App\Models\ConstructionOffHour::class,
+
+        \App\Models\EverettCrimeData::class,
+
+        // Cambridge Models
+        \App\Models\CambridgeThreeOneOneCase::class,
+        \App\Models\CambridgeBuildingPermitData::class,
+        \App\Models\CambridgeCrimeReportData::class,
+        \App\Models\CambridgeHousingViolationData::class,
+        \App\Models\CambridgeSanitaryInspectionData::class,
     ];
 
     public function handle()
@@ -37,7 +48,7 @@ class CacheMetricsDataCommand extends Command
 
         foreach ($this->mappableModels as $modelClassString) {
             $modelInstance = new $modelClassString();
-            $modelName = $modelInstance::getModelNameForHumans();
+            $modelName = $modelInstance::getHumanName();
             $dateField = $modelInstance::getDateField();
 
             $currentTotalRecords = $modelInstance::count();

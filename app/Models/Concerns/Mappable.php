@@ -67,6 +67,14 @@ trait Mappable
     abstract public function getExternalId(): string;
 
     /**
+     * Get the configuration for displaying model data in a map popup.
+     * Should return an array with keys like:
+     * 'mainIdentifierLabel', 'mainIdentifierField',
+     * 'descriptionLabel', 'descriptionField', 'additionalFields'.
+     */
+    abstract public static function getPopupConfig(): array;
+
+    /**
      * Get a string describing filterable fields and their types for AI.
      * This description guides the AI in constructing filter objects.
      */

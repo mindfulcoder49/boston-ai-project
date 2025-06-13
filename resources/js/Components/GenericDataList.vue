@@ -27,6 +27,29 @@
         </div>
       </div>
 
+      <!-- Data Source (Model) Filters -->
+      <div class="mt-4">
+        <h4 class="text-sm font-medium text-gray-700 mb-1">{{ localizedLabels.dataSourcesHeader }}</h4>
+        <div class="mb-2">
+          <button @click="selectAllModels" class="text-xs p-1 bg-green-100 text-green-700 rounded mr-2 hover:bg-green-200">{{ localizedLabels.selectAllDataSourcesLabel }}</button>
+          <button @click="deselectAllModels" class="text-xs p-1 bg-green-100 text-green-700 rounded hover:bg-green-200">{{ localizedLabels.deselectAllDataSourcesLabel }}</button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+          <div v-for="model in availableModels" :key="model" class="flex items-center">
+            <input
+              type="checkbox"
+              :id="`filter_model_${model}`"
+              :value="model"
+              v-model="selectedModels"
+              class="form-checkbox h-4 w-4 text-green-600 transition duration-150 ease-in-out mr-2"
+            />
+            <label
+              :for="`filter_model_${model}`"
+              class="text-sm text-gray-700">{{ model }}</label>
+          </div>
+        </div>
+      </div>
+
       <!-- Data Type Filters -->
       <div class="mt-4">
         <h4 class="text-sm font-medium text-gray-700 mb-1">{{ localizedLabels.dataTypesHeader }}</h4>
@@ -91,7 +114,7 @@
     <div v-else class="flex flex-wrap -mx-2">
       <div v-for="(item, index) in paginatedData" :key="item.alcivartech_external_id || item.id || index" class="p-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
         <div class="bg-gray-100 p-2 rounded-md mb-2 data-container">
-          <UniversalDataDisplay :data="item" :language_codes="language_codes" />
+          <UniversalDataDisplay :data="item" :language_codes="language_codes" :map-configuration="mapConfiguration" />
           <!-- Button to emit datapoint for goto marker on map function -->
           <button
             @click="$emit('handle-goto-marker', item)"
@@ -129,6 +152,9 @@ const localizationLabelsByLanguageCode = {
     unsorted: 'Unsorted',
     selectAllDataTypesLabel: 'Select All',
     deselectAllDataTypesLabel: 'Deselect All',
+    dataSourcesHeader: 'Filter by Data Source',
+    selectAllDataSourcesLabel: 'Select All Sources',
+    deselectAllDataSourcesLabel: 'Deselect All Sources',
   },
   'es-MX': {
     previousButton: 'Anterior',
@@ -144,6 +170,9 @@ const localizationLabelsByLanguageCode = {
     unsorted: 'Sin Ordenar',
     selectAllDataTypesLabel: 'Seleccionar Todos',
     deselectAllDataTypesLabel: 'Deseleccionar Todos',
+    dataSourcesHeader: 'Filtrar por Fuente de Datos',
+    selectAllDataSourcesLabel: 'Seleccionar Todas las Fuentes',
+    deselectAllDataSourcesLabel: 'Deseleccionar Todas las Fuentes',
   },
   // Add other languages similarly
   'zh-CN': {
@@ -160,6 +189,9 @@ const localizationLabelsByLanguageCode = {
     unsorted: '未排序',
     selectAllDataTypesLabel: '全选',
     deselectAllDataTypesLabel: '取消全选',
+    dataSourcesHeader: '按数据源筛选',
+    selectAllDataSourcesLabel: '选择所有数据源',
+    deselectAllDataSourcesLabel: '取消全选数据源',
   },
   'ht-HT': {
     previousButton: 'Anvan',
@@ -175,6 +207,9 @@ const localizationLabelsByLanguageCode = {
     unsorted: 'Pa Triye',
     selectAllDataTypesLabel: 'Chwazi Tout',
     deselectAllDataTypesLabel: 'Dechwazi Tout',
+    dataSourcesHeader: 'Filtre pa Sous Done',
+    selectAllDataSourcesLabel: 'Chwazi Tout Sous',
+    deselectAllDataSourcesLabel: 'Dechwazi Tout Sous',
   },
   'vi-VN': {
     previousButton: 'Trước',
@@ -190,6 +225,9 @@ const localizationLabelsByLanguageCode = {
     unsorted: 'Chưa sắp xếp',
     selectAllDataTypesLabel: 'Chọn Tất cả',
     deselectAllDataTypesLabel: 'Bỏ chọn Tất cả',
+    dataSourcesHeader: 'Lọc theo Nguồn Dữ liệu',
+    selectAllDataSourcesLabel: 'Chọn Tất cả Nguồn',
+    deselectAllDataSourcesLabel: 'Bỏ chọn Tất cả Nguồn',
   },
   'pt-BR': {
     previousButton: 'Anterior',
@@ -205,6 +243,9 @@ const localizationLabelsByLanguageCode = {
     unsorted: 'Não Ordenado',
     selectAllDataTypesLabel: 'Selecionar Todos',
     deselectAllDataTypesLabel: 'Desmarcar Todos',
+    dataSourcesHeader: 'Filtrar por Fonte de Dados',
+    selectAllDataSourcesLabel: 'Selecionar Todas as Fontes',
+    deselectAllDataSourcesLabel: 'Desmarcar Todas as Fontes',
   },
 };
 
@@ -233,6 +274,10 @@ export default {
       type: Array,
       default: () => ["en-US"],
     },
+    mapConfiguration: { // Added mapConfiguration prop
+      type: Object,
+      default: () => ({}),
+    }
   },
   data() {
     return {
@@ -240,6 +285,7 @@ export default {
       inputPage: 1,
       searchKeyword: '',
       selectedDataTypes: [],
+      selectedModels: [], // Added for model filtering
       sortDirection: 'none', // 'none', 'asc', 'desc'
     };
   },
@@ -250,16 +296,33 @@ export default {
     },
     availableDataTypes() {
       if (!this.totalData) return [];
-      const types = new Set(this.totalData.map(item => item.alcivartech_type).filter(Boolean));
+      const types = new Set(this.totalData.map(item => this.getDisplayType(item)).filter(Boolean));
       return Array.from(types).sort();
+    },
+    availableModels() {
+      if (!this.totalData) return [];
+      const models = new Set(this.totalData.map(item => item.alcivartech_model).filter(Boolean));
+      return Array.from(models).sort();
     },
     processedData() {
       let data = [...this.totalData];
 
-      // 1. Filter by selectedDataTypes
+      // 0. Filter by selectedModels
+      if (this.selectedModels.length > 0 && this.selectedModels.length < this.availableModels.length) {
+        const selectedModelSet = new Set(this.selectedModels);
+        data = data.filter(item => item.alcivartech_model && selectedModelSet.has(item.alcivartech_model));
+      } else if (this.selectedModels.length === 0 && this.availableModels.length > 0) {
+        // If no models are selected, show no data
+        return [];
+      }
+
+      // 1. Filter by selectedDataTypes (display names)
       if (this.selectedDataTypes.length > 0 && this.selectedDataTypes.length < this.availableDataTypes.length) {
         const selectedSet = new Set(this.selectedDataTypes);
-        data = data.filter(item => item.alcivartech_type && selectedSet.has(item.alcivartech_type));
+        data = data.filter(item => {
+          const displayType = this.getDisplayType(item);
+          return displayType && selectedSet.has(displayType);
+        });
       } else if (this.selectedDataTypes.length === 0 && this.availableDataTypes.length > 0) {
         // If no types are selected, show no data (unless there are no types available at all)
         return [];
@@ -323,6 +386,18 @@ export default {
     }
   },
   methods: {
+    getDisplayType(item) {
+      if (
+        item &&
+        this.mapConfiguration &&
+        this.mapConfiguration.dataPointModelConfig &&
+        item.alcivartech_model &&
+        this.mapConfiguration.dataPointModelConfig[item.alcivartech_model]
+      ) {
+        return this.mapConfiguration.dataPointModelConfig[item.alcivartech_model].displayTitle || item.alcivartech_type;
+      }
+      return item.alcivartech_type;
+    },
     resetPageAndInput() {
       this.currentPage = 1;
       this.inputPage = 1;
@@ -364,12 +439,22 @@ export default {
     },
     initializeSelectedTypes() {
       this.selectedDataTypes = [...this.availableDataTypes];
+    },
+    selectAllModels() {
+      this.selectedModels = [...this.availableModels];
+    },
+    deselectAllModels() {
+      this.selectedModels = [];
+    },
+    initializeSelectedModels() {
+      this.selectedModels = [...this.availableModels];
     }
   },
   watch: {
     totalData: {
       handler() {
         this.initializeSelectedTypes();
+        this.initializeSelectedModels(); // Initialize models as well
         this.resetPageAndInput();
       },
       deep: true,
@@ -382,6 +467,12 @@ export default {
             this.resetPageAndInput();
         },
         deep: true // Necessary because it's an array
+    },
+    selectedModels: { // Watcher for model changes
+        handler() {
+            this.resetPageAndInput();
+        },
+        deep: true
     },
     sortDirection() {
       this.resetPageAndInput();
@@ -399,6 +490,7 @@ export default {
   },
   mounted() {
     this.initializeSelectedTypes();
+    this.initializeSelectedModels(); // Initialize models on mount
     // Ensure inputPage reflects initial currentPage
     this.inputPage = this.currentPage;
   }

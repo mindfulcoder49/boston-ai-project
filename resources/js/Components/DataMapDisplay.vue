@@ -129,15 +129,14 @@ const getMarkerIcon = (alcivartechType, dataPoint) => {
 };
 
 const getClusterRadius = (zoom) => {
-  return 1;
   if (zoom < 10) {
-    return 80; // Larger radius when zoomed out
+    return 40; // Larger radius when zoomed out
   } else if (zoom < 13) {
-    return 60;
+    return 30;
   } else if (zoom < 16) {
-    return 40;
+    return 20;
   } else {
-    return 10; // Smaller radius when zoomed in, showing more individual markers or smaller clusters
+    return 5; // Smaller radius when zoomed in, showing more individual markers or smaller clusters
   }
 };
 

@@ -119,4 +119,17 @@ class EverettCrimeData extends Model
     {
         return 'incident_longitude';
     }
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Incident Number',
+            'mainIdentifierField' => 'incident_number', // Verify field name
+            'descriptionLabel' => 'Offense',
+            'descriptionField' => 'offense_description', // Verify field name
+            'additionalFields' => [
+                ['label' => 'Location', 'key' => 'location_description'], // Verify field name
+            ],
+        ];
+    }
 }

@@ -89,4 +89,18 @@ class BuildingPermit extends Model
     {
         return $this->permitnumber;
     }
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Permit Number',
+            'mainIdentifierField' => 'permit_number_external', // Verify field name (e.g., PERMITNUMBER)
+            'descriptionLabel' => 'Work Type',
+            'descriptionField' => 'work_type', // Verify field name (e.g., WORKTYPE)
+            'additionalFields' => [
+                ['label' => 'Status', 'key' => 'status'], // Verify field name
+                ['label' => 'Address', 'key' => 'address'], // Verify field name
+            ],
+        ];
+    }
 }

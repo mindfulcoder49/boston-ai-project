@@ -90,4 +90,18 @@ class PropertyViolation extends Model
     {
         return $this->case_no; // Corrected from placeholder 'ticket_number'
     }
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Ticket Number',
+            'mainIdentifierField' => 'ticket_number', // Verify field name
+            'descriptionLabel' => 'Description',
+            'descriptionField' => 'description', // Verify field name
+            'additionalFields' => [
+                ['label' => 'Status', 'key' => 'status'], // Verify field name
+                ['label' => 'Address', 'key' => 'address'], // Verify field name
+            ],
+        ];
+    }
 }

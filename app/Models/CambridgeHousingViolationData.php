@@ -84,4 +84,18 @@ class CambridgeHousingViolationData extends Model
     public static $searchable_columns_config = [
         'record_id_external', 'full_address', 'parcel_number', 'code', 'description', 'status'
     ];
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Violation ID',
+            'mainIdentifierField' => 'violation_id_external', // Verify field name
+            'descriptionLabel' => 'Description',
+            'descriptionField' => 'violation_description', // Verify field name
+            'additionalFields' => [
+                ['label' => 'Status', 'key' => 'status'], // Verify field name
+                ['label' => 'Address', 'key' => 'full_address'], // Verify field name
+            ],
+        ];
+    }
 }

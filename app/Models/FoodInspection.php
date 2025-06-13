@@ -102,4 +102,18 @@ class FoodInspection extends Model
     {
         return (string)$this->external_id; // Corrected from placeholder 'licenseno'
     }
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'License No',
+            'mainIdentifierField' => 'licenseno',
+            'descriptionLabel' => 'Violation',
+            'descriptionField' => 'violdesc',
+            'additionalFields' => [
+                ['label' => 'Business Name', 'key' => 'businessname'],
+                ['label' => 'Result', 'key' => 'result'],
+            ],
+        ];
+    }
 }

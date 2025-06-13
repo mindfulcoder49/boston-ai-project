@@ -357,7 +357,7 @@ class GenerateModelMetadataCommand extends Command
     private function generateContextData(array $fieldsInfo, string $modelClass, array $excludedFilterFields): string
     {
         $this->line("  [CONTEXT_DATA] Generating for {$modelClass}");
-        $modelNamePlural = Str::plural($modelClass::getModelNameForHumans());
+        $modelNamePlural = Str::plural($modelClass::getHumanName());
         $context = "Dataset of {$modelNamePlural}.";
         
         $sampleFilterableFields = [];

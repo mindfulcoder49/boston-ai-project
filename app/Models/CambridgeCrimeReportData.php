@@ -83,6 +83,25 @@ class CambridgeCrimeReportData extends Model
         return $this->file_number_external;
     }
 
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Incident Number',
+            'mainIdentifierField' => 'incident_number_external', // Verify field name
+            'descriptionLabel' => 'Offense',
+            'descriptionField' => 'crime', // Verify field name
+            'additionalFields' => [
+                ['label' => 'Address', 'key' => 'address'], // Verify field name
+                ['label' => 'Reporting Area', 'key' => 'reporting_area'], // Verify field name
+                ['label' => 'Neighborhood', 'key' => 'neighborhood'], // Verify field name
+                ['label' => 'Crime Start Time', 'key' => 'crime_start_time'], // Verify field name
+                ['label' => 'Crime End Time', 'key' => 'crime_end_time'], // Verify field name
+                ['label' => 'Crime Details', 'key' => 'crime_details'], // Added
+
+            ],
+        ];
+    }
+
     public static $searchable_columns_config = [
         'file_number_external', 'crime', 'reporting_area', 'neighborhood', 'location_address'
     ];

@@ -28,26 +28,14 @@ return [
                 'placeholder' => 'Select Status',
                 'options' => [
                     0 => [
-                        'value' => 'Cited',
-                        'label' => 'Cited',
-                    ],
-                    1 => [
                         'value' => 'Closed',
                         'label' => 'Closed',
                     ],
-                    2 => [
-                        'value' => 'Corrected',
-                        'label' => 'Corrected',
-                    ],
-                    3 => [
-                        'value' => 'In Progress',
-                        'label' => 'In Progress',
-                    ],
-                    4 => [
+                    1 => [
                         'value' => 'Open',
                         'label' => 'Open',
                     ],
-                    5 => [
+                    2 => [
                         'value' => 'Void',
                         'label' => 'Void',
                     ],
@@ -758,7 +746,7 @@ return [
             ],
             'status' => [
                 'type' => 'string',
-                'description' => 'Filter by Status. Possible values: Cited, Closed, Corrected, In Progress, Open, Void.',
+                'description' => 'Filter by Status. Possible values: Closed, Open, Void.',
             ],
             'code' => [
                 'type' => 'string',
@@ -854,6 +842,366 @@ return [
             ],
         ],
     ],
+    'App\\Models\\CambridgeBuildingPermitData' => [
+        'filterableFieldsDescription' => [
+            0 => [
+                'name' => 'search_term',
+                'label' => 'General Search',
+                'type' => 'text',
+                'placeholder' => 'Search across all fields...',
+            ],
+            1 => [
+                'name' => 'permit_id_external',
+                'label' => 'Permit Id External',
+                'type' => 'text',
+                'placeholder' => 'Enter Permit Id External',
+            ],
+            2 => [
+                'name' => 'address',
+                'label' => 'Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Address',
+            ],
+            3 => [
+                'name' => 'address_geocoded',
+                'label' => 'Address Geocoded',
+                'type' => 'text',
+                'placeholder' => 'Enter Address Geocoded',
+            ],
+            4 => [
+                'name' => 'latitude',
+                'label' => 'Latitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Latitude',
+            ],
+            5 => [
+                'name' => 'longitude',
+                'label' => 'Longitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Longitude',
+            ],
+            6 => [
+                'name' => 'status',
+                'label' => 'Status',
+                'type' => 'select',
+                'placeholder' => 'Select Status',
+                'options' => [
+                    0 => [
+                        'value' => 'Active',
+                        'label' => 'Active',
+                    ],
+                    1 => [
+                        'value' => 'Complete',
+                        'label' => 'Complete',
+                    ],
+                ],
+            ],
+            7 => [
+                'name' => 'applicant_submit_date_start',
+                'label' => 'Applicant Submit Date Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Applicant Submit Date',
+            ],
+            8 => [
+                'name' => 'applicant_submit_date_end',
+                'label' => 'Applicant Submit Date End',
+                'type' => 'date',
+                'placeholder' => 'End date for Applicant Submit Date',
+            ],
+            9 => [
+                'name' => 'number_of_residential_units',
+                'label' => 'Number Of Residential Units',
+                'type' => 'select',
+                'placeholder' => 'Select Number Of Residential Units',
+                'options' => [
+                    0 => [
+                        'value' => '0',
+                        'label' => '0',
+                    ],
+                    1 => [
+                        'value' => '1',
+                        'label' => '1',
+                    ],
+                    2 => [
+                        'value' => '2',
+                        'label' => '2',
+                    ],
+                    3 => [
+                        'value' => '3',
+                        'label' => '3',
+                    ],
+                    4 => [
+                        'value' => '4',
+                        'label' => '4',
+                    ],
+                    5 => [
+                        'value' => '5',
+                        'label' => '5',
+                    ],
+                    6 => [
+                        'value' => '6',
+                        'label' => '6',
+                    ],
+                    7 => [
+                        'value' => '7',
+                        'label' => '7',
+                    ],
+                    8 => [
+                        'value' => '8',
+                        'label' => '8',
+                    ],
+                    9 => [
+                        'value' => '13',
+                        'label' => '13',
+                    ],
+                    10 => [
+                        'value' => '23',
+                        'label' => '23',
+                    ],
+                ],
+            ],
+            10 => [
+                'name' => 'current_property_use',
+                'label' => 'Current Property Use',
+                'type' => 'select',
+                'placeholder' => 'Select Current Property Use',
+                'options' => [
+                    0 => [
+                        'value' => 'Accessory',
+                        'label' => 'Accessory',
+                    ],
+                    1 => [
+                        'value' => 'Commercial / Mixed Use',
+                        'label' => 'Commercial / Mixed Use',
+                    ],
+                    2 => [
+                        'value' => 'Multi-Family (3 units or greater)',
+                        'label' => 'Multi-Family (3 units or greater)',
+                    ],
+                    3 => [
+                        'value' => 'One-Family',
+                        'label' => 'One-Family',
+                    ],
+                    4 => [
+                        'value' => 'Townhouse',
+                        'label' => 'Townhouse',
+                    ],
+                    5 => [
+                        'value' => 'Two-Family',
+                        'label' => 'Two-Family',
+                    ],
+                    6 => [
+                        'value' => 'Vacant Lot',
+                        'label' => 'Vacant Lot',
+                    ],
+                ],
+            ],
+            11 => [
+                'name' => 'proposed_property_use',
+                'label' => 'Proposed Property Use',
+                'type' => 'select',
+                'placeholder' => 'Select Proposed Property Use',
+                'options' => [
+                    0 => [
+                        'value' => 'Accessory',
+                        'label' => 'Accessory',
+                    ],
+                    1 => [
+                        'value' => 'Commercial / Mixed Use',
+                        'label' => 'Commercial / Mixed Use',
+                    ],
+                    2 => [
+                        'value' => 'Multi-Family (3 units or greater)',
+                        'label' => 'Multi-Family (3 units or greater)',
+                    ],
+                    3 => [
+                        'value' => 'One-Family',
+                        'label' => 'One-Family',
+                    ],
+                    4 => [
+                        'value' => 'Townhouse',
+                        'label' => 'Townhouse',
+                    ],
+                    5 => [
+                        'value' => 'Two-Family',
+                        'label' => 'Two-Family',
+                    ],
+                ],
+            ],
+            12 => [
+                'name' => 'total_cost_of_construction',
+                'label' => 'Total Cost Of Construction',
+                'type' => 'text',
+                'placeholder' => 'Enter Total Cost Of Construction',
+            ],
+            13 => [
+                'name' => 'detailed_description_of_work',
+                'label' => 'Detailed Description Of Work',
+                'type' => 'text',
+                'placeholder' => 'Enter Detailed Description Of Work',
+            ],
+            14 => [
+                'name' => 'gross_square_footage_min',
+                'label' => 'Gross Square Footage Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Gross Square Footage',
+            ],
+            15 => [
+                'name' => 'gross_square_footage_max',
+                'label' => 'Gross Square Footage Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Gross Square Footage',
+            ],
+            16 => [
+                'name' => 'building_use',
+                'label' => 'Building Use',
+                'type' => 'select',
+                'placeholder' => 'Select Building Use',
+                'options' => [
+                    0 => [
+                        'value' => 'Commercial / Mixed Use',
+                        'label' => 'Commercial / Mixed Use',
+                    ],
+                    1 => [
+                        'value' => 'Multi Family (3 or more dwelling units)',
+                        'label' => 'Multi Family (3 or more dwelling units)',
+                    ],
+                    2 => [
+                        'value' => 'One or Two Family Dwelling',
+                        'label' => 'One or Two Family Dwelling',
+                    ],
+                    3 => [
+                        'value' => 'Townhouse',
+                        'label' => 'Townhouse',
+                    ],
+                ],
+            ],
+            17 => [
+                'name' => 'maplot_number',
+                'label' => 'Maplot Number',
+                'type' => 'text',
+                'placeholder' => 'Enter Maplot Number',
+            ],
+            18 => [
+                'name' => 'raw_data',
+                'label' => 'Raw Data',
+                'type' => 'text',
+                'placeholder' => 'Enter Raw Data',
+            ],
+        ],
+        'contextData' => 'Dataset of Cambridge Building Permits. Filter by attributes like permit id external, address, address geocoded.',
+        'searchableColumns' => [
+            0 => 'id',
+            1 => 'permit_id_external',
+            2 => 'address',
+            3 => 'address_geocoded',
+            4 => 'latitude',
+            5 => 'longitude',
+            6 => 'status',
+            7 => 'number_of_residential_units',
+            8 => 'current_property_use',
+            9 => 'proposed_property_use',
+            10 => 'total_cost_of_construction',
+            11 => 'detailed_description_of_work',
+            12 => 'gross_square_footage',
+            13 => 'building_use',
+            14 => 'maplot_number',
+        ],
+        'gptSchemaProperties' => [
+            'search_term' => [
+                'type' => 'string',
+                'description' => 'A general search term to query across multiple text fields.',
+            ],
+            'start_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for \'issue_date\' (YYYY-MM-DD)',
+            ],
+            'end_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for \'issue_date\' (YYYY-MM-DD)',
+            ],
+            'limit' => [
+                'type' => 'integer',
+                'description' => 'Limit the number of records. Default is 1000, max 5000.',
+            ],
+            'permit_id_external' => [
+                'type' => 'string',
+                'description' => 'Filter by Permit Id External.',
+            ],
+            'address' => [
+                'type' => 'string',
+                'description' => 'Filter by Address.',
+            ],
+            'address_geocoded' => [
+                'type' => 'string',
+                'description' => 'Filter by Address Geocoded.',
+            ],
+            'latitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Latitude.',
+            ],
+            'longitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Longitude.',
+            ],
+            'status' => [
+                'type' => 'string',
+                'description' => 'Filter by Status. Possible values: Active, Complete.',
+            ],
+            'applicant_submit_date_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Applicant Submit Date (YYYY-MM-DD)',
+            ],
+            'applicant_submit_date_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Applicant Submit Date (YYYY-MM-DD)',
+            ],
+            'number_of_residential_units' => [
+                'type' => 'string',
+                'description' => 'Filter by Number Of Residential Units. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 13, 23.',
+            ],
+            'current_property_use' => [
+                'type' => 'string',
+                'description' => 'Filter by Current Property Use. Possible values: Accessory, Commercial / Mixed Use, Multi-Family (3 units or greater), One-Family, Townhouse, Two-Family, Vacant Lot.',
+            ],
+            'proposed_property_use' => [
+                'type' => 'string',
+                'description' => 'Filter by Proposed Property Use. Possible values: Accessory, Commercial / Mixed Use, Multi-Family (3 units or greater), One-Family, Townhouse, Two-Family.',
+            ],
+            'total_cost_of_construction' => [
+                'type' => 'string',
+                'description' => 'Filter by Total Cost Of Construction.',
+            ],
+            'detailed_description_of_work' => [
+                'type' => 'string',
+                'description' => 'Filter by Detailed Description Of Work.',
+            ],
+            'gross_square_footage_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Gross Square Footage.',
+            ],
+            'gross_square_footage_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Gross Square Footage.',
+            ],
+            'building_use' => [
+                'type' => 'string',
+                'description' => 'Filter by Building Use. Possible values: Commercial / Mixed Use, Multi Family (3 or more dwelling units), One or Two Family Dwelling, Townhouse.',
+            ],
+            'maplot_number' => [
+                'type' => 'string',
+                'description' => 'Filter by Maplot Number.',
+            ],
+            'raw_data' => [
+                'type' => 'string',
+                'description' => 'Filter by Raw Data.',
+            ],
+        ],
+    ],
     'App\\Models\\FoodInspection' => [
         'filterableFieldsDescription' => [
             0 => [
@@ -945,14 +1293,10 @@ return [
                         'label' => 'Active',
                     ],
                     1 => [
-                        'value' => 'Complete',
-                        'label' => 'Complete',
-                    ],
-                    2 => [
                         'value' => 'Deleted',
                         'label' => 'Deleted',
                     ],
-                    3 => [
+                    2 => [
                         'value' => 'Inactive',
                         'label' => 'Inactive',
                     ],
@@ -985,8 +1329,26 @@ return [
             15 => [
                 'name' => 'descript',
                 'label' => 'Descript',
-                'type' => 'text',
-                'placeholder' => 'Enter Descript',
+                'type' => 'select',
+                'placeholder' => 'Select Descript',
+                'options' => [
+                    0 => [
+                        'value' => 'Eating & Drinking',
+                        'label' => 'Eating & Drinking',
+                    ],
+                    1 => [
+                        'value' => 'Eating & Drinking w/ Take Out',
+                        'label' => 'Eating & Drinking w/ Take Out',
+                    ],
+                    2 => [
+                        'value' => 'Mobile Food Walk On',
+                        'label' => 'Mobile Food Walk On',
+                    ],
+                    3 => [
+                        'value' => 'Retail Food',
+                        'label' => 'Retail Food',
+                    ],
+                ],
             ],
             16 => [
                 'name' => 'result',
@@ -1085,8 +1447,34 @@ return [
             18 => [
                 'name' => 'viol_level',
                 'label' => 'Viol Level',
-                'type' => 'text',
-                'placeholder' => 'Enter Viol Level',
+                'type' => 'select',
+                'placeholder' => 'Select Viol Level',
+                'options' => [
+                    0 => [
+                        'value' => ' ',
+                        'label' => ' ',
+                    ],
+                    1 => [
+                        'value' => '-',
+                        'label' => '-',
+                    ],
+                    2 => [
+                        'value' => '*',
+                        'label' => '*',
+                    ],
+                    3 => [
+                        'value' => '**',
+                        'label' => '**',
+                    ],
+                    4 => [
+                        'value' => '***',
+                        'label' => '***',
+                    ],
+                    5 => [
+                        'value' => '1919',
+                        'label' => '1919',
+                    ],
+                ],
             ],
             19 => [
                 'name' => 'violdesc',
@@ -1189,122 +1577,118 @@ return [
                         'label' => 'BRIGHTON/',
                     ],
                     8 => [
-                        'value' => 'Cambridge',
-                        'label' => 'Cambridge',
-                    ],
-                    9 => [
                         'value' => 'CHARLESTOWN',
                         'label' => 'CHARLESTOWN',
                     ],
-                    10 => [
+                    9 => [
                         'value' => 'CHARLESTOWN/',
                         'label' => 'CHARLESTOWN/',
                     ],
-                    11 => [
+                    10 => [
                         'value' => 'CHESTNUT HILL',
                         'label' => 'CHESTNUT HILL',
                     ],
-                    12 => [
+                    11 => [
                         'value' => 'DORCHESTER',
                         'label' => 'DORCHESTER',
                     ],
-                    13 => [
+                    12 => [
                         'value' => 'DORCHESTER CENTER',
                         'label' => 'DORCHESTER CENTER',
                     ],
-                    14 => [
+                    13 => [
                         'value' => 'DORCHESTER CENTER/',
                         'label' => 'DORCHESTER CENTER/',
                     ],
-                    15 => [
+                    14 => [
                         'value' => 'DORCHESTER/',
                         'label' => 'DORCHESTER/',
                     ],
-                    16 => [
+                    15 => [
                         'value' => 'DOWNTOWN/FINANCIAL DISTRICT',
                         'label' => 'DOWNTOWN/FINANCIAL DISTRICT',
                     ],
-                    17 => [
+                    16 => [
                         'value' => 'EAST BOSTON',
                         'label' => 'EAST BOSTON',
                     ],
-                    18 => [
+                    17 => [
                         'value' => 'FENWAY',
                         'label' => 'FENWAY',
                     ],
-                    19 => [
+                    18 => [
                         'value' => 'FENWAY/',
                         'label' => 'FENWAY/',
                     ],
-                    20 => [
+                    19 => [
                         'value' => 'FINANCIAL DISTRICT',
                         'label' => 'FINANCIAL DISTRICT',
                     ],
-                    21 => [
+                    20 => [
                         'value' => 'FINANCIAL DISTRICT/',
                         'label' => 'FINANCIAL DISTRICT/',
                     ],
-                    22 => [
+                    21 => [
                         'value' => 'HYDE PARK',
                         'label' => 'HYDE PARK',
                     ],
-                    23 => [
+                    22 => [
                         'value' => 'JAMAICA PLAIN',
                         'label' => 'JAMAICA PLAIN',
                     ],
-                    24 => [
+                    23 => [
                         'value' => 'MATTAPAN',
                         'label' => 'MATTAPAN',
                     ],
-                    25 => [
+                    24 => [
                         'value' => 'MATTAPAN/',
                         'label' => 'MATTAPAN/',
                     ],
-                    26 => [
+                    25 => [
                         'value' => 'MISSION HILL',
                         'label' => 'MISSION HILL',
                     ],
-                    27 => [
+                    26 => [
                         'value' => 'MISSION HILL/',
                         'label' => 'MISSION HILL/',
                     ],
-                    28 => [
+                    27 => [
                         'value' => 'ROSLINDALE',
                         'label' => 'ROSLINDALE',
                     ],
-                    29 => [
+                    28 => [
                         'value' => 'ROSLINDALE/',
                         'label' => 'ROSLINDALE/',
                     ],
-                    30 => [
+                    29 => [
                         'value' => 'ROXBURY',
                         'label' => 'ROXBURY',
                     ],
-                    31 => [
+                    30 => [
                         'value' => 'ROXBURY CROSSIN',
                         'label' => 'ROXBURY CROSSIN',
                     ],
-                    32 => [
+                    31 => [
                         'value' => 'ROXBURY/BOSTON',
                         'label' => 'ROXBURY/BOSTON',
                     ],
-                    33 => [
+                    32 => [
                         'value' => 'SOUTH BOSTON',
                         'label' => 'SOUTH BOSTON',
                     ],
-                    34 => [
+                    33 => [
                         'value' => 'SOUTH BOSTON/',
                         'label' => 'SOUTH BOSTON/',
                     ],
-                    35 => [
+                    34 => [
                         'value' => 'SOUTH END/',
                         'label' => 'SOUTH END/',
                     ],
-                    36 => [
+                    35 => [
                         'value' => 'WEST ROXBURY',
                         'label' => 'WEST ROXBURY',
                     ],
-                    37 => [
+                    36 => [
                         'value' => 'WEST ROXBURY//',
                         'label' => 'WEST ROXBURY//',
                     ],
@@ -1611,7 +1995,7 @@ return [
             ],
             'licstatus' => [
                 'type' => 'string',
-                'description' => 'Filter by Licstatus. Possible values: Active, Complete, Deleted, Inactive.',
+                'description' => 'Filter by Licstatus. Possible values: Active, Deleted, Inactive.',
             ],
             'licensecat' => [
                 'type' => 'string',
@@ -1619,7 +2003,7 @@ return [
             ],
             'descript' => [
                 'type' => 'string',
-                'description' => 'Filter by Descript.',
+                'description' => 'Filter by Descript. Possible values: Eating & Drinking, Eating & Drinking w/ Take Out, Mobile Food Walk On, Retail Food.',
             ],
             'result' => [
                 'type' => 'string',
@@ -1631,7 +2015,7 @@ return [
             ],
             'viol_level' => [
                 'type' => 'string',
-                'description' => 'Filter by Viol Level.',
+                'description' => 'Filter by Viol Level. Possible values:  , -, *, **, ***, 1919.',
             ],
             'violdesc' => [
                 'type' => 'string',
@@ -1671,7 +2055,7 @@ return [
             ],
             'city' => [
                 'type' => 'string',
-                'description' => 'Filter by City. Possible values:  , ALLSTON, BACK BAY/, BOSTON, BOSTON/CHINATOWN, BOSTON/WEST END, BRIGHTON, BRIGHTON/, Cambridge, CHARLESTOWN, CHARLESTOWN/, CHESTNUT HILL, DORCHESTER, DORCHESTER CENTER, DORCHESTER CENTER/, DORCHESTER/, DOWNTOWN/FINANCIAL DISTRICT, EAST BOSTON, FENWAY, FENWAY/, FINANCIAL DISTRICT, FINANCIAL DISTRICT/, HYDE PARK, JAMAICA PLAIN, MATTAPAN, MATTAPAN/, MISSION HILL, MISSION HILL/, ROSLINDALE, ROSLINDALE/, ROXBURY, ROXBURY CROSSIN, ROXBURY/BOSTON, SOUTH BOSTON, SOUTH BOSTON/, SOUTH END/, WEST ROXBURY, WEST ROXBURY//.',
+                'description' => 'Filter by City. Possible values:  , ALLSTON, BACK BAY/, BOSTON, BOSTON/CHINATOWN, BOSTON/WEST END, BRIGHTON, BRIGHTON/, CHARLESTOWN, CHARLESTOWN/, CHESTNUT HILL, DORCHESTER, DORCHESTER CENTER, DORCHESTER CENTER/, DORCHESTER/, DOWNTOWN/FINANCIAL DISTRICT, EAST BOSTON, FENWAY, FENWAY/, FINANCIAL DISTRICT, FINANCIAL DISTRICT/, HYDE PARK, JAMAICA PLAIN, MATTAPAN, MATTAPAN/, MISSION HILL, MISSION HILL/, ROSLINDALE, ROSLINDALE/, ROXBURY, ROXBURY CROSSIN, ROXBURY/BOSTON, SOUTH BOSTON, SOUTH BOSTON/, SOUTH END/, WEST ROXBURY, WEST ROXBURY//.',
             ],
             'state' => [
                 'type' => 'string',
@@ -1704,6 +2088,341 @@ return [
             'language_code' => [
                 'type' => 'string',
                 'description' => 'Filter by Language Code.',
+            ],
+        ],
+    ],
+    'App\\Models\\CambridgeHousingViolationData' => [
+        'filterableFieldsDescription' => [
+            0 => [
+                'name' => 'search_term',
+                'label' => 'General Search',
+                'type' => 'text',
+                'placeholder' => 'Search across all fields...',
+            ],
+            1 => [
+                'name' => 'record_id_external',
+                'label' => 'Record Id External',
+                'type' => 'text',
+                'placeholder' => 'Enter Record Id External',
+            ],
+            2 => [
+                'name' => 'full_address',
+                'label' => 'Full Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Full Address',
+            ],
+            3 => [
+                'name' => 'parcel_number',
+                'label' => 'Parcel Number',
+                'type' => 'text',
+                'placeholder' => 'Enter Parcel Number',
+            ],
+            4 => [
+                'name' => 'code',
+                'label' => 'Code',
+                'type' => 'text',
+                'placeholder' => 'Enter Code',
+            ],
+            5 => [
+                'name' => 'description',
+                'label' => 'Description',
+                'type' => 'select',
+                'placeholder' => 'Select Description',
+                'options' => [
+                    0 => [
+                        'value' => 'Access for Repairs and Alterations',
+                        'label' => 'Access for Repairs and Alterations',
+                    ],
+                    1 => [
+                        'value' => 'Amperage',
+                        'label' => 'Amperage',
+                    ],
+                    2 => [
+                        'value' => 'Bathroom Lighting and Electrical Outlets',
+                        'label' => 'Bathroom Lighting and Electrical Outlets',
+                    ],
+                    3 => [
+                        'value' => 'Collection of Garbage and Rubbish',
+                        'label' => 'Collection of Garbage and Rubbish',
+                    ],
+                    4 => [
+                        'value' => 'Cond. Deemed to Endgr. or Impair Health or Safety',
+                        'label' => 'Cond. Deemed to Endgr. or Impair Health or Safety',
+                    ],
+                    5 => [
+                        'value' => 'Egress Obstructions',
+                        'label' => 'Egress Obstructions',
+                    ],
+                    6 => [
+                        'value' => 'Extermination of Insects, Rodents and Skunks',
+                        'label' => 'Extermination of Insects, Rodents and Skunks',
+                    ],
+                    7 => [
+                        'value' => 'Grade Level',
+                        'label' => 'Grade Level',
+                    ],
+                    8 => [
+                        'value' => 'Heating Facilities Required',
+                        'label' => 'Heating Facilities Required',
+                    ],
+                    9 => [
+                        'value' => 'Hot Water',
+                        'label' => 'Hot Water',
+                    ],
+                    10 => [
+                        'value' => 'Kitchen Facilities',
+                        'label' => 'Kitchen Facilities',
+                    ],
+                    11 => [
+                        'value' => 'Light Fixtures Oth than in Habit. Rooms or Kitch.',
+                        'label' => 'Light Fixtures Oth than in Habit. Rooms or Kitch.',
+                    ],
+                    12 => [
+                        'value' => 'Light in Passageways, Hallways, and Stairways',
+                        'label' => 'Light in Passageways, Hallways, and Stairways',
+                    ],
+                    13 => [
+                        'value' => 'Locks',
+                        'label' => 'Locks',
+                    ],
+                    14 => [
+                        'value' => 'Maint. of Areas Free from Garbage and Rubbish',
+                        'label' => 'Maint. of Areas Free from Garbage and Rubbish',
+                    ],
+                    15 => [
+                        'value' => 'Means of Egress',
+                        'label' => 'Means of Egress',
+                    ],
+                    16 => [
+                        'value' => 'Metering of Electricity, Gas and Water',
+                        'label' => 'Metering of Electricity, Gas and Water',
+                    ],
+                    17 => [
+                        'value' => 'Minimum Square Footage',
+                        'label' => 'Minimum Square Footage',
+                    ],
+                    18 => [
+                        'value' => 'Natural and Mechanical Ventilation',
+                        'label' => 'Natural and Mechanical Ventilation',
+                    ],
+                    19 => [
+                        'value' => 'Non-absorbent Surfaces',
+                        'label' => 'Non-absorbent Surfaces',
+                    ],
+                    20 => [
+                        'value' => 'Occupant\'s Inst. and Maint. Responsibilities',
+                        'label' => 'Occupant\'s Inst. and Maint. Responsibilities',
+                    ],
+                    21 => [
+                        'value' => 'Occupant\'s Resp. Respecting Structural Elements',
+                        'label' => 'Occupant\'s Resp. Respecting Structural Elements',
+                    ],
+                    22 => [
+                        'value' => 'Owner\'s Inst. and Maint. Responsibilities',
+                        'label' => 'Owner\'s Inst. and Maint. Responsibilities',
+                    ],
+                    23 => [
+                        'value' => 'Owner\'s Resp. to Maintain Structural Elements',
+                        'label' => 'Owner\'s Resp. to Maintain Structural Elements',
+                    ],
+                    24 => [
+                        'value' => 'Plumbing Connections',
+                        'label' => 'Plumbing Connections',
+                    ],
+                    25 => [
+                        'value' => 'Posting of Name of Owner',
+                        'label' => 'Posting of Name of Owner',
+                    ],
+                    26 => [
+                        'value' => 'Potable Water',
+                        'label' => 'Potable Water',
+                    ],
+                    27 => [
+                        'value' => 'Safe Condition',
+                        'label' => 'Safe Condition',
+                    ],
+                    28 => [
+                        'value' => 'Sanitary Drainage System Required',
+                        'label' => 'Sanitary Drainage System Required',
+                    ],
+                    29 => [
+                        'value' => 'Screens for Doors',
+                        'label' => 'Screens for Doors',
+                    ],
+                    30 => [
+                        'value' => 'Screens for Windows',
+                        'label' => 'Screens for Windows',
+                    ],
+                    31 => [
+                        'value' => 'Shared Facilities',
+                        'label' => 'Shared Facilities',
+                    ],
+                    32 => [
+                        'value' => 'Smoke Detectors and Carbon Monoxide Alarms',
+                        'label' => 'Smoke Detectors and Carbon Monoxide Alarms',
+                    ],
+                    33 => [
+                        'value' => 'Storage of Garbage and Rubbish',
+                        'label' => 'Storage of Garbage and Rubbish',
+                    ],
+                    34 => [
+                        'value' => 'Temperature Requirements',
+                        'label' => 'Temperature Requirements',
+                    ],
+                    35 => [
+                        'value' => 'Venting',
+                        'label' => 'Venting',
+                    ],
+                    36 => [
+                        'value' => 'Washbasins, Toilets, Tubs and Showers',
+                        'label' => 'Washbasins, Toilets, Tubs and Showers',
+                    ],
+                    37 => [
+                        'value' => 'Weathertight Elements',
+                        'label' => 'Weathertight Elements',
+                    ],
+                ],
+            ],
+            6 => [
+                'name' => 'corrective_action',
+                'label' => 'Corrective Action',
+                'type' => 'text',
+                'placeholder' => 'Enter Corrective Action',
+            ],
+            7 => [
+                'name' => 'correction_required_by',
+                'label' => 'Correction Required By',
+                'type' => 'text',
+                'placeholder' => 'Enter Correction Required By',
+            ],
+            8 => [
+                'name' => 'status',
+                'label' => 'Status',
+                'type' => 'select',
+                'placeholder' => 'Select Status',
+                'options' => [
+                    0 => [
+                        'value' => 'Cited',
+                        'label' => 'Cited',
+                    ],
+                    1 => [
+                        'value' => 'Corrected',
+                        'label' => 'Corrected',
+                    ],
+                    2 => [
+                        'value' => 'In Progress',
+                        'label' => 'In Progress',
+                    ],
+                ],
+            ],
+            9 => [
+                'name' => 'application_submit_date',
+                'label' => 'Application Submit Date',
+                'type' => 'text',
+                'placeholder' => 'Enter Application Submit Date',
+            ],
+            10 => [
+                'name' => 'longitude',
+                'label' => 'Longitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Longitude',
+            ],
+            11 => [
+                'name' => 'latitude',
+                'label' => 'Latitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Latitude',
+            ],
+            12 => [
+                'name' => 'point_text',
+                'label' => 'Point Text',
+                'type' => 'text',
+                'placeholder' => 'Enter Point Text',
+            ],
+        ],
+        'contextData' => 'Dataset of Cambridge Housing Violations. Filter by attributes like record id external, full address, parcel number.',
+        'searchableColumns' => [
+            0 => 'id',
+            1 => 'record_id_external',
+            2 => 'full_address',
+            3 => 'parcel_number',
+            4 => 'code',
+            5 => 'description',
+            6 => 'corrective_action',
+            7 => 'correction_required_by',
+            8 => 'status',
+            9 => 'application_submit_date',
+            10 => 'issue_date',
+            11 => 'longitude',
+            12 => 'latitude',
+            13 => 'point_text',
+        ],
+        'gptSchemaProperties' => [
+            'search_term' => [
+                'type' => 'string',
+                'description' => 'A general search term to query across multiple text fields.',
+            ],
+            'start_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for \'issue_date\' (YYYY-MM-DD)',
+            ],
+            'end_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for \'issue_date\' (YYYY-MM-DD)',
+            ],
+            'limit' => [
+                'type' => 'integer',
+                'description' => 'Limit the number of records. Default is 1000, max 5000.',
+            ],
+            'record_id_external' => [
+                'type' => 'string',
+                'description' => 'Filter by Record Id External.',
+            ],
+            'full_address' => [
+                'type' => 'string',
+                'description' => 'Filter by Full Address.',
+            ],
+            'parcel_number' => [
+                'type' => 'string',
+                'description' => 'Filter by Parcel Number.',
+            ],
+            'code' => [
+                'type' => 'string',
+                'description' => 'Filter by Code.',
+            ],
+            'description' => [
+                'type' => 'string',
+                'description' => 'Filter by Description. Possible values: Access for Repairs and Alterations, Amperage, Bathroom Lighting and Electrical Outlets, Collection of Garbage and Rubbish, Cond. Deemed to Endgr. or Impair Health or Safety, Egress Obstructions, Extermination of Insects, Rodents and Skunks, Grade Level, Heating Facilities Required, Hot Water, Kitchen Facilities, Light Fixtures Oth than in Habit. Rooms or Kitch., Light in Passageways, Hallways, and Stairways, Locks, Maint. of Areas Free from Garbage and Rubbish, Means of Egress, Metering of Electricity, Gas and Water, Minimum Square Footage, Natural and Mechanical Ventilation, Non-absorbent Surfaces, Occupant\'s Inst. and Maint. Responsibilities, Occupant\'s Resp. Respecting Structural Elements, Owner\'s Inst. and Maint. Responsibilities, Owner\'s Resp. to Maintain Structural Elements, Plumbing Connections, Posting of Name of Owner, Potable Water, Safe Condition, Sanitary Drainage System Required, Screens for Doors, Screens for Windows, Shared Facilities, Smoke Detectors and Carbon Monoxide Alarms, Storage of Garbage and Rubbish, Temperature Requirements, Venting, Washbasins, Toilets, Tubs and Showers, Weathertight Elements.',
+            ],
+            'corrective_action' => [
+                'type' => 'string',
+                'description' => 'Filter by Corrective Action.',
+            ],
+            'correction_required_by' => [
+                'type' => 'string',
+                'description' => 'Filter by Correction Required By.',
+            ],
+            'status' => [
+                'type' => 'string',
+                'description' => 'Filter by Status. Possible values: Cited, Corrected, In Progress.',
+            ],
+            'application_submit_date' => [
+                'type' => 'string',
+                'description' => 'Filter by Application Submit Date.',
+            ],
+            'longitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Longitude.',
+            ],
+            'latitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Latitude.',
+            ],
+            'point_text' => [
+                'type' => 'string',
+                'description' => 'Filter by Point Text.',
             ],
         ],
     ],
@@ -1836,26 +2555,18 @@ return [
                 'placeholder' => 'Select Status',
                 'options' => [
                     0 => [
-                        'value' => 'Active',
-                        'label' => 'Active',
-                    ],
-                    1 => [
                         'value' => 'Closed',
                         'label' => 'Closed',
                     ],
-                    2 => [
-                        'value' => 'Complete',
-                        'label' => 'Complete',
-                    ],
-                    3 => [
+                    1 => [
                         'value' => 'Issued',
                         'label' => 'Issued',
                     ],
-                    4 => [
+                    2 => [
                         'value' => 'Open',
                         'label' => 'Open',
                     ],
-                    5 => [
+                    3 => [
                         'value' => 'Stop Work',
                         'label' => 'Stop Work',
                     ],
@@ -1922,46 +2633,22 @@ return [
                         'label' => '7unit',
                     ],
                     12 => [
-                        'value' => 'Accessory',
-                        'label' => 'Accessory',
-                    ],
-                    13 => [
                         'value' => 'Comm',
                         'label' => 'Comm',
                     ],
-                    14 => [
-                        'value' => 'Commercial / Mixed Use',
-                        'label' => 'Commercial / Mixed Use',
-                    ],
-                    15 => [
+                    13 => [
                         'value' => 'Mixed',
                         'label' => 'Mixed',
                     ],
-                    16 => [
+                    14 => [
                         'value' => 'Multi',
                         'label' => 'Multi',
                     ],
-                    17 => [
-                        'value' => 'Multi-Family (3 units or greater)',
-                        'label' => 'Multi-Family (3 units or greater)',
-                    ],
-                    18 => [
-                        'value' => 'One-Family',
-                        'label' => 'One-Family',
-                    ],
-                    19 => [
+                    15 => [
                         'value' => 'Other',
                         'label' => 'Other',
                     ],
-                    20 => [
-                        'value' => 'Townhouse',
-                        'label' => 'Townhouse',
-                    ],
-                    21 => [
-                        'value' => 'Two-Family',
-                        'label' => 'Two-Family',
-                    ],
-                    22 => [
+                    16 => [
                         'value' => 'VacLd',
                         'label' => 'VacLd',
                     ],
@@ -2000,8 +2687,166 @@ return [
             19 => [
                 'name' => 'zip',
                 'label' => 'Zip',
-                'type' => 'text',
-                'placeholder' => 'Enter Zip',
+                'type' => 'select',
+                'placeholder' => 'Select Zip',
+                'options' => [
+                    0 => [
+                        'value' => '02026',
+                        'label' => '02026',
+                    ],
+                    1 => [
+                        'value' => '02108',
+                        'label' => '02108',
+                    ],
+                    2 => [
+                        'value' => '02109',
+                        'label' => '02109',
+                    ],
+                    3 => [
+                        'value' => '02110',
+                        'label' => '02110',
+                    ],
+                    4 => [
+                        'value' => '02111',
+                        'label' => '02111',
+                    ],
+                    5 => [
+                        'value' => '02113',
+                        'label' => '02113',
+                    ],
+                    6 => [
+                        'value' => '02114',
+                        'label' => '02114',
+                    ],
+                    7 => [
+                        'value' => '02115',
+                        'label' => '02115',
+                    ],
+                    8 => [
+                        'value' => '02116',
+                        'label' => '02116',
+                    ],
+                    9 => [
+                        'value' => '02117',
+                        'label' => '02117',
+                    ],
+                    10 => [
+                        'value' => '02118',
+                        'label' => '02118',
+                    ],
+                    11 => [
+                        'value' => '02119',
+                        'label' => '02119',
+                    ],
+                    12 => [
+                        'value' => '02120',
+                        'label' => '02120',
+                    ],
+                    13 => [
+                        'value' => '02121',
+                        'label' => '02121',
+                    ],
+                    14 => [
+                        'value' => '02122',
+                        'label' => '02122',
+                    ],
+                    15 => [
+                        'value' => '02123',
+                        'label' => '02123',
+                    ],
+                    16 => [
+                        'value' => '02124',
+                        'label' => '02124',
+                    ],
+                    17 => [
+                        'value' => '02125',
+                        'label' => '02125',
+                    ],
+                    18 => [
+                        'value' => '02126',
+                        'label' => '02126',
+                    ],
+                    19 => [
+                        'value' => '02127',
+                        'label' => '02127',
+                    ],
+                    20 => [
+                        'value' => '02128',
+                        'label' => '02128',
+                    ],
+                    21 => [
+                        'value' => '02129',
+                        'label' => '02129',
+                    ],
+                    22 => [
+                        'value' => '02130',
+                        'label' => '02130',
+                    ],
+                    23 => [
+                        'value' => '02131',
+                        'label' => '02131',
+                    ],
+                    24 => [
+                        'value' => '02132',
+                        'label' => '02132',
+                    ],
+                    25 => [
+                        'value' => '02134',
+                        'label' => '02134',
+                    ],
+                    26 => [
+                        'value' => '02135',
+                        'label' => '02135',
+                    ],
+                    27 => [
+                        'value' => '02136',
+                        'label' => '02136',
+                    ],
+                    28 => [
+                        'value' => '02137',
+                        'label' => '02137',
+                    ],
+                    29 => [
+                        'value' => '02163',
+                        'label' => '02163',
+                    ],
+                    30 => [
+                        'value' => '02186',
+                        'label' => '02186',
+                    ],
+                    31 => [
+                        'value' => '02199',
+                        'label' => '02199',
+                    ],
+                    32 => [
+                        'value' => '02210',
+                        'label' => '02210',
+                    ],
+                    33 => [
+                        'value' => '02215',
+                        'label' => '02215',
+                    ],
+                    34 => [
+                        'value' => '02222',
+                        'label' => '02222',
+                    ],
+                    35 => [
+                        'value' => '02446',
+                        'label' => '02446',
+                    ],
+                    36 => [
+                        'value' => '02458',
+                        'label' => '02458',
+                    ],
+                    37 => [
+                        'value' => '02467',
+                        'label' => '02467',
+                    ],
+                    38 => [
+                        'value' => '02468',
+                        'label' => '02468',
+                    ],
+                ],
             ],
             20 => [
                 'name' => 'property_id',
@@ -2142,7 +2987,7 @@ return [
             ],
             'status' => [
                 'type' => 'string',
-                'description' => 'Filter by Status. Possible values: Active, Closed, Complete, Issued, Open, Stop Work.',
+                'description' => 'Filter by Status. Possible values: Closed, Issued, Open, Stop Work.',
             ],
             'language_code' => [
                 'type' => 'string',
@@ -2150,7 +2995,7 @@ return [
             ],
             'occupancytype' => [
                 'type' => 'string',
-                'description' => 'Filter by Occupancytype. Possible values: 1-2FAM, 1-3FAM, 1-4FAM, 1-7FAM, 1Unit, 2unit, 3unit, 4unit, 5unit, 6unit, 7More, 7unit, Accessory, Comm, Commercial / Mixed Use, Mixed, Multi, Multi-Family (3 units or greater), One-Family, Other, Townhouse, Two-Family, VacLd.',
+                'description' => 'Filter by Occupancytype. Possible values: 1-2FAM, 1-3FAM, 1-4FAM, 1-7FAM, 1Unit, 2unit, 3unit, 4unit, 5unit, 6unit, 7More, 7unit, Comm, Mixed, Multi, Other, VacLd.',
             ],
             'sq_feet_min' => [
                 'type' => 'integer',
@@ -2174,7 +3019,7 @@ return [
             ],
             'zip' => [
                 'type' => 'string',
-                'description' => 'Filter by Zip.',
+                'description' => 'Filter by Zip. Possible values: 02026, 02108, 02109, 02110, 02111, 02113, 02114, 02115, 02116, 02117, 02118, 02119, 02120, 02121, 02122, 02123, 02124, 02125, 02126, 02127, 02128, 02129, 02130, 02131, 02132, 02134, 02135, 02136, 02137, 02163, 02186, 02199, 02210, 02215, 02222, 02446, 02458, 02467, 02468.',
             ],
             'property_id' => [
                 'type' => 'string',
@@ -2215,6 +3060,862 @@ return [
             'x_longitude_max' => [
                 'type' => 'number',
                 'description' => 'Maximum value for X Longitude.',
+            ],
+        ],
+    ],
+    'App\\Models\\CambridgeThreeOneOneCase' => [
+        'filterableFieldsDescription' => [
+            0 => [
+                'name' => 'search_term',
+                'label' => 'General Search',
+                'type' => 'text',
+                'placeholder' => 'Search across all fields...',
+            ],
+            1 => [
+                'name' => 'ticket_id_external',
+                'label' => 'Ticket Id External',
+                'type' => 'text',
+                'placeholder' => 'Enter Ticket Id External',
+            ],
+            2 => [
+                'name' => 'city',
+                'label' => 'City',
+                'type' => 'text',
+                'placeholder' => 'Enter City',
+            ],
+            3 => [
+                'name' => 'issue_type',
+                'label' => 'Issue Type',
+                'type' => 'text',
+                'placeholder' => 'Enter Issue Type',
+            ],
+            4 => [
+                'name' => 'issue_category',
+                'label' => 'Issue Category',
+                'type' => 'text',
+                'placeholder' => 'Enter Issue Category',
+            ],
+            5 => [
+                'name' => 'ticket_status',
+                'label' => 'Ticket Status',
+                'type' => 'select',
+                'placeholder' => 'Select Ticket Status',
+                'options' => [
+                    0 => [
+                        'value' => 'Acknowledged',
+                        'label' => 'Acknowledged',
+                    ],
+                    1 => [
+                        'value' => 'Archived',
+                        'label' => 'Archived',
+                    ],
+                    2 => [
+                        'value' => 'Closed',
+                        'label' => 'Closed',
+                    ],
+                    3 => [
+                        'value' => 'Open',
+                        'label' => 'Open',
+                    ],
+                ],
+            ],
+            6 => [
+                'name' => 'issue_description',
+                'label' => 'Issue Description',
+                'type' => 'text',
+                'placeholder' => 'Enter Issue Description',
+            ],
+            7 => [
+                'name' => 'ticket_closed_date_time_start',
+                'label' => 'Ticket Closed Date Time Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Ticket Closed Date Time',
+            ],
+            8 => [
+                'name' => 'ticket_closed_date_time_end',
+                'label' => 'Ticket Closed Date Time End',
+                'type' => 'date',
+                'placeholder' => 'End date for Ticket Closed Date Time',
+            ],
+            9 => [
+                'name' => 'ticket_last_updated_date_time_start',
+                'label' => 'Ticket Last Updated Date Time Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Ticket Last Updated Date Time',
+            ],
+            10 => [
+                'name' => 'ticket_last_updated_date_time_end',
+                'label' => 'Ticket Last Updated Date Time End',
+                'type' => 'date',
+                'placeholder' => 'End date for Ticket Last Updated Date Time',
+            ],
+            11 => [
+                'name' => 'address',
+                'label' => 'Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Address',
+            ],
+            12 => [
+                'name' => 'latitude',
+                'label' => 'Latitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Latitude',
+            ],
+            13 => [
+                'name' => 'longitude',
+                'label' => 'Longitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Longitude',
+            ],
+            14 => [
+                'name' => 'location_text',
+                'label' => 'Location Text',
+                'type' => 'text',
+                'placeholder' => 'Enter Location Text',
+            ],
+            15 => [
+                'name' => 'image_url',
+                'label' => 'Image Url',
+                'type' => 'text',
+                'placeholder' => 'Enter Image Url',
+            ],
+            16 => [
+                'name' => 'acknowledged_at_start',
+                'label' => 'Acknowledged At Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Acknowledged At',
+            ],
+            17 => [
+                'name' => 'acknowledged_at_end',
+                'label' => 'Acknowledged At End',
+                'type' => 'date',
+                'placeholder' => 'End date for Acknowledged At',
+            ],
+            18 => [
+                'name' => 'html_url',
+                'label' => 'Html Url',
+                'type' => 'text',
+                'placeholder' => 'Enter Html Url',
+            ],
+        ],
+        'contextData' => 'Dataset of Cambridge 311 Service Requests. Filter by attributes like ticket id external, city, issue type.',
+        'searchableColumns' => [
+            0 => 'id',
+            1 => 'ticket_id_external',
+            2 => 'city',
+            3 => 'issue_type',
+            4 => 'issue_category',
+            5 => 'ticket_status',
+            6 => 'issue_description',
+            7 => 'address',
+            8 => 'latitude',
+            9 => 'longitude',
+            10 => 'location_text',
+            11 => 'image_url',
+            12 => 'html_url',
+        ],
+        'gptSchemaProperties' => [
+            'search_term' => [
+                'type' => 'string',
+                'description' => 'A general search term to query across multiple text fields.',
+            ],
+            'start_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for \'ticket_created_date_time\' (YYYY-MM-DD)',
+            ],
+            'end_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for \'ticket_created_date_time\' (YYYY-MM-DD)',
+            ],
+            'limit' => [
+                'type' => 'integer',
+                'description' => 'Limit the number of records. Default is 1000, max 5000.',
+            ],
+            'ticket_id_external' => [
+                'type' => 'string',
+                'description' => 'Filter by Ticket Id External.',
+            ],
+            'city' => [
+                'type' => 'string',
+                'description' => 'Filter by City.',
+            ],
+            'issue_type' => [
+                'type' => 'string',
+                'description' => 'Filter by Issue Type.',
+            ],
+            'issue_category' => [
+                'type' => 'string',
+                'description' => 'Filter by Issue Category.',
+            ],
+            'ticket_status' => [
+                'type' => 'string',
+                'description' => 'Filter by Ticket Status. Possible values: Acknowledged, Archived, Closed, Open.',
+            ],
+            'issue_description' => [
+                'type' => 'string',
+                'description' => 'Filter by Issue Description.',
+            ],
+            'ticket_closed_date_time_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Ticket Closed Date Time (YYYY-MM-DD)',
+            ],
+            'ticket_closed_date_time_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Ticket Closed Date Time (YYYY-MM-DD)',
+            ],
+            'ticket_last_updated_date_time_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Ticket Last Updated Date Time (YYYY-MM-DD)',
+            ],
+            'ticket_last_updated_date_time_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Ticket Last Updated Date Time (YYYY-MM-DD)',
+            ],
+            'address' => [
+                'type' => 'string',
+                'description' => 'Filter by Address.',
+            ],
+            'latitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Latitude.',
+            ],
+            'longitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Longitude.',
+            ],
+            'location_text' => [
+                'type' => 'string',
+                'description' => 'Filter by Location Text.',
+            ],
+            'image_url' => [
+                'type' => 'string',
+                'description' => 'Filter by Image Url.',
+            ],
+            'acknowledged_at_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Acknowledged At (YYYY-MM-DD)',
+            ],
+            'acknowledged_at_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Acknowledged At (YYYY-MM-DD)',
+            ],
+            'html_url' => [
+                'type' => 'string',
+                'description' => 'Filter by Html Url.',
+            ],
+        ],
+    ],
+    'App\\Models\\EverettCrimeData' => [
+        'filterableFieldsDescription' => [
+            0 => [
+                'name' => 'search_term',
+                'label' => 'General Search',
+                'type' => 'text',
+                'placeholder' => 'Search across all fields...',
+            ],
+            1 => [
+                'name' => 'case_number',
+                'label' => 'Case Number',
+                'type' => 'text',
+                'placeholder' => 'Enter Case Number',
+            ],
+            2 => [
+                'name' => 'incident_log_file_date',
+                'label' => 'Incident Log File Date',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Log File Date',
+            ],
+            3 => [
+                'name' => 'incident_entry_date_parsed',
+                'label' => 'Incident Entry Date Parsed',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Entry Date Parsed',
+            ],
+            4 => [
+                'name' => 'incident_time_parsed_start',
+                'label' => 'Incident Time Parsed Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Incident Time Parsed',
+            ],
+            5 => [
+                'name' => 'incident_time_parsed_end',
+                'label' => 'Incident Time Parsed End',
+                'type' => 'date',
+                'placeholder' => 'End date for Incident Time Parsed',
+            ],
+            6 => [
+                'name' => 'year',
+                'label' => 'Year',
+                'type' => 'select',
+                'placeholder' => 'Select Year',
+                'options' => [
+                    0 => [
+                        'value' => '2024',
+                        'label' => '2024',
+                    ],
+                    1 => [
+                        'value' => '2025',
+                        'label' => '2025',
+                    ],
+                ],
+            ],
+            7 => [
+                'name' => 'month',
+                'label' => 'Month',
+                'type' => 'select',
+                'placeholder' => 'Select Month',
+                'options' => [
+                    0 => [
+                        'value' => '1',
+                        'label' => '1',
+                    ],
+                    1 => [
+                        'value' => '2',
+                        'label' => '2',
+                    ],
+                    2 => [
+                        'value' => '3',
+                        'label' => '3',
+                    ],
+                    3 => [
+                        'value' => '4',
+                        'label' => '4',
+                    ],
+                    4 => [
+                        'value' => '5',
+                        'label' => '5',
+                    ],
+                    5 => [
+                        'value' => '6',
+                        'label' => '6',
+                    ],
+                    6 => [
+                        'value' => '12',
+                        'label' => '12',
+                    ],
+                ],
+            ],
+            8 => [
+                'name' => 'day_of_week',
+                'label' => 'Day Of Week',
+                'type' => 'select',
+                'placeholder' => 'Select Day Of Week',
+                'options' => [
+                    0 => [
+                        'value' => 'Friday',
+                        'label' => 'Friday',
+                    ],
+                    1 => [
+                        'value' => 'Monday',
+                        'label' => 'Monday',
+                    ],
+                    2 => [
+                        'value' => 'Saturday',
+                        'label' => 'Saturday',
+                    ],
+                    3 => [
+                        'value' => 'Sunday',
+                        'label' => 'Sunday',
+                    ],
+                    4 => [
+                        'value' => 'Thursday',
+                        'label' => 'Thursday',
+                    ],
+                    5 => [
+                        'value' => 'Tuesday',
+                        'label' => 'Tuesday',
+                    ],
+                    6 => [
+                        'value' => 'Wednesday',
+                        'label' => 'Wednesday',
+                    ],
+                ],
+            ],
+            9 => [
+                'name' => 'hour',
+                'label' => 'Hour',
+                'type' => 'select',
+                'placeholder' => 'Select Hour',
+                'options' => [
+                    0 => [
+                        'value' => '0',
+                        'label' => '0',
+                    ],
+                    1 => [
+                        'value' => '1',
+                        'label' => '1',
+                    ],
+                    2 => [
+                        'value' => '2',
+                        'label' => '2',
+                    ],
+                    3 => [
+                        'value' => '3',
+                        'label' => '3',
+                    ],
+                    4 => [
+                        'value' => '4',
+                        'label' => '4',
+                    ],
+                    5 => [
+                        'value' => '5',
+                        'label' => '5',
+                    ],
+                    6 => [
+                        'value' => '6',
+                        'label' => '6',
+                    ],
+                    7 => [
+                        'value' => '7',
+                        'label' => '7',
+                    ],
+                    8 => [
+                        'value' => '8',
+                        'label' => '8',
+                    ],
+                    9 => [
+                        'value' => '9',
+                        'label' => '9',
+                    ],
+                    10 => [
+                        'value' => '10',
+                        'label' => '10',
+                    ],
+                    11 => [
+                        'value' => '11',
+                        'label' => '11',
+                    ],
+                    12 => [
+                        'value' => '12',
+                        'label' => '12',
+                    ],
+                    13 => [
+                        'value' => '13',
+                        'label' => '13',
+                    ],
+                    14 => [
+                        'value' => '14',
+                        'label' => '14',
+                    ],
+                    15 => [
+                        'value' => '15',
+                        'label' => '15',
+                    ],
+                    16 => [
+                        'value' => '16',
+                        'label' => '16',
+                    ],
+                    17 => [
+                        'value' => '17',
+                        'label' => '17',
+                    ],
+                    18 => [
+                        'value' => '18',
+                        'label' => '18',
+                    ],
+                    19 => [
+                        'value' => '19',
+                        'label' => '19',
+                    ],
+                    20 => [
+                        'value' => '20',
+                        'label' => '20',
+                    ],
+                    21 => [
+                        'value' => '21',
+                        'label' => '21',
+                    ],
+                    22 => [
+                        'value' => '22',
+                        'label' => '22',
+                    ],
+                    23 => [
+                        'value' => '23',
+                        'label' => '23',
+                    ],
+                ],
+            ],
+            10 => [
+                'name' => 'incident_type',
+                'label' => 'Incident Type',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Type',
+            ],
+            11 => [
+                'name' => 'incident_address',
+                'label' => 'Incident Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Address',
+            ],
+            12 => [
+                'name' => 'incident_latitude',
+                'label' => 'Incident Latitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Latitude',
+            ],
+            13 => [
+                'name' => 'incident_longitude',
+                'label' => 'Incident Longitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Longitude',
+            ],
+            14 => [
+                'name' => 'incident_description',
+                'label' => 'Incident Description',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Description',
+            ],
+            15 => [
+                'name' => 'arrest_name',
+                'label' => 'Arrest Name',
+                'type' => 'text',
+                'placeholder' => 'Enter Arrest Name',
+            ],
+            16 => [
+                'name' => 'arrest_address',
+                'label' => 'Arrest Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Arrest Address',
+            ],
+            17 => [
+                'name' => 'arrest_age',
+                'label' => 'Arrest Age',
+                'type' => 'select',
+                'placeholder' => 'Select Arrest Age',
+                'options' => [
+                    0 => [
+                        'value' => '-71',
+                        'label' => '-71',
+                    ],
+                    1 => [
+                        'value' => '0',
+                        'label' => '0',
+                    ],
+                    2 => [
+                        'value' => '18',
+                        'label' => '18',
+                    ],
+                    3 => [
+                        'value' => '19',
+                        'label' => '19',
+                    ],
+                    4 => [
+                        'value' => '20',
+                        'label' => '20',
+                    ],
+                    5 => [
+                        'value' => '21',
+                        'label' => '21',
+                    ],
+                    6 => [
+                        'value' => '22',
+                        'label' => '22',
+                    ],
+                    7 => [
+                        'value' => '23',
+                        'label' => '23',
+                    ],
+                    8 => [
+                        'value' => '24',
+                        'label' => '24',
+                    ],
+                    9 => [
+                        'value' => '25',
+                        'label' => '25',
+                    ],
+                    10 => [
+                        'value' => '26',
+                        'label' => '26',
+                    ],
+                    11 => [
+                        'value' => '27',
+                        'label' => '27',
+                    ],
+                    12 => [
+                        'value' => '28',
+                        'label' => '28',
+                    ],
+                    13 => [
+                        'value' => '29',
+                        'label' => '29',
+                    ],
+                    14 => [
+                        'value' => '30',
+                        'label' => '30',
+                    ],
+                    15 => [
+                        'value' => '31',
+                        'label' => '31',
+                    ],
+                    16 => [
+                        'value' => '32',
+                        'label' => '32',
+                    ],
+                    17 => [
+                        'value' => '33',
+                        'label' => '33',
+                    ],
+                    18 => [
+                        'value' => '34',
+                        'label' => '34',
+                    ],
+                    19 => [
+                        'value' => '35',
+                        'label' => '35',
+                    ],
+                    20 => [
+                        'value' => '36',
+                        'label' => '36',
+                    ],
+                    21 => [
+                        'value' => '37',
+                        'label' => '37',
+                    ],
+                    22 => [
+                        'value' => '38',
+                        'label' => '38',
+                    ],
+                    23 => [
+                        'value' => '39',
+                        'label' => '39',
+                    ],
+                    24 => [
+                        'value' => '40',
+                        'label' => '40',
+                    ],
+                    25 => [
+                        'value' => '41',
+                        'label' => '41',
+                    ],
+                    26 => [
+                        'value' => '42',
+                        'label' => '42',
+                    ],
+                    27 => [
+                        'value' => '43',
+                        'label' => '43',
+                    ],
+                    28 => [
+                        'value' => '44',
+                        'label' => '44',
+                    ],
+                    29 => [
+                        'value' => '45',
+                        'label' => '45',
+                    ],
+                    30 => [
+                        'value' => '46',
+                        'label' => '46',
+                    ],
+                    31 => [
+                        'value' => '47',
+                        'label' => '47',
+                    ],
+                    32 => [
+                        'value' => '48',
+                        'label' => '48',
+                    ],
+                    33 => [
+                        'value' => '49',
+                        'label' => '49',
+                    ],
+                    34 => [
+                        'value' => '50',
+                        'label' => '50',
+                    ],
+                    35 => [
+                        'value' => '52',
+                        'label' => '52',
+                    ],
+                    36 => [
+                        'value' => '53',
+                        'label' => '53',
+                    ],
+                    37 => [
+                        'value' => '54',
+                        'label' => '54',
+                    ],
+                    38 => [
+                        'value' => '55',
+                        'label' => '55',
+                    ],
+                    39 => [
+                        'value' => '57',
+                        'label' => '57',
+                    ],
+                    40 => [
+                        'value' => '58',
+                        'label' => '58',
+                    ],
+                    41 => [
+                        'value' => '59',
+                        'label' => '59',
+                    ],
+                    42 => [
+                        'value' => '61',
+                        'label' => '61',
+                    ],
+                    43 => [
+                        'value' => '62',
+                        'label' => '62',
+                    ],
+                    44 => [
+                        'value' => '65',
+                        'label' => '65',
+                    ],
+                    45 => [
+                        'value' => '911',
+                        'label' => '911',
+                    ],
+                ],
+            ],
+            18 => [
+                'name' => 'arrest_date_parsed',
+                'label' => 'Arrest Date Parsed',
+                'type' => 'text',
+                'placeholder' => 'Enter Arrest Date Parsed',
+            ],
+            19 => [
+                'name' => 'arrest_charges',
+                'label' => 'Arrest Charges',
+                'type' => 'text',
+                'placeholder' => 'Enter Arrest Charges',
+            ],
+            20 => [
+                'name' => 'crime_details_concatenated',
+                'label' => 'Crime Details Concatenated',
+                'type' => 'text',
+                'placeholder' => 'Enter Crime Details Concatenated',
+            ],
+            21 => [
+                'name' => 'source_city',
+                'label' => 'Source City',
+                'type' => 'text',
+                'placeholder' => 'Enter Source City',
+            ],
+        ],
+        'contextData' => 'Dataset of Everett Crimes. Filter by attributes like case number, incident log file date, incident entry date parsed.',
+        'searchableColumns' => [
+            0 => 'case_number',
+            1 => 'incident_type',
+            2 => 'incident_address',
+            3 => 'incident_description',
+            4 => 'arrest_name',
+            5 => 'arrest_charges',
+            6 => 'crime_details_concatenated',
+        ],
+        'gptSchemaProperties' => [
+            'search_term' => [
+                'type' => 'string',
+                'description' => 'A general search term to query across multiple text fields.',
+            ],
+            'start_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for \'occurred_on_datetime\' (YYYY-MM-DD)',
+            ],
+            'end_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for \'occurred_on_datetime\' (YYYY-MM-DD)',
+            ],
+            'limit' => [
+                'type' => 'integer',
+                'description' => 'Limit the number of records. Default is 1000, max 5000.',
+            ],
+            'case_number' => [
+                'type' => 'string',
+                'description' => 'Filter by Case Number.',
+            ],
+            'incident_log_file_date' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Log File Date.',
+            ],
+            'incident_entry_date_parsed' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Entry Date Parsed.',
+            ],
+            'incident_time_parsed_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Incident Time Parsed (YYYY-MM-DD)',
+            ],
+            'incident_time_parsed_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Incident Time Parsed (YYYY-MM-DD)',
+            ],
+            'year' => [
+                'type' => 'string',
+                'description' => 'Filter by Year. Possible values: 2024, 2025.',
+            ],
+            'month' => [
+                'type' => 'string',
+                'description' => 'Filter by Month. Possible values: 1, 2, 3, 4, 5, 6, 12.',
+            ],
+            'day_of_week' => [
+                'type' => 'string',
+                'description' => 'Filter by Day Of Week. Possible values: Friday, Monday, Saturday, Sunday, Thursday, Tuesday, Wednesday.',
+            ],
+            'hour' => [
+                'type' => 'string',
+                'description' => 'Filter by Hour. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23.',
+            ],
+            'incident_type' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Type.',
+            ],
+            'incident_address' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Address.',
+            ],
+            'incident_latitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Latitude.',
+            ],
+            'incident_longitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Longitude.',
+            ],
+            'incident_description' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Description.',
+            ],
+            'arrest_name' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Name.',
+            ],
+            'arrest_address' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Address.',
+            ],
+            'arrest_age' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Age. Possible values: -71, 0, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52, 53, 54, 55, 57, 58, 59, 61, 62, 65, 911.',
+            ],
+            'arrest_date_parsed' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Date Parsed.',
+            ],
+            'arrest_charges' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Charges.',
+            ],
+            'crime_details_concatenated' => [
+                'type' => 'string',
+                'description' => 'Filter by Crime Details Concatenated.',
+            ],
+            'source_city' => [
+                'type' => 'string',
+                'description' => 'Filter by Source City.',
             ],
         ],
     ],
@@ -2449,6 +4150,237 @@ return [
             ],
         ],
     ],
+    'App\\Models\\CambridgeCrimeReportData' => [
+        'filterableFieldsDescription' => [
+            0 => [
+                'name' => 'search_term',
+                'label' => 'General Search',
+                'type' => 'text',
+                'placeholder' => 'Search across all fields...',
+            ],
+            1 => [
+                'name' => 'file_number_external',
+                'label' => 'File Number External',
+                'type' => 'text',
+                'placeholder' => 'Enter File Number External',
+            ],
+            2 => [
+                'name' => 'date_of_report_start',
+                'label' => 'Date Of Report Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Date Of Report',
+            ],
+            3 => [
+                'name' => 'date_of_report_end',
+                'label' => 'Date Of Report End',
+                'type' => 'date',
+                'placeholder' => 'End date for Date Of Report',
+            ],
+            4 => [
+                'name' => 'crime_datetime_raw',
+                'label' => 'Crime Datetime Raw',
+                'type' => 'text',
+                'placeholder' => 'Enter Crime Datetime Raw',
+            ],
+            5 => [
+                'name' => 'crime_end_time_start',
+                'label' => 'Crime End Time Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Crime End Time',
+            ],
+            6 => [
+                'name' => 'crime_end_time_end',
+                'label' => 'Crime End Time End',
+                'type' => 'date',
+                'placeholder' => 'End date for Crime End Time',
+            ],
+            7 => [
+                'name' => 'crime',
+                'label' => 'Crime',
+                'type' => 'text',
+                'placeholder' => 'Enter Crime',
+            ],
+            8 => [
+                'name' => 'reporting_area',
+                'label' => 'Reporting Area',
+                'type' => 'text',
+                'placeholder' => 'Enter Reporting Area',
+            ],
+            9 => [
+                'name' => 'neighborhood',
+                'label' => 'Neighborhood',
+                'type' => 'select',
+                'placeholder' => 'Select Neighborhood',
+                'options' => [
+                    0 => [
+                        'value' => 'Baldwin',
+                        'label' => 'Baldwin',
+                    ],
+                    1 => [
+                        'value' => 'Cambridgeport',
+                        'label' => 'Cambridgeport',
+                    ],
+                    2 => [
+                        'value' => 'East Cambridge',
+                        'label' => 'East Cambridge',
+                    ],
+                    3 => [
+                        'value' => 'Highlands',
+                        'label' => 'Highlands',
+                    ],
+                    4 => [
+                        'value' => 'Inman/Harrington',
+                        'label' => 'Inman/Harrington',
+                    ],
+                    5 => [
+                        'value' => 'Mid-Cambridge',
+                        'label' => 'Mid-Cambridge',
+                    ],
+                    6 => [
+                        'value' => 'MIT',
+                        'label' => 'MIT',
+                    ],
+                    7 => [
+                        'value' => 'North Cambridge',
+                        'label' => 'North Cambridge',
+                    ],
+                    8 => [
+                        'value' => 'Peabody',
+                        'label' => 'Peabody',
+                    ],
+                    9 => [
+                        'value' => 'Riverside',
+                        'label' => 'Riverside',
+                    ],
+                    10 => [
+                        'value' => 'Strawberry Hill',
+                        'label' => 'Strawberry Hill',
+                    ],
+                    11 => [
+                        'value' => 'The Port',
+                        'label' => 'The Port',
+                    ],
+                    12 => [
+                        'value' => 'West Cambridge',
+                        'label' => 'West Cambridge',
+                    ],
+                ],
+            ],
+            10 => [
+                'name' => 'location_address',
+                'label' => 'Location Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Location Address',
+            ],
+            11 => [
+                'name' => 'latitude',
+                'label' => 'Latitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Latitude',
+            ],
+            12 => [
+                'name' => 'longitude',
+                'label' => 'Longitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Longitude',
+            ],
+            13 => [
+                'name' => 'crime_details',
+                'label' => 'Crime Details',
+                'type' => 'text',
+                'placeholder' => 'Enter Crime Details',
+            ],
+        ],
+        'contextData' => 'Dataset of Cambridge Crime Reports. Filter by attributes like file number external, crime datetime raw, date (Crime Start Time).',
+        'searchableColumns' => [
+            0 => 'id',
+            1 => 'file_number_external',
+            2 => 'crime_datetime_raw',
+            3 => 'crime',
+            4 => 'reporting_area',
+            5 => 'neighborhood',
+            6 => 'location_address',
+            7 => 'latitude',
+            8 => 'longitude',
+            9 => 'crime_details',
+        ],
+        'gptSchemaProperties' => [
+            'search_term' => [
+                'type' => 'string',
+                'description' => 'A general search term to query across multiple text fields.',
+            ],
+            'start_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for \'crime_start_time\' (YYYY-MM-DD)',
+            ],
+            'end_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for \'crime_start_time\' (YYYY-MM-DD)',
+            ],
+            'limit' => [
+                'type' => 'integer',
+                'description' => 'Limit the number of records. Default is 1000, max 5000.',
+            ],
+            'file_number_external' => [
+                'type' => 'string',
+                'description' => 'Filter by File Number External.',
+            ],
+            'date_of_report_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Date Of Report (YYYY-MM-DD)',
+            ],
+            'date_of_report_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Date Of Report (YYYY-MM-DD)',
+            ],
+            'crime_datetime_raw' => [
+                'type' => 'string',
+                'description' => 'Filter by Crime Datetime Raw.',
+            ],
+            'crime_end_time_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Crime End Time (YYYY-MM-DD)',
+            ],
+            'crime_end_time_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Crime End Time (YYYY-MM-DD)',
+            ],
+            'crime' => [
+                'type' => 'string',
+                'description' => 'Filter by Crime.',
+            ],
+            'reporting_area' => [
+                'type' => 'string',
+                'description' => 'Filter by Reporting Area.',
+            ],
+            'neighborhood' => [
+                'type' => 'string',
+                'description' => 'Filter by Neighborhood. Possible values: Baldwin, Cambridgeport, East Cambridge, Highlands, Inman/Harrington, Mid-Cambridge, MIT, North Cambridge, Peabody, Riverside, Strawberry Hill, The Port, West Cambridge.',
+            ],
+            'location_address' => [
+                'type' => 'string',
+                'description' => 'Filter by Location Address.',
+            ],
+            'latitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Latitude.',
+            ],
+            'longitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Longitude.',
+            ],
+            'crime_details' => [
+                'type' => 'string',
+                'description' => 'Filter by Crime Details.',
+            ],
+        ],
+    ],
     'App\\Models\\CrimeData' => [
         'filterableFieldsDescription' => [
             0 => [
@@ -2496,8 +4428,66 @@ return [
             7 => [
                 'name' => 'district',
                 'label' => 'District',
-                'type' => 'text',
-                'placeholder' => 'Enter District',
+                'type' => 'select',
+                'placeholder' => 'Select District',
+                'options' => [
+                    0 => [
+                        'value' => 'A1',
+                        'label' => 'A1',
+                    ],
+                    1 => [
+                        'value' => 'A15',
+                        'label' => 'A15',
+                    ],
+                    2 => [
+                        'value' => 'A7',
+                        'label' => 'A7',
+                    ],
+                    3 => [
+                        'value' => 'B2',
+                        'label' => 'B2',
+                    ],
+                    4 => [
+                        'value' => 'B3',
+                        'label' => 'B3',
+                    ],
+                    5 => [
+                        'value' => 'C11',
+                        'label' => 'C11',
+                    ],
+                    6 => [
+                        'value' => 'C6',
+                        'label' => 'C6',
+                    ],
+                    7 => [
+                        'value' => 'D14',
+                        'label' => 'D14',
+                    ],
+                    8 => [
+                        'value' => 'D4',
+                        'label' => 'D4',
+                    ],
+                    9 => [
+                        'value' => 'E13',
+                        'label' => 'E13',
+                    ],
+                    10 => [
+                        'value' => 'E18',
+                        'label' => 'E18',
+                    ],
+                    11 => [
+                        'value' => 'E5',
+                        'label' => 'E5',
+                    ],
+                    12 => [
+                        'value' => 'External',
+                        'label' => 'External',
+                    ],
+                    13 => [
+                        'value' => 'Outside of',
+                        'label' => 'Outside of',
+                    ],
+                ],
             ],
             8 => [
                 'name' => 'reporting_area',
@@ -2517,70 +4507,14 @@ return [
                 'placeholder' => 'Select Year',
                 'options' => [
                     0 => [
-                        'value' => '2009',
-                        'label' => '2009',
-                    ],
-                    1 => [
-                        'value' => '2010',
-                        'label' => '2010',
-                    ],
-                    2 => [
-                        'value' => '2011',
-                        'label' => '2011',
-                    ],
-                    3 => [
-                        'value' => '2012',
-                        'label' => '2012',
-                    ],
-                    4 => [
-                        'value' => '2013',
-                        'label' => '2013',
-                    ],
-                    5 => [
-                        'value' => '2014',
-                        'label' => '2014',
-                    ],
-                    6 => [
-                        'value' => '2015',
-                        'label' => '2015',
-                    ],
-                    7 => [
-                        'value' => '2016',
-                        'label' => '2016',
-                    ],
-                    8 => [
-                        'value' => '2017',
-                        'label' => '2017',
-                    ],
-                    9 => [
-                        'value' => '2018',
-                        'label' => '2018',
-                    ],
-                    10 => [
-                        'value' => '2019',
-                        'label' => '2019',
-                    ],
-                    11 => [
-                        'value' => '2020',
-                        'label' => '2020',
-                    ],
-                    12 => [
-                        'value' => '2021',
-                        'label' => '2021',
-                    ],
-                    13 => [
-                        'value' => '2022',
-                        'label' => '2022',
-                    ],
-                    14 => [
                         'value' => '2023',
                         'label' => '2023',
                     ],
-                    15 => [
+                    1 => [
                         'value' => '2024',
                         'label' => '2024',
                     ],
-                    16 => [
+                    2 => [
                         'value' => '2025',
                         'label' => '2025',
                     ],
@@ -2827,22 +4761,8 @@ return [
             21 => [
                 'name' => 'source_city',
                 'label' => 'Source City',
-                'type' => 'select',
-                'placeholder' => 'Select Source City',
-                'options' => [
-                    0 => [
-                        'value' => 'Boston',
-                        'label' => 'Boston',
-                    ],
-                    1 => [
-                        'value' => 'Cambridge',
-                        'label' => 'Cambridge',
-                    ],
-                    2 => [
-                        'value' => 'Everett',
-                        'label' => 'Everett',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Source City',
             ],
             22 => [
                 'name' => 'crime_details',
@@ -2875,7 +4795,7 @@ return [
                 'placeholder' => 'End date for Crime End Time',
             ],
         ],
-        'contextData' => 'Dataset of Crime Datas. Filter by attributes like incident number, language code, offense code group.',
+        'contextData' => 'Dataset of Boston Crimes. Filter by attributes like incident number, language code, offense code group.',
         'searchableColumns' => [
             0 => 'incident_number',
             1 => 'offense_code',
@@ -2941,7 +4861,7 @@ return [
             ],
             'district' => [
                 'type' => 'string',
-                'description' => 'Filter by District.',
+                'description' => 'Filter by District. Possible values: A1, A15, A7, B2, B3, C11, C6, D14, D4, E13, E18, E5, External, Outside of.',
             ],
             'reporting_area' => [
                 'type' => 'string',
@@ -2953,7 +4873,7 @@ return [
             ],
             'year' => [
                 'type' => 'string',
-                'description' => 'Filter by Year. Possible values: 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025.',
+                'description' => 'Filter by Year. Possible values: 2023, 2024, 2025.',
             ],
             'month' => [
                 'type' => 'string',
@@ -2997,7 +4917,7 @@ return [
             ],
             'source_city' => [
                 'type' => 'string',
-                'description' => 'Filter by Source City. Possible values: Boston, Cambridge, Everett.',
+                'description' => 'Filter by Source City.',
             ],
             'crime_details' => [
                 'type' => 'string',
@@ -3086,18 +5006,10 @@ return [
                 'placeholder' => 'Select Case Status',
                 'options' => [
                     0 => [
-                        'value' => 'Acknowledged',
-                        'label' => 'Acknowledged',
-                    ],
-                    1 => [
-                        'value' => 'Archived',
-                        'label' => 'Archived',
-                    ],
-                    2 => [
                         'value' => 'Closed',
                         'label' => 'Closed',
                     ],
-                    3 => [
+                    1 => [
                         'value' => 'Open',
                         'label' => 'Open',
                     ],
@@ -3118,8 +5030,50 @@ return [
             10 => [
                 'name' => 'subject',
                 'label' => 'Subject',
-                'type' => 'text',
-                'placeholder' => 'Enter Subject',
+                'type' => 'select',
+                'placeholder' => 'Select Subject',
+                'options' => [
+                    0 => [
+                        'value' => 'Animal Control',
+                        'label' => 'Animal Control',
+                    ],
+                    1 => [
+                        'value' => 'Boston Police Department',
+                        'label' => 'Boston Police Department',
+                    ],
+                    2 => [
+                        'value' => 'Boston Water & Sewer Commission',
+                        'label' => 'Boston Water & Sewer Commission',
+                    ],
+                    3 => [
+                        'value' => 'Inspectional Services',
+                        'label' => 'Inspectional Services',
+                    ],
+                    4 => [
+                        'value' => 'Mayor\'s 24 Hour Hotline',
+                        'label' => 'Mayor\'s 24 Hour Hotline',
+                    ],
+                    5 => [
+                        'value' => 'Neighborhood Services',
+                        'label' => 'Neighborhood Services',
+                    ],
+                    6 => [
+                        'value' => 'Parks & Recreation Department',
+                        'label' => 'Parks & Recreation Department',
+                    ],
+                    7 => [
+                        'value' => 'Property Management',
+                        'label' => 'Property Management',
+                    ],
+                    8 => [
+                        'value' => 'Public Works Department',
+                        'label' => 'Public Works Department',
+                    ],
+                    9 => [
+                        'value' => 'Transportation - Traffic Division',
+                        'label' => 'Transportation - Traffic Division',
+                    ],
+                ],
             ],
             11 => [
                 'name' => 'reason',
@@ -4016,8 +5970,34 @@ return [
             32 => [
                 'name' => 'source',
                 'label' => 'Source',
-                'type' => 'text',
-                'placeholder' => 'Enter Source',
+                'type' => 'select',
+                'placeholder' => 'Select Source',
+                'options' => [
+                    0 => [
+                        'value' => 'Citizens Connect App',
+                        'label' => 'Citizens Connect App',
+                    ],
+                    1 => [
+                        'value' => 'City Worker App',
+                        'label' => 'City Worker App',
+                    ],
+                    2 => [
+                        'value' => 'Constituent Call',
+                        'label' => 'Constituent Call',
+                    ],
+                    3 => [
+                        'value' => 'Employee Generated',
+                        'label' => 'Employee Generated',
+                    ],
+                    4 => [
+                        'value' => 'Maximo Integration',
+                        'label' => 'Maximo Integration',
+                    ],
+                    5 => [
+                        'value' => 'Self Service',
+                        'label' => 'Self Service',
+                    ],
+                ],
             ],
             33 => [
                 'name' => 'checksum',
@@ -4046,21 +6026,11 @@ return [
             37 => [
                 'name' => 'source_city',
                 'label' => 'Source City',
-                'type' => 'select',
-                'placeholder' => 'Select Source City',
-                'options' => [
-                    0 => [
-                        'value' => 'Boston',
-                        'label' => 'Boston',
-                    ],
-                    1 => [
-                        'value' => 'Cambridge',
-                        'label' => 'Cambridge',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Source City',
             ],
         ],
-        'contextData' => 'Dataset of Three One One Cases. Filter by attributes like date (Open Dt), sla target dt, on time.',
+        'contextData' => 'Dataset of 311 Cases. Filter by attributes like date (Open Dt), sla target dt, on time.',
         'searchableColumns' => [
             0 => 'id',
             1 => 'case_enquiry_id',
@@ -4144,7 +6114,7 @@ return [
             ],
             'case_status' => [
                 'type' => 'string',
-                'description' => 'Filter by Case Status. Possible values: Acknowledged, Archived, Closed, Open.',
+                'description' => 'Filter by Case Status. Possible values: Closed, Open.',
             ],
             'closure_reason' => [
                 'type' => 'string',
@@ -4156,7 +6126,7 @@ return [
             ],
             'subject' => [
                 'type' => 'string',
-                'description' => 'Filter by Subject.',
+                'description' => 'Filter by Subject. Possible values: Animal Control, Boston Police Department, Boston Water & Sewer Commission, Inspectional Services, Mayor\'s 24 Hour Hotline, Neighborhood Services, Parks & Recreation Department, Property Management, Public Works Department, Transportation - Traffic Division.',
             ],
             'reason' => [
                 'type' => 'string',
@@ -4244,7 +6214,7 @@ return [
             ],
             'source' => [
                 'type' => 'string',
-                'description' => 'Filter by Source.',
+                'description' => 'Filter by Source. Possible values: Citizens Connect App, City Worker App, Constituent Call, Employee Generated, Maximo Integration, Self Service.',
             ],
             'checksum' => [
                 'type' => 'string',
@@ -4264,7 +6234,239 @@ return [
             ],
             'source_city' => [
                 'type' => 'string',
-                'description' => 'Filter by Source City. Possible values: Boston, Cambridge.',
+                'description' => 'Filter by Source City.',
+            ],
+        ],
+    ],
+    'App\\Models\\CambridgeSanitaryInspectionData' => [
+        'filterableFieldsDescription' => [
+            0 => [
+                'name' => 'search_term',
+                'label' => 'General Search',
+                'type' => 'text',
+                'placeholder' => 'Search across all fields...',
+            ],
+            1 => [
+                'name' => 'case_number_group',
+                'label' => 'Case Number Group',
+                'type' => 'text',
+                'placeholder' => 'Enter Case Number Group',
+            ],
+            2 => [
+                'name' => 'address',
+                'label' => 'Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Address',
+            ],
+            3 => [
+                'name' => 'parcel',
+                'label' => 'Parcel',
+                'type' => 'text',
+                'placeholder' => 'Enter Parcel',
+            ],
+            4 => [
+                'name' => 'establishment_name',
+                'label' => 'Establishment Name',
+                'type' => 'text',
+                'placeholder' => 'Enter Establishment Name',
+            ],
+            5 => [
+                'name' => 'code_number',
+                'label' => 'Code Number',
+                'type' => 'text',
+                'placeholder' => 'Enter Code Number',
+            ],
+            6 => [
+                'name' => 'code_description',
+                'label' => 'Code Description',
+                'type' => 'text',
+                'placeholder' => 'Enter Code Description',
+            ],
+            7 => [
+                'name' => 'inspector_comments',
+                'label' => 'Inspector Comments',
+                'type' => 'text',
+                'placeholder' => 'Enter Inspector Comments',
+            ],
+            8 => [
+                'name' => 'case_open_date_start',
+                'label' => 'Case Open Date Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Case Open Date',
+            ],
+            9 => [
+                'name' => 'case_open_date_end',
+                'label' => 'Case Open Date End',
+                'type' => 'date',
+                'placeholder' => 'End date for Case Open Date',
+            ],
+            10 => [
+                'name' => 'case_closed_date_start',
+                'label' => 'Case Closed Date Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Case Closed Date',
+            ],
+            11 => [
+                'name' => 'case_closed_date_end',
+                'label' => 'Case Closed Date End',
+                'type' => 'date',
+                'placeholder' => 'End date for Case Closed Date',
+            ],
+            12 => [
+                'name' => 'date_corrected_start',
+                'label' => 'Date Corrected Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Date Corrected',
+            ],
+            13 => [
+                'name' => 'date_corrected_end',
+                'label' => 'Date Corrected End',
+                'type' => 'date',
+                'placeholder' => 'End date for Date Corrected',
+            ],
+            14 => [
+                'name' => 'code_case_status',
+                'label' => 'Code Case Status',
+                'type' => 'text',
+                'placeholder' => 'Enter Code Case Status',
+            ],
+            15 => [
+                'name' => 'latitude',
+                'label' => 'Latitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Latitude',
+            ],
+            16 => [
+                'name' => 'longitude',
+                'label' => 'Longitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Longitude',
+            ],
+            17 => [
+                'name' => 'geocoded_column_text',
+                'label' => 'Geocoded Column Text',
+                'type' => 'text',
+                'placeholder' => 'Enter Geocoded Column Text',
+            ],
+            18 => [
+                'name' => 'unique_violation_identifier',
+                'label' => 'Unique Violation Identifier',
+                'type' => 'text',
+                'placeholder' => 'Enter Unique Violation Identifier',
+            ],
+        ],
+        'contextData' => 'Dataset of Cambridge Sanitary Inspections. Filter by attributes like case number group, address, parcel.',
+        'searchableColumns' => [
+            0 => 'id',
+            1 => 'case_number_group',
+            2 => 'address',
+            3 => 'parcel',
+            4 => 'establishment_name',
+            5 => 'code_number',
+            6 => 'code_description',
+            7 => 'inspector_comments',
+            8 => 'code_case_status',
+            9 => 'latitude',
+            10 => 'longitude',
+            11 => 'geocoded_column_text',
+            12 => 'unique_violation_identifier',
+        ],
+        'gptSchemaProperties' => [
+            'search_term' => [
+                'type' => 'string',
+                'description' => 'A general search term to query across multiple text fields.',
+            ],
+            'start_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for \'date_cited\' (YYYY-MM-DD)',
+            ],
+            'end_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for \'date_cited\' (YYYY-MM-DD)',
+            ],
+            'limit' => [
+                'type' => 'integer',
+                'description' => 'Limit the number of records. Default is 1000, max 5000.',
+            ],
+            'case_number_group' => [
+                'type' => 'string',
+                'description' => 'Filter by Case Number Group.',
+            ],
+            'address' => [
+                'type' => 'string',
+                'description' => 'Filter by Address.',
+            ],
+            'parcel' => [
+                'type' => 'string',
+                'description' => 'Filter by Parcel.',
+            ],
+            'establishment_name' => [
+                'type' => 'string',
+                'description' => 'Filter by Establishment Name.',
+            ],
+            'code_number' => [
+                'type' => 'string',
+                'description' => 'Filter by Code Number.',
+            ],
+            'code_description' => [
+                'type' => 'string',
+                'description' => 'Filter by Code Description.',
+            ],
+            'inspector_comments' => [
+                'type' => 'string',
+                'description' => 'Filter by Inspector Comments.',
+            ],
+            'case_open_date_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Case Open Date (YYYY-MM-DD)',
+            ],
+            'case_open_date_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Case Open Date (YYYY-MM-DD)',
+            ],
+            'case_closed_date_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Case Closed Date (YYYY-MM-DD)',
+            ],
+            'case_closed_date_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Case Closed Date (YYYY-MM-DD)',
+            ],
+            'date_corrected_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Date Corrected (YYYY-MM-DD)',
+            ],
+            'date_corrected_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Date Corrected (YYYY-MM-DD)',
+            ],
+            'code_case_status' => [
+                'type' => 'string',
+                'description' => 'Filter by Code Case Status.',
+            ],
+            'latitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Latitude.',
+            ],
+            'longitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Longitude.',
+            ],
+            'geocoded_column_text' => [
+                'type' => 'string',
+                'description' => 'Filter by Geocoded Column Text.',
+            ],
+            'unique_violation_identifier' => [
+                'type' => 'string',
+                'description' => 'Filter by Unique Violation Identifier.',
             ],
         ],
     ],

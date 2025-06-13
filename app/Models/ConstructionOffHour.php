@@ -72,4 +72,19 @@ class ConstructionOffHour extends Model
     {
         return $this->app_no;
     }
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Permit Number',
+            'mainIdentifierField' => 'permit_number', // Verify field name
+            'descriptionLabel' => 'Notes',
+            'descriptionField' => 'notes', // Verify field name
+            'additionalFields' => [
+                ['label' => 'Location', 'key' => 'location'], // Verify field name
+                ['label' => 'Start Time', 'key' => 'start_time'], // Verify field name
+                ['label' => 'End Time', 'key' => 'end_time'], // Verify field name
+            ],
+        ];
+    }
 }

@@ -91,4 +91,18 @@ class CambridgeSanitaryInspectionData extends Model
     public static $searchable_columns_config = [
         'case_number_group', 'address', 'establishment_name', 'code_number', 'code_description', 'code_case_status'
     ];
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Inspection ID',
+            'mainIdentifierField' => 'inspection_id_external', // Verify field name
+            'descriptionLabel' => 'Violation',
+            'descriptionField' => 'violation_description', // Verify field name
+            'additionalFields' => [
+                ['label' => 'Result', 'key' => 'inspection_result'], // Verify field name
+                ['label' => 'Address', 'key' => 'address'], // Verify field name
+            ],
+        ];
+    }
 }

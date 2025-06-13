@@ -96,16 +96,27 @@ const getPhotoUrl = (dataPoint) => {
     if (!photoData) return null;
 
     let photoUrl = null;
-    if (photoData.closed_photo) {
-        photoUrl = photoData.closed_photo;
-    } else if (photoData.submitted_photo) {
-        photoUrl = photoData.submitted_photo;
-    }
 
-    if (photoUrl && typeof photoUrl === 'string' && photoUrl.includes(' | ')) {
-        return photoUrl.split(' | ')[0];
+    // Check based on the model type
+    if (dataPoint.alcivartech_model === 'cambridge_311_service_requests') {
+        // Assuming Cambridge 311 images are in 'image_url' and are single URLs
+        photoUrl = photoData.image_url;
+    } else if (dataPoint.alcivartech_model === 'three_one_one_cases') {
+        // Existing logic for Boston 311 cases (or other models using these fields)
+        if (photoData.closed_photo) {
+            photoUrl = photoData.closed_photo;
+        } else if (photoData.submitted_photo) {
+            photoUrl = photoData.submitted_photo;
+        }
+
+        // Handle pipe-separated URLs for Boston 311
+        if (photoUrl && typeof photoUrl === 'string' && photoUrl.includes(' | ')) {
+            return photoUrl.split(' | ')[0];
+        }
     }
-    return photoUrl;
+    // Potentially add more else-if blocks here for other models with photos
+
+    return photoUrl; // Return the single URL or the first from split
 };
 
 

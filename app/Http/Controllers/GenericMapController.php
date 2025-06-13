@@ -325,6 +325,8 @@ class GenericMapController extends Controller
 
         // The dataPointModelConfig needs to be generated dynamically or its keys must match data_points.type
         $dataPointModelConfig = [];
+        $modelToSubObjectKeyMap = []; // Initialize the new map
+
         foreach (self::LINKABLE_MODELS as $modelClass) {
              if (!class_exists($modelClass) || !in_array(\App\Models\Concerns\Mappable::class, class_uses_recursive($modelClass))) {
                 continue;
@@ -333,56 +335,26 @@ class GenericMapController extends Controller
             $tableName = $modelInstance->getTable(); // This will be the key, e.g., 'crime_data'
             $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data';
 
-            // Basic structure, can be expanded with more dynamic info from Mappable trait if needed
-            // This is a simplified example; you might need more specific configurations per model.
-            // The original config had very specific field names. This would require more sophisticated
-            // metadata from each model or a more complex config structure.
-            // For now, let's create a basic entry.
-            // You'll need to adapt your frontend to use these dynamic keys or enhance this config generation.
+            // Populate the modelToSubObjectKeyMap
+            $modelToSubObjectKeyMap[$tableName] = $dataObjectKey;
 
-            $configEntry = [
+            $baseConfigEntry = [
                 'dataObjectKey' => $dataObjectKey,
-                'mainIdentifierLabel' => 'ID', // Generic default
-                'mainIdentifierField' => $modelInstance->getKeyName(), // Default to PK
-                'descriptionLabel' => 'Details', // Generic default
-                'descriptionField' => 'description', // Common field, but might not exist
-                'additionalFields' => [],
+                'displayTitle' => $modelClass::getAlcivartechTypeForStyling(),
             ];
 
-            // Example of trying to get more specific info (needs to be robust)
-            if (method_exists($modelClass, 'getPopupConfig')) { // Hypothetical method in Mappable/Model
-                $configEntry = array_merge($configEntry, $modelClass::getPopupConfig());
-            } else {
-                // Fallback or use hardcoded map for known models if dynamic is too complex for now
-                // For example, to match your original structure:
-                if ($tableName === 'crime_data') {
-                    $configEntry['mainIdentifierLabel'] = 'Incident Number';
-                    $configEntry['mainIdentifierField'] = 'incident_number';
-                    $configEntry['descriptionLabel'] = 'Description';
-                    $configEntry['descriptionField'] = 'offense_description';
-                    $configEntry['additionalFields'] = [
-                        ['label' => 'District', 'key' => 'district'],
-                        ['label' => 'Shooting', 'key' => 'shooting', 'condition' => 'boolean_true_only'],
-                    ];
-                } // Add other else if blocks for other tables from your original config
-                else if ($tableName === 'cambridge_311_service_requests') { // Example for a Cambridge model
-                     $configEntry['mainIdentifierLabel'] = 'Ticket ID';
-                     $configEntry['mainIdentifierField'] = 'ticket_id_external';
-                     $configEntry['descriptionLabel'] = 'Issue Type';
-                     $configEntry['descriptionField'] = 'issue_type';
-                     $configEntry['additionalFields'] = [
-                         ['label' => 'Status', 'key' => 'ticket_status'],
-                         ['label' => 'Address', 'key' => 'address'],
-                     ];
-                }
-                // ... and so on for all models from your original config
-            }
+            // Get specific popup config from the model
+            // This method is now expected to be implemented due to the Mappable trait contract.
+            $popupConfig = $modelClass::getPopupConfig();
+            $configEntry = array_merge($baseConfigEntry, $popupConfig);
+
             $dataPointModelConfig[$tableName] = $configEntry;
         }
 
 
         $mapConfiguration = [
             'dataPointModelConfig' => $dataPointModelConfig,
+            'modelToSubObjectKeyMap' => $modelToSubObjectKeyMap, // Add the new map here
         ];
 
         return response()->json([

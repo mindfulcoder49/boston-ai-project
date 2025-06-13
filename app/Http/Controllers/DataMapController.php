@@ -138,7 +138,7 @@ class DataMapController extends Controller
 
         $limit = $request->input('limit', 1000);
         $query->orderBy($config['dateField'], 'desc');
-        $initialData = $query->limit(max(1, min($limit, 100000)))->get();
+        $initialData = $query->limit(max(0, min($limit, 100000)))->get();
         $initialData = $this->enrichData($initialData, $dataType, $modelClass);
 
 
@@ -190,7 +190,7 @@ class DataMapController extends Controller
                     $query->where($config['dateField'], '>=', $tierMinDate->toDateString());
                 }
                 if (isset($initialFilters['limit'])) {
-                     $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
+                     $query->limit(max(0, min((int)$initialFilters['limit'], 100000)));
                 }
                 $query->orderBy($config['dateField'], 'desc');
                 $dataForInitialType = $this->enrichData($query->get(), $initialModelKey, $modelClassString);
@@ -215,7 +215,7 @@ class DataMapController extends Controller
                         $query->where($config['dateField'], '>=', $tierMinDateOnFallback->toDateString());
                     }
                     if (isset($initialFilters['limit'])) {
-                        $query->limit(max(1, min((int)$initialFilters['limit'], 100000)));
+                        $query->limit(max(0, min((int)$initialFilters['limit'], 100000)));
                     }
                     $query->orderBy($config['dateField'], 'desc');
                     $dataForFallbackInitialType = $this->enrichData($query->get(), $initialModelKey, $modelClassString);
@@ -413,7 +413,7 @@ class DataMapController extends Controller
         $this->applyQueryFilters($query, $modelClass, $filters, $currentUser);
 
         $limit = isset($filters['limit']) && is_numeric($filters['limit']) ? (int)$filters['limit'] : 1000;
-        $query->limit(max(1, min($limit, 100000))); 
+        $query->limit(max(0, min($limit, 100000))); 
 
         $query->orderBy($modelClass::getDateField(), 'desc');
         

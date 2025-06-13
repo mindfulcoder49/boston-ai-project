@@ -136,6 +136,20 @@ class ThreeOneOneCase extends Model
         return $this->case_enquiry_id;
     }
 
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Case ID',
+            'mainIdentifierField' => 'case_enquiry_id', // Verify field name
+            'descriptionLabel' => 'Reason',
+            'descriptionField' => 'reason', // Verify field name
+            'additionalFields' => [
+                ['label' => 'Opened Date', 'key' => 'open_dt'], // Verify field name
+                ['label' => 'Type', 'key' => 'type'], // Verify field name
+            ],
+        ];
+    }
+
     // getFilterableFieldsDescription(), getContextData(), getSearchableColumns(), getGptFunctionSchema()
     // will use the Mappable trait's versions, which can be overridden here if needed,
     // or configured via config/model_metadata_suggestions.php

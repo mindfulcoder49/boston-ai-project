@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class CambridgeMasterIntersection extends Model
 {
-    use HasFactory, Mappable;
+    use HasFactory;
 
     protected $table = 'cambridge_master_intersections';
 

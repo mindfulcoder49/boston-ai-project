@@ -89,4 +89,18 @@ class CambridgeThreeOneOneCase extends Model
     public static $searchable_columns_config = [
         'issue_type', 'issue_category', 'ticket_status', 'issue_description', 'address'
     ];
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Ticket ID',
+            'mainIdentifierField' => 'ticket_id_external',
+            'descriptionLabel' => 'Issue Type',
+            'descriptionField' => 'issue_type',
+            'additionalFields' => [
+                ['label' => 'Status', 'key' => 'ticket_status'],
+                ['label' => 'Address', 'key' => 'address'],
+            ],
+        ];
+    }
 }

@@ -33,6 +33,16 @@ class NativeCambridgeSanitaryInspectionsSeeder extends Seeder
         }
     }
 
+    private function trimToNull($value, $chars = " \t\n\r\0\x0B\xC2\xA0")
+    {
+        if ($value === null) {
+            return null;
+        }
+        // Ensure value is a string before trimming
+        $trimmed = trim((string) $value, $chars);
+        return ($trimmed === '') ? null : $trimmed;
+    }
+
     private function processFile($filePath)
     {
         try {
@@ -48,36 +58,60 @@ class NativeCambridgeSanitaryInspectionsSeeder extends Seeder
 
                 $latitude = null;
                 $longitude = null;
-                $geocodedColumnText = ($record['geocoded_column'] === '') ? null : ($record['geocoded_column'] ?? null);
+                $geocodedColumnText = $this->trimToNull($record['geocoded_column'] ?? null);
                 if ($geocodedColumnText) {
                     list($lat, $lon) = $this->parsePoint($geocodedColumnText);
                     $latitude = $lat;
                     $longitude = $lon;
                 }
                 
-                $caseNumberGroup = ($record['case_number'] === '') ? null : ($record['case_number'] ?? null);
-                 if (empty($caseNumberGroup) && empty($record['establishment_name'])) { // Skip if no case number and no establishment name
+                $dbCaseNumberGroup = $this->trimToNull($record['case_number'] ?? null);
+                $dbEstablishmentName = $this->trimToNull($record['establishment_name'] ?? null);
+                $dbCodeNumber = $this->trimToNull($record['code_number'] ?? null);
+                $dbDateCited = $this->formatDate($record['date_cited'] ?? null);
+
+                if ($dbCaseNumberGroup === null && $dbEstablishmentName === null) { 
                     $this->command->warn("Skipping record with empty case_number and establishment_name: " . json_encode($record));
                     continue;
                 }
 
+                // Construct unique_violation_identifier
+                $idPart1 = '';
+                if ($dbCaseNumberGroup !== null) {
+                    $idPart1 = $dbCaseNumberGroup;
+                } elseif ($dbEstablishmentName !== null) {
+                    $idPart1 = 'ESTAB_' . md5($dbEstablishmentName);
+                } else {
+                    // This should not be reached due to the skip logic above
+                    $this->command->error("Critical error: Both case_number_group and establishment_name are null for unique ID construction. Record: " . json_encode($record));
+                    // Potentially skip or assign a fallback that's unlikely to collide but indicates an issue
+                    $idPart1 = 'ERROR_MISSING_PRIMARY_ID_' . uniqid(); 
+                }
+
+                $idPart2 = $dbCodeNumber ?? '__NO_CODE__';
+                $idPart3 = $dbDateCited ? Carbon::parse($dbDateCited)->toDateString() : '__NO_DATE_CITED__';
+                
+                $uniqueViolationIdentifier = $idPart1 . '|' . $idPart2 . '|' . $idPart3;
+                // Ensure the identifier does not exceed typical varchar limits if necessary, though 255 should be fine with md5 for establishment name.
+
 
                 $dataBatch[] = [
-                    'case_number_group'     => $caseNumberGroup,
-                    'address'               => ($record['address'] === '') ? null : ($record['address'] ?? null),
-                    'parcel'                => ($record['parcel'] === '') ? null : ($record['parcel'] ?? null),
-                    'establishment_name'    => ($record['establishment_name'] === '') ? null : ($record['establishment_name'] ?? null),
-                    'code_number'           => ($record['code_number'] === '') ? null : ($record['code_number'] ?? null),
-                    'code_description'      => ($record['code_description'] === '') ? null : ($record['code_description'] ?? null),
-                    'inspector_comments'    => ($record['inspector_comments'] === '') ? null : ($record['inspector_comments'] ?? null),
+                    'case_number_group'     => $dbCaseNumberGroup,
+                    'address'               => $this->trimToNull($record['address'] ?? null),
+                    'parcel'                => $this->trimToNull($record['parcel'] ?? null),
+                    'establishment_name'    => $dbEstablishmentName,
+                    'code_number'           => $dbCodeNumber,
+                    'code_description'      => $this->trimToNull($record['code_description'] ?? null),
+                    'inspector_comments'    => $this->trimToNull($record['inspector_comments'] ?? null),
                     'case_open_date'        => $this->formatDate($record['case_open_date'] ?? null),
                     'case_closed_date'      => $this->formatDate($record['case_closed_date'] ?? null),
-                    'date_cited'            => $this->formatDate($record['date_cited'] ?? null),
+                    'date_cited'            => $dbDateCited,
                     'date_corrected'        => $this->formatDate($record['date_corrected'] ?? null),
-                    'code_case_status'      => ($record['code_case_status'] === '') ? null : ($record['code_case_status'] ?? null),
+                    'code_case_status'      => $this->trimToNull($record['code_case_status'] ?? null),
                     'latitude'              => $latitude,
                     'longitude'             => $longitude,
                     'geocoded_column_text'  => $geocodedColumnText,
+                    'unique_violation_identifier' => $uniqueViolationIdentifier,
                     'created_at'            => now(),
                     'updated_at'            => now(),
                 ];
@@ -124,11 +158,29 @@ class NativeCambridgeSanitaryInspectionsSeeder extends Seeder
         if (empty($dataBatch)) {
             return;
         }
-        // Filter out items where case_number_group is essential and missing, or other critical fields
-        $validBatch = array_filter($dataBatch, fn($item) => !(empty($item['case_number_group']) && empty($item['establishment_name'])));
+        
+        // The skip logic is now primarily in processFile. 
+        // This filter can be a secondary check or removed if confident in processFile's logic.
+        $validBatch = array_filter($dataBatch, function($item) {
+            return !($item['case_number_group'] === null && $item['establishment_name'] === null);
+        });
+
         if (empty($validBatch)) {
             return;
         }
-        DB::table((new CambridgeSanitaryInspectionData)->getTable())->insert($validBatch);
+
+        $updateColumns = [
+            'case_number_group', 'address', 'parcel', 'establishment_name', 
+            'code_number', 'code_description', 'inspector_comments', 
+            'case_open_date', 'case_closed_date', 'date_cited', 'date_corrected', 
+            'code_case_status', 'latitude', 'longitude', 'geocoded_column_text', 
+            'updated_at'
+        ];
+
+        DB::table((new CambridgeSanitaryInspectionData)->getTable())->upsert(
+            $validBatch,
+            ['unique_violation_identifier'],
+            $updateColumns
+        );
     }
 }

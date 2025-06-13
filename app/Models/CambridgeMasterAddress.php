@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class CambridgeMasterAddress extends Model
 {
-    use HasFactory, Mappable;
+    use HasFactory;
 
     protected $table = 'cambridge_master_addresses';
 

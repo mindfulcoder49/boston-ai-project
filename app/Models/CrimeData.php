@@ -686,4 +686,18 @@ class CrimeData extends Model
         return $this->incident_number; // Placeholder: Adjust to your actual external ID field
     }
 
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Incident Number',
+            'mainIdentifierField' => 'incident_number',
+            'descriptionLabel' => 'Description',
+            'descriptionField' => 'offense_description',
+            'additionalFields' => [
+                ['label' => 'District', 'key' => 'district'],
+                ['label' => 'Shooting', 'key' => 'shooting', 'condition' => 'boolean_true_only'],
+            ],
+        ];
+    }
+
 }

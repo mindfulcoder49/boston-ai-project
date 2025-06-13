@@ -92,4 +92,18 @@ class CambridgeBuildingPermitData extends Model
     public static $searchable_columns_config = [
         'permit_id_external', 'address', 'status', 'current_property_use', 'proposed_property_use', 'detailed_description_of_work', 'building_use', 'maplot_number'
     ];
+
+    public static function getPopupConfig(): array
+    {
+        return [
+            'mainIdentifierLabel' => 'Permit Number',
+            'mainIdentifierField' => 'permit_num_external', // Verify field name
+            'descriptionLabel' => 'Description of Work',
+            'descriptionField' => 'description_of_work', // Verify field name
+            'additionalFields' => [
+                ['label' => 'Status', 'key' => 'status_of_permit'], // Verify field name
+                ['label' => 'Address', 'key' => 'full_address'], // Verify field name
+            ],
+        ];
+    }
 }

@@ -96,16 +96,6 @@ const hasData = computed(() => {
   return props.data && typeof props.data === 'object' && Object.keys(props.data).length > 0;
 });
 
-// Mapping from sub-object key to section header title.
-const sectionTitles = {
-  crime_data: 'Crime Data',
-  three_one_one_case_data: '311 Case',
-  property_violation_data: 'Property Violation',
-  construction_off_hour_data: 'Construction Off Hour',
-  building_permit_data: 'Building Permit',
-  food_inspection_data: 'Food Inspection'
-};
-
 // Helper: returns true if object has at least one property with a non-empty value.
 function hasNonEmptyData(obj) {
   return Object.values(obj).some(value => {
@@ -122,14 +112,21 @@ function hasNonEmptyData(obj) {
 
 // Build an array of sections only if props.data exists and has non-empty fields.
 const sections = computed(() => {
-  if (!hasData.value) return [];
+  if (!hasData.value || !props.mapConfiguration || !props.mapConfiguration.modelToSubObjectKeyMap || !props.mapConfiguration.dataPointModelConfig) {
+    return [];
+  }
+
   const subs = [];
-  for (const key in sectionTitles) {
-    if (props.data[key] && typeof props.data[key] === 'object') {
-      const content = props.data[key];
-      // Only include section if at least one field has data.
+  const modelToSubObjectKeyMap = props.mapConfiguration.modelToSubObjectKeyMap;
+  const dataPointModelConfig = props.mapConfiguration.dataPointModelConfig;
+
+  for (const tableName in modelToSubObjectKeyMap) {
+    const dataObjectKey = modelToSubObjectKeyMap[tableName];
+    if (props.data[dataObjectKey] && typeof props.data[dataObjectKey] === 'object') {
+      const content = props.data[dataObjectKey];
       if (hasNonEmptyData(content)) {
-        subs.push({ key, title: sectionTitles[key], content });
+        const title = dataPointModelConfig[tableName]?.displayTitle || formatLabel(tableName); // Fallback title
+        subs.push({ key: dataObjectKey, title: title, content });
       }
     }
   }

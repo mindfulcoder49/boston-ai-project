@@ -131,7 +131,7 @@ return new class extends Migration
         // Cambridge Sanitary Inspection Data
         Schema::create('cambridge_sanitary_inspection_data', function (Blueprint $table) {
             $table->id(); // Primary key for each violation row
-            $table->string('case_number_group')->index()->comment('From CSV case_number, groups violations');
+            $table->string('case_number_group')->nullable()->index()->comment('From CSV case_number, groups violations');
             $table->string('address', 512)->nullable()->index();
             $table->string('parcel')->nullable()->index();
             $table->string('establishment_name')->nullable()->index();
@@ -147,10 +147,6 @@ return new class extends Migration
             $table->decimal('longitude', 10, 7)->nullable();
             $table->string('geocoded_column_text')->nullable();
             $table->timestamps();
-            // A unique constraint for a specific violation under an inspection might be:
-            // $table->unique(['case_number_group', 'code_number', 'date_cited'], 'inspection_violation_unique');
-            // This depends on data granularity and if these fields reliably make a row unique.
-            // For now, relying on auto-incrementing ID and seeder logic to handle inserts.
         });
     }
 

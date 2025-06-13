@@ -89,7 +89,7 @@
 
     <ImageCarousel 
       :dataPoints="dataPoints" 
-      :modelToDataKeyMap="modelToSubObjectKeyMap"
+      :modelToDataKeyMap="mapConfiguration.modelToSubObjectKeyMap || {}"
       @on-image-click="handleImageClick" 
     />
 
@@ -100,7 +100,7 @@
       :radius="reportRadius"
       :currentMapLanguage="currentReportLanguage"
     ></AiAssistant>
-    <GenericDataList :totalData="dataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" :language_codes="language_codes" />
+    <GenericDataList :totalData="dataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" :language_codes="language_codes" :map-configuration="mapConfiguration" />
 
   </PageTemplate>
 </template>
@@ -129,6 +129,7 @@ import FoodInspection from '@/Components/FoodInspection.vue';
 import FoodInspectionTeaser from '@/Components/FoodInspectionTeaser.vue';
 import { usePage } from '@inertiajs/vue3'; // Import usePage
 import FeaturedUserMapsBanner from '@/Components/FeaturedUserMapsBanner.vue';
+import { map } from 'leaflet';
 
 const page = usePage(); // Get page instance
 
@@ -163,15 +164,16 @@ const translations = inject('translations');
 const language_codes = ref(['en-US']);
 
 // Map from alcivartech_model to the actual key of the sub-object in the raw dataPoint from API
-const modelToSubObjectKeyMap = {
-  'crime_data': 'crime_data',
-  'three_one_one_cases': 'three_one_one_case_data',
-  'property_violations': 'property_violation_data',
-  'construction_off_hours': 'construction_off_hour_data',
-  'building_permits': 'building_permit_data',
-  'food_inspections': 'food_inspection_data',
-  'everett_crime_data': 'everett_crime_data'
-};
+// This will now come from mapConfiguration
+// const modelToSubObjectKeyMap = {
+//   'crime_data': 'crime_data',
+//   'three_one_one_cases': 'three_one_one_case_data',
+//   'property_violations': 'property_violation_data',
+//   'construction_off_hours': 'construction_off_hour_data',
+//   'building_permits': 'building_permit_data',
+//   'food_inspections': 'food_inspection_data',
+//   'everett_crime_data': 'everett_crime_data'
+// };
 
 const aggregateFoodViolations = (dataPoints) => {
   const foodInspectionsInput = dataPoints.filter(dp => dp.alcivartech_type === 'Food Inspection');
