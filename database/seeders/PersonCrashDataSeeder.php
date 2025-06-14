@@ -92,8 +92,8 @@ class PersonCrashDataSeeder extends Seeder
                     try {
                         DB::table($tableName)->upsert(
                             $dataToInsert,
-                            ['crash_numb', 'pers_numb', 'vehc_unit_numb'],
-                            array_diff(array_keys($dataToInsert[0]), ['crash_numb', 'pers_numb', 'vehc_unit_numb'])
+                            ['crash_person_id'], // Use new single unique key
+                            array_diff(array_keys($dataToInsert[0]), ['crash_person_id'])
                         );
                         $totalUpserted += count($dataToInsert);
                     } catch (\Exception $e) {
@@ -112,8 +112,8 @@ class PersonCrashDataSeeder extends Seeder
                 try {
                     DB::table($tableName)->upsert(
                         $dataToInsert,
-                        ['crash_numb', 'pers_numb', 'vehc_unit_numb'],
-                        array_diff(array_keys($dataToInsert[0]), ['crash_numb', 'pers_numb', 'vehc_unit_numb'])
+                        ['crash_person_id'], // Use new single unique key
+                        array_diff(array_keys($dataToInsert[0]), ['crash_person_id'])
                     );
                     $totalUpserted += count($dataToInsert);
                     $this->command->info("Upserted final chunk of " . count($dataToInsert) . " records. Total: {$totalUpserted}");
@@ -366,6 +366,23 @@ class PersonCrashDataSeeder extends Seeder
                     break;
             }
         }
+
+        // Construct crash_person_id from transformed values
+        // Ensure crash_numb, pers_numb, vehc_unit_numb are processed before this point by the switch statement.
+        $cNumStr = array_key_exists('crash_numb', $transformed) && $transformed['crash_numb'] !== null 
+                   ? (string)$transformed['crash_numb'] 
+                   : 'NULLID'; // Should always exist and be non-null based on its role.
+        
+        $pNumStr = array_key_exists('pers_numb', $transformed) && $transformed['pers_numb'] !== null 
+                   ? (string)$transformed['pers_numb'] 
+                   : 'NULLPERS';
+        
+        $vNumStr = array_key_exists('vehc_unit_numb', $transformed) && $transformed['vehc_unit_numb'] !== null 
+                   ? (string)$transformed['vehc_unit_numb'] 
+                   : 'NULLVEHC';
+
+        $transformed['crash_person_id'] = $cNumStr . '_' . $pNumStr . '_' . $vNumStr;
+        
         return $transformed;
     }
 }

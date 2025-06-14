@@ -30,6 +30,9 @@ class CreatePersonCrashDataTable extends Migration
             $table->string('polc_agncy_type_descr')->nullable(); // Short, keep varchar
             $table->year('year')->nullable()->index();
 
+            // Add new crash_person_id for unique identification in upserts
+            $table->string('crash_person_id', 64)->unique()->comment('Concatenated ID for upsert: crash_numb_pers_numb_vehc_unit_numb');
+
             // Crash Characteristics
             $table->string('manr_coll_descr')->nullable(); // Short, keep varchar
             $table->text('vehc_mnvr_actn_cl')->nullable();
@@ -224,6 +227,33 @@ class CreatePersonCrashDataTable extends Migration
 
             $table->index(['crash_numb', 'pers_numb', 'vehc_unit_numb'], 'crash_person_vehicle_unique_idx');
         });
+
+        Schema::table('data_points', function (Blueprint $table) {
+            // Determine a suitable column to place the new FK after.
+            $afterColumn = 'everett_crime_data_id'; // Try to place after the last added FK
+            if (!Schema::hasColumn('data_points', $afterColumn)) {
+                $afterColumn = 'food_inspection_id'; // Fallback 1
+                if (!Schema::hasColumn('data_points', $afterColumn)) {
+                    $afterColumn = 'generic_foreign_id'; // Fallback 2
+                    if (!Schema::hasColumn('data_points', $afterColumn)) {
+                        $afterColumn = null; // Add at the end if no specific column found
+                    }
+                }
+            }
+
+            if ($afterColumn) {
+                $table->unsignedBigInteger('person_crash_data_id')->nullable()->after($afterColumn);
+            } else {
+                $table->unsignedBigInteger('person_crash_data_id')->nullable();
+            }
+            
+            $table->foreign('person_crash_data_id')
+                  ->references('id')
+                  ->on('person_crash_data')
+                  ->onDelete('cascade'); // Or onDelete('set null')
+
+            $table->index('person_crash_data_id');
+        });
     }
 
     /**
@@ -234,5 +264,13 @@ class CreatePersonCrashDataTable extends Migration
     public function down()
     {
         Schema::dropIfExists('person_crash_data');
+        Schema::table('data_points', function (Blueprint $table) {
+            // It's good practice to drop the index before the foreign key
+            // Laravel's default index name convention is table_column_foreign
+            // or table_column_index. Providing the column name array usually works.
+            $table->dropForeign(['person_crash_data_id']);
+            $table->dropIndex(['person_crash_data_id']); // Drop index by column name
+            $table->dropColumn('person_crash_data_id');
+        });
     }
 }
