@@ -202,19 +202,19 @@ Route::get('/data-metrics', [MetricsController::class, 'index'])->name('data.met
 
 // Generalized Data Map Routes (New)
 Route::get('/map/{dataType}', [DataMapController::class, 'index'])
-    ->middleware(['auth', 'verified']) // Assuming auth is needed
+    //->middleware(['auth', 'verified']) // Assuming auth is needed
     ->name('data-map.index');
 
 // New Combined Data Map Route
 Route::get('/combined-map', [DataMapController::class, 'combinedIndex'])
-    ->middleware(['auth', 'verified']) // Assuming auth is needed
+    //->middleware(['auth', 'verified']) // Assuming auth is needed
     ->name('data-map.combined');
 
 // API routes for data fetching (can be grouped under api.php if preferred, but kept here for simplicity with web auth)
 Route::post('/api/data/{dataType}', [DataMapController::class, 'getData'])
-    ->middleware(['auth', 'verified']) // Assuming auth is needed
+    //->middleware(['auth', 'verified']) // Assuming auth is needed
     ->name('data.get');
 
 Route::post('/api/natural-language-query/{dataType}', [DataMapController::class, 'naturalLanguageQuery'])
-    ->middleware(['auth', 'verified']) // Assuming auth is needed
+    //->middleware(['auth', 'verified']) // Assuming auth is needed
     ->name('data.natural-language-query');
