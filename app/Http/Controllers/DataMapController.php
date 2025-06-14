@@ -80,7 +80,7 @@ class DataMapController extends Controller
         $tierMinDate = null;
 
         if (!$effectiveUser) {
-            return Carbon::now()->subMonths(1); // Default guest access: 1 month
+            return null; // Default guest access: 1 month
         }
 
         $effectiveTierDetails = $effectiveUser->getEffectiveTierDetails();

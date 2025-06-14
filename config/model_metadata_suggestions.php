@@ -24,22 +24,8 @@ return [
             3 => [
                 'name' => 'status',
                 'label' => 'Status',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Status',
-                'options' => [
-                    0 => [
-                        'value' => 'Closed',
-                        'label' => 'Closed',
-                    ],
-                    1 => [
-                        'value' => 'Open',
-                        'label' => 'Open',
-                    ],
-                    2 => [
-                        'value' => 'Void',
-                        'label' => 'Void',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Status',
             ],
             4 => [
                 'name' => 'code',
@@ -80,306 +66,14 @@ return [
             10 => [
                 'name' => 'violation_suffix',
                 'label' => 'Violation Suffix',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Violation Suffix',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => 'AV',
-                        'label' => 'AV',
-                    ],
-                    2 => [
-                        'value' => 'AVE',
-                        'label' => 'AVE',
-                    ],
-                    3 => [
-                        'value' => 'BL',
-                        'label' => 'BL',
-                    ],
-                    4 => [
-                        'value' => 'BLVD',
-                        'label' => 'BLVD',
-                    ],
-                    5 => [
-                        'value' => 'CC',
-                        'label' => 'CC',
-                    ],
-                    6 => [
-                        'value' => 'CI',
-                        'label' => 'CI',
-                    ],
-                    7 => [
-                        'value' => 'CIR',
-                        'label' => 'CIR',
-                    ],
-                    8 => [
-                        'value' => 'CT',
-                        'label' => 'CT',
-                    ],
-                    9 => [
-                        'value' => 'DR',
-                        'label' => 'DR',
-                    ],
-                    10 => [
-                        'value' => 'GRN',
-                        'label' => 'GRN',
-                    ],
-                    11 => [
-                        'value' => 'HW',
-                        'label' => 'HW',
-                    ],
-                    12 => [
-                        'value' => 'LN',
-                        'label' => 'LN',
-                    ],
-                    13 => [
-                        'value' => 'PARK',
-                        'label' => 'PARK',
-                    ],
-                    14 => [
-                        'value' => 'PK',
-                        'label' => 'PK',
-                    ],
-                    15 => [
-                        'value' => 'PL',
-                        'label' => 'PL',
-                    ],
-                    16 => [
-                        'value' => 'PW',
-                        'label' => 'PW',
-                    ],
-                    17 => [
-                        'value' => 'PZ',
-                        'label' => 'PZ',
-                    ],
-                    18 => [
-                        'value' => 'RD',
-                        'label' => 'RD',
-                    ],
-                    19 => [
-                        'value' => 'RO',
-                        'label' => 'RO',
-                    ],
-                    20 => [
-                        'value' => 'SQ',
-                        'label' => 'SQ',
-                    ],
-                    21 => [
-                        'value' => 'ST',
-                        'label' => 'ST',
-                    ],
-                    22 => [
-                        'value' => 'TE',
-                        'label' => 'TE',
-                    ],
-                    23 => [
-                        'value' => 'TER',
-                        'label' => 'TER',
-                    ],
-                    24 => [
-                        'value' => 'WAY',
-                        'label' => 'WAY',
-                    ],
-                    25 => [
-                        'value' => 'WH',
-                        'label' => 'WH',
-                    ],
-                    26 => [
-                        'value' => 'WY',
-                        'label' => 'WY',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Violation Suffix',
             ],
             11 => [
                 'name' => 'violation_city',
                 'label' => 'Violation City',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Violation City',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => 'Allston',
-                        'label' => 'Allston',
-                    ],
-                    2 => [
-                        'value' => 'Allston/Boston',
-                        'label' => 'Allston/Boston',
-                    ],
-                    3 => [
-                        'value' => 'Back Bay/',
-                        'label' => 'Back Bay/',
-                    ],
-                    4 => [
-                        'value' => 'Boston',
-                        'label' => 'Boston',
-                    ],
-                    5 => [
-                        'value' => 'Boston/West End',
-                        'label' => 'Boston/West End',
-                    ],
-                    6 => [
-                        'value' => 'Brighton',
-                        'label' => 'Brighton',
-                    ],
-                    7 => [
-                        'value' => 'Brighton/',
-                        'label' => 'Brighton/',
-                    ],
-                    8 => [
-                        'value' => 'Charlestown',
-                        'label' => 'Charlestown',
-                    ],
-                    9 => [
-                        'value' => 'Charlestown/',
-                        'label' => 'Charlestown/',
-                    ],
-                    10 => [
-                        'value' => 'Charlestown666',
-                        'label' => 'Charlestown666',
-                    ],
-                    11 => [
-                        'value' => 'Chestnut Hill',
-                        'label' => 'Chestnut Hill',
-                    ],
-                    12 => [
-                        'value' => 'Chinatown',
-                        'label' => 'Chinatown',
-                    ],
-                    13 => [
-                        'value' => 'Dorchester',
-                        'label' => 'Dorchester',
-                    ],
-                    14 => [
-                        'value' => 'Dorchester (Lower Mills)',
-                        'label' => 'Dorchester (Lower Mills)',
-                    ],
-                    15 => [
-                        'value' => 'Dorchester Center',
-                        'label' => 'Dorchester Center',
-                    ],
-                    16 => [
-                        'value' => 'Dorchester/',
-                        'label' => 'Dorchester/',
-                    ],
-                    17 => [
-                        'value' => 'East Boston',
-                        'label' => 'East Boston',
-                    ],
-                    18 => [
-                        'value' => 'East Boston/',
-                        'label' => 'East Boston/',
-                    ],
-                    19 => [
-                        'value' => 'East Boston//',
-                        'label' => 'East Boston//',
-                    ],
-                    20 => [
-                        'value' => 'Fenway/',
-                        'label' => 'Fenway/',
-                    ],
-                    21 => [
-                        'value' => 'Financial District',
-                        'label' => 'Financial District',
-                    ],
-                    22 => [
-                        'value' => 'Financial District/',
-                        'label' => 'Financial District/',
-                    ],
-                    23 => [
-                        'value' => 'Hyde Park',
-                        'label' => 'Hyde Park',
-                    ],
-                    24 => [
-                        'value' => 'Hyde Park/',
-                        'label' => 'Hyde Park/',
-                    ],
-                    25 => [
-                        'value' => 'Jamaica Plain',
-                        'label' => 'Jamaica Plain',
-                    ],
-                    26 => [
-                        'value' => 'Jamaica Plain/',
-                        'label' => 'Jamaica Plain/',
-                    ],
-                    27 => [
-                        'value' => 'Kenmore/fenway',
-                        'label' => 'Kenmore/fenway',
-                    ],
-                    28 => [
-                        'value' => 'Mattapan',
-                        'label' => 'Mattapan',
-                    ],
-                    29 => [
-                        'value' => 'Mattapan/',
-                        'label' => 'Mattapan/',
-                    ],
-                    30 => [
-                        'value' => 'Mission Hill',
-                        'label' => 'Mission Hill',
-                    ],
-                    31 => [
-                        'value' => 'Mission Hill/',
-                        'label' => 'Mission Hill/',
-                    ],
-                    32 => [
-                        'value' => 'NorthEnd',
-                        'label' => 'NorthEnd',
-                    ],
-                    33 => [
-                        'value' => 'NorthEnd/',
-                        'label' => 'NorthEnd/',
-                    ],
-                    34 => [
-                        'value' => 'Roslindale',
-                        'label' => 'Roslindale',
-                    ],
-                    35 => [
-                        'value' => 'Roslindale/',
-                        'label' => 'Roslindale/',
-                    ],
-                    36 => [
-                        'value' => 'Roxbury',
-                        'label' => 'Roxbury',
-                    ],
-                    37 => [
-                        'value' => 'ROXBURY CROSSIN',
-                        'label' => 'ROXBURY CROSSIN',
-                    ],
-                    38 => [
-                        'value' => 'Roxbury/',
-                        'label' => 'Roxbury/',
-                    ],
-                    39 => [
-                        'value' => 'South Boston',
-                        'label' => 'South Boston',
-                    ],
-                    40 => [
-                        'value' => 'South End',
-                        'label' => 'South End',
-                    ],
-                    41 => [
-                        'value' => 'Theater District',
-                        'label' => 'Theater District',
-                    ],
-                    42 => [
-                        'value' => 'West End',
-                        'label' => 'West End',
-                    ],
-                    43 => [
-                        'value' => 'West Roxbury',
-                        'label' => 'West Roxbury',
-                    ],
-                    44 => [
-                        'value' => 'West Roxbury/',
-                        'label' => 'West Roxbury/',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Violation City',
             ],
             12 => [
                 'name' => 'violation_state',
@@ -390,242 +84,14 @@ return [
             13 => [
                 'name' => 'violation_zip',
                 'label' => 'Violation Zip',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Violation Zip',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '02108',
-                        'label' => '02108',
-                    ],
-                    2 => [
-                        'value' => '02109',
-                        'label' => '02109',
-                    ],
-                    3 => [
-                        'value' => '02110',
-                        'label' => '02110',
-                    ],
-                    4 => [
-                        'value' => '02111',
-                        'label' => '02111',
-                    ],
-                    5 => [
-                        'value' => '02113',
-                        'label' => '02113',
-                    ],
-                    6 => [
-                        'value' => '02114',
-                        'label' => '02114',
-                    ],
-                    7 => [
-                        'value' => '02115',
-                        'label' => '02115',
-                    ],
-                    8 => [
-                        'value' => '02116',
-                        'label' => '02116',
-                    ],
-                    9 => [
-                        'value' => '02118',
-                        'label' => '02118',
-                    ],
-                    10 => [
-                        'value' => '02119',
-                        'label' => '02119',
-                    ],
-                    11 => [
-                        'value' => '02120',
-                        'label' => '02120',
-                    ],
-                    12 => [
-                        'value' => '02121',
-                        'label' => '02121',
-                    ],
-                    13 => [
-                        'value' => '02122',
-                        'label' => '02122',
-                    ],
-                    14 => [
-                        'value' => '02123',
-                        'label' => '02123',
-                    ],
-                    15 => [
-                        'value' => '02124',
-                        'label' => '02124',
-                    ],
-                    16 => [
-                        'value' => '02125',
-                        'label' => '02125',
-                    ],
-                    17 => [
-                        'value' => '02126',
-                        'label' => '02126',
-                    ],
-                    18 => [
-                        'value' => '02126-1616',
-                        'label' => '02126-1616',
-                    ],
-                    19 => [
-                        'value' => '02127',
-                        'label' => '02127',
-                    ],
-                    20 => [
-                        'value' => '02128',
-                        'label' => '02128',
-                    ],
-                    21 => [
-                        'value' => '02129',
-                        'label' => '02129',
-                    ],
-                    22 => [
-                        'value' => '02130',
-                        'label' => '02130',
-                    ],
-                    23 => [
-                        'value' => '02131',
-                        'label' => '02131',
-                    ],
-                    24 => [
-                        'value' => '02132',
-                        'label' => '02132',
-                    ],
-                    25 => [
-                        'value' => '02134',
-                        'label' => '02134',
-                    ],
-                    26 => [
-                        'value' => '02135',
-                        'label' => '02135',
-                    ],
-                    27 => [
-                        'value' => '02136',
-                        'label' => '02136',
-                    ],
-                    28 => [
-                        'value' => '02199',
-                        'label' => '02199',
-                    ],
-                    29 => [
-                        'value' => '02210',
-                        'label' => '02210',
-                    ],
-                    30 => [
-                        'value' => '02215',
-                        'label' => '02215',
-                    ],
-                    31 => [
-                        'value' => '02446',
-                        'label' => '02446',
-                    ],
-                    32 => [
-                        'value' => '02467',
-                        'label' => '02467',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Violation Zip',
             ],
             14 => [
                 'name' => 'ward',
                 'label' => 'Ward',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Ward',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '01',
-                        'label' => '01',
-                    ],
-                    2 => [
-                        'value' => '02',
-                        'label' => '02',
-                    ],
-                    3 => [
-                        'value' => '03',
-                        'label' => '03',
-                    ],
-                    4 => [
-                        'value' => '04',
-                        'label' => '04',
-                    ],
-                    5 => [
-                        'value' => '05',
-                        'label' => '05',
-                    ],
-                    6 => [
-                        'value' => '06',
-                        'label' => '06',
-                    ],
-                    7 => [
-                        'value' => '07',
-                        'label' => '07',
-                    ],
-                    8 => [
-                        'value' => '08',
-                        'label' => '08',
-                    ],
-                    9 => [
-                        'value' => '09',
-                        'label' => '09',
-                    ],
-                    10 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    11 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    12 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                    13 => [
-                        'value' => '13',
-                        'label' => '13',
-                    ],
-                    14 => [
-                        'value' => '14',
-                        'label' => '14',
-                    ],
-                    15 => [
-                        'value' => '15',
-                        'label' => '15',
-                    ],
-                    16 => [
-                        'value' => '16',
-                        'label' => '16',
-                    ],
-                    17 => [
-                        'value' => '17',
-                        'label' => '17',
-                    ],
-                    18 => [
-                        'value' => '18',
-                        'label' => '18',
-                    ],
-                    19 => [
-                        'value' => '19',
-                        'label' => '19',
-                    ],
-                    20 => [
-                        'value' => '20',
-                        'label' => '20',
-                    ],
-                    21 => [
-                        'value' => '21',
-                        'label' => '21',
-                    ],
-                    22 => [
-                        'value' => '22',
-                        'label' => '22',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Ward',
             ],
             15 => [
                 'name' => 'contact_addr1',
@@ -745,11 +211,8 @@ return [
                 'description' => 'Filter by Ap Case Defn Key.',
             ],
             'status' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Status. Provide a comma-separated list or an array of values. Possible values: Closed, Open, Void.',
+                'type' => 'string',
+                'description' => 'Filter by Status.',
             ],
             'code' => [
                 'type' => 'string',
@@ -776,36 +239,24 @@ return [
                 'description' => 'Filter by Violation Street.',
             ],
             'violation_suffix' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Violation Suffix. Provide a comma-separated list or an array of values. Possible values:  , AV, AVE, BL, BLVD, CC, CI, CIR, CT, DR, GRN, HW, LN, PARK, PK, PL, PW, PZ, RD, RO, SQ, ST, TE, TER, WAY, WH, WY.',
+                'type' => 'string',
+                'description' => 'Filter by Violation Suffix.',
             ],
             'violation_city' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Violation City. Provide a comma-separated list or an array of values. Possible values:  , Allston, Allston/Boston, Back Bay/, Boston, Boston/West End, Brighton, Brighton/, Charlestown, Charlestown/, Charlestown666, Chestnut Hill, Chinatown, Dorchester, Dorchester (Lower Mills), Dorchester Center, Dorchester/, East Boston, East Boston/, East Boston//, Fenway/, Financial District, Financial District/, Hyde Park, Hyde Park/, Jamaica Plain, Jamaica Plain/, Kenmore/fenway, Mattapan, Mattapan/, Mission Hill, Mission Hill/, NorthEnd, NorthEnd/, Roslindale, Roslindale/, Roxbury, ROXBURY CROSSIN, Roxbury/, South Boston, South End, Theater District, West End, West Roxbury, West Roxbury/.',
+                'type' => 'string',
+                'description' => 'Filter by Violation City.',
             ],
             'violation_state' => [
                 'type' => 'string',
                 'description' => 'Filter by Violation State.',
             ],
             'violation_zip' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Violation Zip. Provide a comma-separated list or an array of values. Possible values:  , 02108, 02109, 02110, 02111, 02113, 02114, 02115, 02116, 02118, 02119, 02120, 02121, 02122, 02123, 02124, 02125, 02126, 02126-1616, 02127, 02128, 02129, 02130, 02131, 02132, 02134, 02135, 02136, 02199, 02210, 02215, 02446, 02467.',
+                'type' => 'string',
+                'description' => 'Filter by Violation Zip.',
             ],
             'ward' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Ward. Provide a comma-separated list or an array of values. Possible values:  , 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22.',
+                'type' => 'string',
+                'description' => 'Filter by Ward.',
             ],
             'contact_addr1' => [
                 'type' => 'string',
@@ -898,18 +349,8 @@ return [
             6 => [
                 'name' => 'status',
                 'label' => 'Status',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Status',
-                'options' => [
-                    0 => [
-                        'value' => 'Active',
-                        'label' => 'Active',
-                    ],
-                    1 => [
-                        'value' => 'Complete',
-                        'label' => 'Complete',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Status',
             ],
             7 => [
                 'name' => 'applicant_submit_date_start',
@@ -924,180 +365,66 @@ return [
                 'placeholder' => 'End date for Applicant Submit Date',
             ],
             9 => [
-                'name' => 'number_of_residential_units',
-                'label' => 'Number Of Residential Units',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Number Of Residential Units',
-                'options' => [
-                    0 => [
-                        'value' => '0',
-                        'label' => '0',
-                    ],
-                    1 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    2 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    3 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    4 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    5 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    6 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    7 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    8 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    9 => [
-                        'value' => '13',
-                        'label' => '13',
-                    ],
-                    10 => [
-                        'value' => '23',
-                        'label' => '23',
-                    ],
-                ],
+                'name' => 'number_of_residential_units_min',
+                'label' => 'Number Of Residential Units Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Number Of Residential Units',
             ],
             10 => [
-                'name' => 'current_property_use',
-                'label' => 'Current Property Use',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Current Property Use',
-                'options' => [
-                    0 => [
-                        'value' => 'Accessory',
-                        'label' => 'Accessory',
-                    ],
-                    1 => [
-                        'value' => 'Commercial / Mixed Use',
-                        'label' => 'Commercial / Mixed Use',
-                    ],
-                    2 => [
-                        'value' => 'Multi-Family (3 units or greater)',
-                        'label' => 'Multi-Family (3 units or greater)',
-                    ],
-                    3 => [
-                        'value' => 'One-Family',
-                        'label' => 'One-Family',
-                    ],
-                    4 => [
-                        'value' => 'Townhouse',
-                        'label' => 'Townhouse',
-                    ],
-                    5 => [
-                        'value' => 'Two-Family',
-                        'label' => 'Two-Family',
-                    ],
-                    6 => [
-                        'value' => 'Vacant Lot',
-                        'label' => 'Vacant Lot',
-                    ],
-                ],
+                'name' => 'number_of_residential_units_max',
+                'label' => 'Number Of Residential Units Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Number Of Residential Units',
             ],
             11 => [
-                'name' => 'proposed_property_use',
-                'label' => 'Proposed Property Use',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Proposed Property Use',
-                'options' => [
-                    0 => [
-                        'value' => 'Accessory',
-                        'label' => 'Accessory',
-                    ],
-                    1 => [
-                        'value' => 'Commercial / Mixed Use',
-                        'label' => 'Commercial / Mixed Use',
-                    ],
-                    2 => [
-                        'value' => 'Multi-Family (3 units or greater)',
-                        'label' => 'Multi-Family (3 units or greater)',
-                    ],
-                    3 => [
-                        'value' => 'One-Family',
-                        'label' => 'One-Family',
-                    ],
-                    4 => [
-                        'value' => 'Townhouse',
-                        'label' => 'Townhouse',
-                    ],
-                    5 => [
-                        'value' => 'Two-Family',
-                        'label' => 'Two-Family',
-                    ],
-                ],
+                'name' => 'current_property_use',
+                'label' => 'Current Property Use',
+                'type' => 'text',
+                'placeholder' => 'Enter Current Property Use',
             ],
             12 => [
+                'name' => 'proposed_property_use',
+                'label' => 'Proposed Property Use',
+                'type' => 'text',
+                'placeholder' => 'Enter Proposed Property Use',
+            ],
+            13 => [
                 'name' => 'total_cost_of_construction',
                 'label' => 'Total Cost Of Construction',
                 'type' => 'text',
                 'placeholder' => 'Enter Total Cost Of Construction',
             ],
-            13 => [
+            14 => [
                 'name' => 'detailed_description_of_work',
                 'label' => 'Detailed Description Of Work',
                 'type' => 'text',
                 'placeholder' => 'Enter Detailed Description Of Work',
             ],
-            14 => [
+            15 => [
                 'name' => 'gross_square_footage_min',
                 'label' => 'Gross Square Footage Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Gross Square Footage',
             ],
-            15 => [
+            16 => [
                 'name' => 'gross_square_footage_max',
                 'label' => 'Gross Square Footage Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Gross Square Footage',
             ],
-            16 => [
+            17 => [
                 'name' => 'building_use',
                 'label' => 'Building Use',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Building Use',
-                'options' => [
-                    0 => [
-                        'value' => 'Commercial / Mixed Use',
-                        'label' => 'Commercial / Mixed Use',
-                    ],
-                    1 => [
-                        'value' => 'Multi Family (3 or more dwelling units)',
-                        'label' => 'Multi Family (3 or more dwelling units)',
-                    ],
-                    2 => [
-                        'value' => 'One or Two Family Dwelling',
-                        'label' => 'One or Two Family Dwelling',
-                    ],
-                    3 => [
-                        'value' => 'Townhouse',
-                        'label' => 'Townhouse',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Building Use',
             ],
-            17 => [
+            18 => [
                 'name' => 'maplot_number',
                 'label' => 'Maplot Number',
                 'type' => 'text',
                 'placeholder' => 'Enter Maplot Number',
             ],
-            18 => [
+            19 => [
                 'name' => 'raw_data',
                 'label' => 'Raw Data',
                 'type' => 'text',
@@ -1162,11 +489,8 @@ return [
                 'description' => 'Filter by Longitude.',
             ],
             'status' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Status. Provide a comma-separated list or an array of values. Possible values: Active, Complete.',
+                'type' => 'string',
+                'description' => 'Filter by Status.',
             ],
             'applicant_submit_date_start' => [
                 'type' => 'string',
@@ -1178,26 +502,21 @@ return [
                 'format' => 'date',
                 'description' => 'End date for Applicant Submit Date (YYYY-MM-DD)',
             ],
-            'number_of_residential_units' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Number Of Residential Units. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 13, 23.',
+            'number_of_residential_units_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Number Of Residential Units.',
+            ],
+            'number_of_residential_units_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Number Of Residential Units.',
             ],
             'current_property_use' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Current Property Use. Provide a comma-separated list or an array of values. Possible values: Accessory, Commercial / Mixed Use, Multi-Family (3 units or greater), One-Family, Townhouse, Two-Family, Vacant Lot.',
+                'type' => 'string',
+                'description' => 'Filter by Current Property Use.',
             ],
             'proposed_property_use' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Proposed Property Use. Provide a comma-separated list or an array of values. Possible values: Accessory, Commercial / Mixed Use, Multi-Family (3 units or greater), One-Family, Townhouse, Two-Family.',
+                'type' => 'string',
+                'description' => 'Filter by Proposed Property Use.',
             ],
             'total_cost_of_construction' => [
                 'type' => 'string',
@@ -1216,11 +535,8 @@ return [
                 'description' => 'Maximum value for Gross Square Footage.',
             ],
             'building_use' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Building Use. Provide a comma-separated list or an array of values. Possible values: Commercial / Mixed Use, Multi Family (3 or more dwelling units), One or Two Family Dwelling, Townhouse.',
+                'type' => 'string',
+                'description' => 'Filter by Building Use.',
             ],
             'maplot_number' => [
                 'type' => 'string',
@@ -1315,158 +631,26 @@ return [
             13 => [
                 'name' => 'licstatus',
                 'label' => 'Licstatus',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Licstatus',
-                'options' => [
-                    0 => [
-                        'value' => 'Active',
-                        'label' => 'Active',
-                    ],
-                    1 => [
-                        'value' => 'Deleted',
-                        'label' => 'Deleted',
-                    ],
-                    2 => [
-                        'value' => 'Inactive',
-                        'label' => 'Inactive',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Licstatus',
             ],
             14 => [
                 'name' => 'licensecat',
                 'label' => 'Licensecat',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Licensecat',
-                'options' => [
-                    0 => [
-                        'value' => 'FS',
-                        'label' => 'FS',
-                    ],
-                    1 => [
-                        'value' => 'FT',
-                        'label' => 'FT',
-                    ],
-                    2 => [
-                        'value' => 'MFW',
-                        'label' => 'MFW',
-                    ],
-                    3 => [
-                        'value' => 'RF',
-                        'label' => 'RF',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Licensecat',
             ],
             15 => [
                 'name' => 'descript',
                 'label' => 'Descript',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Descript',
-                'options' => [
-                    0 => [
-                        'value' => 'Eating & Drinking',
-                        'label' => 'Eating & Drinking',
-                    ],
-                    1 => [
-                        'value' => 'Eating & Drinking w/ Take Out',
-                        'label' => 'Eating & Drinking w/ Take Out',
-                    ],
-                    2 => [
-                        'value' => 'Mobile Food Walk On',
-                        'label' => 'Mobile Food Walk On',
-                    ],
-                    3 => [
-                        'value' => 'Retail Food',
-                        'label' => 'Retail Food',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Descript',
             ],
             16 => [
                 'name' => 'result',
                 'label' => 'Result',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Result',
-                'options' => [
-                    0 => [
-                        'value' => 'Closed',
-                        'label' => 'Closed',
-                    ],
-                    1 => [
-                        'value' => 'DATAERR',
-                        'label' => 'DATAERR',
-                    ],
-                    2 => [
-                        'value' => 'Fail',
-                        'label' => 'Fail',
-                    ],
-                    3 => [
-                        'value' => 'Failed',
-                        'label' => 'Failed',
-                    ],
-                    4 => [
-                        'value' => 'HE_Closure',
-                        'label' => 'HE_Closure',
-                    ],
-                    5 => [
-                        'value' => 'HE_Fail',
-                        'label' => 'HE_Fail',
-                    ],
-                    6 => [
-                        'value' => 'HE_FailExt',
-                        'label' => 'HE_FailExt',
-                    ],
-                    7 => [
-                        'value' => 'HE_FAILNOR',
-                        'label' => 'HE_FAILNOR',
-                    ],
-                    8 => [
-                        'value' => 'HE_Filed',
-                        'label' => 'HE_Filed',
-                    ],
-                    9 => [
-                        'value' => 'HE_Hearing',
-                        'label' => 'HE_Hearing',
-                    ],
-                    10 => [
-                        'value' => 'HE_Hold',
-                        'label' => 'HE_Hold',
-                    ],
-                    11 => [
-                        'value' => 'HE_Misc',
-                        'label' => 'HE_Misc',
-                    ],
-                    12 => [
-                        'value' => 'HE_NotReq',
-                        'label' => 'HE_NotReq',
-                    ],
-                    13 => [
-                        'value' => 'HE_OutBus',
-                        'label' => 'HE_OutBus',
-                    ],
-                    14 => [
-                        'value' => 'HE_Pass',
-                        'label' => 'HE_Pass',
-                    ],
-                    15 => [
-                        'value' => 'HE_TSOP',
-                        'label' => 'HE_TSOP',
-                    ],
-                    16 => [
-                        'value' => 'HE_VolClos',
-                        'label' => 'HE_VolClos',
-                    ],
-                    17 => [
-                        'value' => 'NoViol',
-                        'label' => 'NoViol',
-                    ],
-                    18 => [
-                        'value' => 'Pass',
-                        'label' => 'Pass',
-                    ],
-                    19 => [
-                        'value' => 'PassViol',
-                        'label' => 'PassViol',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Result',
             ],
             17 => [
                 'name' => 'violation',
@@ -1477,34 +661,8 @@ return [
             18 => [
                 'name' => 'viol_level',
                 'label' => 'Viol Level',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Viol Level',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '-',
-                        'label' => '-',
-                    ],
-                    2 => [
-                        'value' => '*',
-                        'label' => '*',
-                    ],
-                    3 => [
-                        'value' => '**',
-                        'label' => '**',
-                    ],
-                    4 => [
-                        'value' => '***',
-                        'label' => '***',
-                    ],
-                    5 => [
-                        'value' => '1919',
-                        'label' => '1919',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Viol Level',
             ],
             19 => [
                 'name' => 'violdesc',
@@ -1527,22 +685,8 @@ return [
             22 => [
                 'name' => 'viol_status',
                 'label' => 'Viol Status',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Viol Status',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => 'Fail',
-                        'label' => 'Fail',
-                    ],
-                    2 => [
-                        'value' => 'Pass',
-                        'label' => 'Pass',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Viol Status',
             ],
             23 => [
                 'name' => 'status_date_start',
@@ -1571,158 +715,8 @@ return [
             27 => [
                 'name' => 'city',
                 'label' => 'City',
-                'type' => 'multiselect',
-                'placeholder' => 'Select City',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => 'ALLSTON',
-                        'label' => 'ALLSTON',
-                    ],
-                    2 => [
-                        'value' => 'BACK BAY/',
-                        'label' => 'BACK BAY/',
-                    ],
-                    3 => [
-                        'value' => 'BOSTON',
-                        'label' => 'BOSTON',
-                    ],
-                    4 => [
-                        'value' => 'BOSTON/CHINATOWN',
-                        'label' => 'BOSTON/CHINATOWN',
-                    ],
-                    5 => [
-                        'value' => 'BOSTON/WEST END',
-                        'label' => 'BOSTON/WEST END',
-                    ],
-                    6 => [
-                        'value' => 'BRIGHTON',
-                        'label' => 'BRIGHTON',
-                    ],
-                    7 => [
-                        'value' => 'BRIGHTON/',
-                        'label' => 'BRIGHTON/',
-                    ],
-                    8 => [
-                        'value' => 'CHARLESTOWN',
-                        'label' => 'CHARLESTOWN',
-                    ],
-                    9 => [
-                        'value' => 'CHARLESTOWN/',
-                        'label' => 'CHARLESTOWN/',
-                    ],
-                    10 => [
-                        'value' => 'CHESTNUT HILL',
-                        'label' => 'CHESTNUT HILL',
-                    ],
-                    11 => [
-                        'value' => 'DORCHESTER',
-                        'label' => 'DORCHESTER',
-                    ],
-                    12 => [
-                        'value' => 'DORCHESTER CENTER',
-                        'label' => 'DORCHESTER CENTER',
-                    ],
-                    13 => [
-                        'value' => 'DORCHESTER CENTER/',
-                        'label' => 'DORCHESTER CENTER/',
-                    ],
-                    14 => [
-                        'value' => 'DORCHESTER/',
-                        'label' => 'DORCHESTER/',
-                    ],
-                    15 => [
-                        'value' => 'DOWNTOWN/FINANCIAL DISTRICT',
-                        'label' => 'DOWNTOWN/FINANCIAL DISTRICT',
-                    ],
-                    16 => [
-                        'value' => 'EAST BOSTON',
-                        'label' => 'EAST BOSTON',
-                    ],
-                    17 => [
-                        'value' => 'FENWAY',
-                        'label' => 'FENWAY',
-                    ],
-                    18 => [
-                        'value' => 'FENWAY/',
-                        'label' => 'FENWAY/',
-                    ],
-                    19 => [
-                        'value' => 'FINANCIAL DISTRICT',
-                        'label' => 'FINANCIAL DISTRICT',
-                    ],
-                    20 => [
-                        'value' => 'FINANCIAL DISTRICT/',
-                        'label' => 'FINANCIAL DISTRICT/',
-                    ],
-                    21 => [
-                        'value' => 'HYDE PARK',
-                        'label' => 'HYDE PARK',
-                    ],
-                    22 => [
-                        'value' => 'JAMAICA PLAIN',
-                        'label' => 'JAMAICA PLAIN',
-                    ],
-                    23 => [
-                        'value' => 'MATTAPAN',
-                        'label' => 'MATTAPAN',
-                    ],
-                    24 => [
-                        'value' => 'MATTAPAN/',
-                        'label' => 'MATTAPAN/',
-                    ],
-                    25 => [
-                        'value' => 'MISSION HILL',
-                        'label' => 'MISSION HILL',
-                    ],
-                    26 => [
-                        'value' => 'MISSION HILL/',
-                        'label' => 'MISSION HILL/',
-                    ],
-                    27 => [
-                        'value' => 'ROSLINDALE',
-                        'label' => 'ROSLINDALE',
-                    ],
-                    28 => [
-                        'value' => 'ROSLINDALE/',
-                        'label' => 'ROSLINDALE/',
-                    ],
-                    29 => [
-                        'value' => 'ROXBURY',
-                        'label' => 'ROXBURY',
-                    ],
-                    30 => [
-                        'value' => 'ROXBURY CROSSIN',
-                        'label' => 'ROXBURY CROSSIN',
-                    ],
-                    31 => [
-                        'value' => 'ROXBURY/BOSTON',
-                        'label' => 'ROXBURY/BOSTON',
-                    ],
-                    32 => [
-                        'value' => 'SOUTH BOSTON',
-                        'label' => 'SOUTH BOSTON',
-                    ],
-                    33 => [
-                        'value' => 'SOUTH BOSTON/',
-                        'label' => 'SOUTH BOSTON/',
-                    ],
-                    34 => [
-                        'value' => 'SOUTH END/',
-                        'label' => 'SOUTH END/',
-                    ],
-                    35 => [
-                        'value' => 'WEST ROXBURY',
-                        'label' => 'WEST ROXBURY',
-                    ],
-                    36 => [
-                        'value' => 'WEST ROXBURY//',
-                        'label' => 'WEST ROXBURY//',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter City',
             ],
             28 => [
                 'name' => 'state',
@@ -1733,170 +727,8 @@ return [
             29 => [
                 'name' => 'zip',
                 'label' => 'Zip',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Zip',
-                'options' => [
-                    0 => [
-                        'value' => '00000',
-                        'label' => '00000',
-                    ],
-                    1 => [
-                        'value' => '02050',
-                        'label' => '02050',
-                    ],
-                    2 => [
-                        'value' => '02108',
-                        'label' => '02108',
-                    ],
-                    3 => [
-                        'value' => '02109',
-                        'label' => '02109',
-                    ],
-                    4 => [
-                        'value' => '02110',
-                        'label' => '02110',
-                    ],
-                    5 => [
-                        'value' => '02111',
-                        'label' => '02111',
-                    ],
-                    6 => [
-                        'value' => '02113',
-                        'label' => '02113',
-                    ],
-                    7 => [
-                        'value' => '02114',
-                        'label' => '02114',
-                    ],
-                    8 => [
-                        'value' => '02115',
-                        'label' => '02115',
-                    ],
-                    9 => [
-                        'value' => '02116',
-                        'label' => '02116',
-                    ],
-                    10 => [
-                        'value' => '02118',
-                        'label' => '02118',
-                    ],
-                    11 => [
-                        'value' => '02119',
-                        'label' => '02119',
-                    ],
-                    12 => [
-                        'value' => '02119-3212',
-                        'label' => '02119-3212',
-                    ],
-                    13 => [
-                        'value' => '02120',
-                        'label' => '02120',
-                    ],
-                    14 => [
-                        'value' => '02121',
-                        'label' => '02121',
-                    ],
-                    15 => [
-                        'value' => '02122',
-                        'label' => '02122',
-                    ],
-                    16 => [
-                        'value' => '02124',
-                        'label' => '02124',
-                    ],
-                    17 => [
-                        'value' => '02125',
-                        'label' => '02125',
-                    ],
-                    18 => [
-                        'value' => '02125-1663',
-                        'label' => '02125-1663',
-                    ],
-                    19 => [
-                        'value' => '02126',
-                        'label' => '02126',
-                    ],
-                    20 => [
-                        'value' => '02127',
-                        'label' => '02127',
-                    ],
-                    21 => [
-                        'value' => '02128',
-                        'label' => '02128',
-                    ],
-                    22 => [
-                        'value' => '02129',
-                        'label' => '02129',
-                    ],
-                    23 => [
-                        'value' => '02130',
-                        'label' => '02130',
-                    ],
-                    24 => [
-                        'value' => '02131',
-                        'label' => '02131',
-                    ],
-                    25 => [
-                        'value' => '02132',
-                        'label' => '02132',
-                    ],
-                    26 => [
-                        'value' => '02134',
-                        'label' => '02134',
-                    ],
-                    27 => [
-                        'value' => '02135',
-                        'label' => '02135',
-                    ],
-                    28 => [
-                        'value' => '02136',
-                        'label' => '02136',
-                    ],
-                    29 => [
-                        'value' => '02145',
-                        'label' => '02145',
-                    ],
-                    30 => [
-                        'value' => '02148',
-                        'label' => '02148',
-                    ],
-                    31 => [
-                        'value' => '02163',
-                        'label' => '02163',
-                    ],
-                    32 => [
-                        'value' => '02188',
-                        'label' => '02188',
-                    ],
-                    33 => [
-                        'value' => '02199',
-                        'label' => '02199',
-                    ],
-                    34 => [
-                        'value' => '02201',
-                        'label' => '02201',
-                    ],
-                    35 => [
-                        'value' => '02205',
-                        'label' => '02205',
-                    ],
-                    36 => [
-                        'value' => '02210',
-                        'label' => '02210',
-                    ],
-                    37 => [
-                        'value' => '02215',
-                        'label' => '02215',
-                    ],
-                    38 => [
-                        'value' => '02446',
-                        'label' => '02446',
-                    ],
-                    39 => [
-                        'value' => '02467',
-                        'label' => '02467',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Zip',
             ],
             30 => [
                 'name' => 'property_id',
@@ -2024,43 +856,28 @@ return [
                 'description' => 'End date for Expdttm (YYYY-MM-DD)',
             ],
             'licstatus' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Licstatus. Provide a comma-separated list or an array of values. Possible values: Active, Deleted, Inactive.',
+                'type' => 'string',
+                'description' => 'Filter by Licstatus.',
             ],
             'licensecat' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Licensecat. Provide a comma-separated list or an array of values. Possible values: FS, FT, MFW, RF.',
+                'type' => 'string',
+                'description' => 'Filter by Licensecat.',
             ],
             'descript' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Descript. Provide a comma-separated list or an array of values. Possible values: Eating & Drinking, Eating & Drinking w/ Take Out, Mobile Food Walk On, Retail Food.',
+                'type' => 'string',
+                'description' => 'Filter by Descript.',
             ],
             'result' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Result. Provide a comma-separated list or an array of values. Possible values: Closed, DATAERR, Fail, Failed, HE_Closure, HE_Fail, HE_FailExt, HE_FAILNOR, HE_Filed, HE_Hearing, HE_Hold, HE_Misc, HE_NotReq, HE_OutBus, HE_Pass, HE_TSOP, HE_VolClos, NoViol, Pass, PassViol.',
+                'type' => 'string',
+                'description' => 'Filter by Result.',
             ],
             'violation' => [
                 'type' => 'string',
                 'description' => 'Filter by Violation.',
             ],
             'viol_level' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Viol Level. Provide a comma-separated list or an array of values. Possible values:  , -, *, **, ***, 1919.',
+                'type' => 'string',
+                'description' => 'Filter by Viol Level.',
             ],
             'violdesc' => [
                 'type' => 'string',
@@ -2077,11 +894,8 @@ return [
                 'description' => 'End date for Violdttm (YYYY-MM-DD)',
             ],
             'viol_status' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Viol Status. Provide a comma-separated list or an array of values. Possible values:  , Fail, Pass.',
+                'type' => 'string',
+                'description' => 'Filter by Viol Status.',
             ],
             'status_date_start' => [
                 'type' => 'string',
@@ -2102,22 +916,16 @@ return [
                 'description' => 'Filter by Address.',
             ],
             'city' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by City. Provide a comma-separated list or an array of values. Possible values:  , ALLSTON, BACK BAY/, BOSTON, BOSTON/CHINATOWN, BOSTON/WEST END, BRIGHTON, BRIGHTON/, CHARLESTOWN, CHARLESTOWN/, CHESTNUT HILL, DORCHESTER, DORCHESTER CENTER, DORCHESTER CENTER/, DORCHESTER/, DOWNTOWN/FINANCIAL DISTRICT, EAST BOSTON, FENWAY, FENWAY/, FINANCIAL DISTRICT, FINANCIAL DISTRICT/, HYDE PARK, JAMAICA PLAIN, MATTAPAN, MATTAPAN/, MISSION HILL, MISSION HILL/, ROSLINDALE, ROSLINDALE/, ROXBURY, ROXBURY CROSSIN, ROXBURY/BOSTON, SOUTH BOSTON, SOUTH BOSTON/, SOUTH END/, WEST ROXBURY, WEST ROXBURY//.',
+                'type' => 'string',
+                'description' => 'Filter by City.',
             ],
             'state' => [
                 'type' => 'string',
                 'description' => 'Filter by State.',
             ],
             'zip' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Zip. Provide a comma-separated list or an array of values. Possible values: 00000, 02050, 02108, 02109, 02110, 02111, 02113, 02114, 02115, 02116, 02118, 02119, 02119-3212, 02120, 02121, 02122, 02124, 02125, 02125-1663, 02126, 02127, 02128, 02129, 02130, 02131, 02132, 02134, 02135, 02136, 02145, 02148, 02163, 02188, 02199, 02201, 02205, 02210, 02215, 02446, 02467.',
+                'type' => 'string',
+                'description' => 'Filter by Zip.',
             ],
             'property_id' => [
                 'type' => 'string',
@@ -2180,162 +988,8 @@ return [
             5 => [
                 'name' => 'description',
                 'label' => 'Description',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Description',
-                'options' => [
-                    0 => [
-                        'value' => 'Access for Repairs and Alterations',
-                        'label' => 'Access for Repairs and Alterations',
-                    ],
-                    1 => [
-                        'value' => 'Amperage',
-                        'label' => 'Amperage',
-                    ],
-                    2 => [
-                        'value' => 'Bathroom Lighting and Electrical Outlets',
-                        'label' => 'Bathroom Lighting and Electrical Outlets',
-                    ],
-                    3 => [
-                        'value' => 'Collection of Garbage and Rubbish',
-                        'label' => 'Collection of Garbage and Rubbish',
-                    ],
-                    4 => [
-                        'value' => 'Cond. Deemed to Endgr. or Impair Health or Safety',
-                        'label' => 'Cond. Deemed to Endgr. or Impair Health or Safety',
-                    ],
-                    5 => [
-                        'value' => 'Egress Obstructions',
-                        'label' => 'Egress Obstructions',
-                    ],
-                    6 => [
-                        'value' => 'Extermination of Insects, Rodents and Skunks',
-                        'label' => 'Extermination of Insects, Rodents and Skunks',
-                    ],
-                    7 => [
-                        'value' => 'Grade Level',
-                        'label' => 'Grade Level',
-                    ],
-                    8 => [
-                        'value' => 'Heating Facilities Required',
-                        'label' => 'Heating Facilities Required',
-                    ],
-                    9 => [
-                        'value' => 'Hot Water',
-                        'label' => 'Hot Water',
-                    ],
-                    10 => [
-                        'value' => 'Kitchen Facilities',
-                        'label' => 'Kitchen Facilities',
-                    ],
-                    11 => [
-                        'value' => 'Light Fixtures Oth than in Habit. Rooms or Kitch.',
-                        'label' => 'Light Fixtures Oth than in Habit. Rooms or Kitch.',
-                    ],
-                    12 => [
-                        'value' => 'Light in Passageways, Hallways, and Stairways',
-                        'label' => 'Light in Passageways, Hallways, and Stairways',
-                    ],
-                    13 => [
-                        'value' => 'Locks',
-                        'label' => 'Locks',
-                    ],
-                    14 => [
-                        'value' => 'Maint. of Areas Free from Garbage and Rubbish',
-                        'label' => 'Maint. of Areas Free from Garbage and Rubbish',
-                    ],
-                    15 => [
-                        'value' => 'Means of Egress',
-                        'label' => 'Means of Egress',
-                    ],
-                    16 => [
-                        'value' => 'Metering of Electricity, Gas and Water',
-                        'label' => 'Metering of Electricity, Gas and Water',
-                    ],
-                    17 => [
-                        'value' => 'Minimum Square Footage',
-                        'label' => 'Minimum Square Footage',
-                    ],
-                    18 => [
-                        'value' => 'Natural and Mechanical Ventilation',
-                        'label' => 'Natural and Mechanical Ventilation',
-                    ],
-                    19 => [
-                        'value' => 'Non-absorbent Surfaces',
-                        'label' => 'Non-absorbent Surfaces',
-                    ],
-                    20 => [
-                        'value' => 'Occupant\'s Inst. and Maint. Responsibilities',
-                        'label' => 'Occupant\'s Inst. and Maint. Responsibilities',
-                    ],
-                    21 => [
-                        'value' => 'Occupant\'s Resp. Respecting Structural Elements',
-                        'label' => 'Occupant\'s Resp. Respecting Structural Elements',
-                    ],
-                    22 => [
-                        'value' => 'Owner\'s Inst. and Maint. Responsibilities',
-                        'label' => 'Owner\'s Inst. and Maint. Responsibilities',
-                    ],
-                    23 => [
-                        'value' => 'Owner\'s Resp. to Maintain Structural Elements',
-                        'label' => 'Owner\'s Resp. to Maintain Structural Elements',
-                    ],
-                    24 => [
-                        'value' => 'Plumbing Connections',
-                        'label' => 'Plumbing Connections',
-                    ],
-                    25 => [
-                        'value' => 'Posting of Name of Owner',
-                        'label' => 'Posting of Name of Owner',
-                    ],
-                    26 => [
-                        'value' => 'Potable Water',
-                        'label' => 'Potable Water',
-                    ],
-                    27 => [
-                        'value' => 'Safe Condition',
-                        'label' => 'Safe Condition',
-                    ],
-                    28 => [
-                        'value' => 'Sanitary Drainage System Required',
-                        'label' => 'Sanitary Drainage System Required',
-                    ],
-                    29 => [
-                        'value' => 'Screens for Doors',
-                        'label' => 'Screens for Doors',
-                    ],
-                    30 => [
-                        'value' => 'Screens for Windows',
-                        'label' => 'Screens for Windows',
-                    ],
-                    31 => [
-                        'value' => 'Shared Facilities',
-                        'label' => 'Shared Facilities',
-                    ],
-                    32 => [
-                        'value' => 'Smoke Detectors and Carbon Monoxide Alarms',
-                        'label' => 'Smoke Detectors and Carbon Monoxide Alarms',
-                    ],
-                    33 => [
-                        'value' => 'Storage of Garbage and Rubbish',
-                        'label' => 'Storage of Garbage and Rubbish',
-                    ],
-                    34 => [
-                        'value' => 'Temperature Requirements',
-                        'label' => 'Temperature Requirements',
-                    ],
-                    35 => [
-                        'value' => 'Venting',
-                        'label' => 'Venting',
-                    ],
-                    36 => [
-                        'value' => 'Washbasins, Toilets, Tubs and Showers',
-                        'label' => 'Washbasins, Toilets, Tubs and Showers',
-                    ],
-                    37 => [
-                        'value' => 'Weathertight Elements',
-                        'label' => 'Weathertight Elements',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Description',
             ],
             6 => [
                 'name' => 'corrective_action',
@@ -2352,22 +1006,8 @@ return [
             8 => [
                 'name' => 'status',
                 'label' => 'Status',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Status',
-                'options' => [
-                    0 => [
-                        'value' => 'Cited',
-                        'label' => 'Cited',
-                    ],
-                    1 => [
-                        'value' => 'Corrected',
-                        'label' => 'Corrected',
-                    ],
-                    2 => [
-                        'value' => 'In Progress',
-                        'label' => 'In Progress',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Status',
             ],
             9 => [
                 'name' => 'application_submit_date',
@@ -2447,11 +1087,8 @@ return [
                 'description' => 'Filter by Code.',
             ],
             'description' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Description. Provide a comma-separated list or an array of values. Possible values: Access for Repairs and Alterations, Amperage, Bathroom Lighting and Electrical Outlets, Collection of Garbage and Rubbish, Cond. Deemed to Endgr. or Impair Health or Safety, Egress Obstructions, Extermination of Insects, Rodents and Skunks, Grade Level, Heating Facilities Required, Hot Water, Kitchen Facilities, Light Fixtures Oth than in Habit. Rooms or Kitch., Light in Passageways, Hallways, and Stairways, Locks, Maint. of Areas Free from Garbage and Rubbish, Means of Egress, Metering of Electricity, Gas and Water, Minimum Square Footage, Natural and Mechanical Ventilation, Non-absorbent Surfaces, Occupant\'s Inst. and Maint. Responsibilities, Occupant\'s Resp. Respecting Structural Elements, Owner\'s Inst. and Maint. Responsibilities, Owner\'s Resp. to Maintain Structural Elements, Plumbing Connections, Posting of Name of Owner, Potable Water, Safe Condition, Sanitary Drainage System Required, Screens for Doors, Screens for Windows, Shared Facilities, Smoke Detectors and Carbon Monoxide Alarms, Storage of Garbage and Rubbish, Temperature Requirements, Venting, Washbasins, Toilets, Tubs and Showers, Weathertight Elements.',
+                'type' => 'string',
+                'description' => 'Filter by Description.',
             ],
             'corrective_action' => [
                 'type' => 'string',
@@ -2462,11 +1099,8 @@ return [
                 'description' => 'Filter by Correction Required By.',
             ],
             'status' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Status. Provide a comma-separated list or an array of values. Possible values: Cited, Corrected, In Progress.',
+                'type' => 'string',
+                'description' => 'Filter by Status.',
             ],
             'application_submit_date' => [
                 'type' => 'string',
@@ -2509,62 +1143,8 @@ return [
             3 => [
                 'name' => 'permittypedescr',
                 'label' => 'Permittypedescr',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Permittypedescr',
-                'options' => [
-                    0 => [
-                        'value' => 'Amendment to a Long Form',
-                        'label' => 'Amendment to a Long Form',
-                    ],
-                    1 => [
-                        'value' => 'Certificate of Occupancy',
-                        'label' => 'Certificate of Occupancy',
-                    ],
-                    2 => [
-                        'value' => 'Electrical Fire Alarms',
-                        'label' => 'Electrical Fire Alarms',
-                    ],
-                    3 => [
-                        'value' => 'Electrical Low Voltage',
-                        'label' => 'Electrical Low Voltage',
-                    ],
-                    4 => [
-                        'value' => 'Electrical Permit',
-                        'label' => 'Electrical Permit',
-                    ],
-                    5 => [
-                        'value' => 'Electrical Temporary Service',
-                        'label' => 'Electrical Temporary Service',
-                    ],
-                    6 => [
-                        'value' => 'Erect/New Construction',
-                        'label' => 'Erect/New Construction',
-                    ],
-                    7 => [
-                        'value' => 'Foundation Permit',
-                        'label' => 'Foundation Permit',
-                    ],
-                    8 => [
-                        'value' => 'Gas Permit',
-                        'label' => 'Gas Permit',
-                    ],
-                    9 => [
-                        'value' => 'Long Form/Alteration Permit',
-                        'label' => 'Long Form/Alteration Permit',
-                    ],
-                    10 => [
-                        'value' => 'Plumbing Permit',
-                        'label' => 'Plumbing Permit',
-                    ],
-                    11 => [
-                        'value' => 'Short Form Bldg Permit',
-                        'label' => 'Short Form Bldg Permit',
-                    ],
-                    12 => [
-                        'value' => 'Use of Premises',
-                        'label' => 'Use of Premises',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Permittypedescr',
             ],
             4 => [
                 'name' => 'description',
@@ -2611,26 +1191,8 @@ return [
             11 => [
                 'name' => 'status',
                 'label' => 'Status',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Status',
-                'options' => [
-                    0 => [
-                        'value' => 'Closed',
-                        'label' => 'Closed',
-                    ],
-                    1 => [
-                        'value' => 'Issued',
-                        'label' => 'Issued',
-                    ],
-                    2 => [
-                        'value' => 'Open',
-                        'label' => 'Open',
-                    ],
-                    3 => [
-                        'value' => 'Stop Work',
-                        'label' => 'Stop Work',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Status',
             ],
             12 => [
                 'name' => 'language_code',
@@ -2641,78 +1203,8 @@ return [
             13 => [
                 'name' => 'occupancytype',
                 'label' => 'Occupancytype',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Occupancytype',
-                'options' => [
-                    0 => [
-                        'value' => '1-2FAM',
-                        'label' => '1-2FAM',
-                    ],
-                    1 => [
-                        'value' => '1-3FAM',
-                        'label' => '1-3FAM',
-                    ],
-                    2 => [
-                        'value' => '1-4FAM',
-                        'label' => '1-4FAM',
-                    ],
-                    3 => [
-                        'value' => '1-7FAM',
-                        'label' => '1-7FAM',
-                    ],
-                    4 => [
-                        'value' => '1Unit',
-                        'label' => '1Unit',
-                    ],
-                    5 => [
-                        'value' => '2unit',
-                        'label' => '2unit',
-                    ],
-                    6 => [
-                        'value' => '3unit',
-                        'label' => '3unit',
-                    ],
-                    7 => [
-                        'value' => '4unit',
-                        'label' => '4unit',
-                    ],
-                    8 => [
-                        'value' => '5unit',
-                        'label' => '5unit',
-                    ],
-                    9 => [
-                        'value' => '6unit',
-                        'label' => '6unit',
-                    ],
-                    10 => [
-                        'value' => '7More',
-                        'label' => '7More',
-                    ],
-                    11 => [
-                        'value' => '7unit',
-                        'label' => '7unit',
-                    ],
-                    12 => [
-                        'value' => 'Comm',
-                        'label' => 'Comm',
-                    ],
-                    13 => [
-                        'value' => 'Mixed',
-                        'label' => 'Mixed',
-                    ],
-                    14 => [
-                        'value' => 'Multi',
-                        'label' => 'Multi',
-                    ],
-                    15 => [
-                        'value' => 'Other',
-                        'label' => 'Other',
-                    ],
-                    16 => [
-                        'value' => 'VacLd',
-                        'label' => 'VacLd',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Occupancytype',
             ],
             14 => [
                 'name' => 'sq_feet_min',
@@ -2747,166 +1239,8 @@ return [
             19 => [
                 'name' => 'zip',
                 'label' => 'Zip',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Zip',
-                'options' => [
-                    0 => [
-                        'value' => '02026',
-                        'label' => '02026',
-                    ],
-                    1 => [
-                        'value' => '02108',
-                        'label' => '02108',
-                    ],
-                    2 => [
-                        'value' => '02109',
-                        'label' => '02109',
-                    ],
-                    3 => [
-                        'value' => '02110',
-                        'label' => '02110',
-                    ],
-                    4 => [
-                        'value' => '02111',
-                        'label' => '02111',
-                    ],
-                    5 => [
-                        'value' => '02113',
-                        'label' => '02113',
-                    ],
-                    6 => [
-                        'value' => '02114',
-                        'label' => '02114',
-                    ],
-                    7 => [
-                        'value' => '02115',
-                        'label' => '02115',
-                    ],
-                    8 => [
-                        'value' => '02116',
-                        'label' => '02116',
-                    ],
-                    9 => [
-                        'value' => '02117',
-                        'label' => '02117',
-                    ],
-                    10 => [
-                        'value' => '02118',
-                        'label' => '02118',
-                    ],
-                    11 => [
-                        'value' => '02119',
-                        'label' => '02119',
-                    ],
-                    12 => [
-                        'value' => '02120',
-                        'label' => '02120',
-                    ],
-                    13 => [
-                        'value' => '02121',
-                        'label' => '02121',
-                    ],
-                    14 => [
-                        'value' => '02122',
-                        'label' => '02122',
-                    ],
-                    15 => [
-                        'value' => '02123',
-                        'label' => '02123',
-                    ],
-                    16 => [
-                        'value' => '02124',
-                        'label' => '02124',
-                    ],
-                    17 => [
-                        'value' => '02125',
-                        'label' => '02125',
-                    ],
-                    18 => [
-                        'value' => '02126',
-                        'label' => '02126',
-                    ],
-                    19 => [
-                        'value' => '02127',
-                        'label' => '02127',
-                    ],
-                    20 => [
-                        'value' => '02128',
-                        'label' => '02128',
-                    ],
-                    21 => [
-                        'value' => '02129',
-                        'label' => '02129',
-                    ],
-                    22 => [
-                        'value' => '02130',
-                        'label' => '02130',
-                    ],
-                    23 => [
-                        'value' => '02131',
-                        'label' => '02131',
-                    ],
-                    24 => [
-                        'value' => '02132',
-                        'label' => '02132',
-                    ],
-                    25 => [
-                        'value' => '02134',
-                        'label' => '02134',
-                    ],
-                    26 => [
-                        'value' => '02135',
-                        'label' => '02135',
-                    ],
-                    27 => [
-                        'value' => '02136',
-                        'label' => '02136',
-                    ],
-                    28 => [
-                        'value' => '02137',
-                        'label' => '02137',
-                    ],
-                    29 => [
-                        'value' => '02163',
-                        'label' => '02163',
-                    ],
-                    30 => [
-                        'value' => '02186',
-                        'label' => '02186',
-                    ],
-                    31 => [
-                        'value' => '02199',
-                        'label' => '02199',
-                    ],
-                    32 => [
-                        'value' => '02210',
-                        'label' => '02210',
-                    ],
-                    33 => [
-                        'value' => '02215',
-                        'label' => '02215',
-                    ],
-                    34 => [
-                        'value' => '02222',
-                        'label' => '02222',
-                    ],
-                    35 => [
-                        'value' => '02446',
-                        'label' => '02446',
-                    ],
-                    36 => [
-                        'value' => '02458',
-                        'label' => '02458',
-                    ],
-                    37 => [
-                        'value' => '02467',
-                        'label' => '02467',
-                    ],
-                    38 => [
-                        'value' => '02468',
-                        'label' => '02468',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Zip',
             ],
             20 => [
                 'name' => 'property_id',
@@ -3012,11 +1346,8 @@ return [
                 'description' => 'Filter by Worktype.',
             ],
             'permittypedescr' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Permittypedescr. Provide a comma-separated list or an array of values. Possible values: Amendment to a Long Form, Certificate of Occupancy, Electrical Fire Alarms, Electrical Low Voltage, Electrical Permit, Electrical Temporary Service, Erect/New Construction, Foundation Permit, Gas Permit, Long Form/Alteration Permit, Plumbing Permit, Short Form Bldg Permit, Use of Premises.',
+                'type' => 'string',
+                'description' => 'Filter by Permittypedescr.',
             ],
             'description' => [
                 'type' => 'string',
@@ -3049,22 +1380,16 @@ return [
                 'description' => 'End date for Expiration Date (YYYY-MM-DD)',
             ],
             'status' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Status. Provide a comma-separated list or an array of values. Possible values: Closed, Issued, Open, Stop Work.',
+                'type' => 'string',
+                'description' => 'Filter by Status.',
             ],
             'language_code' => [
                 'type' => 'string',
                 'description' => 'Filter by Language Code.',
             ],
             'occupancytype' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Occupancytype. Provide a comma-separated list or an array of values. Possible values: 1-2FAM, 1-3FAM, 1-4FAM, 1-7FAM, 1Unit, 2unit, 3unit, 4unit, 5unit, 6unit, 7More, 7unit, Comm, Mixed, Multi, Other, VacLd.',
+                'type' => 'string',
+                'description' => 'Filter by Occupancytype.',
             ],
             'sq_feet_min' => [
                 'type' => 'integer',
@@ -3087,11 +1412,8 @@ return [
                 'description' => 'Filter by State.',
             ],
             'zip' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Zip. Provide a comma-separated list or an array of values. Possible values: 02026, 02108, 02109, 02110, 02111, 02113, 02114, 02115, 02116, 02117, 02118, 02119, 02120, 02121, 02122, 02123, 02124, 02125, 02126, 02127, 02128, 02129, 02130, 02131, 02132, 02134, 02135, 02136, 02137, 02163, 02186, 02199, 02210, 02215, 02222, 02446, 02458, 02467, 02468.',
+                'type' => 'string',
+                'description' => 'Filter by Zip.',
             ],
             'property_id' => [
                 'type' => 'string',
@@ -3170,26 +1492,8 @@ return [
             5 => [
                 'name' => 'ticket_status',
                 'label' => 'Ticket Status',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Ticket Status',
-                'options' => [
-                    0 => [
-                        'value' => 'Acknowledged',
-                        'label' => 'Acknowledged',
-                    ],
-                    1 => [
-                        'value' => 'Archived',
-                        'label' => 'Archived',
-                    ],
-                    2 => [
-                        'value' => 'Closed',
-                        'label' => 'Closed',
-                    ],
-                    3 => [
-                        'value' => 'Open',
-                        'label' => 'Open',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Ticket Status',
             ],
             6 => [
                 'name' => 'issue_description',
@@ -3322,11 +1626,8 @@ return [
                 'description' => 'Filter by Issue Category.',
             ],
             'ticket_status' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Ticket Status. Provide a comma-separated list or an array of values. Possible values: Acknowledged, Archived, Closed, Open.',
+                'type' => 'string',
+                'description' => 'Filter by Ticket Status.',
             ],
             'issue_description' => [
                 'type' => 'string',
@@ -3427,98 +1728,290 @@ return [
                 'placeholder' => 'End date for Incident Time Parsed',
             ],
             6 => [
-                'name' => 'year',
-                'label' => 'Year',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Year',
-                'options' => [
-                    0 => [
-                        'value' => '2024',
-                        'label' => '2024',
-                    ],
-                    1 => [
-                        'value' => '2025',
-                        'label' => '2025',
-                    ],
-                ],
+                'name' => 'year_min',
+                'label' => 'Year Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Year',
             ],
             7 => [
-                'name' => 'month',
-                'label' => 'Month',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Month',
-                'options' => [
-                    0 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    1 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    2 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    3 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    4 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    5 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    6 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                ],
+                'name' => 'year_max',
+                'label' => 'Year Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Year',
             ],
             8 => [
-                'name' => 'day_of_week',
-                'label' => 'Day Of Week',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Day Of Week',
-                'options' => [
-                    0 => [
-                        'value' => 'Friday',
-                        'label' => 'Friday',
-                    ],
-                    1 => [
-                        'value' => 'Monday',
-                        'label' => 'Monday',
-                    ],
-                    2 => [
-                        'value' => 'Saturday',
-                        'label' => 'Saturday',
-                    ],
-                    3 => [
-                        'value' => 'Sunday',
-                        'label' => 'Sunday',
-                    ],
-                    4 => [
-                        'value' => 'Thursday',
-                        'label' => 'Thursday',
-                    ],
-                    5 => [
-                        'value' => 'Tuesday',
-                        'label' => 'Tuesday',
-                    ],
-                    6 => [
-                        'value' => 'Wednesday',
-                        'label' => 'Wednesday',
-                    ],
-                ],
+                'name' => 'month_min',
+                'label' => 'Month Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Month',
             ],
             9 => [
-                'name' => 'hour',
-                'label' => 'Hour',
+                'name' => 'month_max',
+                'label' => 'Month Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Month',
+            ],
+            10 => [
+                'name' => 'day_of_week',
+                'label' => 'Day Of Week',
+                'type' => 'text',
+                'placeholder' => 'Enter Day Of Week',
+            ],
+            11 => [
+                'name' => 'hour_min',
+                'label' => 'Hour Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Hour',
+            ],
+            12 => [
+                'name' => 'hour_max',
+                'label' => 'Hour Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Hour',
+            ],
+            13 => [
+                'name' => 'incident_type',
+                'label' => 'Incident Type',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Type',
+            ],
+            14 => [
+                'name' => 'incident_address',
+                'label' => 'Incident Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Address',
+            ],
+            15 => [
+                'name' => 'incident_latitude',
+                'label' => 'Incident Latitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Latitude',
+            ],
+            16 => [
+                'name' => 'incident_longitude',
+                'label' => 'Incident Longitude',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Longitude',
+            ],
+            17 => [
+                'name' => 'incident_description',
+                'label' => 'Incident Description',
+                'type' => 'text',
+                'placeholder' => 'Enter Incident Description',
+            ],
+            18 => [
+                'name' => 'arrest_name',
+                'label' => 'Arrest Name',
+                'type' => 'text',
+                'placeholder' => 'Enter Arrest Name',
+            ],
+            19 => [
+                'name' => 'arrest_address',
+                'label' => 'Arrest Address',
+                'type' => 'text',
+                'placeholder' => 'Enter Arrest Address',
+            ],
+            20 => [
+                'name' => 'arrest_age_min',
+                'label' => 'Arrest Age Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Arrest Age',
+            ],
+            21 => [
+                'name' => 'arrest_age_max',
+                'label' => 'Arrest Age Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Arrest Age',
+            ],
+            22 => [
+                'name' => 'arrest_date_parsed',
+                'label' => 'Arrest Date Parsed',
+                'type' => 'text',
+                'placeholder' => 'Enter Arrest Date Parsed',
+            ],
+            23 => [
+                'name' => 'arrest_charges',
+                'label' => 'Arrest Charges',
+                'type' => 'text',
+                'placeholder' => 'Enter Arrest Charges',
+            ],
+            24 => [
+                'name' => 'crime_details_concatenated',
+                'label' => 'Crime Details Concatenated',
+                'type' => 'text',
+                'placeholder' => 'Enter Crime Details Concatenated',
+            ],
+            25 => [
+                'name' => 'source_city',
+                'label' => 'Source City',
+                'type' => 'text',
+                'placeholder' => 'Enter Source City',
+            ],
+        ],
+        'contextData' => 'Dataset of Everett Crimes. Filter by attributes like case number, incident log file date, incident entry date parsed.',
+        'searchableColumns' => [
+            0 => 'case_number',
+            1 => 'incident_type',
+            2 => 'incident_address',
+            3 => 'incident_description',
+            4 => 'arrest_name',
+            5 => 'arrest_charges',
+            6 => 'crime_details_concatenated',
+        ],
+        'gptSchemaProperties' => [
+            'search_term' => [
+                'type' => 'string',
+                'description' => 'A general search term to query across multiple text fields.',
+            ],
+            'start_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for \'Occurred On Datetime\' (YYYY-MM-DD)',
+            ],
+            'end_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for \'Occurred On Datetime\' (YYYY-MM-DD)',
+            ],
+            'limit' => [
+                'type' => 'integer',
+                'description' => 'Limit the number of records. Default is 1000, max 5000.',
+            ],
+            'case_number' => [
+                'type' => 'string',
+                'description' => 'Filter by Case Number.',
+            ],
+            'incident_log_file_date' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Log File Date.',
+            ],
+            'incident_entry_date_parsed' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Entry Date Parsed.',
+            ],
+            'incident_time_parsed_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Incident Time Parsed (YYYY-MM-DD)',
+            ],
+            'incident_time_parsed_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Incident Time Parsed (YYYY-MM-DD)',
+            ],
+            'year_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Year.',
+            ],
+            'year_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Year.',
+            ],
+            'month_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Month.',
+            ],
+            'month_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Month.',
+            ],
+            'day_of_week' => [
+                'type' => 'string',
+                'description' => 'Filter by Day Of Week.',
+            ],
+            'hour_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Hour.',
+            ],
+            'hour_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Hour.',
+            ],
+            'incident_type' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Type.',
+            ],
+            'incident_address' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Address.',
+            ],
+            'incident_latitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Latitude.',
+            ],
+            'incident_longitude' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Longitude.',
+            ],
+            'incident_description' => [
+                'type' => 'string',
+                'description' => 'Filter by Incident Description.',
+            ],
+            'arrest_name' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Name.',
+            ],
+            'arrest_address' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Address.',
+            ],
+            'arrest_age_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Arrest Age.',
+            ],
+            'arrest_age_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Arrest Age.',
+            ],
+            'arrest_date_parsed' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Date Parsed.',
+            ],
+            'arrest_charges' => [
+                'type' => 'string',
+                'description' => 'Filter by Arrest Charges.',
+            ],
+            'crime_details_concatenated' => [
+                'type' => 'string',
+                'description' => 'Filter by Crime Details Concatenated.',
+            ],
+            'source_city' => [
+                'type' => 'string',
+                'description' => 'Filter by Source City.',
+            ],
+        ],
+    ],
+    'App\\Models\\PersonCrashData' => [
+        'filterableFieldsDescription' => [
+            0 => [
+                'name' => 'search_term',
+                'label' => 'General Search',
+                'type' => 'text',
+                'placeholder' => 'Search across all fields...',
+            ],
+            1 => [
+                'name' => 'crash_numb_min',
+                'label' => 'Crash Number Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Crash Number',
+            ],
+            2 => [
+                'name' => 'crash_numb_max',
+                'label' => 'Crash Number Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Crash Number',
+            ],
+            3 => [
+                'name' => 'city_town_name',
+                'label' => 'City Town Name',
+                'type' => 'text',
+                'placeholder' => 'Enter City Town Name',
+            ],
+            4 => [
+                'name' => 'crash_hour',
+                'label' => 'Crash Hour',
                 'type' => 'multiselect',
-                'placeholder' => 'Select Hour',
+                'placeholder' => 'Select Crash Hour',
                 'options' => [
                     0 => [
                         'value' => '0',
@@ -3618,479 +2111,6 @@ return [
                     ],
                 ],
             ],
-            10 => [
-                'name' => 'incident_type',
-                'label' => 'Incident Type',
-                'type' => 'text',
-                'placeholder' => 'Enter Incident Type',
-            ],
-            11 => [
-                'name' => 'incident_address',
-                'label' => 'Incident Address',
-                'type' => 'text',
-                'placeholder' => 'Enter Incident Address',
-            ],
-            12 => [
-                'name' => 'incident_latitude',
-                'label' => 'Incident Latitude',
-                'type' => 'text',
-                'placeholder' => 'Enter Incident Latitude',
-            ],
-            13 => [
-                'name' => 'incident_longitude',
-                'label' => 'Incident Longitude',
-                'type' => 'text',
-                'placeholder' => 'Enter Incident Longitude',
-            ],
-            14 => [
-                'name' => 'incident_description',
-                'label' => 'Incident Description',
-                'type' => 'text',
-                'placeholder' => 'Enter Incident Description',
-            ],
-            15 => [
-                'name' => 'arrest_name',
-                'label' => 'Arrest Name',
-                'type' => 'text',
-                'placeholder' => 'Enter Arrest Name',
-            ],
-            16 => [
-                'name' => 'arrest_address',
-                'label' => 'Arrest Address',
-                'type' => 'text',
-                'placeholder' => 'Enter Arrest Address',
-            ],
-            17 => [
-                'name' => 'arrest_age',
-                'label' => 'Arrest Age',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Arrest Age',
-                'options' => [
-                    0 => [
-                        'value' => '-71',
-                        'label' => '-71',
-                    ],
-                    1 => [
-                        'value' => '0',
-                        'label' => '0',
-                    ],
-                    2 => [
-                        'value' => '18',
-                        'label' => '18',
-                    ],
-                    3 => [
-                        'value' => '19',
-                        'label' => '19',
-                    ],
-                    4 => [
-                        'value' => '20',
-                        'label' => '20',
-                    ],
-                    5 => [
-                        'value' => '21',
-                        'label' => '21',
-                    ],
-                    6 => [
-                        'value' => '22',
-                        'label' => '22',
-                    ],
-                    7 => [
-                        'value' => '23',
-                        'label' => '23',
-                    ],
-                    8 => [
-                        'value' => '24',
-                        'label' => '24',
-                    ],
-                    9 => [
-                        'value' => '25',
-                        'label' => '25',
-                    ],
-                    10 => [
-                        'value' => '26',
-                        'label' => '26',
-                    ],
-                    11 => [
-                        'value' => '27',
-                        'label' => '27',
-                    ],
-                    12 => [
-                        'value' => '28',
-                        'label' => '28',
-                    ],
-                    13 => [
-                        'value' => '29',
-                        'label' => '29',
-                    ],
-                    14 => [
-                        'value' => '30',
-                        'label' => '30',
-                    ],
-                    15 => [
-                        'value' => '31',
-                        'label' => '31',
-                    ],
-                    16 => [
-                        'value' => '32',
-                        'label' => '32',
-                    ],
-                    17 => [
-                        'value' => '33',
-                        'label' => '33',
-                    ],
-                    18 => [
-                        'value' => '34',
-                        'label' => '34',
-                    ],
-                    19 => [
-                        'value' => '35',
-                        'label' => '35',
-                    ],
-                    20 => [
-                        'value' => '36',
-                        'label' => '36',
-                    ],
-                    21 => [
-                        'value' => '37',
-                        'label' => '37',
-                    ],
-                    22 => [
-                        'value' => '38',
-                        'label' => '38',
-                    ],
-                    23 => [
-                        'value' => '39',
-                        'label' => '39',
-                    ],
-                    24 => [
-                        'value' => '40',
-                        'label' => '40',
-                    ],
-                    25 => [
-                        'value' => '41',
-                        'label' => '41',
-                    ],
-                    26 => [
-                        'value' => '42',
-                        'label' => '42',
-                    ],
-                    27 => [
-                        'value' => '43',
-                        'label' => '43',
-                    ],
-                    28 => [
-                        'value' => '44',
-                        'label' => '44',
-                    ],
-                    29 => [
-                        'value' => '45',
-                        'label' => '45',
-                    ],
-                    30 => [
-                        'value' => '46',
-                        'label' => '46',
-                    ],
-                    31 => [
-                        'value' => '47',
-                        'label' => '47',
-                    ],
-                    32 => [
-                        'value' => '48',
-                        'label' => '48',
-                    ],
-                    33 => [
-                        'value' => '49',
-                        'label' => '49',
-                    ],
-                    34 => [
-                        'value' => '50',
-                        'label' => '50',
-                    ],
-                    35 => [
-                        'value' => '52',
-                        'label' => '52',
-                    ],
-                    36 => [
-                        'value' => '53',
-                        'label' => '53',
-                    ],
-                    37 => [
-                        'value' => '54',
-                        'label' => '54',
-                    ],
-                    38 => [
-                        'value' => '55',
-                        'label' => '55',
-                    ],
-                    39 => [
-                        'value' => '57',
-                        'label' => '57',
-                    ],
-                    40 => [
-                        'value' => '58',
-                        'label' => '58',
-                    ],
-                    41 => [
-                        'value' => '59',
-                        'label' => '59',
-                    ],
-                    42 => [
-                        'value' => '61',
-                        'label' => '61',
-                    ],
-                    43 => [
-                        'value' => '62',
-                        'label' => '62',
-                    ],
-                    44 => [
-                        'value' => '65',
-                        'label' => '65',
-                    ],
-                    45 => [
-                        'value' => '911',
-                        'label' => '911',
-                    ],
-                ],
-            ],
-            18 => [
-                'name' => 'arrest_date_parsed',
-                'label' => 'Arrest Date Parsed',
-                'type' => 'text',
-                'placeholder' => 'Enter Arrest Date Parsed',
-            ],
-            19 => [
-                'name' => 'arrest_charges',
-                'label' => 'Arrest Charges',
-                'type' => 'text',
-                'placeholder' => 'Enter Arrest Charges',
-            ],
-            20 => [
-                'name' => 'crime_details_concatenated',
-                'label' => 'Crime Details Concatenated',
-                'type' => 'text',
-                'placeholder' => 'Enter Crime Details Concatenated',
-            ],
-            21 => [
-                'name' => 'source_city',
-                'label' => 'Source City',
-                'type' => 'text',
-                'placeholder' => 'Enter Source City',
-            ],
-        ],
-        'contextData' => 'Dataset of Everett Crimes. Filter by attributes like case number, incident log file date, incident entry date parsed.',
-        'searchableColumns' => [
-            0 => 'case_number',
-            1 => 'incident_type',
-            2 => 'incident_address',
-            3 => 'incident_description',
-            4 => 'arrest_name',
-            5 => 'arrest_charges',
-            6 => 'crime_details_concatenated',
-        ],
-        'gptSchemaProperties' => [
-            'search_term' => [
-                'type' => 'string',
-                'description' => 'A general search term to query across multiple text fields.',
-            ],
-            'start_date' => [
-                'type' => 'string',
-                'format' => 'date',
-                'description' => 'Start date for \'Occurred On Datetime\' (YYYY-MM-DD)',
-            ],
-            'end_date' => [
-                'type' => 'string',
-                'format' => 'date',
-                'description' => 'End date for \'Occurred On Datetime\' (YYYY-MM-DD)',
-            ],
-            'limit' => [
-                'type' => 'integer',
-                'description' => 'Limit the number of records. Default is 1000, max 5000.',
-            ],
-            'case_number' => [
-                'type' => 'string',
-                'description' => 'Filter by Case Number.',
-            ],
-            'incident_log_file_date' => [
-                'type' => 'string',
-                'description' => 'Filter by Incident Log File Date.',
-            ],
-            'incident_entry_date_parsed' => [
-                'type' => 'string',
-                'description' => 'Filter by Incident Entry Date Parsed.',
-            ],
-            'incident_time_parsed_start' => [
-                'type' => 'string',
-                'format' => 'date',
-                'description' => 'Start date for Incident Time Parsed (YYYY-MM-DD)',
-            ],
-            'incident_time_parsed_end' => [
-                'type' => 'string',
-                'format' => 'date',
-                'description' => 'End date for Incident Time Parsed (YYYY-MM-DD)',
-            ],
-            'year' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Year. Provide a comma-separated list or an array of values. Possible values: 2024, 2025.',
-            ],
-            'month' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Month. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 12.',
-            ],
-            'day_of_week' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Day Of Week. Provide a comma-separated list or an array of values. Possible values: Friday, Monday, Saturday, Sunday, Thursday, Tuesday, Wednesday.',
-            ],
-            'hour' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Hour. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23.',
-            ],
-            'incident_type' => [
-                'type' => 'string',
-                'description' => 'Filter by Incident Type.',
-            ],
-            'incident_address' => [
-                'type' => 'string',
-                'description' => 'Filter by Incident Address.',
-            ],
-            'incident_latitude' => [
-                'type' => 'string',
-                'description' => 'Filter by Incident Latitude.',
-            ],
-            'incident_longitude' => [
-                'type' => 'string',
-                'description' => 'Filter by Incident Longitude.',
-            ],
-            'incident_description' => [
-                'type' => 'string',
-                'description' => 'Filter by Incident Description.',
-            ],
-            'arrest_name' => [
-                'type' => 'string',
-                'description' => 'Filter by Arrest Name.',
-            ],
-            'arrest_address' => [
-                'type' => 'string',
-                'description' => 'Filter by Arrest Address.',
-            ],
-            'arrest_age' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Arrest Age. Provide a comma-separated list or an array of values. Possible values: -71, 0, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52, 53, 54, 55, 57, 58, 59, 61, 62, 65, 911.',
-            ],
-            'arrest_date_parsed' => [
-                'type' => 'string',
-                'description' => 'Filter by Arrest Date Parsed.',
-            ],
-            'arrest_charges' => [
-                'type' => 'string',
-                'description' => 'Filter by Arrest Charges.',
-            ],
-            'crime_details_concatenated' => [
-                'type' => 'string',
-                'description' => 'Filter by Crime Details Concatenated.',
-            ],
-            'source_city' => [
-                'type' => 'string',
-                'description' => 'Filter by Source City.',
-            ],
-        ],
-    ],
-    'App\\Models\\PersonCrashData' => [
-        'filterableFieldsDescription' => [
-            0 => [
-                'name' => 'search_term',
-                'label' => 'General Search',
-                'type' => 'text',
-                'placeholder' => 'Search across all fields...',
-            ],
-            1 => [
-                'name' => 'crash_numb_min',
-                'label' => 'Crash Number Min',
-                'type' => 'number',
-                'placeholder' => 'Min value for Crash Number',
-            ],
-            2 => [
-                'name' => 'crash_numb_max',
-                'label' => 'Crash Number Max',
-                'type' => 'number',
-                'placeholder' => 'Max value for Crash Number',
-            ],
-            3 => [
-                'name' => 'city_town_name',
-                'label' => 'City Town Name',
-                'type' => 'text',
-                'placeholder' => 'Enter City Town Name',
-            ],
-            4 => [
-                'name' => 'crash_hour',
-                'label' => 'Crash Hour',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Crash Hour',
-                'options' => [
-                    0 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    1 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    2 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    3 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    4 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    5 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    6 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    7 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    8 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                    9 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    10 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    11 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                ],
-            ],
             5 => [
                 'name' => 'crash_status',
                 'label' => 'Crash Status',
@@ -4122,10 +2142,14 @@ return [
                         'label' => 'Non-fatal injury',
                     ],
                     2 => [
+                        'value' => 'Not Reported',
+                        'label' => 'Not Reported',
+                    ],
+                    3 => [
                         'value' => 'Property damage only (none injured)',
                         'label' => 'Property damage only (none injured)',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
@@ -4150,30 +2174,38 @@ return [
                         'label' => 'No Apparent Injury (O)',
                     ],
                     3 => [
+                        'value' => 'No injury',
+                        'label' => 'No injury',
+                    ],
+                    4 => [
+                        'value' => 'Non-fatal injury - Possible',
+                        'label' => 'Non-fatal injury - Possible',
+                    ],
+                    5 => [
                         'value' => 'Not Applicable',
                         'label' => 'Not Applicable',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    5 => [
+                    7 => [
                         'value' => 'Possible Injury (C)',
                         'label' => 'Possible Injury (C)',
                     ],
-                    6 => [
+                    8 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
                     ],
-                    7 => [
+                    9 => [
                         'value' => 'Suspected Minor Injury (B)',
                         'label' => 'Suspected Minor Injury (B)',
                     ],
-                    8 => [
+                    10 => [
                         'value' => 'Suspected Serious Injury (A)',
                         'label' => 'Suspected Serious Injury (A)',
                     ],
-                    9 => [
+                    11 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
@@ -4222,12 +2254,20 @@ return [
                         'label' => '9',
                     ],
                     9 => [
+                        'value' => '10',
+                        'label' => '10',
+                    ],
+                    10 => [
                         'value' => '11',
                         'label' => '11',
                     ],
-                    10 => [
+                    11 => [
                         'value' => '13',
                         'label' => '13',
+                    ],
+                    12 => [
+                        'value' => '14',
+                        'label' => '14',
                     ],
                 ],
             ],
@@ -4285,6 +2325,10 @@ return [
                         'value' => '11',
                         'label' => '11',
                     ],
+                    12 => [
+                        'value' => '12',
+                        'label' => '12',
+                    ],
                 ],
             ],
             10 => [
@@ -4336,16 +2380,30 @@ return [
                 ],
             ],
             12 => [
-                'name' => 'year_min',
-                'label' => 'Year Min',
-                'type' => 'number',
-                'placeholder' => 'Min value for Year',
+                'name' => 'year',
+                'label' => 'Year',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Year',
+                'options' => [
+                    0 => [
+                        'value' => '2023',
+                        'label' => '2023',
+                    ],
+                    1 => [
+                        'value' => '2024',
+                        'label' => '2024',
+                    ],
+                    2 => [
+                        'value' => '2025',
+                        'label' => '2025',
+                    ],
+                ],
             ],
             13 => [
-                'name' => 'year_max',
-                'label' => 'Year Max',
-                'type' => 'number',
-                'placeholder' => 'Max value for Year',
+                'name' => 'crash_person_id',
+                'label' => 'Crash Person Id',
+                'type' => 'text',
+                'placeholder' => 'Enter Crash Person Id',
             ],
             14 => [
                 'name' => 'manr_coll_descr',
@@ -4498,26 +2556,30 @@ return [
                         'label' => 'Other',
                     ],
                     4 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    5 => [
                         'value' => 'Sand, mud, dirt, oil, gravel',
                         'label' => 'Sand, mud, dirt, oil, gravel',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Slush',
                         'label' => 'Slush',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Snow',
                         'label' => 'Snow',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Water (standing, moving)',
                         'label' => 'Water (standing, moving)',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Wet',
                         'label' => 'Wet',
                     ],
@@ -4780,18 +2842,22 @@ return [
                         'label' => 'Railway grade crossing',
                     ],
                     8 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    9 => [
                         'value' => 'T-intersection',
                         'label' => 'T-intersection',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Traffic circle',
                         'label' => 'Traffic circle',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    11 => [
+                    12 => [
                         'value' => 'Y-intersection',
                         'label' => 'Y-intersection',
                     ],
@@ -4908,44 +2974,60 @@ return [
                         'label' => 'Department of Conservation and Recreation',
                     ],
                     3 => [
+                        'value' => 'Federal Institutional',
+                        'label' => 'Federal Institutional',
+                    ],
+                    4 => [
                         'value' => 'Federal Park or Forest',
                         'label' => 'Federal Park or Forest',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Massachusetts Department of Transportation',
                         'label' => 'Massachusetts Department of Transportation',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Massachusetts Port Authority',
                         'label' => 'Massachusetts Port Authority',
                     ],
-                    6 => [
+                    7 => [
+                        'value' => 'Other Federal',
+                        'label' => 'Other Federal',
+                    ],
+                    8 => [
                         'value' => 'Private',
                         'label' => 'Private',
                     ],
-                    7 => [
+                    9 => [
+                        'value' => 'State college or university',
+                        'label' => 'State college or university',
+                    ],
+                    10 => [
                         'value' => 'State Institutional',
                         'label' => 'State Institutional',
                     ],
-                    8 => [
+                    11 => [
                         'value' => 'State Park or Forest',
                         'label' => 'State Park or Forest',
                     ],
-                    9 => [
+                    12 => [
                         'value' => 'Unaccepted by city or town',
                         'label' => 'Unaccepted by city or town',
                     ],
-                    10 => [
+                    13 => [
                         'value' => 'US Air Force',
                         'label' => 'US Air Force',
                     ],
-                    11 => [
+                    14 => [
                         'value' => 'US Army',
                         'label' => 'US Army',
                     ],
-                    12 => [
+                    15 => [
                         'value' => 'US Army Corps of Engineers',
                         'label' => 'US Army Corps of Engineers',
+                    ],
+                    16 => [
+                        'value' => 'US Navy',
+                        'label' => 'US Navy',
                     ],
                 ],
             ],
@@ -4968,26 +3050,30 @@ return [
                         'label' => 'Outside roadway',
                     ],
                     3 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    4 => [
                         'value' => 'Roadside',
                         'label' => 'Roadside',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Roadway',
                         'label' => 'Roadway',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Shoulder - paved',
                         'label' => 'Shoulder - paved',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Shoulder - travel lane',
                         'label' => 'Shoulder - travel lane',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Shoulder - unpaved',
                         'label' => 'Shoulder - unpaved',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
@@ -5482,142 +3568,8 @@ return [
             60 => [
                 'name' => 'fmsca_rptbl_cl',
                 'label' => 'FMCSA Reportable (All Vehicles)',
-                'type' => 'multiselect',
-                'placeholder' => 'Select FMCSA Reportable (All Vehicles)',
-                'options' => [
-                    0 => [
-                        'value' => 'V1:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable)',
-                    ],
-                    1 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable)',
-                    ],
-                    2 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    3 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    4 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable)',
-                    ],
-                    5 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable)',
-                    ],
-                    6 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally re',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally re',
-                    ],
-                    7 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(Yes, federally reportable)',
-                    ],
-                    8 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable)',
-                    ],
-                    9 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable)',
-                    ],
-                    10 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable)',
-                    ],
-                    11 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable)',
-                    ],
-                    12 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    13 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                    ],
-                    14 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable)',
-                    ],
-                    15 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    16 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    17 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable)',
-                    ],
-                    18 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(Yes, federally reportable)',
-                    ],
-                    19 => [
-                        'value' => 'V1:(Yes, federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable)',
-                    ],
-                    20 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable)',
-                    ],
-                    21 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    22 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    23 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                    ],
-                    24 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable)',
-                    ],
-                    25 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable)',
-                    ],
-                    26 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    27 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable)',
-                    ],
-                    28 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    29 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    30 => [
-                        'value' => 'V2:(No, not federally reportable)',
-                        'label' => 'V2:(No, not federally reportable)',
-                    ],
-                    31 => [
-                        'value' => 'V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    32 => [
-                        'value' => 'V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter FMCSA Reportable (All Vehicles)',
             ],
             61 => [
                 'name' => 'fmsca_rptbl',
@@ -5636,18 +3588,42 @@ return [
                 'placeholder' => 'Select Locality',
                 'options' => [
                     0 => [
+                        'value' => 'CHARLESTOWN',
+                        'label' => 'CHARLESTOWN',
+                    ],
+                    1 => [
+                        'value' => 'FLORENCE',
+                        'label' => 'FLORENCE',
+                    ],
+                    2 => [
+                        'value' => 'HYANNIS',
+                        'label' => 'HYANNIS',
+                    ],
+                    3 => [
                         'value' => 'HYDE PARK',
                         'label' => 'HYDE PARK',
                     ],
-                    1 => [
+                    4 => [
+                        'value' => 'LEEDS',
+                        'label' => 'LEEDS',
+                    ],
+                    5 => [
                         'value' => 'MATTAPAN',
                         'label' => 'MATTAPAN',
                     ],
-                    2 => [
+                    6 => [
+                        'value' => 'MONTAGUE CENTER',
+                        'label' => 'MONTAGUE CENTER',
+                    ],
+                    7 => [
+                        'value' => 'ROSLINDALE',
+                        'label' => 'ROSLINDALE',
+                    ],
+                    8 => [
                         'value' => 'ROXBURY',
                         'label' => 'ROXBURY',
                     ],
-                    3 => [
+                    9 => [
                         'value' => 'THORNDIKE',
                         'label' => 'THORNDIKE',
                     ],
@@ -5727,130 +3703,18 @@ return [
                 'type' => 'boolean',
             ],
             66 => [
-                'name' => 'speed_limit',
-                'label' => 'Speed Limit',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Speed Limit',
-                'options' => [
-                    0 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    1 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    2 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    3 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    4 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    5 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                    6 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    7 => [
-                        'value' => '14',
-                        'label' => '14',
-                    ],
-                    8 => [
-                        'value' => '15',
-                        'label' => '15',
-                    ],
-                    9 => [
-                        'value' => '20',
-                        'label' => '20',
-                    ],
-                    10 => [
-                        'value' => '22',
-                        'label' => '22',
-                    ],
-                    11 => [
-                        'value' => '23',
-                        'label' => '23',
-                    ],
-                    12 => [
-                        'value' => '24',
-                        'label' => '24',
-                    ],
-                    13 => [
-                        'value' => '25',
-                        'label' => '25',
-                    ],
-                    14 => [
-                        'value' => '26',
-                        'label' => '26',
-                    ],
-                    15 => [
-                        'value' => '28',
-                        'label' => '28',
-                    ],
-                    16 => [
-                        'value' => '29',
-                        'label' => '29',
-                    ],
-                    17 => [
-                        'value' => '30',
-                        'label' => '30',
-                    ],
-                    18 => [
-                        'value' => '35',
-                        'label' => '35',
-                    ],
-                    19 => [
-                        'value' => '36',
-                        'label' => '36',
-                    ],
-                    20 => [
-                        'value' => '40',
-                        'label' => '40',
-                    ],
-                    21 => [
-                        'value' => '43',
-                        'label' => '43',
-                    ],
-                    22 => [
-                        'value' => '45',
-                        'label' => '45',
-                    ],
-                    23 => [
-                        'value' => '50',
-                        'label' => '50',
-                    ],
-                    24 => [
-                        'value' => '55',
-                        'label' => '55',
-                    ],
-                    25 => [
-                        'value' => '60',
-                        'label' => '60',
-                    ],
-                    26 => [
-                        'value' => '65',
-                        'label' => '65',
-                    ],
-                    27 => [
-                        'value' => '85',
-                        'label' => '85',
-                    ],
-                    28 => [
-                        'value' => '88',
-                        'label' => '88',
-                    ],
-                ],
+                'name' => 'speed_limit_min',
+                'label' => 'Speed Limit Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Speed Limit',
             ],
             67 => [
+                'name' => 'speed_limit_max',
+                'label' => 'Speed Limit Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Speed Limit',
+            ],
+            68 => [
                 'name' => 'traf_cntrl_devc_func_descr',
                 'label' => 'Traffic Control Device Functioning',
                 'type' => 'multiselect',
@@ -5865,33 +3729,37 @@ return [
                         'label' => 'Not reported',
                     ],
                     2 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    3 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'Yes, device functioning',
                         'label' => 'Yes, device functioning',
                     ],
                 ],
             ],
-            68 => [
+            69 => [
                 'name' => 'work_zone_reld_descr',
                 'label' => 'Work Zone Related',
                 'type' => 'boolean',
             ],
-            69 => [
+            70 => [
                 'name' => 'aadt_min',
                 'label' => 'AADT-linked RD Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for AADT-linked RD',
             ],
-            70 => [
+            71 => [
                 'name' => 'aadt_max',
                 'label' => 'AADT-linked RD Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for AADT-linked RD',
             ],
-            71 => [
+            72 => [
                 'name' => 'aadt_year',
                 'label' => 'AADT Year-linked RD',
                 'type' => 'multiselect',
@@ -5902,72 +3770,76 @@ return [
                         'label' => '2009',
                     ],
                     1 => [
+                        'value' => '2010',
+                        'label' => '2010',
+                    ],
+                    2 => [
                         'value' => '2011',
                         'label' => '2011',
                     ],
-                    2 => [
+                    3 => [
                         'value' => '2012',
                         'label' => '2012',
                     ],
-                    3 => [
+                    4 => [
                         'value' => '2013',
                         'label' => '2013',
                     ],
-                    4 => [
+                    5 => [
                         'value' => '2014',
                         'label' => '2014',
                     ],
-                    5 => [
+                    6 => [
                         'value' => '2015',
                         'label' => '2015',
                     ],
-                    6 => [
+                    7 => [
                         'value' => '2016',
                         'label' => '2016',
                     ],
-                    7 => [
+                    8 => [
                         'value' => '2017',
                         'label' => '2017',
                     ],
-                    8 => [
+                    9 => [
                         'value' => '2018',
                         'label' => '2018',
                     ],
-                    9 => [
+                    10 => [
                         'value' => '2019',
                         'label' => '2019',
                     ],
-                    10 => [
+                    11 => [
                         'value' => '2020',
                         'label' => '2020',
                     ],
                 ],
             ],
-            72 => [
+            73 => [
                 'name' => 'pk_pct_sut',
                 'label' => 'Peak % Single Unit Trucks-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Peak % Single Unit Trucks-linked RD',
             ],
-            73 => [
+            74 => [
                 'name' => 'av_pct_sut',
                 'label' => 'Average Daily % Single Unit Trucks-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Average Daily % Single Unit Trucks-linked RD',
             ],
-            74 => [
+            75 => [
                 'name' => 'pk_pct_ct',
                 'label' => 'Peak % Combo Trucks-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Peak % Combo Trucks-linked RD',
             ],
-            75 => [
+            76 => [
                 'name' => 'av_pct_ct',
                 'label' => 'Average Daily % Combo Trucks-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Average Daily % Combo Trucks-linked RD',
             ],
-            76 => [
+            77 => [
                 'name' => 'curb',
                 'label' => 'Curb-linked RD',
                 'type' => 'multiselect',
@@ -6003,23 +3875,27 @@ return [
                     ],
                 ],
             ],
-            77 => [
+            78 => [
                 'name' => 'truck_rte',
                 'label' => 'Truck Route-linked RD',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Truck Route-linked RD',
                 'options' => [
                     0 => [
+                        'value' => 'DCR Parkway - Recreational Vehicles Only',
+                        'label' => 'DCR Parkway - Recreational Vehicles Only',
+                    ],
+                    1 => [
                         'value' => 'Designated truck route ONLY under State Authority.  Fully available to both types of STAA vehicles described above',
                         'label' => 'Designated truck route ONLY under State Authority.  Fully available to both types of STAA vehicles described above',
                     ],
-                    1 => [
+                    2 => [
                         'value' => 'Not a parkway - not on a designated truck route',
                         'label' => 'Not a parkway - not on a designated truck route',
                     ],
                 ],
             ],
-            78 => [
+            79 => [
                 'name' => 'lt_sidewlk',
                 'label' => 'Left Sidewalk Width-linked RD',
                 'type' => 'multiselect',
@@ -6106,20 +3982,28 @@ return [
                         'label' => '22.0',
                     ],
                     20 => [
+                        'value' => '23.0',
+                        'label' => '23.0',
+                    ],
+                    21 => [
                         'value' => '26.0',
                         'label' => '26.0',
                     ],
-                    21 => [
+                    22 => [
                         'value' => '27.0',
                         'label' => '27.0',
                     ],
-                    22 => [
+                    23 => [
+                        'value' => '28.0',
+                        'label' => '28.0',
+                    ],
+                    24 => [
                         'value' => '30.0',
                         'label' => '30.0',
                     ],
                 ],
             ],
-            79 => [
+            80 => [
                 'name' => 'rt_sidewlk',
                 'label' => 'Right Sidewalk Width-linked RD',
                 'type' => 'multiselect',
@@ -6210,12 +4094,20 @@ return [
                         'label' => '22.0',
                     ],
                     21 => [
+                        'value' => '24.0',
+                        'label' => '24.0',
+                    ],
+                    22 => [
                         'value' => '26.0',
                         'label' => '26.0',
                     ],
+                    23 => [
+                        'value' => '50.0',
+                        'label' => '50.0',
+                    ],
                 ],
             ],
-            80 => [
+            81 => [
                 'name' => 'shldr_lt_w',
                 'label' => 'Left Shoulder Width-linked RD',
                 'type' => 'multiselect',
@@ -6270,20 +4162,36 @@ return [
                         'label' => '13.0',
                     ],
                     12 => [
+                        'value' => '14.0',
+                        'label' => '14.0',
+                    ],
+                    13 => [
+                        'value' => '15.0',
+                        'label' => '15.0',
+                    ],
+                    14 => [
                         'value' => '17.0',
                         'label' => '17.0',
                     ],
-                    13 => [
+                    15 => [
                         'value' => '20.0',
                         'label' => '20.0',
                     ],
-                    14 => [
+                    16 => [
                         'value' => '22.0',
                         'label' => '22.0',
                     ],
+                    17 => [
+                        'value' => '24.0',
+                        'label' => '24.0',
+                    ],
+                    18 => [
+                        'value' => '28.0',
+                        'label' => '28.0',
+                    ],
                 ],
             ],
-            81 => [
+            82 => [
                 'name' => 'shldr_lt_t',
                 'label' => 'Left Shoulder Type-linked RD',
                 'type' => 'multiselect',
@@ -6311,13 +4219,13 @@ return [
                     ],
                 ],
             ],
-            82 => [
+            83 => [
                 'name' => 'surface_wd',
                 'label' => 'Surface Width-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Surface Width-linked RD',
             ],
-            83 => [
+            84 => [
                 'name' => 'surface_tp',
                 'label' => 'Surface Type-linked RD',
                 'type' => 'multiselect',
@@ -6361,7 +4269,7 @@ return [
                     ],
                 ],
             ],
-            84 => [
+            85 => [
                 'name' => 'shldr_rt_w',
                 'label' => 'Right Shoulder Width-linked RD',
                 'type' => 'multiselect',
@@ -6440,24 +4348,44 @@ return [
                         'label' => '17.0',
                     ],
                     18 => [
+                        'value' => '18.0',
+                        'label' => '18.0',
+                    ],
+                    19 => [
+                        'value' => '19.0',
+                        'label' => '19.0',
+                    ],
+                    20 => [
                         'value' => '20.0',
                         'label' => '20.0',
                     ],
-                    19 => [
+                    21 => [
                         'value' => '22.0',
                         'label' => '22.0',
                     ],
-                    20 => [
+                    22 => [
                         'value' => '23.0',
                         'label' => '23.0',
                     ],
-                    21 => [
+                    23 => [
+                        'value' => '24.0',
+                        'label' => '24.0',
+                    ],
+                    24 => [
+                        'value' => '26.0',
+                        'label' => '26.0',
+                    ],
+                    25 => [
                         'value' => '30.0',
                         'label' => '30.0',
                     ],
+                    26 => [
+                        'value' => '36.0',
+                        'label' => '36.0',
+                    ],
                 ],
             ],
-            85 => [
+            86 => [
                 'name' => 'shldr_rt_t',
                 'label' => 'Right Shoulder Type-linked RD',
                 'type' => 'multiselect',
@@ -6489,7 +4417,7 @@ return [
                     ],
                 ],
             ],
-            86 => [
+            87 => [
                 'name' => 'num_lanes',
                 'label' => 'Number of Travel Lanes-linked RD',
                 'type' => 'multiselect',
@@ -6519,9 +4447,13 @@ return [
                         'value' => '5',
                         'label' => '5',
                     ],
+                    6 => [
+                        'value' => '6',
+                        'label' => '6',
+                    ],
                 ],
             ],
-            87 => [
+            88 => [
                 'name' => 'opp_lanes',
                 'label' => 'Number of Opposing Travel Lanes-linked RD',
                 'type' => 'multiselect',
@@ -6549,13 +4481,13 @@ return [
                     ],
                 ],
             ],
-            88 => [
+            89 => [
                 'name' => 'med_width',
                 'label' => 'Median Width-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Median Width-linked RD',
             ],
-            89 => [
+            90 => [
                 'name' => 'med_type',
                 'label' => 'Median Type-linked RD',
                 'type' => 'multiselect',
@@ -6595,7 +4527,7 @@ return [
                     ],
                 ],
             ],
-            90 => [
+            91 => [
                 'name' => 'urban_type',
                 'label' => 'Urban Type-linked RD',
                 'type' => 'multiselect',
@@ -6623,7 +4555,7 @@ return [
                     ],
                 ],
             ],
-            91 => [
+            92 => [
                 'name' => 'f_class',
                 'label' => 'Functional Classification-linked RD',
                 'type' => 'multiselect',
@@ -6655,7 +4587,7 @@ return [
                     ],
                 ],
             ],
-            92 => [
+            93 => [
                 'name' => 'urban_area',
                 'label' => 'Urbanized Area-linked RD',
                 'type' => 'multiselect',
@@ -6674,82 +4606,86 @@ return [
                         'label' => 'Boston (MA-NH-RI)',
                     ],
                     3 => [
+                        'value' => 'Great Barrington',
+                        'label' => 'Great Barrington',
+                    ],
+                    4 => [
                         'value' => 'Greenfield',
                         'label' => 'Greenfield',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Lee',
                         'label' => 'Lee',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Leominster-Fitchburg',
                         'label' => 'Leominster-Fitchburg',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Nantucket',
                         'label' => 'Nantucket',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Nashua (NH-MA)',
                         'label' => 'Nashua (NH-MA)',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'New Bedford',
                         'label' => 'New Bedford',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'North Adams (MA-VT)',
                         'label' => 'North Adams (MA-VT)',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'North Brookfield',
                         'label' => 'North Brookfield',
                     ],
-                    11 => [
+                    12 => [
                         'value' => 'Pittsfield',
                         'label' => 'Pittsfield',
                     ],
-                    12 => [
+                    13 => [
                         'value' => 'Providence (RI-MA)',
                         'label' => 'Providence (RI-MA)',
                     ],
-                    13 => [
+                    14 => [
                         'value' => 'Provincetown',
                         'label' => 'Provincetown',
                     ],
-                    14 => [
+                    15 => [
                         'value' => 'RURAL',
                         'label' => 'RURAL',
                     ],
-                    15 => [
+                    16 => [
                         'value' => 'South Deerfield',
                         'label' => 'South Deerfield',
                     ],
-                    16 => [
+                    17 => [
                         'value' => 'Springfield (MA-CT)',
                         'label' => 'Springfield (MA-CT)',
                     ],
-                    17 => [
+                    18 => [
                         'value' => 'Vineyard Haven',
                         'label' => 'Vineyard Haven',
                     ],
-                    18 => [
+                    19 => [
                         'value' => 'Ware',
                         'label' => 'Ware',
                     ],
-                    19 => [
+                    20 => [
                         'value' => 'Worcester (MA-CT)',
                         'label' => 'Worcester (MA-CT)',
                     ],
                 ],
             ],
-            93 => [
+            94 => [
                 'name' => 'fd_aid_rte',
                 'label' => 'Federal Aid Route-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Federal Aid Route-linked RD',
             ],
-            94 => [
+            95 => [
                 'name' => 'facility',
                 'label' => 'Facility Type-linked RD',
                 'type' => 'multiselect',
@@ -6768,36 +4704,40 @@ return [
                         'label' => 'Mainline roadway',
                     ],
                     3 => [
+                        'value' => 'Private Way',
+                        'label' => 'Private Way',
+                    ],
+                    4 => [
                         'value' => 'Ramp - NB/EB',
                         'label' => 'Ramp - NB/EB',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Ramp - SB/WB',
                         'label' => 'Ramp - SB/WB',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Rotary',
                         'label' => 'Rotary',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Roundabout',
                         'label' => 'Roundabout',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Simple Ramp - Tunnel',
                         'label' => 'Simple Ramp - Tunnel',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Simple Ramp/ Channelized Turning Lane',
                         'label' => 'Simple Ramp/ Channelized Turning Lane',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Tunnel',
                         'label' => 'Tunnel',
                     ],
                 ],
             ],
-            95 => [
+            96 => [
                 'name' => 'operation',
                 'label' => 'Street Operation-linked RD',
                 'type' => 'multiselect',
@@ -6817,7 +4757,7 @@ return [
                     ],
                 ],
             ],
-            96 => [
+            97 => [
                 'name' => 'control',
                 'label' => 'Access Control-linked RD',
                 'type' => 'multiselect',
@@ -6837,7 +4777,7 @@ return [
                     ],
                 ],
             ],
-            97 => [
+            98 => [
                 'name' => 'peak_lane',
                 'label' => 'Number of Peak Hour Lanes-linked RD',
                 'type' => 'multiselect',
@@ -6865,7 +4805,7 @@ return [
                     ],
                 ],
             ],
-            98 => [
+            99 => [
                 'name' => 'speed_lim',
                 'label' => 'Speed Limit-linked RD',
                 'type' => 'multiselect',
@@ -6876,88 +4816,92 @@ return [
                         'label' => '0',
                     ],
                     1 => [
+                        'value' => '5',
+                        'label' => '5',
+                    ],
+                    2 => [
                         'value' => '10',
                         'label' => '10',
                     ],
-                    2 => [
+                    3 => [
                         'value' => '15',
                         'label' => '15',
                     ],
-                    3 => [
+                    4 => [
                         'value' => '20',
                         'label' => '20',
                     ],
-                    4 => [
+                    5 => [
                         'value' => '24',
                         'label' => '24',
                     ],
-                    5 => [
+                    6 => [
                         'value' => '25',
                         'label' => '25',
                     ],
-                    6 => [
+                    7 => [
                         'value' => '30',
                         'label' => '30',
                     ],
-                    7 => [
+                    8 => [
                         'value' => '35',
                         'label' => '35',
                     ],
-                    8 => [
+                    9 => [
                         'value' => '40',
                         'label' => '40',
                     ],
-                    9 => [
+                    10 => [
                         'value' => '45',
                         'label' => '45',
                     ],
-                    10 => [
+                    11 => [
                         'value' => '50',
                         'label' => '50',
                     ],
-                    11 => [
+                    12 => [
                         'value' => '55',
                         'label' => '55',
                     ],
-                    12 => [
+                    13 => [
                         'value' => '60',
                         'label' => '60',
                     ],
-                    13 => [
+                    14 => [
                         'value' => '65',
                         'label' => '65',
                     ],
-                    14 => [
+                    15 => [
                         'value' => '99',
                         'label' => '99',
                     ],
                 ],
             ],
-            99 => [
+            100 => [
                 'name' => 'streetname',
                 'label' => 'Street Name-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Street Name-linked RD',
             ],
-            100 => [
+            101 => [
                 'name' => 'fromstreetname',
                 'label' => 'From Street Name-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter From Street Name-linked RD',
             ],
-            101 => [
+            102 => [
                 'name' => 'tostreetname',
                 'label' => 'To Street Name-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter To Street Name-linked RD',
             ],
-            102 => [
+            103 => [
                 'name' => 'city',
                 'label' => 'City-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter City-linked RD',
             ],
-            103 => [
+            104 => [
                 'name' => 'struct_cnd',
                 'label' => 'Structural Condition-linked RD',
                 'type' => 'multiselect',
@@ -6985,7 +4929,7 @@ return [
                     ],
                 ],
             ],
-            104 => [
+            105 => [
                 'name' => 'terrain',
                 'label' => 'Terrain-linked RD',
                 'type' => 'multiselect',
@@ -7005,13 +4949,13 @@ return [
                     ],
                 ],
             ],
-            105 => [
+            106 => [
                 'name' => 'urban_loc_type',
                 'label' => 'Urban Location Type-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Urban Location Type-linked RD',
             ],
-            106 => [
+            107 => [
                 'name' => 'aadt_deriv',
                 'label' => 'AADT Derivation-linked RD',
                 'type' => 'multiselect',
@@ -7061,21 +5005,25 @@ return [
                         'value' => 'Pulled back from HPMS network estimation routine',
                         'label' => 'Pulled back from HPMS network estimation routine',
                     ],
+                    11 => [
+                        'value' => 'Unknown Source',
+                        'label' => 'Unknown Source',
+                    ],
                 ],
             ],
-            107 => [
+            108 => [
                 'name' => 'statn_num_min',
                 'label' => 'AADT Station Number-linked RD Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for AADT Station Number-linked RD',
             ],
-            108 => [
+            109 => [
                 'name' => 'statn_num_max',
                 'label' => 'AADT Station Number-linked RD Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for AADT Station Number-linked RD',
             ],
-            109 => [
+            110 => [
                 'name' => 'op_dir_sl',
                 'label' => 'Opposing Direction Speed Limit-linked RD',
                 'type' => 'multiselect',
@@ -7122,12 +5070,16 @@ return [
                         'label' => '55',
                     ],
                     10 => [
+                        'value' => '65',
+                        'label' => '65',
+                    ],
+                    11 => [
                         'value' => '99',
                         'label' => '99',
                     ],
                 ],
             ],
-            110 => [
+            111 => [
                 'name' => 'shldr_ul_t',
                 'label' => 'Undivided Left Shoulder Type-linked RD',
                 'type' => 'multiselect',
@@ -7155,7 +5107,7 @@ return [
                     ],
                 ],
             ],
-            111 => [
+            112 => [
                 'name' => 'shldr_ul_w',
                 'label' => 'Undivided Left Shoulder Width-linked RD',
                 'type' => 'multiselect',
@@ -7203,7 +5155,7 @@ return [
                     ],
                 ],
             ],
-            112 => [
+            113 => [
                 'name' => 't_exc_type',
                 'label' => 'Truck Exclusion Type-linked RD',
                 'type' => 'multiselect',
@@ -7218,36 +5170,40 @@ return [
                         'label' => 'All vehicles over 2.5 tons excluded',
                     ],
                     2 => [
+                        'value' => 'All vehicles over 20 tons excluded',
+                        'label' => 'All vehicles over 20 tons excluded',
+                    ],
+                    3 => [
                         'value' => 'All vehicles over 2000 pounds excluded',
                         'label' => 'All vehicles over 2000 pounds excluded',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'All vehicles over 28 feet in length excluded',
                         'label' => 'All vehicles over 28 feet in length excluded',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'All vehicles over 3 tons excluded',
                         'label' => 'All vehicles over 3 tons excluded',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'All vehicles over 5 tons excluded',
                         'label' => 'All vehicles over 5 tons excluded',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Cambridge Overnight Exclusions',
                         'label' => 'Cambridge Overnight Exclusions',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Commercial vehicles over 5 tons carry capacity excluded',
                         'label' => 'Commercial vehicles over 5 tons carry capacity excluded',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Hazardous Truck Route',
                         'label' => 'Hazardous Truck Route',
                     ],
                 ],
             ],
-            113 => [
+            114 => [
                 'name' => 't_exc_time',
                 'label' => 'Truck Exclusion Time-linked RD',
                 'type' => 'multiselect',
@@ -7262,72 +5218,80 @@ return [
                         'label' => '11PM to 6AM, 7 Days',
                     ],
                     2 => [
+                        'value' => '11PM to 6AM, NB Only, 7 Days',
+                        'label' => '11PM to 6AM, NB Only, 7 Days',
+                    ],
+                    3 => [
                         'value' => '11PM to 7AM, 7 Days',
                         'label' => '11PM to 7AM, 7 Days',
                     ],
-                    3 => [
+                    4 => [
                         'value' => '24 Hours, 7 Days',
                         'label' => '24 Hours, 7 Days',
                     ],
-                    4 => [
+                    5 => [
                         'value' => '4PM to 6PM',
                         'label' => '4PM to 6PM',
                     ],
-                    5 => [
+                    6 => [
                         'value' => '5AM to 8PM, 7 Days',
                         'label' => '5AM to 8PM, 7 Days',
                     ],
-                    6 => [
+                    7 => [
                         'value' => '6AM to 10PM, 7 Days',
                         'label' => '6AM to 10PM, 7 Days',
                     ],
-                    7 => [
+                    8 => [
                         'value' => '6AM to 6PM, 7 Days',
                         'label' => '6AM to 6PM, 7 Days',
                     ],
-                    8 => [
+                    9 => [
                         'value' => '6AM to 7PM, 7 Days',
                         'label' => '6AM to 7PM, 7 Days',
                     ],
-                    9 => [
+                    10 => [
                         'value' => '6PM to 6AM, 7 Days',
                         'label' => '6PM to 6AM, 7 Days',
                     ],
-                    10 => [
+                    11 => [
+                        'value' => '7AM to 11PM, 7 Days',
+                        'label' => '7AM to 11PM, 7 Days',
+                    ],
+                    12 => [
                         'value' => '7AM to 6PM, 7 Days',
                         'label' => '7AM to 6PM, 7 Days',
                     ],
-                    11 => [
+                    13 => [
                         'value' => '7PM to 7AM, 7 Days',
                         'label' => '7PM to 7AM, 7 Days',
                     ],
-                    12 => [
+                    14 => [
                         'value' => '8AM to 930AM and 2PM to 330PM, School Days Only',
                         'label' => '8AM to 930AM and 2PM to 330PM, School Days Only',
                     ],
-                    13 => [
+                    15 => [
                         'value' => '8PM to 6AM, 7 Days',
                         'label' => '8PM to 6AM, 7 Days',
                     ],
-                    14 => [
+                    16 => [
                         'value' => '8PM to 7AM, 7 Days',
                         'label' => '8PM to 7AM, 7 Days',
                     ],
-                    15 => [
+                    17 => [
                         'value' => '9PM to 6AM, 7 Days',
                         'label' => '9PM to 6AM, 7 Days',
                     ],
-                    16 => [
+                    18 => [
                         'value' => '9PM to 7AM, 7 Days',
                         'label' => '9PM to 7AM, 7 Days',
                     ],
-                    17 => [
+                    19 => [
                         'value' => 'None',
                         'label' => 'None',
                     ],
                 ],
             ],
-            114 => [
+            115 => [
                 'name' => 'f_f_class',
                 'label' => 'Federal Functional Classification-linked RD',
                 'type' => 'multiselect',
@@ -7363,7 +5327,7 @@ return [
                     ],
                 ],
             ],
-            115 => [
+            116 => [
                 'name' => 'vehc_unit_numb',
                 'label' => 'Vehicle Unit Number',
                 'type' => 'multiselect',
@@ -7421,32 +5385,36 @@ return [
                         'value' => '13',
                         'label' => '13',
                     ],
+                    13 => [
+                        'value' => '14',
+                        'label' => '14',
+                    ],
                 ],
             ],
-            116 => [
+            117 => [
                 'name' => 'alc_suspd_type_descr',
                 'label' => 'Alcohol Suspected',
                 'type' => 'boolean',
             ],
-            117 => [
+            118 => [
                 'name' => 'driver_age_min',
                 'label' => 'Driver Age Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Driver Age',
             ],
-            118 => [
+            119 => [
                 'name' => 'driver_age_max',
                 'label' => 'Driver Age Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Driver Age',
             ],
-            119 => [
+            120 => [
                 'name' => 'drvr_cntrb_circ_descr',
                 'label' => 'Driver Contributing Circ.',
                 'type' => 'text',
                 'placeholder' => 'Enter Driver Contributing Circ.',
             ],
-            120 => [
+            121 => [
                 'name' => 'driver_distracted_type_descr',
                 'label' => 'Driver Distracted',
                 'type' => 'multiselect',
@@ -7498,33 +5466,33 @@ return [
                     ],
                 ],
             ],
-            121 => [
+            122 => [
                 'name' => 'drvr_lcn_state',
                 'label' => 'Driver License State',
                 'type' => 'text',
                 'placeholder' => 'Enter Driver License State',
             ],
-            122 => [
+            123 => [
                 'name' => 'drug_suspd_type_descr',
                 'label' => 'Drugs Suspected',
                 'type' => 'boolean',
             ],
-            123 => [
+            124 => [
                 'name' => 'emergency_use_desc',
                 'label' => 'Emergency Use',
                 'type' => 'boolean',
             ],
-            124 => [
+            125 => [
                 'name' => 'fmsca_rptbl_vl',
                 'label' => 'FMCSA Reportable (Vehicle)',
                 'type' => 'boolean',
             ],
-            125 => [
+            126 => [
                 'name' => 'haz_mat_placard_descr',
                 'label' => 'Hazmat Placard',
                 'type' => 'boolean',
             ],
-            126 => [
+            127 => [
                 'name' => 'max_injr_svrty_vl',
                 'label' => 'Maximum Injury Severity in Vehicle',
                 'type' => 'multiselect',
@@ -7543,36 +5511,40 @@ return [
                         'label' => 'No Apparent Injury (O)',
                     ],
                     3 => [
+                        'value' => 'No injury',
+                        'label' => 'No injury',
+                    ],
+                    4 => [
                         'value' => 'Not Applicable',
                         'label' => 'Not Applicable',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Possible Injury (C)',
                         'label' => 'Possible Injury (C)',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Suspected Minor Injury (B)',
                         'label' => 'Suspected Minor Injury (B)',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Suspected Serious Injury (A)',
                         'label' => 'Suspected Serious Injury (A)',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            127 => [
+            128 => [
                 'name' => 'most_hrmf_event',
                 'label' => 'Most Harmful Event (Vehicle)',
                 'type' => 'multiselect',
@@ -7740,139 +5712,19 @@ return [
                     ],
                 ],
             ],
-            128 => [
-                'name' => 'total_occpt_in_vehc',
-                'label' => 'Total Occupants in Vehicle',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Total Occupants in Vehicle',
-                'options' => [
-                    0 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    1 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    2 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    3 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    4 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    5 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    6 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    7 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    8 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                    9 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    10 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    11 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                    12 => [
-                        'value' => '13',
-                        'label' => '13',
-                    ],
-                    13 => [
-                        'value' => '14',
-                        'label' => '14',
-                    ],
-                    14 => [
-                        'value' => '15',
-                        'label' => '15',
-                    ],
-                    15 => [
-                        'value' => '16',
-                        'label' => '16',
-                    ],
-                    16 => [
-                        'value' => '17',
-                        'label' => '17',
-                    ],
-                    17 => [
-                        'value' => '20',
-                        'label' => '20',
-                    ],
-                    18 => [
-                        'value' => '21',
-                        'label' => '21',
-                    ],
-                    19 => [
-                        'value' => '22',
-                        'label' => '22',
-                    ],
-                    20 => [
-                        'value' => '24',
-                        'label' => '24',
-                    ],
-                    21 => [
-                        'value' => '26',
-                        'label' => '26',
-                    ],
-                    22 => [
-                        'value' => '28',
-                        'label' => '28',
-                    ],
-                    23 => [
-                        'value' => '33',
-                        'label' => '33',
-                    ],
-                    24 => [
-                        'value' => '34',
-                        'label' => '34',
-                    ],
-                    25 => [
-                        'value' => '35',
-                        'label' => '35',
-                    ],
-                    26 => [
-                        'value' => '38',
-                        'label' => '38',
-                    ],
-                    27 => [
-                        'value' => '40',
-                        'label' => '40',
-                    ],
-                    28 => [
-                        'value' => '46',
-                        'label' => '46',
-                    ],
-                    29 => [
-                        'value' => '49',
-                        'label' => '49',
-                    ],
-                    30 => [
-                        'value' => '56',
-                        'label' => '56',
-                    ],
-                ],
-            ],
             129 => [
+                'name' => 'total_occpt_in_vehc_min',
+                'label' => 'Total Occupants in Vehicle Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Total Occupants in Vehicle',
+            ],
+            130 => [
+                'name' => 'total_occpt_in_vehc_max',
+                'label' => 'Total Occupants in Vehicle Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Total Occupants in Vehicle',
+            ],
+            131 => [
                 'name' => 'vehc_manr_act_descr',
                 'label' => 'Vehicle Action Prior to Crash',
                 'type' => 'multiselect',
@@ -7915,28 +5767,32 @@ return [
                         'label' => 'Parked',
                     ],
                     9 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    10 => [
                         'value' => 'Slowing or stopped in traffic',
                         'label' => 'Slowing or stopped in traffic',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'Travelling straight ahead',
                         'label' => 'Travelling straight ahead',
                     ],
-                    11 => [
+                    12 => [
                         'value' => 'Turning left',
                         'label' => 'Turning left',
                     ],
-                    12 => [
+                    13 => [
                         'value' => 'Turning right',
                         'label' => 'Turning right',
                     ],
-                    13 => [
+                    14 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            130 => [
+            132 => [
                 'name' => 'vehc_confg_descr',
                 'label' => 'Vehicle Configuration',
                 'type' => 'multiselect',
@@ -8036,71 +5892,79 @@ return [
                     ],
                 ],
             ],
-            131 => [
+            133 => [
                 'name' => 'vehc_most_dmgd_area',
                 'label' => 'Vehicle Most Damaged Area',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Most Damaged Area',
             ],
-            132 => [
+            134 => [
                 'name' => 'owner_addr_city_town',
                 'label' => 'Vehicle Owner City Town',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Owner City Town',
             ],
-            133 => [
+            135 => [
                 'name' => 'owner_addr_state',
                 'label' => 'Vehicle Owner State',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Owner State',
             ],
-            134 => [
+            136 => [
                 'name' => 'vehc_reg_state',
                 'label' => 'Vehicle Registration State',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Registration State',
             ],
-            135 => [
+            137 => [
                 'name' => 'vehc_reg_type_code',
                 'label' => 'Vehicle Registration Type',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Registration Type',
             ],
-            136 => [
+            138 => [
                 'name' => 'vehc_seq_events',
                 'label' => 'Vehicle Sequence of Events',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Sequence of Events',
             ],
-            137 => [
+            139 => [
                 'name' => 'vehc_towed_from_scene',
                 'label' => 'Vehicle Towed From Scene',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Vehicle Towed From Scene',
                 'options' => [
                     0 => [
+                        'value' => 'Invalid',
+                        'label' => 'Invalid',
+                    ],
+                    1 => [
                         'value' => 'No',
                         'label' => 'No',
                     ],
-                    1 => [
+                    2 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    2 => [
+                    3 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    4 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    3 => [
+                    5 => [
                         'value' => 'Yes, other reason not disabled',
                         'label' => 'Yes, other reason not disabled',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'Yes, vehicle or trailer disabled',
                         'label' => 'Yes, vehicle or trailer disabled',
                     ],
                 ],
             ],
-            138 => [
+            140 => [
                 'name' => 'trvl_dirc_descr',
                 'label' => 'Travel Direction',
                 'type' => 'multiselect',
@@ -8136,55 +6000,55 @@ return [
                     ],
                 ],
             ],
-            139 => [
+            141 => [
                 'name' => 'vehicle_make_descr',
                 'label' => 'Vehicle Make',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Make',
             ],
-            140 => [
+            142 => [
                 'name' => 'vehicle_model_descr',
                 'label' => 'Vehicle Model',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Model',
             ],
-            141 => [
+            143 => [
                 'name' => 'vehicle_vin',
                 'label' => 'VIN',
                 'type' => 'text',
                 'placeholder' => 'Enter VIN',
             ],
-            142 => [
+            144 => [
                 'name' => 'driver_violation_cl',
                 'label' => 'Driver Violation (All Vehicles)',
                 'type' => 'text',
                 'placeholder' => 'Enter Driver Violation (All Vehicles)',
             ],
-            143 => [
+            145 => [
                 'name' => 'pers_numb_min',
                 'label' => 'Person Number Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Person Number',
             ],
-            144 => [
+            146 => [
                 'name' => 'pers_numb_max',
                 'label' => 'Person Number Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Person Number',
             ],
-            145 => [
+            147 => [
                 'name' => 'age_min',
                 'label' => 'Age Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Age',
             ],
-            146 => [
+            148 => [
                 'name' => 'age_max',
                 'label' => 'Age Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Age',
             ],
-            147 => [
+            149 => [
                 'name' => 'ejctn_descr',
                 'label' => 'Ejection Description',
                 'type' => 'multiselect',
@@ -8207,16 +6071,20 @@ return [
                         'label' => 'Partially ejected',
                     ],
                     4 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    5 => [
                         'value' => 'Totally ejected',
                         'label' => 'Totally ejected',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            148 => [
+            150 => [
                 'name' => 'injy_stat_descr',
                 'label' => 'Injury Type',
                 'type' => 'multiselect',
@@ -8235,54 +6103,62 @@ return [
                         'label' => 'No Apparent Injury (O)',
                     ],
                     3 => [
+                        'value' => 'No injury',
+                        'label' => 'No injury',
+                    ],
+                    4 => [
+                        'value' => 'Non-fatal injury - Possible',
+                        'label' => 'Non-fatal injury - Possible',
+                    ],
+                    5 => [
                         'value' => 'Not Applicable',
                         'label' => 'Not Applicable',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    5 => [
+                    7 => [
                         'value' => 'Possible Injury (C)',
                         'label' => 'Possible Injury (C)',
                     ],
-                    6 => [
+                    8 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
                     ],
-                    7 => [
+                    9 => [
                         'value' => 'Suspected Minor Injury (B)',
                         'label' => 'Suspected Minor Injury (B)',
                     ],
-                    8 => [
+                    10 => [
                         'value' => 'Suspected Serious Injury (A)',
                         'label' => 'Suspected Serious Injury (A)',
                     ],
-                    9 => [
+                    11 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            149 => [
+            151 => [
                 'name' => 'med_facly',
                 'label' => 'Medical Facility',
                 'type' => 'text',
                 'placeholder' => 'Enter Medical Facility',
             ],
-            150 => [
+            152 => [
                 'name' => 'pers_addr_city',
                 'label' => 'Person Address City',
                 'type' => 'text',
                 'placeholder' => 'Enter Person Address City',
             ],
-            151 => [
+            153 => [
                 'name' => 'state_prvn_code',
                 'label' => 'Person Address State',
                 'type' => 'text',
                 'placeholder' => 'Enter Person Address State',
             ],
-            152 => [
+            154 => [
                 'name' => 'pers_type',
                 'label' => 'Person Type',
                 'type' => 'multiselect',
@@ -8302,7 +6178,7 @@ return [
                     ],
                 ],
             ],
-            153 => [
+            155 => [
                 'name' => 'prtc_sys_use_descr',
                 'label' => 'Protective System Used',
                 'type' => 'multiselect',
@@ -8346,7 +6222,7 @@ return [
                     ],
                 ],
             ],
-            154 => [
+            156 => [
                 'name' => 'sfty_equp_desc_1',
                 'label' => 'Safety Equipment 1',
                 'type' => 'multiselect',
@@ -8373,26 +6249,30 @@ return [
                         'label' => 'Other',
                     ],
                     5 => [
+                        'value' => 'Protective pads used (elbows, knees, shins, etc.)',
+                        'label' => 'Protective pads used (elbows, knees, shins, etc.)',
+                    ],
+                    6 => [
                         'value' => 'Reflective clothing',
                         'label' => 'Reflective clothing',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            155 => [
+            157 => [
                 'name' => 'sfty_equp_desc_2',
                 'label' => 'Safety Equipment 2',
                 'type' => 'text',
                 'placeholder' => 'Enter Safety Equipment 2',
             ],
-            156 => [
+            158 => [
                 'name' => 'sex_descr',
                 'label' => 'Sex',
                 'type' => 'multiselect',
@@ -8411,248 +6291,86 @@ return [
                         'label' => 'N/A',
                     ],
                     3 => [
+                        'value' => 'Not reported',
+                        'label' => 'Not reported',
+                    ],
+                    4 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    5 => [
                         'value' => 'U - Unknown',
                         'label' => 'U - Unknown',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'X - Non-Binary',
                         'label' => 'X - Non-Binary',
                     ],
                 ],
             ],
-            157 => [
+            159 => [
                 'name' => 'trnsd_by_descr',
                 'label' => 'Transported By',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Transported By',
                 'options' => [
                     0 => [
+                        'value' => 'EMS Ground',
+                        'label' => 'EMS Ground',
+                    ],
+                    1 => [
                         'value' => 'EMS(Emergency Medical Service)',
                         'label' => 'EMS(Emergency Medical Service)',
                     ],
-                    1 => [
+                    2 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    2 => [
+                    3 => [
                         'value' => 'Not transported',
                         'label' => 'Not transported',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'Other',
                         'label' => 'Other',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Police',
                         'label' => 'Police',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Refused Transport',
                         'label' => 'Refused Transport',
                     ],
-                    6 => [
+                    7 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            158 => [
+            160 => [
                 'name' => 'non_mtrst_type_cl',
                 'label' => 'Vulnerable User Type (All Persons)',
                 'type' => 'text',
                 'placeholder' => 'Enter Vulnerable User Type (All Persons)',
             ],
-            159 => [
+            161 => [
                 'name' => 'non_mtrst_actn_cl',
                 'label' => 'Vulnerable User Action (All Persons)',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Action (All Persons)',
-                'options' => [
-                    0 => [
-                        'value' => 'VU2: Approaching or leaving vehicle',
-                        'label' => 'VU2: Approaching or leaving vehicle',
-                    ],
-                    1 => [
-                        'value' => 'VU2: Approaching or leaving vehicle / VU3: Standing / VU4: Approaching or leaving vehicle',
-                        'label' => 'VU2: Approaching or leaving vehicle / VU3: Standing / VU4: Approaching or leaving vehicle',
-                    ],
-                    2 => [
-                        'value' => 'VU2: Entering or crossing location',
-                        'label' => 'VU2: Entering or crossing location',
-                    ],
-                    3 => [
-                        'value' => 'VU2: Entering or crossing location / VU3: Entering or crossing location',
-                        'label' => 'VU2: Entering or crossing location / VU3: Entering or crossing location',
-                    ],
-                    4 => [
-                        'value' => 'VU2: Entering or crossing location / VU3: Entering or crossing location / VU4: Entering or crossing location',
-                        'label' => 'VU2: Entering or crossing location / VU3: Entering or crossing location / VU4: Entering or crossing location',
-                    ],
-                    5 => [
-                        'value' => 'VU2: None',
-                        'label' => 'VU2: None',
-                    ],
-                    6 => [
-                        'value' => 'VU2: Other',
-                        'label' => 'VU2: Other',
-                    ],
-                    7 => [
-                        'value' => 'VU2: Other / VU3: Other / VU4: Other / VU5: Other / VU6: Other',
-                        'label' => 'VU2: Other / VU3: Other / VU4: Other / VU5: Other / VU6: Other',
-                    ],
-                    8 => [
-                        'value' => 'VU2: Pushing vehicle',
-                        'label' => 'VU2: Pushing vehicle',
-                    ],
-                    9 => [
-                        'value' => 'VU2: Standing',
-                        'label' => 'VU2: Standing',
-                    ],
-                    10 => [
-                        'value' => 'VU2: Standing / VU3: Standing',
-                        'label' => 'VU2: Standing / VU3: Standing',
-                    ],
-                    11 => [
-                        'value' => 'VU2: Walking, running or cycling',
-                        'label' => 'VU2: Walking, running or cycling',
-                    ],
-                    12 => [
-                        'value' => 'VU2: Walking, running or cycling / VU3: Other',
-                        'label' => 'VU2: Walking, running or cycling / VU3: Other',
-                    ],
-                    13 => [
-                        'value' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling',
-                        'label' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling',
-                    ],
-                    14 => [
-                        'value' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Other',
-                        'label' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Other',
-                    ],
-                    15 => [
-                        'value' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Walking, running or cycling / VU5: Walking, running or cycling',
-                        'label' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Walking, running or cycling / VU5: Walking, running or cycling',
-                    ],
-                    16 => [
-                        'value' => 'VU2: Working',
-                        'label' => 'VU2: Working',
-                    ],
-                    17 => [
-                        'value' => 'VU2: Working / VU4: Working / VU5: Working',
-                        'label' => 'VU2: Working / VU4: Working / VU5: Working',
-                    ],
-                    18 => [
-                        'value' => 'VU2: Working on vehicle',
-                        'label' => 'VU2: Working on vehicle',
-                    ],
-                    19 => [
-                        'value' => 'VU3: Approaching or leaving vehicle',
-                        'label' => 'VU3: Approaching or leaving vehicle',
-                    ],
-                    20 => [
-                        'value' => 'VU3: Entering or crossing location',
-                        'label' => 'VU3: Entering or crossing location',
-                    ],
-                    21 => [
-                        'value' => 'VU3: Entering or crossing location / VU4: Entering or crossing location',
-                        'label' => 'VU3: Entering or crossing location / VU4: Entering or crossing location',
-                    ],
-                    22 => [
-                        'value' => 'VU3: None',
-                        'label' => 'VU3: None',
-                    ],
-                    23 => [
-                        'value' => 'VU3: Other',
-                        'label' => 'VU3: Other',
-                    ],
-                    24 => [
-                        'value' => 'VU3: Other / VU4: Other / VU5: Other',
-                        'label' => 'VU3: Other / VU4: Other / VU5: Other',
-                    ],
-                    25 => [
-                        'value' => 'VU3: Standing',
-                        'label' => 'VU3: Standing',
-                    ],
-                    26 => [
-                        'value' => 'VU3: Walking, running or cycling',
-                        'label' => 'VU3: Walking, running or cycling',
-                    ],
-                    27 => [
-                        'value' => 'VU3: Walking, running or cycling / VU4: Walking, running or cycling',
-                        'label' => 'VU3: Walking, running or cycling / VU4: Walking, running or cycling',
-                    ],
-                    28 => [
-                        'value' => 'VU3: Working',
-                        'label' => 'VU3: Working',
-                    ],
-                    29 => [
-                        'value' => 'VU4: Approaching or leaving vehicle',
-                        'label' => 'VU4: Approaching or leaving vehicle',
-                    ],
-                    30 => [
-                        'value' => 'VU4: Entering or crossing location',
-                        'label' => 'VU4: Entering or crossing location',
-                    ],
-                    31 => [
-                        'value' => 'VU4: None',
-                        'label' => 'VU4: None',
-                    ],
-                    32 => [
-                        'value' => 'VU4: Other',
-                        'label' => 'VU4: Other',
-                    ],
-                    33 => [
-                        'value' => 'VU4: Standing',
-                        'label' => 'VU4: Standing',
-                    ],
-                    34 => [
-                        'value' => 'VU4: Walking, running or cycling',
-                        'label' => 'VU4: Walking, running or cycling',
-                    ],
-                    35 => [
-                        'value' => 'VU4: Working',
-                        'label' => 'VU4: Working',
-                    ],
-                    36 => [
-                        'value' => 'VU4: Working / VU5: Working / VU6: Working',
-                        'label' => 'VU4: Working / VU5: Working / VU6: Working',
-                    ],
-                    37 => [
-                        'value' => 'VU5: Entering or crossing location',
-                        'label' => 'VU5: Entering or crossing location',
-                    ],
-                    38 => [
-                        'value' => 'VU5: Entering or crossing location / VU6: Entering or crossing location',
-                        'label' => 'VU5: Entering or crossing location / VU6: Entering or crossing location',
-                    ],
-                    39 => [
-                        'value' => 'VU5: Standing',
-                        'label' => 'VU5: Standing',
-                    ],
-                    40 => [
-                        'value' => 'VU5: Walking, running or cycling',
-                        'label' => 'VU5: Walking, running or cycling',
-                    ],
-                    41 => [
-                        'value' => 'VU5: Walking, running or cycling / VU6: Walking, running or cycling',
-                        'label' => 'VU5: Walking, running or cycling / VU6: Walking, running or cycling',
-                    ],
-                    42 => [
-                        'value' => 'VU6: Standing',
-                        'label' => 'VU6: Standing',
-                    ],
-                    43 => [
-                        'value' => 'VU6: Working on vehicle',
-                        'label' => 'VU6: Working on vehicle',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Vulnerable User Action (All Persons)',
             ],
-            160 => [
+            162 => [
                 'name' => 'non_mtrst_loc_cl',
                 'label' => 'Vulnerable User Location (All Persons)',
                 'type' => 'text',
                 'placeholder' => 'Enter Vulnerable User Location (All Persons)',
             ],
-            161 => [
+            163 => [
                 'name' => 'non_mtrst_act_descr',
                 'label' => 'Vulnerable User Action',
                 'type' => 'multiselect',
@@ -8704,7 +6422,7 @@ return [
                     ],
                 ],
             ],
-            162 => [
+            164 => [
                 'name' => 'non_mtrst_cond_descr',
                 'label' => 'Vulnerable User Condition',
                 'type' => 'multiselect',
@@ -8715,16 +6433,40 @@ return [
                         'label' => 'Apparently normal',
                     ],
                     1 => [
+                        'value' => 'Emotional (e.g., depression, angry, disturbed)',
+                        'label' => 'Emotional (e.g., depression, angry, disturbed)',
+                    ],
+                    2 => [
+                        'value' => 'Fell asleep, fainted, fatigue, etc.',
+                        'label' => 'Fell asleep, fainted, fatigue, etc.',
+                    ],
+                    3 => [
+                        'value' => 'Illness',
+                        'label' => 'Illness',
+                    ],
+                    4 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    2 => [
+                    5 => [
+                        'value' => 'Other',
+                        'label' => 'Other',
+                    ],
+                    6 => [
+                        'value' => 'Physical impairment',
+                        'label' => 'Physical impairment',
+                    ],
+                    7 => [
+                        'value' => 'Under the influence of medications/drugs/alcohol',
+                        'label' => 'Under the influence of medications/drugs/alcohol',
+                    ],
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            163 => [
+            165 => [
                 'name' => 'non_mtrst_loc_descr',
                 'label' => 'Vulnerable User Location',
                 'type' => 'multiselect',
@@ -8747,56 +6489,64 @@ return [
                         'label' => 'Marked crosswalk at intersection (includes use of paint raised or other roadway material)',
                     ],
                     4 => [
+                        'value' => 'Median (but not on shoulder)',
+                        'label' => 'Median (but not on shoulder)',
+                    ],
+                    5 => [
                         'value' => 'Non-intersection crosswalk',
                         'label' => 'Non-intersection crosswalk',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Not in roadway',
                         'label' => 'Not in roadway',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'On-Street Bike Lanes',
                         'label' => 'On-Street Bike Lanes',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'On-Street Buffered Bike Lanes',
                         'label' => 'On-Street Buffered Bike Lanes',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Other',
                         'label' => 'Other',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'Raised Crosswalk',
                         'label' => 'Raised Crosswalk',
                     ],
-                    11 => [
+                    12 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    13 => [
                         'value' => 'Separated Bike Lanes',
                         'label' => 'Separated Bike Lanes',
                     ],
-                    12 => [
+                    14 => [
                         'value' => 'Shared-use path or trails Crossing',
                         'label' => 'Shared-use path or trails Crossing',
                     ],
-                    13 => [
+                    15 => [
                         'value' => 'Shoulder',
                         'label' => 'Shoulder',
                     ],
-                    14 => [
+                    16 => [
                         'value' => 'Sidewalk',
                         'label' => 'Sidewalk',
                     ],
-                    15 => [
+                    17 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            164 => [
+            166 => [
                 'name' => 'non_mtrst_type_descr',
                 'label' => 'Vulnerable User Type',
                 'type' => 'multiselect',
@@ -8851,36 +6601,44 @@ return [
                         'label' => 'Other',
                     ],
                     12 => [
+                        'value' => 'Other Micromobility Device User',
+                        'label' => 'Other Micromobility Device User',
+                    ],
+                    13 => [
                         'value' => 'Pedestrian',
                         'label' => 'Pedestrian',
                     ],
-                    13 => [
+                    14 => [
                         'value' => 'Roadway Worker - Outside of vehicle',
                         'label' => 'Roadway Worker - Outside of vehicle',
                     ],
-                    14 => [
+                    15 => [
+                        'value' => 'Roller Skater',
+                        'label' => 'Roller Skater',
+                    ],
+                    16 => [
                         'value' => 'Skateboarder',
                         'label' => 'Skateboarder',
                     ],
-                    15 => [
+                    17 => [
                         'value' => 'Train/Trolley passenger',
                         'label' => 'Train/Trolley passenger',
                     ],
-                    16 => [
+                    18 => [
                         'value' => 'Tricyclist',
                         'label' => 'Tricyclist',
                     ],
-                    17 => [
+                    19 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    18 => [
+                    20 => [
                         'value' => 'Utility Worker – Outside of vehicle',
                         'label' => 'Utility Worker – Outside of vehicle',
                     ],
                 ],
             ],
-            165 => [
+            167 => [
                 'name' => 'non_mtrst_origin_dest_cl',
                 'label' => 'Vulnerable Users Origin Destination (All Persons)',
                 'type' => 'multiselect',
@@ -8891,130 +6649,206 @@ return [
                         'label' => 'VU10: Other',
                     ],
                     1 => [
+                        'value' => 'VU11: Other',
+                        'label' => 'VU11: Other',
+                    ],
+                    2 => [
+                        'value' => 'VU17: Other',
+                        'label' => 'VU17: Other',
+                    ],
+                    3 => [
                         'value' => 'VU2: Going to or from a Delivery Vehicle',
                         'label' => 'VU2: Going to or from a Delivery Vehicle',
                     ],
-                    2 => [
+                    4 => [
                         'value' => 'VU2: Going to or from a Delivery Vehicle / VU3: Going to or from a Delivery Vehicle / VU4: Going to or from a Delivery Vehicle',
                         'label' => 'VU2: Going to or from a Delivery Vehicle / VU3: Going to or from a Delivery Vehicle / VU4: Going to or from a Delivery Vehicle',
                     ],
-                    3 => [
+                    5 => [
+                        'value' => 'VU2: Going to or from a Mailbox',
+                        'label' => 'VU2: Going to or from a Mailbox',
+                    ],
+                    6 => [
+                        'value' => 'VU2: Going to or from a Mailbox / VU3: Going to or from a Mailbox',
+                        'label' => 'VU2: Going to or from a Mailbox / VU3: Going to or from a Mailbox',
+                    ],
+                    7 => [
                         'value' => 'VU2: Going to or from a School Bus or a School Bus Stop',
                         'label' => 'VU2: Going to or from a School Bus or a School Bus Stop',
                     ],
-                    4 => [
+                    8 => [
                         'value' => 'VU2: Going to or from a School Bus or a School Bus Stop / VU3: Going to or from a School Bus or a School Bus Stop',
                         'label' => 'VU2: Going to or from a School Bus or a School Bus Stop / VU3: Going to or from a School Bus or a School Bus Stop',
                     ],
-                    5 => [
+                    9 => [
                         'value' => 'VU2: Going to or from an Ice Cream or Food Truck',
                         'label' => 'VU2: Going to or from an Ice Cream or Food Truck',
                     ],
-                    6 => [
+                    10 => [
                         'value' => 'VU2: Going to or from School (K-12)',
                         'label' => 'VU2: Going to or from School (K-12)',
                     ],
-                    7 => [
+                    11 => [
                         'value' => 'VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12)',
                         'label' => 'VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12)',
                     ],
-                    8 => [
+                    12 => [
                         'value' => 'VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12) / VU4: Going to or from School (K-12)',
                         'label' => 'VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12) / VU4: Going to or from School (K-12)',
                     ],
-                    9 => [
+                    13 => [
                         'value' => 'VU2: Going to or from Transit',
                         'label' => 'VU2: Going to or from Transit',
                     ],
-                    10 => [
+                    14 => [
+                        'value' => 'VU2: Going to or from Transit / VU3: Going to or from Transit',
+                        'label' => 'VU2: Going to or from Transit / VU3: Going to or from Transit',
+                    ],
+                    15 => [
+                        'value' => 'VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit',
+                        'label' => 'VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit',
+                    ],
+                    16 => [
                         'value' => 'VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit / VU5: Going to or from Transit / VU6: Going to or from Transit',
                         'label' => 'VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit / VU5: Going to or from Transit / VU6: Going to or from Transit',
                     ],
-                    11 => [
+                    17 => [
                         'value' => 'VU2: Other',
                         'label' => 'VU2: Other',
                     ],
-                    12 => [
+                    18 => [
                         'value' => 'VU2: Other / VU3: Other',
                         'label' => 'VU2: Other / VU3: Other',
                     ],
-                    13 => [
+                    19 => [
                         'value' => 'VU2: Other / VU3: Other / VU4: Other',
                         'label' => 'VU2: Other / VU3: Other / VU4: Other',
                     ],
-                    14 => [
+                    20 => [
                         'value' => 'VU2: Other / VU3: Other / VU4: Other / VU5: Other',
                         'label' => 'VU2: Other / VU3: Other / VU4: Other / VU5: Other',
                     ],
-                    15 => [
+                    21 => [
+                        'value' => 'VU2: Other / VU4: Other',
+                        'label' => 'VU2: Other / VU4: Other',
+                    ],
+                    22 => [
                         'value' => 'VU2: Other / VU4: Other / VU5: Other',
                         'label' => 'VU2: Other / VU4: Other / VU5: Other',
                     ],
-                    16 => [
+                    23 => [
                         'value' => 'VU3: Going to or from a Delivery Vehicle',
                         'label' => 'VU3: Going to or from a Delivery Vehicle',
                     ],
-                    17 => [
+                    24 => [
+                        'value' => 'VU3: Going to or from a Mailbox',
+                        'label' => 'VU3: Going to or from a Mailbox',
+                    ],
+                    25 => [
                         'value' => 'VU3: Going to or from a School Bus or a School Bus Stop',
                         'label' => 'VU3: Going to or from a School Bus or a School Bus Stop',
                     ],
-                    18 => [
+                    26 => [
+                        'value' => 'VU3: Going to or from an Ice Cream or Food Truck',
+                        'label' => 'VU3: Going to or from an Ice Cream or Food Truck',
+                    ],
+                    27 => [
                         'value' => 'VU3: Going to or from School (K-12)',
                         'label' => 'VU3: Going to or from School (K-12)',
                     ],
-                    19 => [
+                    28 => [
                         'value' => 'VU3: Going to or from Transit',
                         'label' => 'VU3: Going to or from Transit',
                     ],
-                    20 => [
+                    29 => [
                         'value' => 'VU3: Other',
                         'label' => 'VU3: Other',
                     ],
-                    21 => [
+                    30 => [
                         'value' => 'VU3: Other / VU4: Other',
                         'label' => 'VU3: Other / VU4: Other',
                     ],
-                    22 => [
+                    31 => [
+                        'value' => 'VU3: Other / VU5: Other',
+                        'label' => 'VU3: Other / VU5: Other',
+                    ],
+                    32 => [
+                        'value' => 'VU4: Going to or from a Delivery Vehicle',
+                        'label' => 'VU4: Going to or from a Delivery Vehicle',
+                    ],
+                    33 => [
                         'value' => 'VU4: Going to or from School (K-12)',
                         'label' => 'VU4: Going to or from School (K-12)',
                     ],
-                    23 => [
+                    34 => [
+                        'value' => 'VU4: Going to or from School (K-12) / VU5: Going to or from School (K-12)',
+                        'label' => 'VU4: Going to or from School (K-12) / VU5: Going to or from School (K-12)',
+                    ],
+                    35 => [
                         'value' => 'VU4: Going to or from Transit',
                         'label' => 'VU4: Going to or from Transit',
                     ],
-                    24 => [
+                    36 => [
                         'value' => 'VU4: Other',
                         'label' => 'VU4: Other',
                     ],
-                    25 => [
+                    37 => [
+                        'value' => 'VU4: Other / VU5: Other',
+                        'label' => 'VU4: Other / VU5: Other',
+                    ],
+                    38 => [
                         'value' => 'VU4: Other / VU5: Other / VU6: Other',
                         'label' => 'VU4: Other / VU5: Other / VU6: Other',
                     ],
-                    26 => [
+                    39 => [
+                        'value' => 'VU5: Going to or from School (K-12)',
+                        'label' => 'VU5: Going to or from School (K-12)',
+                    ],
+                    40 => [
                         'value' => 'VU5: Going to or from Transit',
                         'label' => 'VU5: Going to or from Transit',
                     ],
-                    27 => [
+                    41 => [
                         'value' => 'VU5: Other',
                         'label' => 'VU5: Other',
                     ],
-                    28 => [
+                    42 => [
                         'value' => 'VU5: Other / VU6: Other',
                         'label' => 'VU5: Other / VU6: Other',
                     ],
-                    29 => [
+                    43 => [
+                        'value' => 'VU6: Going to or from School (K-12)',
+                        'label' => 'VU6: Going to or from School (K-12)',
+                    ],
+                    44 => [
+                        'value' => 'VU6: Going to or from Transit',
+                        'label' => 'VU6: Going to or from Transit',
+                    ],
+                    45 => [
                         'value' => 'VU6: Other',
                         'label' => 'VU6: Other',
                     ],
+                    46 => [
+                        'value' => 'VU7: Other',
+                        'label' => 'VU7: Other',
+                    ],
+                    47 => [
+                        'value' => 'VU7: Other / VU8: Other',
+                        'label' => 'VU7: Other / VU8: Other',
+                    ],
+                    48 => [
+                        'value' => 'VU8: Other',
+                        'label' => 'VU8: Other',
+                    ],
                 ],
             ],
-            166 => [
+            168 => [
                 'name' => 'non_mtrst_cntrb_circ_cl',
                 'label' => 'Vulnerable Users Contributing Circumstance (All Persons)',
                 'type' => 'text',
                 'placeholder' => 'Enter Vulnerable Users Contributing Circumstance (All Persons)',
             ],
-            167 => [
+            169 => [
                 'name' => 'non_mtrst_distracted_by_cl',
                 'label' => 'Vulnerable Users Distracted By (All Persons)',
                 'type' => 'multiselect',
@@ -9025,92 +6859,188 @@ return [
                         'label' => 'VU10:(Not Distracted)',
                     ],
                     1 => [
+                        'value' => 'VU11:(Not Distracted)',
+                        'label' => 'VU11:(Not Distracted)',
+                    ],
+                    2 => [
+                        'value' => 'VU17:(Not Distracted)',
+                        'label' => 'VU17:(Not Distracted)',
+                    ],
+                    3 => [
                         'value' => 'VU2:(Manually operating an electronic device (texting, typing, dialing))',
                         'label' => 'VU2:(Manually operating an electronic device (texting, typing, dialing))',
                     ],
-                    2 => [
+                    4 => [
+                        'value' => 'VU2:(Manually operating an electronic device (texting, typing, dialing)),(Talking on hand-held electronic device)',
+                        'label' => 'VU2:(Manually operating an electronic device (texting, typing, dialing)),(Talking on hand-held electronic device)',
+                    ],
+                    5 => [
+                        'value' => 'VU2:(Manually operating an electronic device (texting, typing, dialing)),(Utilizing listening device)',
+                        'label' => 'VU2:(Manually operating an electronic device (texting, typing, dialing)),(Utilizing listening device)',
+                    ],
+                    6 => [
                         'value' => 'VU2:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted)',
                     ],
-                    3 => [
+                    7 => [
                         'value' => 'VU2:(Not Distracted) VU3:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted) VU3:(Not Distracted)',
                     ],
-                    4 => [
+                    8 => [
                         'value' => 'VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted)',
                     ],
-                    5 => [
+                    9 => [
                         'value' => 'VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted) VU5:(Passenger) VU6:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted) VU5:(Passenger) VU6:(Not Distracted)',
                     ],
-                    6 => [
+                    10 => [
+                        'value' => 'VU2:(Not Distracted) VU3:(Passenger)',
+                        'label' => 'VU2:(Not Distracted) VU3:(Passenger)',
+                    ],
+                    11 => [
+                        'value' => 'VU2:(Not Distracted) VU4:(Not Distracted)',
+                        'label' => 'VU2:(Not Distracted) VU4:(Not Distracted)',
+                    ],
+                    12 => [
                         'value' => 'VU2:(Not Distracted) VU4:(Not Distracted) VU5:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted) VU4:(Not Distracted) VU5:(Not Distracted)',
                     ],
-                    7 => [
+                    13 => [
+                        'value' => 'VU2:(Not Distracted),(Manually operating an electronic device (texting, typing, dialing))',
+                        'label' => 'VU2:(Not Distracted),(Manually operating an electronic device (texting, typing, dialing))',
+                    ],
+                    14 => [
+                        'value' => 'VU2:(Not Distracted),(Other activity (searching, eating, personal hygiene, etc.))',
+                        'label' => 'VU2:(Not Distracted),(Other activity (searching, eating, personal hygiene, etc.))',
+                    ],
+                    15 => [
                         'value' => 'VU2:(Other activity (searching, eating, personal hygiene, etc.))',
                         'label' => 'VU2:(Other activity (searching, eating, personal hygiene, etc.))',
                     ],
-                    8 => [
+                    16 => [
+                        'value' => 'VU2:(Other activity (searching, eating, personal hygiene, etc.)),(Not Distracted)',
+                        'label' => 'VU2:(Other activity (searching, eating, personal hygiene, etc.)),(Not Distracted)',
+                    ],
+                    17 => [
+                        'value' => 'VU2:(Reported but invalid)',
+                        'label' => 'VU2:(Reported but invalid)',
+                    ],
+                    18 => [
                         'value' => 'VU2:(Talking on hand-held electronic device)',
                         'label' => 'VU2:(Talking on hand-held electronic device)',
                     ],
-                    9 => [
+                    19 => [
                         'value' => 'VU2:(Talking on hands-free electronic device)',
                         'label' => 'VU2:(Talking on hands-free electronic device)',
                     ],
-                    10 => [
+                    20 => [
                         'value' => 'VU2:(Utilizing listening device)',
                         'label' => 'VU2:(Utilizing listening device)',
                     ],
-                    11 => [
+                    21 => [
+                        'value' => 'VU2:(Utilizing listening device),(Not Distracted)',
+                        'label' => 'VU2:(Utilizing listening device),(Not Distracted)',
+                    ],
+                    22 => [
                         'value' => 'VU3:(Manually operating an electronic device (texting, typing, dialing))',
                         'label' => 'VU3:(Manually operating an electronic device (texting, typing, dialing))',
                     ],
-                    12 => [
+                    23 => [
                         'value' => 'VU3:(Not Distracted)',
                         'label' => 'VU3:(Not Distracted)',
                     ],
-                    13 => [
+                    24 => [
+                        'value' => 'VU3:(Not Distracted) VU4:(Not Distracted)',
+                        'label' => 'VU3:(Not Distracted) VU4:(Not Distracted)',
+                    ],
+                    25 => [
+                        'value' => 'VU3:(Not Distracted) VU5:(Not Distracted)',
+                        'label' => 'VU3:(Not Distracted) VU5:(Not Distracted)',
+                    ],
+                    26 => [
                         'value' => 'VU3:(Other activity (searching, eating, personal hygiene, etc.))',
                         'label' => 'VU3:(Other activity (searching, eating, personal hygiene, etc.))',
                     ],
-                    14 => [
+                    27 => [
                         'value' => 'VU3:(Passenger)',
                         'label' => 'VU3:(Passenger)',
                     ],
-                    15 => [
+                    28 => [
+                        'value' => 'VU3:(Reported but invalid)',
+                        'label' => 'VU3:(Reported but invalid)',
+                    ],
+                    29 => [
+                        'value' => 'VU3:(Talking on hand-held electronic device)',
+                        'label' => 'VU3:(Talking on hand-held electronic device)',
+                    ],
+                    30 => [
                         'value' => 'VU3:(Utilizing listening device)',
                         'label' => 'VU3:(Utilizing listening device)',
                     ],
-                    16 => [
+                    31 => [
+                        'value' => 'VU4:(Manually operating an electronic device (texting, typing, dialing))',
+                        'label' => 'VU4:(Manually operating an electronic device (texting, typing, dialing))',
+                    ],
+                    32 => [
                         'value' => 'VU4:(Not Distracted)',
                         'label' => 'VU4:(Not Distracted)',
                     ],
-                    17 => [
+                    33 => [
+                        'value' => 'VU4:(Not Distracted) VU5:(Not Distracted)',
+                        'label' => 'VU4:(Not Distracted) VU5:(Not Distracted)',
+                    ],
+                    34 => [
                         'value' => 'VU4:(Not Distracted) VU5:(Not Distracted) VU6:(Not Distracted)',
                         'label' => 'VU4:(Not Distracted) VU5:(Not Distracted) VU6:(Not Distracted)',
                     ],
-                    18 => [
+                    35 => [
+                        'value' => 'VU4:(Other activity (searching, eating, personal hygiene, etc.))',
+                        'label' => 'VU4:(Other activity (searching, eating, personal hygiene, etc.))',
+                    ],
+                    36 => [
+                        'value' => 'VU4:(Talking on hands-free electronic device)',
+                        'label' => 'VU4:(Talking on hands-free electronic device)',
+                    ],
+                    37 => [
                         'value' => 'VU5:(Not Distracted)',
                         'label' => 'VU5:(Not Distracted)',
                     ],
-                    19 => [
+                    38 => [
                         'value' => 'VU5:(Not Distracted) VU6:(Not Distracted)',
                         'label' => 'VU5:(Not Distracted) VU6:(Not Distracted)',
                     ],
-                    20 => [
+                    39 => [
                         'value' => 'VU5:(Other activity (searching, eating, personal hygiene, etc.))',
                         'label' => 'VU5:(Other activity (searching, eating, personal hygiene, etc.))',
                     ],
-                    21 => [
+                    40 => [
                         'value' => 'VU6:(Not Distracted)',
                         'label' => 'VU6:(Not Distracted)',
                     ],
+                    41 => [
+                        'value' => 'VU7:(Not Distracted)',
+                        'label' => 'VU7:(Not Distracted)',
+                    ],
+                    42 => [
+                        'value' => 'VU7:(Not Distracted) VU8:(Not Distracted) VU9:(Not Distracted)',
+                        'label' => 'VU7:(Not Distracted) VU8:(Not Distracted) VU9:(Not Distracted)',
+                    ],
+                    43 => [
+                        'value' => 'VU7:(Other activity (searching, eating, personal hygiene, etc.))',
+                        'label' => 'VU7:(Other activity (searching, eating, personal hygiene, etc.))',
+                    ],
+                    44 => [
+                        'value' => 'VU7:(Other activity (searching, eating, personal hygiene, etc.)) VU8:(Other activity (searching, eating, personal hygiene, etc.))',
+                        'label' => 'VU7:(Other activity (searching, eating, personal hygiene, etc.)) VU8:(Other activity (searching, eating, personal hygiene, etc.))',
+                    ],
+                    45 => [
+                        'value' => 'VU8:(Not Distracted)',
+                        'label' => 'VU8:(Not Distracted)',
+                    ],
                 ],
             ],
-            168 => [
+            170 => [
                 'name' => 'non_mtrst_alc_suspd_type_cl',
                 'label' => 'Vulnerable Users Alcohol Suspected Type (All Persons)',
                 'type' => 'multiselect',
@@ -9121,72 +7051,116 @@ return [
                         'label' => 'VU10: No',
                     ],
                     1 => [
+                        'value' => 'VU11: No',
+                        'label' => 'VU11: No',
+                    ],
+                    2 => [
+                        'value' => 'VU17: No',
+                        'label' => 'VU17: No',
+                    ],
+                    3 => [
                         'value' => 'VU2: No',
                         'label' => 'VU2: No',
                     ],
-                    2 => [
+                    4 => [
                         'value' => 'VU2: No / VU3: No',
                         'label' => 'VU2: No / VU3: No',
                     ],
-                    3 => [
+                    5 => [
                         'value' => 'VU2: No / VU3: No / VU4: No',
                         'label' => 'VU2: No / VU3: No / VU4: No',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'VU2: No / VU3: No / VU4: No / VU5: No',
                         'label' => 'VU2: No / VU3: No / VU4: No / VU5: No',
                     ],
-                    5 => [
+                    7 => [
                         'value' => 'VU2: No / VU3: No / VU4: No / VU5: No / VU6: No',
                         'label' => 'VU2: No / VU3: No / VU4: No / VU5: No / VU6: No',
                     ],
-                    6 => [
+                    8 => [
+                        'value' => 'VU2: No / VU4: No',
+                        'label' => 'VU2: No / VU4: No',
+                    ],
+                    9 => [
                         'value' => 'VU2: No / VU4: No / VU5: No',
                         'label' => 'VU2: No / VU4: No / VU5: No',
                     ],
-                    7 => [
+                    10 => [
                         'value' => 'VU2: Yes',
                         'label' => 'VU2: Yes',
                     ],
-                    8 => [
+                    11 => [
+                        'value' => 'VU2: Yes / VU3: No',
+                        'label' => 'VU2: Yes / VU3: No',
+                    ],
+                    12 => [
+                        'value' => 'VU2: Yes / VU3: Yes',
+                        'label' => 'VU2: Yes / VU3: Yes',
+                    ],
+                    13 => [
                         'value' => 'VU3: No',
                         'label' => 'VU3: No',
                     ],
-                    9 => [
+                    14 => [
                         'value' => 'VU3: No / VU4: No',
                         'label' => 'VU3: No / VU4: No',
                     ],
-                    10 => [
+                    15 => [
+                        'value' => 'VU3: No / VU5: No',
+                        'label' => 'VU3: No / VU5: No',
+                    ],
+                    16 => [
                         'value' => 'VU3: Yes',
                         'label' => 'VU3: Yes',
                     ],
-                    11 => [
+                    17 => [
                         'value' => 'VU4: No',
                         'label' => 'VU4: No',
                     ],
-                    12 => [
+                    18 => [
+                        'value' => 'VU4: No / VU5: No',
+                        'label' => 'VU4: No / VU5: No',
+                    ],
+                    19 => [
                         'value' => 'VU4: No / VU5: No / VU6: No',
                         'label' => 'VU4: No / VU5: No / VU6: No',
                     ],
-                    13 => [
+                    20 => [
+                        'value' => 'VU4: No / VU5: Yes / VU6: No',
+                        'label' => 'VU4: No / VU5: Yes / VU6: No',
+                    ],
+                    21 => [
+                        'value' => 'VU4: Yes',
+                        'label' => 'VU4: Yes',
+                    ],
+                    22 => [
                         'value' => 'VU5: No',
                         'label' => 'VU5: No',
                     ],
-                    14 => [
+                    23 => [
                         'value' => 'VU5: No / VU6: No',
                         'label' => 'VU5: No / VU6: No',
                     ],
-                    15 => [
+                    24 => [
                         'value' => 'VU5: Yes',
                         'label' => 'VU5: Yes',
                     ],
-                    16 => [
+                    25 => [
                         'value' => 'VU6: No',
                         'label' => 'VU6: No',
                     ],
+                    26 => [
+                        'value' => 'VU7: No',
+                        'label' => 'VU7: No',
+                    ],
+                    27 => [
+                        'value' => 'VU7: No / VU8: No',
+                        'label' => 'VU7: No / VU8: No',
+                    ],
                 ],
             ],
-            169 => [
+            171 => [
                 'name' => 'non_mtrst_drug_suspd_type_cl',
                 'label' => 'Vulnerable Users Drug Suspected Type (All Persons)',
                 'type' => 'multiselect',
@@ -9197,222 +7171,212 @@ return [
                         'label' => 'VU10: No',
                     ],
                     1 => [
+                        'value' => 'VU11: No',
+                        'label' => 'VU11: No',
+                    ],
+                    2 => [
+                        'value' => 'VU17: No',
+                        'label' => 'VU17: No',
+                    ],
+                    3 => [
                         'value' => 'VU2: No',
                         'label' => 'VU2: No',
                     ],
-                    2 => [
+                    4 => [
                         'value' => 'VU2: No / VU3: No',
                         'label' => 'VU2: No / VU3: No',
                     ],
-                    3 => [
+                    5 => [
                         'value' => 'VU2: No / VU3: No / VU4: No',
                         'label' => 'VU2: No / VU3: No / VU4: No',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'VU2: No / VU3: No / VU4: No / VU5: No',
                         'label' => 'VU2: No / VU3: No / VU4: No / VU5: No',
                     ],
-                    5 => [
+                    7 => [
                         'value' => 'VU2: No / VU3: No / VU4: No / VU5: No / VU6: No',
                         'label' => 'VU2: No / VU3: No / VU4: No / VU5: No / VU6: No',
                     ],
-                    6 => [
+                    8 => [
+                        'value' => 'VU2: No / VU4: No',
+                        'label' => 'VU2: No / VU4: No',
+                    ],
+                    9 => [
                         'value' => 'VU2: No / VU4: No / VU5: No',
                         'label' => 'VU2: No / VU4: No / VU5: No',
                     ],
-                    7 => [
+                    10 => [
                         'value' => 'VU2: Yes',
                         'label' => 'VU2: Yes',
                     ],
-                    8 => [
+                    11 => [
                         'value' => 'VU3: No',
                         'label' => 'VU3: No',
                     ],
-                    9 => [
+                    12 => [
                         'value' => 'VU3: No / VU4: No',
                         'label' => 'VU3: No / VU4: No',
                     ],
-                    10 => [
+                    13 => [
+                        'value' => 'VU3: No / VU5: No',
+                        'label' => 'VU3: No / VU5: No',
+                    ],
+                    14 => [
+                        'value' => 'VU3: Yes',
+                        'label' => 'VU3: Yes',
+                    ],
+                    15 => [
                         'value' => 'VU4: No',
                         'label' => 'VU4: No',
                     ],
-                    11 => [
+                    16 => [
+                        'value' => 'VU4: No / VU5: No',
+                        'label' => 'VU4: No / VU5: No',
+                    ],
+                    17 => [
                         'value' => 'VU4: No / VU5: No / VU6: No',
                         'label' => 'VU4: No / VU5: No / VU6: No',
                     ],
-                    12 => [
+                    18 => [
+                        'value' => 'VU4: Yes',
+                        'label' => 'VU4: Yes',
+                    ],
+                    19 => [
                         'value' => 'VU5: No',
                         'label' => 'VU5: No',
                     ],
-                    13 => [
+                    20 => [
                         'value' => 'VU5: No / VU6: No',
                         'label' => 'VU5: No / VU6: No',
                     ],
-                    14 => [
+                    21 => [
+                        'value' => 'VU5: Yes',
+                        'label' => 'VU5: Yes',
+                    ],
+                    22 => [
                         'value' => 'VU6: No',
                         'label' => 'VU6: No',
                     ],
+                    23 => [
+                        'value' => 'VU7: No',
+                        'label' => 'VU7: No',
+                    ],
+                    24 => [
+                        'value' => 'VU7: No / VU8: No',
+                        'label' => 'VU7: No / VU8: No',
+                    ],
+                    25 => [
+                        'value' => 'VU7: No / VU8: No / VU9: No',
+                        'label' => 'VU7: No / VU8: No / VU9: No',
+                    ],
                 ],
             ],
-            170 => [
+            172 => [
                 'name' => 'non_mtrst_event_seq_cl',
                 'label' => 'Vulnerable Users Sequence of Events (All Persons)',
                 'type' => 'text',
                 'placeholder' => 'Enter Vulnerable Users Sequence of Events (All Persons)',
             ],
-            171 => [
+            173 => [
                 'name' => 'traffic_control_type_descr',
                 'label' => 'Vulnerable Users Traffic Control Device Type (All Persons)',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable Users Traffic Control Device Type (All Persons)',
-                'options' => [
-                    0 => [
-                        'value' => 'VU10: None',
-                        'label' => 'VU10: None',
-                    ],
-                    1 => [
-                        'value' => 'VU2: None',
-                        'label' => 'VU2: None',
-                    ],
-                    2 => [
-                        'value' => 'VU2: None / VU3: None',
-                        'label' => 'VU2: None / VU3: None',
-                    ],
-                    3 => [
-                        'value' => 'VU2: None / VU3: None / VU4: None',
-                        'label' => 'VU2: None / VU3: None / VU4: None',
-                    ],
-                    4 => [
-                        'value' => 'VU2: None / VU3: None / VU4: None / VU5: None',
-                        'label' => 'VU2: None / VU3: None / VU4: None / VU5: None',
-                    ],
-                    5 => [
-                        'value' => 'VU2: None / VU3: Person - Crossing guard',
-                        'label' => 'VU2: None / VU3: Person - Crossing guard',
-                    ],
-                    6 => [
-                        'value' => 'VU2: None / VU4: None / VU5: None',
-                        'label' => 'VU2: None / VU4: None / VU5: None',
-                    ],
-                    7 => [
-                        'value' => 'VU2: Other',
-                        'label' => 'VU2: Other',
-                    ],
-                    8 => [
-                        'value' => 'VU2: Other / VU3: Other',
-                        'label' => 'VU2: Other / VU3: Other',
-                    ],
-                    9 => [
-                        'value' => 'VU2: Person - Crossing guard',
-                        'label' => 'VU2: Person - Crossing guard',
-                    ],
-                    10 => [
-                        'value' => 'VU2: Person - Crossing guard / VU3: Person - Crossing guard',
-                        'label' => 'VU2: Person - Crossing guard / VU3: Person - Crossing guard',
-                    ],
-                    11 => [
-                        'value' => 'VU2: VU Crossing Sign',
-                        'label' => 'VU2: VU Crossing Sign',
-                    ],
-                    12 => [
-                        'value' => 'VU2: VU Crossing Sign / VU3: VU Crossing Sign',
-                        'label' => 'VU2: VU Crossing Sign / VU3: VU Crossing Sign',
-                    ],
-                    13 => [
-                        'value' => 'VU2: VU Crossing Signal',
-                        'label' => 'VU2: VU Crossing Signal',
-                    ],
-                    14 => [
-                        'value' => 'VU2: VU Crossing Signal / VU3: VU Crossing Signal',
-                        'label' => 'VU2: VU Crossing Signal / VU3: VU Crossing Signal',
-                    ],
-                    15 => [
-                        'value' => 'VU2: VU Prohibited Sign',
-                        'label' => 'VU2: VU Prohibited Sign',
-                    ],
-                    16 => [
-                        'value' => 'VU3: None',
-                        'label' => 'VU3: None',
-                    ],
-                    17 => [
-                        'value' => 'VU3: None / VU4: None',
-                        'label' => 'VU3: None / VU4: None',
-                    ],
-                    18 => [
-                        'value' => 'VU3: Other',
-                        'label' => 'VU3: Other',
-                    ],
-                    19 => [
-                        'value' => 'VU3: Other / VU4: Other',
-                        'label' => 'VU3: Other / VU4: Other',
-                    ],
-                    20 => [
-                        'value' => 'VU3: Person - Crossing guard',
-                        'label' => 'VU3: Person - Crossing guard',
-                    ],
-                    21 => [
-                        'value' => 'VU3: VU Crossing Sign',
-                        'label' => 'VU3: VU Crossing Sign',
-                    ],
-                    22 => [
-                        'value' => 'VU3: VU Crossing Signal',
-                        'label' => 'VU3: VU Crossing Signal',
-                    ],
-                    23 => [
-                        'value' => 'VU3: VU Prohibited Sign',
-                        'label' => 'VU3: VU Prohibited Sign',
-                    ],
-                    24 => [
-                        'value' => 'VU4: None',
-                        'label' => 'VU4: None',
-                    ],
-                    25 => [
-                        'value' => 'VU4: Other',
-                        'label' => 'VU4: Other',
-                    ],
-                    26 => [
-                        'value' => 'VU4: Other / VU5: Other / VU6: Other',
-                        'label' => 'VU4: Other / VU5: Other / VU6: Other',
-                    ],
-                    27 => [
-                        'value' => 'VU4: VU Crossing Sign',
-                        'label' => 'VU4: VU Crossing Sign',
-                    ],
-                    28 => [
-                        'value' => 'VU4: VU Crossing Signal',
-                        'label' => 'VU4: VU Crossing Signal',
-                    ],
-                    29 => [
-                        'value' => 'VU4: VU Prohibited Sign',
-                        'label' => 'VU4: VU Prohibited Sign',
-                    ],
-                    30 => [
-                        'value' => 'VU5: None',
-                        'label' => 'VU5: None',
-                    ],
-                    31 => [
-                        'value' => 'VU5: Other',
-                        'label' => 'VU5: Other',
-                    ],
-                    32 => [
-                        'value' => 'VU5: VU Crossing Signal',
-                        'label' => 'VU5: VU Crossing Signal',
-                    ],
-                    33 => [
-                        'value' => 'VU5: VU Crossing Signal / VU6: VU Crossing Signal',
-                        'label' => 'VU5: VU Crossing Signal / VU6: VU Crossing Signal',
-                    ],
-                    34 => [
-                        'value' => 'VU6: None',
-                        'label' => 'VU6: None',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Vulnerable Users Traffic Control Device Type (All Persons)',
             ],
-            172 => [
+            174 => [
                 'name' => 'non_motorist_cntrb_circ_1',
                 'label' => 'Vulnerable User Contribution 1',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Vulnerable User Contribution 1',
+                'options' => [
+                    0 => [
+                        'value' => 'Crossing of Roadway or Intersection',
+                        'label' => 'Crossing of Roadway or Intersection',
+                    ],
+                    1 => [
+                        'value' => 'Dart/Dash',
+                        'label' => 'Dart/Dash',
+                    ],
+                    2 => [
+                        'value' => 'Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching)',
+                        'label' => 'Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching)',
+                    ],
+                    3 => [
+                        'value' => 'Distracted',
+                        'label' => 'Distracted',
+                    ],
+                    4 => [
+                        'value' => 'Entering/Exiting Parked/Standing Vehicle',
+                        'label' => 'Entering/Exiting Parked/Standing Vehicle',
+                    ],
+                    5 => [
+                        'value' => 'Failure to Obey Traffic Sign(s), Signal(s), or Officer(s)',
+                        'label' => 'Failure to Obey Traffic Sign(s), Signal(s), or Officer(s)',
+                    ],
+                    6 => [
+                        'value' => 'Failure to use Proper Crosswalk',
+                        'label' => 'Failure to use Proper Crosswalk',
+                    ],
+                    7 => [
+                        'value' => 'Failure to Yield Right-Of-Way',
+                        'label' => 'Failure to Yield Right-Of-Way',
+                    ],
+                    8 => [
+                        'value' => 'Fleeing/Evading Law Enforcement',
+                        'label' => 'Fleeing/Evading Law Enforcement',
+                    ],
+                    9 => [
+                        'value' => 'In Roadway (Standing, Lying, Working, Playing, etc.)',
+                        'label' => 'In Roadway (Standing, Lying, Working, Playing, etc.)',
+                    ],
+                    10 => [
+                        'value' => 'Inattentive (Talking, Eating, etc.)',
+                        'label' => 'Inattentive (Talking, Eating, etc.)',
+                    ],
+                    11 => [
+                        'value' => 'None',
+                        'label' => 'None',
+                    ],
+                    12 => [
+                        'value' => 'Not reported',
+                        'label' => 'Not reported',
+                    ],
+                    13 => [
+                        'value' => 'Not Visible (Dark Clothing, No Lighting, etc.)',
+                        'label' => 'Not Visible (Dark Clothing, No Lighting, etc.)',
+                    ],
+                    14 => [
+                        'value' => 'Other (Explain in Narrative)',
+                        'label' => 'Other (Explain in Narrative)',
+                    ],
+                    15 => [
+                        'value' => 'Passing',
+                        'label' => 'Passing',
+                    ],
+                    16 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    17 => [
+                        'value' => 'Traveling Wrong Way',
+                        'label' => 'Traveling Wrong Way',
+                    ],
+                    18 => [
+                        'value' => 'Turn/Merge',
+                        'label' => 'Turn/Merge',
+                    ],
+                    19 => [
+                        'value' => 'Unknown',
+                        'label' => 'Unknown',
+                    ],
+                ],
+            ],
+            175 => [
+                'name' => 'non_motorist_cntrb_circ_2',
+                'label' => 'Vulnerable User Contribution 2',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Vulnerable User Contribution 2',
                 'options' => [
                     0 => [
                         'value' => 'Crossing of Roadway or Intersection',
@@ -9492,87 +7456,7 @@ return [
                     ],
                 ],
             ],
-            173 => [
-                'name' => 'non_motorist_cntrb_circ_2',
-                'label' => 'Vulnerable User Contribution 2',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Contribution 2',
-                'options' => [
-                    0 => [
-                        'value' => 'Crossing of Roadway or Intersection',
-                        'label' => 'Crossing of Roadway or Intersection',
-                    ],
-                    1 => [
-                        'value' => 'Dart/Dash',
-                        'label' => 'Dart/Dash',
-                    ],
-                    2 => [
-                        'value' => 'Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching)',
-                        'label' => 'Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching)',
-                    ],
-                    3 => [
-                        'value' => 'Distracted',
-                        'label' => 'Distracted',
-                    ],
-                    4 => [
-                        'value' => 'Entering/Exiting Parked/Standing Vehicle',
-                        'label' => 'Entering/Exiting Parked/Standing Vehicle',
-                    ],
-                    5 => [
-                        'value' => 'Failure to Obey Traffic Sign(s), Signal(s), or Officer(s)',
-                        'label' => 'Failure to Obey Traffic Sign(s), Signal(s), or Officer(s)',
-                    ],
-                    6 => [
-                        'value' => 'Failure to use Proper Crosswalk',
-                        'label' => 'Failure to use Proper Crosswalk',
-                    ],
-                    7 => [
-                        'value' => 'Failure to Yield Right-Of-Way',
-                        'label' => 'Failure to Yield Right-Of-Way',
-                    ],
-                    8 => [
-                        'value' => 'In Roadway (Standing, Lying, Working, Playing, etc.)',
-                        'label' => 'In Roadway (Standing, Lying, Working, Playing, etc.)',
-                    ],
-                    9 => [
-                        'value' => 'Inattentive (Talking, Eating, etc.)',
-                        'label' => 'Inattentive (Talking, Eating, etc.)',
-                    ],
-                    10 => [
-                        'value' => 'None',
-                        'label' => 'None',
-                    ],
-                    11 => [
-                        'value' => 'Not reported',
-                        'label' => 'Not reported',
-                    ],
-                    12 => [
-                        'value' => 'Not Visible (Dark Clothing, No Lighting, etc.)',
-                        'label' => 'Not Visible (Dark Clothing, No Lighting, etc.)',
-                    ],
-                    13 => [
-                        'value' => 'Other (Explain in Narrative)',
-                        'label' => 'Other (Explain in Narrative)',
-                    ],
-                    14 => [
-                        'value' => 'Passing',
-                        'label' => 'Passing',
-                    ],
-                    15 => [
-                        'value' => 'Traveling Wrong Way',
-                        'label' => 'Traveling Wrong Way',
-                    ],
-                    16 => [
-                        'value' => 'Turn/Merge',
-                        'label' => 'Turn/Merge',
-                    ],
-                    17 => [
-                        'value' => 'Unknown',
-                        'label' => 'Unknown',
-                    ],
-                ],
-            ],
-            174 => [
+            176 => [
                 'name' => 'non_motorist_contact_point',
                 'label' => 'Vulnerable User Contact Point',
                 'type' => 'multiselect',
@@ -9603,12 +7487,16 @@ return [
                         'label' => 'Other',
                     ],
                     6 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    7 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            175 => [
+            177 => [
                 'name' => 'non_motorist_distracted_by_1',
                 'label' => 'Vulnerable User Distracted By 1',
                 'type' => 'multiselect',
@@ -9635,44 +7523,64 @@ return [
                         'label' => 'Passenger',
                     ],
                     5 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    6 => [
                         'value' => 'Talking on hand-held electronic device',
                         'label' => 'Talking on hand-held electronic device',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Talking on hands-free electronic device',
                         'label' => 'Talking on hands-free electronic device',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Utilizing listening device',
                         'label' => 'Utilizing listening device',
                     ],
                 ],
             ],
-            176 => [
+            178 => [
                 'name' => 'non_motorist_distracted_by_2',
                 'label' => 'Vulnerable User Distracted By 2',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Vulnerable User Distracted By 2',
                 'options' => [
                     0 => [
+                        'value' => 'Manually operating an electronic device (texting, typing, dialing)',
+                        'label' => 'Manually operating an electronic device (texting, typing, dialing)',
+                    ],
+                    1 => [
                         'value' => 'Not Distracted',
                         'label' => 'Not Distracted',
                     ],
-                    1 => [
+                    2 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    2 => [
+                    3 => [
+                        'value' => 'Other activity (searching, eating, personal hygiene, etc.)',
+                        'label' => 'Other activity (searching, eating, personal hygiene, etc.)',
+                    ],
+                    4 => [
+                        'value' => 'Talking on hand-held electronic device',
+                        'label' => 'Talking on hand-held electronic device',
+                    ],
+                    5 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
+                    6 => [
+                        'value' => 'Utilizing listening device',
+                        'label' => 'Utilizing listening device',
+                    ],
                 ],
             ],
-            177 => [
+            179 => [
                 'name' => 'non_motorist_ejection_descr',
                 'label' => 'Vulnerable User Ejection',
                 'type' => 'multiselect',
@@ -9704,7 +7612,7 @@ return [
                     ],
                 ],
             ],
-            178 => [
+            180 => [
                 'name' => 'non_motorist_event_sequence_1',
                 'label' => 'Vulnerable User Event Sequence 1',
                 'type' => 'multiselect',
@@ -9731,40 +7639,156 @@ return [
                         'label' => 'Collision with door opening of parked car - Front left',
                     ],
                     5 => [
+                        'value' => 'Collision with door opening of parked car - Front right',
+                        'label' => 'Collision with door opening of parked car - Front right',
+                    ],
+                    6 => [
                         'value' => 'Collision with motor vehicle in transport',
                         'label' => 'Collision with motor vehicle in transport',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Collision with parked motor vehicle, stationary',
                         'label' => 'Collision with parked motor vehicle, stationary',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Crossing Roadway',
                         'label' => 'Crossing Roadway',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'In Roadway – Other',
                         'label' => 'In Roadway – Other',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'Other',
                         'label' => 'Other',
                     ],
-                    11 => [
+                    12 => [
                         'value' => 'Overtaking/passing',
                         'label' => 'Overtaking/passing',
                     ],
-                    12 => [
+                    13 => [
                         'value' => 'Pushing vehicle',
                         'label' => 'Pushing vehicle',
                     ],
-                    13 => [
+                    14 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
+                    ],
+                    15 => [
+                        'value' => 'Slowed or stopped',
+                        'label' => 'Slowed or stopped',
+                    ],
+                    16 => [
+                        'value' => 'Traveling straight ahead',
+                        'label' => 'Traveling straight ahead',
+                    ],
+                    17 => [
+                        'value' => 'Turning left',
+                        'label' => 'Turning left',
+                    ],
+                    18 => [
+                        'value' => 'Turning right',
+                        'label' => 'Turning right',
+                    ],
+                    19 => [
+                        'value' => 'Unknown',
+                        'label' => 'Unknown',
+                    ],
+                    20 => [
+                        'value' => 'Waiting to Cross Roadway',
+                        'label' => 'Waiting to Cross Roadway',
+                    ],
+                    21 => [
+                        'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
+                        'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
+                    ],
+                    22 => [
+                        'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
+                        'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
+                    ],
+                    23 => [
+                        'value' => 'Walking/Cycling on Sidewalk',
+                        'label' => 'Walking/Cycling on Sidewalk',
+                    ],
+                    24 => [
+                        'value' => 'Working - other',
+                        'label' => 'Working - other',
+                    ],
+                    25 => [
+                        'value' => 'Working in Trafficway (Incident Response)',
+                        'label' => 'Working in Trafficway (Incident Response)',
+                    ],
+                    26 => [
+                        'value' => 'Working on vehicle',
+                        'label' => 'Working on vehicle',
+                    ],
+                ],
+            ],
+            181 => [
+                'name' => 'non_motorist_event_sequence_2',
+                'label' => 'Vulnerable User Event Sequence 2',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Vulnerable User Event Sequence 2',
+                'options' => [
+                    0 => [
+                        'value' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
+                        'label' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
+                    ],
+                    1 => [
+                        'value' => 'Approaching or leaving vehicle',
+                        'label' => 'Approaching or leaving vehicle',
+                    ],
+                    2 => [
+                        'value' => 'Changing lanes',
+                        'label' => 'Changing lanes',
+                    ],
+                    3 => [
+                        'value' => 'Collision with door opening of parked car - Back right',
+                        'label' => 'Collision with door opening of parked car - Back right',
+                    ],
+                    4 => [
+                        'value' => 'Collision with door opening of parked car - Front left',
+                        'label' => 'Collision with door opening of parked car - Front left',
+                    ],
+                    5 => [
+                        'value' => 'Collision with door opening of parked car - Front right',
+                        'label' => 'Collision with door opening of parked car - Front right',
+                    ],
+                    6 => [
+                        'value' => 'Collision with motor vehicle in transport',
+                        'label' => 'Collision with motor vehicle in transport',
+                    ],
+                    7 => [
+                        'value' => 'Collision with parked motor vehicle, stationary',
+                        'label' => 'Collision with parked motor vehicle, stationary',
+                    ],
+                    8 => [
+                        'value' => 'Crossing Roadway',
+                        'label' => 'Crossing Roadway',
+                    ],
+                    9 => [
+                        'value' => 'In Roadway – Other',
+                        'label' => 'In Roadway – Other',
+                    ],
+                    10 => [
+                        'value' => 'Not reported',
+                        'label' => 'Not reported',
+                    ],
+                    11 => [
+                        'value' => 'Other',
+                        'label' => 'Other',
+                    ],
+                    12 => [
+                        'value' => 'Overtaking/passing',
+                        'label' => 'Overtaking/passing',
+                    ],
+                    13 => [
+                        'value' => 'Pushing vehicle',
+                        'label' => 'Pushing vehicle',
                     ],
                     14 => [
                         'value' => 'Slowed or stopped',
@@ -9816,11 +7840,119 @@ return [
                     ],
                 ],
             ],
-            179 => [
-                'name' => 'non_motorist_event_sequence_2',
-                'label' => 'Vulnerable User Event Sequence 2',
+            182 => [
+                'name' => 'non_motorist_event_sequence_3',
+                'label' => 'Vulnerable User Event Sequence 3',
                 'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Event Sequence 2',
+                'placeholder' => 'Select Vulnerable User Event Sequence 3',
+                'options' => [
+                    0 => [
+                        'value' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
+                        'label' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
+                    ],
+                    1 => [
+                        'value' => 'Approaching or leaving vehicle',
+                        'label' => 'Approaching or leaving vehicle',
+                    ],
+                    2 => [
+                        'value' => 'Changing lanes',
+                        'label' => 'Changing lanes',
+                    ],
+                    3 => [
+                        'value' => 'Collision with door opening of parked car - Back right',
+                        'label' => 'Collision with door opening of parked car - Back right',
+                    ],
+                    4 => [
+                        'value' => 'Collision with door opening of parked car - Front right',
+                        'label' => 'Collision with door opening of parked car - Front right',
+                    ],
+                    5 => [
+                        'value' => 'Collision with motor vehicle in transport',
+                        'label' => 'Collision with motor vehicle in transport',
+                    ],
+                    6 => [
+                        'value' => 'Collision with parked motor vehicle, stationary',
+                        'label' => 'Collision with parked motor vehicle, stationary',
+                    ],
+                    7 => [
+                        'value' => 'Crossing Roadway',
+                        'label' => 'Crossing Roadway',
+                    ],
+                    8 => [
+                        'value' => 'In Roadway – Other',
+                        'label' => 'In Roadway – Other',
+                    ],
+                    9 => [
+                        'value' => 'Not reported',
+                        'label' => 'Not reported',
+                    ],
+                    10 => [
+                        'value' => 'Other',
+                        'label' => 'Other',
+                    ],
+                    11 => [
+                        'value' => 'Overtaking/passing',
+                        'label' => 'Overtaking/passing',
+                    ],
+                    12 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    13 => [
+                        'value' => 'Slowed or stopped',
+                        'label' => 'Slowed or stopped',
+                    ],
+                    14 => [
+                        'value' => 'Traveling straight ahead',
+                        'label' => 'Traveling straight ahead',
+                    ],
+                    15 => [
+                        'value' => 'Turning left',
+                        'label' => 'Turning left',
+                    ],
+                    16 => [
+                        'value' => 'Turning right',
+                        'label' => 'Turning right',
+                    ],
+                    17 => [
+                        'value' => 'Unknown',
+                        'label' => 'Unknown',
+                    ],
+                    18 => [
+                        'value' => 'Waiting to Cross Roadway',
+                        'label' => 'Waiting to Cross Roadway',
+                    ],
+                    19 => [
+                        'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
+                        'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
+                    ],
+                    20 => [
+                        'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
+                        'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
+                    ],
+                    21 => [
+                        'value' => 'Walking/Cycling on Sidewalk',
+                        'label' => 'Walking/Cycling on Sidewalk',
+                    ],
+                    22 => [
+                        'value' => 'Working - other',
+                        'label' => 'Working - other',
+                    ],
+                    23 => [
+                        'value' => 'Working in Trafficway (Incident Response)',
+                        'label' => 'Working in Trafficway (Incident Response)',
+                    ],
+                    24 => [
+                        'value' => 'Working on vehicle',
+                        'label' => 'Working on vehicle',
+                    ],
+                ],
+            ],
+            183 => [
+                'name' => 'non_motorist_event_sequence_4',
+                'label' => 'Vulnerable User Event Sequence 4',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Vulnerable User Event Sequence 4',
                 'options' => [
                     0 => [
                         'value' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
@@ -9867,200 +7999,48 @@ return [
                         'label' => 'Overtaking/passing',
                     ],
                     11 => [
-                        'value' => 'Pushing vehicle',
-                        'label' => 'Pushing vehicle',
-                    ],
-                    12 => [
                         'value' => 'Slowed or stopped',
                         'label' => 'Slowed or stopped',
                     ],
-                    13 => [
+                    12 => [
                         'value' => 'Traveling straight ahead',
                         'label' => 'Traveling straight ahead',
                     ],
-                    14 => [
+                    13 => [
                         'value' => 'Turning left',
                         'label' => 'Turning left',
                     ],
-                    15 => [
-                        'value' => 'Turning right',
-                        'label' => 'Turning right',
-                    ],
-                    16 => [
+                    14 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    17 => [
+                    15 => [
                         'value' => 'Waiting to Cross Roadway',
                         'label' => 'Waiting to Cross Roadway',
                     ],
-                    18 => [
+                    16 => [
                         'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
                         'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
                     ],
-                    19 => [
+                    17 => [
                         'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
                         'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
                     ],
-                    20 => [
+                    18 => [
                         'value' => 'Walking/Cycling on Sidewalk',
                         'label' => 'Walking/Cycling on Sidewalk',
                     ],
-                    21 => [
-                        'value' => 'Working - other',
-                        'label' => 'Working - other',
-                    ],
-                    22 => [
+                    19 => [
                         'value' => 'Working in Trafficway (Incident Response)',
                         'label' => 'Working in Trafficway (Incident Response)',
                     ],
-                    23 => [
+                    20 => [
                         'value' => 'Working on vehicle',
                         'label' => 'Working on vehicle',
                     ],
                 ],
             ],
-            180 => [
-                'name' => 'non_motorist_event_sequence_3',
-                'label' => 'Vulnerable User Event Sequence 3',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Event Sequence 3',
-                'options' => [
-                    0 => [
-                        'value' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
-                        'label' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
-                    ],
-                    1 => [
-                        'value' => 'Approaching or leaving vehicle',
-                        'label' => 'Approaching or leaving vehicle',
-                    ],
-                    2 => [
-                        'value' => 'Collision with door opening of parked car - Back right',
-                        'label' => 'Collision with door opening of parked car - Back right',
-                    ],
-                    3 => [
-                        'value' => 'Collision with door opening of parked car - Front right',
-                        'label' => 'Collision with door opening of parked car - Front right',
-                    ],
-                    4 => [
-                        'value' => 'Collision with motor vehicle in transport',
-                        'label' => 'Collision with motor vehicle in transport',
-                    ],
-                    5 => [
-                        'value' => 'Collision with parked motor vehicle, stationary',
-                        'label' => 'Collision with parked motor vehicle, stationary',
-                    ],
-                    6 => [
-                        'value' => 'Crossing Roadway',
-                        'label' => 'Crossing Roadway',
-                    ],
-                    7 => [
-                        'value' => 'In Roadway – Other',
-                        'label' => 'In Roadway – Other',
-                    ],
-                    8 => [
-                        'value' => 'Not reported',
-                        'label' => 'Not reported',
-                    ],
-                    9 => [
-                        'value' => 'Other',
-                        'label' => 'Other',
-                    ],
-                    10 => [
-                        'value' => 'Overtaking/passing',
-                        'label' => 'Overtaking/passing',
-                    ],
-                    11 => [
-                        'value' => 'Traveling straight ahead',
-                        'label' => 'Traveling straight ahead',
-                    ],
-                    12 => [
-                        'value' => 'Turning left',
-                        'label' => 'Turning left',
-                    ],
-                    13 => [
-                        'value' => 'Turning right',
-                        'label' => 'Turning right',
-                    ],
-                    14 => [
-                        'value' => 'Unknown',
-                        'label' => 'Unknown',
-                    ],
-                    15 => [
-                        'value' => 'Waiting to Cross Roadway',
-                        'label' => 'Waiting to Cross Roadway',
-                    ],
-                    16 => [
-                        'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
-                        'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
-                    ],
-                    17 => [
-                        'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
-                        'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
-                    ],
-                    18 => [
-                        'value' => 'Walking/Cycling on Sidewalk',
-                        'label' => 'Walking/Cycling on Sidewalk',
-                    ],
-                ],
-            ],
-            181 => [
-                'name' => 'non_motorist_event_sequence_4',
-                'label' => 'Vulnerable User Event Sequence 4',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Event Sequence 4',
-                'options' => [
-                    0 => [
-                        'value' => 'Collision with motor vehicle in transport',
-                        'label' => 'Collision with motor vehicle in transport',
-                    ],
-                    1 => [
-                        'value' => 'Crossing Roadway',
-                        'label' => 'Crossing Roadway',
-                    ],
-                    2 => [
-                        'value' => 'In Roadway – Other',
-                        'label' => 'In Roadway – Other',
-                    ],
-                    3 => [
-                        'value' => 'Not reported',
-                        'label' => 'Not reported',
-                    ],
-                    4 => [
-                        'value' => 'Other',
-                        'label' => 'Other',
-                    ],
-                    5 => [
-                        'value' => 'Overtaking/passing',
-                        'label' => 'Overtaking/passing',
-                    ],
-                    6 => [
-                        'value' => 'Traveling straight ahead',
-                        'label' => 'Traveling straight ahead',
-                    ],
-                    7 => [
-                        'value' => 'Unknown',
-                        'label' => 'Unknown',
-                    ],
-                    8 => [
-                        'value' => 'Waiting to Cross Roadway',
-                        'label' => 'Waiting to Cross Roadway',
-                    ],
-                    9 => [
-                        'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
-                        'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
-                    ],
-                    10 => [
-                        'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
-                        'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
-                    ],
-                    11 => [
-                        'value' => 'Walking/Cycling on Sidewalk',
-                        'label' => 'Walking/Cycling on Sidewalk',
-                    ],
-                ],
-            ],
-            182 => [
+            184 => [
                 'name' => 'non_motorist_driver_lic_state',
                 'label' => 'Vulnerable User Driver License State Province',
                 'type' => 'multiselect',
@@ -10079,72 +8059,140 @@ return [
                         'label' => 'AZ',
                     ],
                     3 => [
+                        'value' => 'CA',
+                        'label' => 'CA',
+                    ],
+                    4 => [
                         'value' => 'CO',
                         'label' => 'CO',
                     ],
-                    4 => [
+                    5 => [
+                        'value' => 'CT',
+                        'label' => 'CT',
+                    ],
+                    6 => [
+                        'value' => 'DC',
+                        'label' => 'DC',
+                    ],
+                    7 => [
                         'value' => 'FL',
                         'label' => 'FL',
                     ],
-                    5 => [
+                    8 => [
                         'value' => 'FR',
                         'label' => 'FR',
                     ],
-                    6 => [
+                    9 => [
                         'value' => 'GA',
                         'label' => 'GA',
                     ],
-                    7 => [
+                    10 => [
+                        'value' => 'IA',
+                        'label' => 'IA',
+                    ],
+                    11 => [
                         'value' => 'ID',
                         'label' => 'ID',
                     ],
-                    8 => [
+                    12 => [
+                        'value' => 'IL',
+                        'label' => 'IL',
+                    ],
+                    13 => [
+                        'value' => 'KS',
+                        'label' => 'KS',
+                    ],
+                    14 => [
                         'value' => 'LA',
                         'label' => 'LA',
                     ],
-                    9 => [
+                    15 => [
                         'value' => 'MA',
                         'label' => 'MA',
                     ],
-                    10 => [
+                    16 => [
+                        'value' => 'MD',
+                        'label' => 'MD',
+                    ],
+                    17 => [
                         'value' => 'ME',
                         'label' => 'ME',
                     ],
-                    11 => [
+                    18 => [
+                        'value' => 'MI',
+                        'label' => 'MI',
+                    ],
+                    19 => [
+                        'value' => 'MN',
+                        'label' => 'MN',
+                    ],
+                    20 => [
+                        'value' => 'NC',
+                        'label' => 'NC',
+                    ],
+                    21 => [
                         'value' => 'NH',
                         'label' => 'NH',
                     ],
-                    12 => [
+                    22 => [
                         'value' => 'NJ',
                         'label' => 'NJ',
                     ],
-                    13 => [
+                    23 => [
+                        'value' => 'NV',
+                        'label' => 'NV',
+                    ],
+                    24 => [
                         'value' => 'NY',
                         'label' => 'NY',
                     ],
-                    14 => [
+                    25 => [
                         'value' => 'OH',
                         'label' => 'OH',
                     ],
-                    15 => [
+                    26 => [
+                        'value' => 'ON',
+                        'label' => 'ON',
+                    ],
+                    27 => [
+                        'value' => 'OT',
+                        'label' => 'OT',
+                    ],
+                    28 => [
                         'value' => 'PA',
                         'label' => 'PA',
                     ],
-                    16 => [
+                    29 => [
                         'value' => 'RI',
                         'label' => 'RI',
                     ],
-                    17 => [
+                    30 => [
+                        'value' => 'SC',
+                        'label' => 'SC',
+                    ],
+                    31 => [
                         'value' => 'TN',
                         'label' => 'TN',
                     ],
-                    18 => [
+                    32 => [
                         'value' => 'TX',
                         'label' => 'TX',
                     ],
+                    33 => [
+                        'value' => 'UT',
+                        'label' => 'UT',
+                    ],
+                    34 => [
+                        'value' => 'VA',
+                        'label' => 'VA',
+                    ],
+                    35 => [
+                        'value' => 'WA',
+                        'label' => 'WA',
+                    ],
                 ],
             ],
-            183 => [
+            185 => [
                 'name' => 'non_motorist_primary_injury',
                 'label' => 'Vulnerable User Primary Injury Area',
                 'type' => 'multiselect',
@@ -10188,7 +8236,7 @@ return [
                     ],
                 ],
             ],
-            184 => [
+            186 => [
                 'name' => 'non_motorist_seating_position',
                 'label' => 'Vulnerable User Seating Position',
                 'type' => 'multiselect',
@@ -10223,20 +8271,28 @@ return [
                         'label' => 'Riding on exterior',
                     ],
                     7 => [
+                        'value' => 'Second seat - left side',
+                        'label' => 'Second seat - left side',
+                    ],
+                    8 => [
+                        'value' => 'Second seat - right side',
+                        'label' => 'Second seat - right side',
+                    ],
+                    9 => [
                         'value' => 'Trailing unit',
                         'label' => 'Trailing unit',
                     ],
-                    8 => [
+                    10 => [
                         'value' => 'Unenclosed passenger area',
                         'label' => 'Unenclosed passenger area',
                     ],
-                    9 => [
+                    11 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            185 => [
+            187 => [
                 'name' => 'non_motorist_traffic_control',
                 'label' => 'Vulnerable User Traffic Control Type',
                 'type' => 'multiselect',
@@ -10276,31 +8332,35 @@ return [
                     ],
                 ],
             ],
-            186 => [
+            188 => [
                 'name' => 'non_motorist_trapped_descr',
                 'label' => 'Vulnerable User Trapped',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Vulnerable User Trapped',
                 'options' => [
                     0 => [
+                        'value' => 'Freed by mechanical means',
+                        'label' => 'Freed by mechanical means',
+                    ],
+                    1 => [
                         'value' => 'Freed by nonmechanical means',
                         'label' => 'Freed by nonmechanical means',
                     ],
-                    1 => [
+                    2 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    2 => [
+                    3 => [
                         'value' => 'Not trapped',
                         'label' => 'Not trapped',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            187 => [
+            189 => [
                 'name' => 'non_motorist_origin_dest',
                 'label' => 'Vulnerable User Origin Destination',
                 'type' => 'multiselect',
@@ -10311,36 +8371,44 @@ return [
                         'label' => 'Going to or from a Delivery Vehicle',
                     ],
                     1 => [
+                        'value' => 'Going to or from a Mailbox',
+                        'label' => 'Going to or from a Mailbox',
+                    ],
+                    2 => [
                         'value' => 'Going to or from a School Bus or a School Bus Stop',
                         'label' => 'Going to or from a School Bus or a School Bus Stop',
                     ],
-                    2 => [
+                    3 => [
                         'value' => 'Going to or from an Ice Cream or Food Truck',
                         'label' => 'Going to or from an Ice Cream or Food Truck',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'Going to or from School (K-12)',
                         'label' => 'Going to or from School (K-12)',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Going to or from Transit',
                         'label' => 'Going to or from Transit',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Not Reported',
                         'label' => 'Not Reported',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Other',
                         'label' => 'Other',
                     ],
-                    7 => [
+                    8 => [
+                        'value' => 'Reported but Invalid',
+                        'label' => 'Reported but Invalid',
+                    ],
+                    9 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            188 => [
+            190 => [
                 'name' => 'non_mtrst_test_type_descr',
                 'label' => 'Vulnerable User Test Type',
                 'type' => 'multiselect',
@@ -10359,16 +8427,20 @@ return [
                         'label' => 'Not Reported',
                     ],
                     3 => [
+                        'value' => 'Other',
+                        'label' => 'Other',
+                    ],
+                    4 => [
                         'value' => 'Test Not Given',
                         'label' => 'Test Not Given',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            189 => [
+            191 => [
                 'name' => 'non_mtrst_test_status_descr',
                 'label' => 'Vulnerable User Test Status',
                 'type' => 'multiselect',
@@ -10400,49 +8472,65 @@ return [
                     ],
                 ],
             ],
-            190 => [
+            192 => [
                 'name' => 'non_mtrst_test_result_descr',
                 'label' => 'Vulnerable User Test Result',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Vulnerable User Test Result',
                 'options' => [
                     0 => [
+                        'value' => '0.00 - 0.01',
+                        'label' => '0.00 - 0.01',
+                    ],
+                    1 => [
+                        'value' => '0.08 or greater',
+                        'label' => '0.08 or greater',
+                    ],
+                    2 => [
+                        'value' => 'BAC Test Performed, Results Unknown',
+                        'label' => 'BAC Test Performed, Results Unknown',
+                    ],
+                    3 => [
                         'value' => 'Not Reported',
                         'label' => 'Not Reported',
                     ],
-                    1 => [
+                    4 => [
+                        'value' => 'Positive Reading with no Actual Value',
+                        'label' => 'Positive Reading with no Actual Value',
+                    ],
+                    5 => [
                         'value' => 'Test Not Given',
                         'label' => 'Test Not Given',
                     ],
-                    2 => [
+                    6 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    3 => [
+                    7 => [
                         'value' => 'Unknown, if tested',
                         'label' => 'Unknown, if tested',
                     ],
                 ],
             ],
-            191 => [
+            193 => [
                 'name' => 'crash_date_text_raw',
                 'label' => 'Crash Date (Raw Text)',
                 'type' => 'text',
                 'placeholder' => 'Enter Crash Date (Raw Text)',
             ],
-            192 => [
+            194 => [
                 'name' => 'crash_time_2_raw',
                 'label' => 'Crash Time (Raw Text)',
                 'type' => 'text',
                 'placeholder' => 'Enter Crash Time (Raw Text)',
             ],
-            193 => [
+            195 => [
                 'name' => 'objectid_source_min',
                 'label' => 'Source OBJECTID Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Source OBJECTID',
             ],
-            194 => [
+            196 => [
                 'name' => 'objectid_source_max',
                 'label' => 'Source OBJECTID Max',
                 'type' => 'number',
@@ -10675,7 +8763,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Crash Hour. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.',
+                'description' => 'Filter by Crash Hour. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23.',
             ],
             'crash_status' => [
                 'type' => 'array',
@@ -10689,28 +8777,28 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Crash Severity. Provide a comma-separated list or an array of values. Possible values: Fatal injury, Non-fatal injury, Property damage only (none injured), Unknown.',
+                'description' => 'Filter by Crash Severity. Provide a comma-separated list or an array of values. Possible values: Fatal injury, Non-fatal injury, Not Reported, Property damage only (none injured), Unknown.',
             ],
             'max_injr_svrty_cl' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Max Injury Severity Reported. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
+                'description' => 'Filter by Max Injury Severity Reported. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), No injury, Non-fatal injury - Possible, Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
             ],
             'numb_vehc' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Number of Vehicles. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 13.',
+                'description' => 'Filter by Number of Vehicles. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14.',
             ],
             'numb_nonfatal_injr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Total NonFatal Injuries. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.',
+                'description' => 'Filter by Total NonFatal Injuries. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.',
             ],
             'numb_fatal_injr' => [
                 'type' => 'array',
@@ -10726,13 +8814,16 @@ return [
                 ],
                 'description' => 'Filter by Police Agency Type. Provide a comma-separated list or an array of values. Possible values: Campus police, Local police, MBTA police, State police.',
             ],
-            'year_min' => [
-                'type' => 'number',
-                'description' => 'Minimum value for Year.',
+            'year' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'string',
+                ],
+                'description' => 'Filter by Year. Provide a comma-separated list or an array of values. Possible values: 2023, 2024, 2025.',
             ],
-            'year_max' => [
-                'type' => 'number',
-                'description' => 'Maximum value for Year.',
+            'crash_person_id' => [
+                'type' => 'string',
+                'description' => 'Filter by Crash Person Id.',
             ],
             'manr_coll_descr' => [
                 'type' => 'array',
@@ -10769,7 +8860,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Road Surface Condition. Provide a comma-separated list or an array of values. Possible values: Dry, Ice, Not reported, Other, Sand, mud, dirt, oil, gravel, Slush, Snow, Unknown, Water (standing, moving), Wet.',
+                'description' => 'Filter by Road Surface Condition. Provide a comma-separated list or an array of values. Possible values: Dry, Ice, Not reported, Other, Reported but invalid, Sand, mud, dirt, oil, gravel, Slush, Snow, Unknown, Water (standing, moving), Wet.',
             ],
             'first_hrmf_event_descr' => [
                 'type' => 'array',
@@ -10843,7 +8934,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Roadway Junction Type. Provide a comma-separated list or an array of values. Possible values: Driveway, Five-point or more, Four-way intersection, Not at junction, Not reported, Off-ramp, On-ramp, Railway grade crossing, T-intersection, Traffic circle, Unknown, Y-intersection.',
+                'description' => 'Filter by Roadway Junction Type. Provide a comma-separated list or an array of values. Possible values: Driveway, Five-point or more, Four-way intersection, Not at junction, Not reported, Off-ramp, On-ramp, Railway grade crossing, Reported but invalid, T-intersection, Traffic circle, Unknown, Y-intersection.',
             ],
             'traf_cntrl_devc_type_descr' => [
                 'type' => 'array',
@@ -10864,14 +8955,14 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Jurisdiction-linked RD. Provide a comma-separated list or an array of values. Possible values: City or Town accepted road, County Institutional, Department of Conservation and Recreation, Federal Park or Forest, Massachusetts Department of Transportation, Massachusetts Port Authority, Private, State Institutional, State Park or Forest, Unaccepted by city or town, US Air Force, US Army, US Army Corps of Engineers.',
+                'description' => 'Filter by Jurisdiction-linked RD. Provide a comma-separated list or an array of values. Possible values: City or Town accepted road, County Institutional, Department of Conservation and Recreation, Federal Institutional, Federal Park or Forest, Massachusetts Department of Transportation, Massachusetts Port Authority, Other Federal, Private, State college or university, State Institutional, State Park or Forest, Unaccepted by city or town, US Air Force, US Army, US Army Corps of Engineers, US Navy.',
             ],
             'first_hrmf_event_loc_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by First Harmful Event Location. Provide a comma-separated list or an array of values. Possible values: Median, Not reported, Outside roadway, Roadside, Roadway, Shoulder - paved, Shoulder - travel lane, Shoulder - unpaved, Unknown.',
+                'description' => 'Filter by First Harmful Event Location. Provide a comma-separated list or an array of values. Possible values: Median, Not reported, Outside roadway, Reported but invalid, Roadside, Roadway, Shoulder - paved, Shoulder - travel lane, Shoulder - unpaved, Unknown.',
             ],
             'is_geocoded_status' => [
                 'type' => 'array',
@@ -10973,11 +9064,8 @@ return [
                 'description' => 'Filter by County Name. Provide a comma-separated list or an array of values. Possible values: BARNSTABLE, BERKSHIRE, BRISTOL, DUKES, ESSEX, FRANKLIN, HAMPDEN, HAMPSHIRE, MIDDLESEX, NANTUCKET, NORFOLK, PLYMOUTH, SUFFOLK, WORCESTER.',
             ],
             'fmsca_rptbl_cl' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by FMCSA Reportable (All Vehicles). Provide a comma-separated list or an array of values. Possible values: V1:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally re, V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor, V1:(No, not federally reportable) / V2:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(Yes, federally reportable), V1:(Yes, federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor, V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(Yes, federally reportable), V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable), V2:(No, not federally reportable), V2:(No, not federally reportable) / V3:(No, not federally reportable), V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable).',
+                'type' => 'string',
+                'description' => 'Filter by FMCSA Reportable (All Vehicles).',
             ],
             'fmsca_rptbl' => [
                 'type' => 'boolean',
@@ -10992,7 +9080,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Locality. Provide a comma-separated list or an array of values. Possible values: HYDE PARK, MATTAPAN, ROXBURY, THORNDIKE.',
+                'description' => 'Filter by Locality. Provide a comma-separated list or an array of values. Possible values: CHARLESTOWN, FLORENCE, HYANNIS, HYDE PARK, LEEDS, MATTAPAN, MONTAGUE CENTER, ROSLINDALE, ROXBURY, THORNDIKE.',
             ],
             'road_cntrb_descr' => [
                 'type' => 'array',
@@ -11005,19 +9093,20 @@ return [
                 'type' => 'boolean',
                 'description' => 'Filter by School Bus Related.',
             ],
-            'speed_limit' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Speed Limit. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 5, 8, 9, 10, 14, 15, 20, 22, 23, 24, 25, 26, 28, 29, 30, 35, 36, 40, 43, 45, 50, 55, 60, 65, 85, 88.',
+            'speed_limit_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Speed Limit.',
+            ],
+            'speed_limit_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Speed Limit.',
             ],
             'traf_cntrl_devc_func_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Traffic Control Device Functioning. Provide a comma-separated list or an array of values. Possible values: No, device not functioning, Not reported, Unknown, Yes, device functioning.',
+                'description' => 'Filter by Traffic Control Device Functioning. Provide a comma-separated list or an array of values. Possible values: No, device not functioning, Not reported, Reported but invalid, Unknown, Yes, device functioning.',
             ],
             'work_zone_reld_descr' => [
                 'type' => 'boolean',
@@ -11036,7 +9125,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by AADT Year-linked RD. Provide a comma-separated list or an array of values. Possible values: 2009, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020.',
+                'description' => 'Filter by AADT Year-linked RD. Provide a comma-separated list or an array of values. Possible values: 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020.',
             ],
             'pk_pct_sut' => [
                 'type' => 'string',
@@ -11066,28 +9155,28 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Truck Route-linked RD. Provide a comma-separated list or an array of values. Possible values: Designated truck route ONLY under State Authority.  Fully available to both types of STAA vehicles described above, Not a parkway - not on a designated truck route.',
+                'description' => 'Filter by Truck Route-linked RD. Provide a comma-separated list or an array of values. Possible values: DCR Parkway - Recreational Vehicles Only, Designated truck route ONLY under State Authority.  Fully available to both types of STAA vehicles described above, Not a parkway - not on a designated truck route.',
             ],
             'lt_sidewlk' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Left Sidewalk Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 26.0, 27.0, 30.0.',
+                'description' => 'Filter by Left Sidewalk Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 23.0, 26.0, 27.0, 28.0, 30.0.',
             ],
             'rt_sidewlk' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Right Sidewalk Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 22.0, 26.0.',
+                'description' => 'Filter by Right Sidewalk Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 22.0, 24.0, 26.0, 50.0.',
             ],
             'shldr_lt_w' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Left Shoulder Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 13.0, 17.0, 20.0, 22.0.',
+                'description' => 'Filter by Left Shoulder Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 13.0, 14.0, 15.0, 17.0, 20.0, 22.0, 24.0, 28.0.',
             ],
             'shldr_lt_t' => [
                 'type' => 'array',
@@ -11112,7 +9201,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Right Shoulder Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 20.0, 22.0, 23.0, 30.0.',
+                'description' => 'Filter by Right Shoulder Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 22.0, 23.0, 24.0, 26.0, 30.0, 36.0.',
             ],
             'shldr_rt_t' => [
                 'type' => 'array',
@@ -11126,7 +9215,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Number of Travel Lanes-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5.',
+                'description' => 'Filter by Number of Travel Lanes-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6.',
             ],
             'opp_lanes' => [
                 'type' => 'array',
@@ -11165,7 +9254,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Urbanized Area-linked RD. Provide a comma-separated list or an array of values. Possible values: Athol, Barnstable Town, Boston (MA-NH-RI), Greenfield, Lee, Leominster-Fitchburg, Nantucket, Nashua (NH-MA), New Bedford, North Adams (MA-VT), North Brookfield, Pittsfield, Providence (RI-MA), Provincetown, RURAL, South Deerfield, Springfield (MA-CT), Vineyard Haven, Ware, Worcester (MA-CT).',
+                'description' => 'Filter by Urbanized Area-linked RD. Provide a comma-separated list or an array of values. Possible values: Athol, Barnstable Town, Boston (MA-NH-RI), Great Barrington, Greenfield, Lee, Leominster-Fitchburg, Nantucket, Nashua (NH-MA), New Bedford, North Adams (MA-VT), North Brookfield, Pittsfield, Providence (RI-MA), Provincetown, RURAL, South Deerfield, Springfield (MA-CT), Vineyard Haven, Ware, Worcester (MA-CT).',
             ],
             'fd_aid_rte' => [
                 'type' => 'string',
@@ -11176,7 +9265,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Facility Type-linked RD. Provide a comma-separated list or an array of values. Possible values: Collector - Distributor, Doubledeck, Mainline roadway, Ramp - NB/EB, Ramp - SB/WB, Rotary, Roundabout, Simple Ramp - Tunnel, Simple Ramp/ Channelized Turning Lane, Tunnel.',
+                'description' => 'Filter by Facility Type-linked RD. Provide a comma-separated list or an array of values. Possible values: Collector - Distributor, Doubledeck, Mainline roadway, Private Way, Ramp - NB/EB, Ramp - SB/WB, Rotary, Roundabout, Simple Ramp - Tunnel, Simple Ramp/ Channelized Turning Lane, Tunnel.',
             ],
             'operation' => [
                 'type' => 'array',
@@ -11204,7 +9293,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Speed Limit-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 10, 15, 20, 24, 25, 30, 35, 40, 45, 50, 55, 60, 65, 99.',
+                'description' => 'Filter by Speed Limit-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 5, 10, 15, 20, 24, 25, 30, 35, 40, 45, 50, 55, 60, 65, 99.',
             ],
             'streetname' => [
                 'type' => 'string',
@@ -11245,7 +9334,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by AADT Derivation-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, AADT synchronized with other stations on the segment, Actual, Calculated from Partial Counts, Combined from child AADT\'s, Doubled from single direction, Estimate, Grown, Grown from Prior Year HPMS Network, Modified by Ramp Balancing, Pulled back from HPMS network estimation routine.',
+                'description' => 'Filter by AADT Derivation-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, AADT synchronized with other stations on the segment, Actual, Calculated from Partial Counts, Combined from child AADT\'s, Doubled from single direction, Estimate, Grown, Grown from Prior Year HPMS Network, Modified by Ramp Balancing, Pulled back from HPMS network estimation routine, Unknown Source.',
             ],
             'statn_num_min' => [
                 'type' => 'integer',
@@ -11260,7 +9349,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Opposing Direction Speed Limit-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 15, 20, 25, 30, 35, 40, 45, 50, 55, 99.',
+                'description' => 'Filter by Opposing Direction Speed Limit-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 15, 20, 25, 30, 35, 40, 45, 50, 55, 65, 99.',
             ],
             'shldr_ul_t' => [
                 'type' => 'array',
@@ -11281,14 +9370,14 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Truck Exclusion Type-linked RD. Provide a comma-separated list or an array of values. Possible values: All vehicles over 10 tons excluded, All vehicles over 2.5 tons excluded, All vehicles over 2000 pounds excluded, All vehicles over 28 feet in length excluded, All vehicles over 3 tons excluded, All vehicles over 5 tons excluded, Cambridge Overnight Exclusions, Commercial vehicles over 5 tons carry capacity excluded, Hazardous Truck Route.',
+                'description' => 'Filter by Truck Exclusion Type-linked RD. Provide a comma-separated list or an array of values. Possible values: All vehicles over 10 tons excluded, All vehicles over 2.5 tons excluded, All vehicles over 20 tons excluded, All vehicles over 2000 pounds excluded, All vehicles over 28 feet in length excluded, All vehicles over 3 tons excluded, All vehicles over 5 tons excluded, Cambridge Overnight Exclusions, Commercial vehicles over 5 tons carry capacity excluded, Hazardous Truck Route.',
             ],
             't_exc_time' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Truck Exclusion Time-linked RD. Provide a comma-separated list or an array of values. Possible values: 10PM to 6AM, 7 Days, 11PM to 6AM, 7 Days, 11PM to 7AM, 7 Days, 24 Hours, 7 Days, 4PM to 6PM, 5AM to 8PM, 7 Days, 6AM to 10PM, 7 Days, 6AM to 6PM, 7 Days, 6AM to 7PM, 7 Days, 6PM to 6AM, 7 Days, 7AM to 6PM, 7 Days, 7PM to 7AM, 7 Days, 8AM to 930AM and 2PM to 330PM, School Days Only, 8PM to 6AM, 7 Days, 8PM to 7AM, 7 Days, 9PM to 6AM, 7 Days, 9PM to 7AM, 7 Days, None.',
+                'description' => 'Filter by Truck Exclusion Time-linked RD. Provide a comma-separated list or an array of values. Possible values: 10PM to 6AM, 7 Days, 11PM to 6AM, 7 Days, 11PM to 6AM, NB Only, 7 Days, 11PM to 7AM, 7 Days, 24 Hours, 7 Days, 4PM to 6PM, 5AM to 8PM, 7 Days, 6AM to 10PM, 7 Days, 6AM to 6PM, 7 Days, 6AM to 7PM, 7 Days, 6PM to 6AM, 7 Days, 7AM to 11PM, 7 Days, 7AM to 6PM, 7 Days, 7PM to 7AM, 7 Days, 8AM to 930AM and 2PM to 330PM, School Days Only, 8PM to 6AM, 7 Days, 8PM to 7AM, 7 Days, 9PM to 6AM, 7 Days, 9PM to 7AM, 7 Days, None.',
             ],
             'f_f_class' => [
                 'type' => 'array',
@@ -11302,7 +9391,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vehicle Unit Number. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13.',
+                'description' => 'Filter by Vehicle Unit Number. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14.',
             ],
             'alc_suspd_type_descr' => [
                 'type' => 'boolean',
@@ -11352,7 +9441,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Maximum Injury Severity in Vehicle. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
+                'description' => 'Filter by Maximum Injury Severity in Vehicle. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), No injury, Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
             ],
             'most_hrmf_event' => [
                 'type' => 'array',
@@ -11361,19 +9450,20 @@ return [
                 ],
                 'description' => 'Filter by Most Harmful Event (Vehicle). Provide a comma-separated list or an array of values. Possible values: Cargo/equipment loss or shift, Collision with animal - deer, Collision with animal - other, Collision with bridge, Collision with bridge overhead structure, Collision with curb, Collision with cyclist (bicycle, tricycle, unicycle, pedal car), Collision with ditch, Collision with embankment, Collision with fence, Collision with guardrail, Collision with highway traffic sign post, Collision with impact attenuator/crash cushion, Collision with light pole or other post/support, Collision with mail box, Collision with median barrier, Collision with moped, Collision with motor vehicle in traffic, Collision with other fixed object (wall, building, tunnel, etc.), Collision with other movable object, Collision with Other Vulnerable Users, Collision with overhead sign support, Collision with parked motor vehicle, Collision with pedestrian, Collision with railway vehicle (e.g., train, engine), Collision with tree, Collision with unknown fixed object, Collision with unknown movable object, Collision with utility pole, Collision with work zone maintenance equipment, Fire/explosion, Immersion, Invalid Code Specified, Jackknife, Not reported, Other, Other non-collision, Overturn/rollover, Unknown, Unknown non-collision.',
             ],
-            'total_occpt_in_vehc' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Total Occupants in Vehicle. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 20, 21, 22, 24, 26, 28, 33, 34, 35, 38, 40, 46, 49, 56.',
+            'total_occpt_in_vehc_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Total Occupants in Vehicle.',
+            ],
+            'total_occpt_in_vehc_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Total Occupants in Vehicle.',
             ],
             'vehc_manr_act_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vehicle Action Prior to Crash. Provide a comma-separated list or an array of values. Possible values: Backing, Changing lanes, Entering traffic lane, Leaving traffic lane, Making U-turn, Not reported, Other, Overtaking/passing, Parked, Slowing or stopped in traffic, Travelling straight ahead, Turning left, Turning right, Unknown.',
+                'description' => 'Filter by Vehicle Action Prior to Crash. Provide a comma-separated list or an array of values. Possible values: Backing, Changing lanes, Entering traffic lane, Leaving traffic lane, Making U-turn, Not reported, Other, Overtaking/passing, Parked, Reported but invalid, Slowing or stopped in traffic, Travelling straight ahead, Turning left, Turning right, Unknown.',
             ],
             'vehc_confg_descr' => [
                 'type' => 'array',
@@ -11411,7 +9501,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vehicle Towed From Scene. Provide a comma-separated list or an array of values. Possible values: No, Not reported, Unknown, Yes, other reason not disabled, Yes, vehicle or trailer disabled.',
+                'description' => 'Filter by Vehicle Towed From Scene. Provide a comma-separated list or an array of values. Possible values: Invalid, No, Not reported, Reported but invalid, Unknown, Yes, other reason not disabled, Yes, vehicle or trailer disabled.',
             ],
             'trvl_dirc_descr' => [
                 'type' => 'array',
@@ -11457,14 +9547,14 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Ejection Description. Provide a comma-separated list or an array of values. Possible values: Not applicable, Not ejected, Not reported, Partially ejected, Totally ejected, Unknown.',
+                'description' => 'Filter by Ejection Description. Provide a comma-separated list or an array of values. Possible values: Not applicable, Not ejected, Not reported, Partially ejected, Reported but invalid, Totally ejected, Unknown.',
             ],
             'injy_stat_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Injury Type. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
+                'description' => 'Filter by Injury Type. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), No injury, Non-fatal injury - Possible, Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
             ],
             'med_facly' => [
                 'type' => 'string',
@@ -11497,7 +9587,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Safety Equipment 1. Provide a comma-separated list or an array of values. Possible values: Helmet used, Lighting, None used, Not reported, Other, Reflective clothing, Reported but invalid, Unknown.',
+                'description' => 'Filter by Safety Equipment 1. Provide a comma-separated list or an array of values. Possible values: Helmet used, Lighting, None used, Not reported, Other, Protective pads used (elbows, knees, shins, etc.), Reflective clothing, Reported but invalid, Unknown.',
             ],
             'sfty_equp_desc_2' => [
                 'type' => 'string',
@@ -11508,25 +9598,22 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Sex. Provide a comma-separated list or an array of values. Possible values: F - Female, M - Male, N/A, U - Unknown, X - Non-Binary.',
+                'description' => 'Filter by Sex. Provide a comma-separated list or an array of values. Possible values: F - Female, M - Male, N/A, Not reported, Reported but invalid, U - Unknown, X - Non-Binary.',
             ],
             'trnsd_by_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Transported By. Provide a comma-separated list or an array of values. Possible values: EMS(Emergency Medical Service), Not reported, Not transported, Other, Police, Refused Transport, Unknown.',
+                'description' => 'Filter by Transported By. Provide a comma-separated list or an array of values. Possible values: EMS Ground, EMS(Emergency Medical Service), Not reported, Not transported, Other, Police, Refused Transport, Reported but invalid, Unknown.',
             ],
             'non_mtrst_type_cl' => [
                 'type' => 'string',
                 'description' => 'Filter by Vulnerable User Type (All Persons).',
             ],
             'non_mtrst_actn_cl' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Vulnerable User Action (All Persons). Provide a comma-separated list or an array of values. Possible values: VU2: Approaching or leaving vehicle, VU2: Approaching or leaving vehicle / VU3: Standing / VU4: Approaching or leaving vehicle, VU2: Entering or crossing location, VU2: Entering or crossing location / VU3: Entering or crossing location, VU2: Entering or crossing location / VU3: Entering or crossing location / VU4: Entering or crossing location, VU2: None, VU2: Other, VU2: Other / VU3: Other / VU4: Other / VU5: Other / VU6: Other, VU2: Pushing vehicle, VU2: Standing, VU2: Standing / VU3: Standing, VU2: Walking, running or cycling, VU2: Walking, running or cycling / VU3: Other, VU2: Walking, running or cycling / VU3: Walking, running or cycling, VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Other, VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Walking, running or cycling / VU5: Walking, running or cycling, VU2: Working, VU2: Working / VU4: Working / VU5: Working, VU2: Working on vehicle, VU3: Approaching or leaving vehicle, VU3: Entering or crossing location, VU3: Entering or crossing location / VU4: Entering or crossing location, VU3: None, VU3: Other, VU3: Other / VU4: Other / VU5: Other, VU3: Standing, VU3: Walking, running or cycling, VU3: Walking, running or cycling / VU4: Walking, running or cycling, VU3: Working, VU4: Approaching or leaving vehicle, VU4: Entering or crossing location, VU4: None, VU4: Other, VU4: Standing, VU4: Walking, running or cycling, VU4: Working, VU4: Working / VU5: Working / VU6: Working, VU5: Entering or crossing location, VU5: Entering or crossing location / VU6: Entering or crossing location, VU5: Standing, VU5: Walking, running or cycling, VU5: Walking, running or cycling / VU6: Walking, running or cycling, VU6: Standing, VU6: Working on vehicle.',
+                'type' => 'string',
+                'description' => 'Filter by Vulnerable User Action (All Persons).',
             ],
             'non_mtrst_loc_cl' => [
                 'type' => 'string',
@@ -11544,28 +9631,28 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Condition. Provide a comma-separated list or an array of values. Possible values: Apparently normal, Not reported, Unknown.',
+                'description' => 'Filter by Vulnerable User Condition. Provide a comma-separated list or an array of values. Possible values: Apparently normal, Emotional (e.g., depression, angry, disturbed), Fell asleep, fainted, fatigue, etc., Illness, Not reported, Other, Physical impairment, Under the influence of medications/drugs/alcohol, Unknown.',
             ],
             'non_mtrst_loc_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Location. Provide a comma-separated list or an array of values. Possible values: At intersection but no crosswalk, In roadway, Island, Marked crosswalk at intersection (includes use of paint raised or other roadway material), Non-intersection crosswalk, Not in roadway, Not reported, On-Street Bike Lanes, On-Street Buffered Bike Lanes, Other, Raised Crosswalk, Separated Bike Lanes, Shared-use path or trails Crossing, Shoulder, Sidewalk, Unknown.',
+                'description' => 'Filter by Vulnerable User Location. Provide a comma-separated list or an array of values. Possible values: At intersection but no crosswalk, In roadway, Island, Marked crosswalk at intersection (includes use of paint raised or other roadway material), Median (but not on shoulder), Non-intersection crosswalk, Not in roadway, Not reported, On-Street Bike Lanes, On-Street Buffered Bike Lanes, Other, Raised Crosswalk, Reported but invalid, Separated Bike Lanes, Shared-use path or trails Crossing, Shoulder, Sidewalk, Unknown.',
             ],
             'non_mtrst_type_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Type. Provide a comma-separated list or an array of values. Possible values: Bicyclist, Electric Personal Assistive Mobility Device User, Emergency Responder - Outside of vehicle, Farm Equipment Operator, Hand Cyclist, In-Line Skater, Motorized Bicyclist, Motorized Scooter Rider, Non-Motorized Scooter Rider, Non-Motorized Wheelchair User, Not reported, Other, Pedestrian, Roadway Worker - Outside of vehicle, Skateboarder, Train/Trolley passenger, Tricyclist, Unknown, Utility Worker – Outside of vehicle.',
+                'description' => 'Filter by Vulnerable User Type. Provide a comma-separated list or an array of values. Possible values: Bicyclist, Electric Personal Assistive Mobility Device User, Emergency Responder - Outside of vehicle, Farm Equipment Operator, Hand Cyclist, In-Line Skater, Motorized Bicyclist, Motorized Scooter Rider, Non-Motorized Scooter Rider, Non-Motorized Wheelchair User, Not reported, Other, Other Micromobility Device User, Pedestrian, Roadway Worker - Outside of vehicle, Roller Skater, Skateboarder, Train/Trolley passenger, Tricyclist, Unknown, Utility Worker – Outside of vehicle.',
             ],
             'non_mtrst_origin_dest_cl' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable Users Origin Destination (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: Other, VU2: Going to or from a Delivery Vehicle, VU2: Going to or from a Delivery Vehicle / VU3: Going to or from a Delivery Vehicle / VU4: Going to or from a Delivery Vehicle, VU2: Going to or from a School Bus or a School Bus Stop, VU2: Going to or from a School Bus or a School Bus Stop / VU3: Going to or from a School Bus or a School Bus Stop, VU2: Going to or from an Ice Cream or Food Truck, VU2: Going to or from School (K-12), VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12), VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12) / VU4: Going to or from School (K-12), VU2: Going to or from Transit, VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit / VU5: Going to or from Transit / VU6: Going to or from Transit, VU2: Other, VU2: Other / VU3: Other, VU2: Other / VU3: Other / VU4: Other, VU2: Other / VU3: Other / VU4: Other / VU5: Other, VU2: Other / VU4: Other / VU5: Other, VU3: Going to or from a Delivery Vehicle, VU3: Going to or from a School Bus or a School Bus Stop, VU3: Going to or from School (K-12), VU3: Going to or from Transit, VU3: Other, VU3: Other / VU4: Other, VU4: Going to or from School (K-12), VU4: Going to or from Transit, VU4: Other, VU4: Other / VU5: Other / VU6: Other, VU5: Going to or from Transit, VU5: Other, VU5: Other / VU6: Other, VU6: Other.',
+                'description' => 'Filter by Vulnerable Users Origin Destination (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: Other, VU11: Other, VU17: Other, VU2: Going to or from a Delivery Vehicle, VU2: Going to or from a Delivery Vehicle / VU3: Going to or from a Delivery Vehicle / VU4: Going to or from a Delivery Vehicle, VU2: Going to or from a Mailbox, VU2: Going to or from a Mailbox / VU3: Going to or from a Mailbox, VU2: Going to or from a School Bus or a School Bus Stop, VU2: Going to or from a School Bus or a School Bus Stop / VU3: Going to or from a School Bus or a School Bus Stop, VU2: Going to or from an Ice Cream or Food Truck, VU2: Going to or from School (K-12), VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12), VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12) / VU4: Going to or from School (K-12), VU2: Going to or from Transit, VU2: Going to or from Transit / VU3: Going to or from Transit, VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit, VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit / VU5: Going to or from Transit / VU6: Going to or from Transit, VU2: Other, VU2: Other / VU3: Other, VU2: Other / VU3: Other / VU4: Other, VU2: Other / VU3: Other / VU4: Other / VU5: Other, VU2: Other / VU4: Other, VU2: Other / VU4: Other / VU5: Other, VU3: Going to or from a Delivery Vehicle, VU3: Going to or from a Mailbox, VU3: Going to or from a School Bus or a School Bus Stop, VU3: Going to or from an Ice Cream or Food Truck, VU3: Going to or from School (K-12), VU3: Going to or from Transit, VU3: Other, VU3: Other / VU4: Other, VU3: Other / VU5: Other, VU4: Going to or from a Delivery Vehicle, VU4: Going to or from School (K-12), VU4: Going to or from School (K-12) / VU5: Going to or from School (K-12), VU4: Going to or from Transit, VU4: Other, VU4: Other / VU5: Other, VU4: Other / VU5: Other / VU6: Other, VU5: Going to or from School (K-12), VU5: Going to or from Transit, VU5: Other, VU5: Other / VU6: Other, VU6: Going to or from School (K-12), VU6: Going to or from Transit, VU6: Other, VU7: Other, VU7: Other / VU8: Other, VU8: Other.',
             ],
             'non_mtrst_cntrb_circ_cl' => [
                 'type' => 'string',
@@ -11576,67 +9663,64 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable Users Distracted By (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10:(Not Distracted), VU2:(Manually operating an electronic device (texting, typing, dialing)), VU2:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted) VU5:(Passenger) VU6:(Not Distracted), VU2:(Not Distracted) VU4:(Not Distracted) VU5:(Not Distracted), VU2:(Other activity (searching, eating, personal hygiene, etc.)), VU2:(Talking on hand-held electronic device), VU2:(Talking on hands-free electronic device), VU2:(Utilizing listening device), VU3:(Manually operating an electronic device (texting, typing, dialing)), VU3:(Not Distracted), VU3:(Other activity (searching, eating, personal hygiene, etc.)), VU3:(Passenger), VU3:(Utilizing listening device), VU4:(Not Distracted), VU4:(Not Distracted) VU5:(Not Distracted) VU6:(Not Distracted), VU5:(Not Distracted), VU5:(Not Distracted) VU6:(Not Distracted), VU5:(Other activity (searching, eating, personal hygiene, etc.)), VU6:(Not Distracted).',
+                'description' => 'Filter by Vulnerable Users Distracted By (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10:(Not Distracted), VU11:(Not Distracted), VU17:(Not Distracted), VU2:(Manually operating an electronic device (texting, typing, dialing)), VU2:(Manually operating an electronic device (texting, typing, dialing)),(Talking on hand-held electronic device), VU2:(Manually operating an electronic device (texting, typing, dialing)),(Utilizing listening device), VU2:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted) VU5:(Passenger) VU6:(Not Distracted), VU2:(Not Distracted) VU3:(Passenger), VU2:(Not Distracted) VU4:(Not Distracted), VU2:(Not Distracted) VU4:(Not Distracted) VU5:(Not Distracted), VU2:(Not Distracted),(Manually operating an electronic device (texting, typing, dialing)), VU2:(Not Distracted),(Other activity (searching, eating, personal hygiene, etc.)), VU2:(Other activity (searching, eating, personal hygiene, etc.)), VU2:(Other activity (searching, eating, personal hygiene, etc.)),(Not Distracted), VU2:(Reported but invalid), VU2:(Talking on hand-held electronic device), VU2:(Talking on hands-free electronic device), VU2:(Utilizing listening device), VU2:(Utilizing listening device),(Not Distracted), VU3:(Manually operating an electronic device (texting, typing, dialing)), VU3:(Not Distracted), VU3:(Not Distracted) VU4:(Not Distracted), VU3:(Not Distracted) VU5:(Not Distracted), VU3:(Other activity (searching, eating, personal hygiene, etc.)), VU3:(Passenger), VU3:(Reported but invalid), VU3:(Talking on hand-held electronic device), VU3:(Utilizing listening device), VU4:(Manually operating an electronic device (texting, typing, dialing)), VU4:(Not Distracted), VU4:(Not Distracted) VU5:(Not Distracted), VU4:(Not Distracted) VU5:(Not Distracted) VU6:(Not Distracted), VU4:(Other activity (searching, eating, personal hygiene, etc.)), VU4:(Talking on hands-free electronic device), VU5:(Not Distracted), VU5:(Not Distracted) VU6:(Not Distracted), VU5:(Other activity (searching, eating, personal hygiene, etc.)), VU6:(Not Distracted), VU7:(Not Distracted), VU7:(Not Distracted) VU8:(Not Distracted) VU9:(Not Distracted), VU7:(Other activity (searching, eating, personal hygiene, etc.)), VU7:(Other activity (searching, eating, personal hygiene, etc.)) VU8:(Other activity (searching, eating, personal hygiene, etc.)), VU8:(Not Distracted).',
             ],
             'non_mtrst_alc_suspd_type_cl' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable Users Alcohol Suspected Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: No, VU2: No, VU2: No / VU3: No, VU2: No / VU3: No / VU4: No, VU2: No / VU3: No / VU4: No / VU5: No, VU2: No / VU3: No / VU4: No / VU5: No / VU6: No, VU2: No / VU4: No / VU5: No, VU2: Yes, VU3: No, VU3: No / VU4: No, VU3: Yes, VU4: No, VU4: No / VU5: No / VU6: No, VU5: No, VU5: No / VU6: No, VU5: Yes, VU6: No.',
+                'description' => 'Filter by Vulnerable Users Alcohol Suspected Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: No, VU11: No, VU17: No, VU2: No, VU2: No / VU3: No, VU2: No / VU3: No / VU4: No, VU2: No / VU3: No / VU4: No / VU5: No, VU2: No / VU3: No / VU4: No / VU5: No / VU6: No, VU2: No / VU4: No, VU2: No / VU4: No / VU5: No, VU2: Yes, VU2: Yes / VU3: No, VU2: Yes / VU3: Yes, VU3: No, VU3: No / VU4: No, VU3: No / VU5: No, VU3: Yes, VU4: No, VU4: No / VU5: No, VU4: No / VU5: No / VU6: No, VU4: No / VU5: Yes / VU6: No, VU4: Yes, VU5: No, VU5: No / VU6: No, VU5: Yes, VU6: No, VU7: No, VU7: No / VU8: No.',
             ],
             'non_mtrst_drug_suspd_type_cl' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable Users Drug Suspected Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: No, VU2: No, VU2: No / VU3: No, VU2: No / VU3: No / VU4: No, VU2: No / VU3: No / VU4: No / VU5: No, VU2: No / VU3: No / VU4: No / VU5: No / VU6: No, VU2: No / VU4: No / VU5: No, VU2: Yes, VU3: No, VU3: No / VU4: No, VU4: No, VU4: No / VU5: No / VU6: No, VU5: No, VU5: No / VU6: No, VU6: No.',
+                'description' => 'Filter by Vulnerable Users Drug Suspected Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: No, VU11: No, VU17: No, VU2: No, VU2: No / VU3: No, VU2: No / VU3: No / VU4: No, VU2: No / VU3: No / VU4: No / VU5: No, VU2: No / VU3: No / VU4: No / VU5: No / VU6: No, VU2: No / VU4: No, VU2: No / VU4: No / VU5: No, VU2: Yes, VU3: No, VU3: No / VU4: No, VU3: No / VU5: No, VU3: Yes, VU4: No, VU4: No / VU5: No, VU4: No / VU5: No / VU6: No, VU4: Yes, VU5: No, VU5: No / VU6: No, VU5: Yes, VU6: No, VU7: No, VU7: No / VU8: No, VU7: No / VU8: No / VU9: No.',
             ],
             'non_mtrst_event_seq_cl' => [
                 'type' => 'string',
                 'description' => 'Filter by Vulnerable Users Sequence of Events (All Persons).',
             ],
             'traffic_control_type_descr' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Vulnerable Users Traffic Control Device Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: None, VU2: None, VU2: None / VU3: None, VU2: None / VU3: None / VU4: None, VU2: None / VU3: None / VU4: None / VU5: None, VU2: None / VU3: Person - Crossing guard, VU2: None / VU4: None / VU5: None, VU2: Other, VU2: Other / VU3: Other, VU2: Person - Crossing guard, VU2: Person - Crossing guard / VU3: Person - Crossing guard, VU2: VU Crossing Sign, VU2: VU Crossing Sign / VU3: VU Crossing Sign, VU2: VU Crossing Signal, VU2: VU Crossing Signal / VU3: VU Crossing Signal, VU2: VU Prohibited Sign, VU3: None, VU3: None / VU4: None, VU3: Other, VU3: Other / VU4: Other, VU3: Person - Crossing guard, VU3: VU Crossing Sign, VU3: VU Crossing Signal, VU3: VU Prohibited Sign, VU4: None, VU4: Other, VU4: Other / VU5: Other / VU6: Other, VU4: VU Crossing Sign, VU4: VU Crossing Signal, VU4: VU Prohibited Sign, VU5: None, VU5: Other, VU5: VU Crossing Signal, VU5: VU Crossing Signal / VU6: VU Crossing Signal, VU6: None.',
+                'type' => 'string',
+                'description' => 'Filter by Vulnerable Users Traffic Control Device Type (All Persons).',
             ],
             'non_motorist_cntrb_circ_1' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Contribution 1. Provide a comma-separated list or an array of values. Possible values: Crossing of Roadway or Intersection, Dart/Dash, Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching), Distracted, Entering/Exiting Parked/Standing Vehicle, Failure to Obey Traffic Sign(s), Signal(s), or Officer(s), Failure to use Proper Crosswalk, Failure to Yield Right-Of-Way, Fleeing/Evading Law Enforcement, In Roadway (Standing, Lying, Working, Playing, etc.), Inattentive (Talking, Eating, etc.), None, Not reported, Not Visible (Dark Clothing, No Lighting, etc.), Other (Explain in Narrative), Passing, Traveling Wrong Way, Turn/Merge, Unknown.',
+                'description' => 'Filter by Vulnerable User Contribution 1. Provide a comma-separated list or an array of values. Possible values: Crossing of Roadway or Intersection, Dart/Dash, Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching), Distracted, Entering/Exiting Parked/Standing Vehicle, Failure to Obey Traffic Sign(s), Signal(s), or Officer(s), Failure to use Proper Crosswalk, Failure to Yield Right-Of-Way, Fleeing/Evading Law Enforcement, In Roadway (Standing, Lying, Working, Playing, etc.), Inattentive (Talking, Eating, etc.), None, Not reported, Not Visible (Dark Clothing, No Lighting, etc.), Other (Explain in Narrative), Passing, Reported but invalid, Traveling Wrong Way, Turn/Merge, Unknown.',
             ],
             'non_motorist_cntrb_circ_2' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Contribution 2. Provide a comma-separated list or an array of values. Possible values: Crossing of Roadway or Intersection, Dart/Dash, Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching), Distracted, Entering/Exiting Parked/Standing Vehicle, Failure to Obey Traffic Sign(s), Signal(s), or Officer(s), Failure to use Proper Crosswalk, Failure to Yield Right-Of-Way, In Roadway (Standing, Lying, Working, Playing, etc.), Inattentive (Talking, Eating, etc.), None, Not reported, Not Visible (Dark Clothing, No Lighting, etc.), Other (Explain in Narrative), Passing, Traveling Wrong Way, Turn/Merge, Unknown.',
+                'description' => 'Filter by Vulnerable User Contribution 2. Provide a comma-separated list or an array of values. Possible values: Crossing of Roadway or Intersection, Dart/Dash, Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching), Distracted, Entering/Exiting Parked/Standing Vehicle, Failure to Obey Traffic Sign(s), Signal(s), or Officer(s), Failure to use Proper Crosswalk, Failure to Yield Right-Of-Way, Fleeing/Evading Law Enforcement, In Roadway (Standing, Lying, Working, Playing, etc.), Inattentive (Talking, Eating, etc.), None, Not reported, Not Visible (Dark Clothing, No Lighting, etc.), Other (Explain in Narrative), Passing, Traveling Wrong Way, Turn/Merge, Unknown.',
             ],
             'non_motorist_contact_point' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Contact Point. Provide a comma-separated list or an array of values. Possible values: 03 - Right, 06 - Rear, 09 - Left, Front, Not reported, Other, Unknown.',
+                'description' => 'Filter by Vulnerable User Contact Point. Provide a comma-separated list or an array of values. Possible values: 03 - Right, 06 - Rear, 09 - Left, Front, Not reported, Other, Reported but invalid, Unknown.',
             ],
             'non_motorist_distracted_by_1' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Distracted By 1. Provide a comma-separated list or an array of values. Possible values: Manually operating an electronic device (texting, typing, dialing), Not Distracted, Not reported, Other activity (searching, eating, personal hygiene, etc.), Passenger, Talking on hand-held electronic device, Talking on hands-free electronic device, Unknown, Utilizing listening device.',
+                'description' => 'Filter by Vulnerable User Distracted By 1. Provide a comma-separated list or an array of values. Possible values: Manually operating an electronic device (texting, typing, dialing), Not Distracted, Not reported, Other activity (searching, eating, personal hygiene, etc.), Passenger, Reported but invalid, Talking on hand-held electronic device, Talking on hands-free electronic device, Unknown, Utilizing listening device.',
             ],
             'non_motorist_distracted_by_2' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Distracted By 2. Provide a comma-separated list or an array of values. Possible values: Not Distracted, Not reported, Unknown.',
+                'description' => 'Filter by Vulnerable User Distracted By 2. Provide a comma-separated list or an array of values. Possible values: Manually operating an electronic device (texting, typing, dialing), Not Distracted, Not reported, Other activity (searching, eating, personal hygiene, etc.), Talking on hand-held electronic device, Unknown, Utilizing listening device.',
             ],
             'non_motorist_ejection_descr' => [
                 'type' => 'array',
@@ -11650,35 +9734,35 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Event Sequence 1. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Back Left, Collision with door opening of parked car - Front left, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Pushing vehicle, Reported but invalid, Slowed or stopped, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other, Working in Trafficway (Incident Response), Working on vehicle.',
+                'description' => 'Filter by Vulnerable User Event Sequence 1. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Back Left, Collision with door opening of parked car - Front left, Collision with door opening of parked car - Front right, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Pushing vehicle, Reported but invalid, Slowed or stopped, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other, Working in Trafficway (Incident Response), Working on vehicle.',
             ],
             'non_motorist_event_sequence_2' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Event Sequence 2. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Front left, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Pushing vehicle, Slowed or stopped, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other, Working in Trafficway (Incident Response), Working on vehicle.',
+                'description' => 'Filter by Vulnerable User Event Sequence 2. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Back right, Collision with door opening of parked car - Front left, Collision with door opening of parked car - Front right, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Pushing vehicle, Slowed or stopped, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other, Working in Trafficway (Incident Response), Working on vehicle.',
             ],
             'non_motorist_event_sequence_3' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Event Sequence 3. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Collision with door opening of parked car - Back right, Collision with door opening of parked car - Front right, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk.',
+                'description' => 'Filter by Vulnerable User Event Sequence 3. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Back right, Collision with door opening of parked car - Front right, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Reported but invalid, Slowed or stopped, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other, Working in Trafficway (Incident Response), Working on vehicle.',
             ],
             'non_motorist_event_sequence_4' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Event Sequence 4. Provide a comma-separated list or an array of values. Possible values: Collision with motor vehicle in transport, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Traveling straight ahead, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk.',
+                'description' => 'Filter by Vulnerable User Event Sequence 4. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Front left, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Slowed or stopped, Traveling straight ahead, Turning left, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working in Trafficway (Incident Response), Working on vehicle.',
             ],
             'non_motorist_driver_lic_state' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Driver License State Province. Provide a comma-separated list or an array of values. Possible values: 96, AK, AZ, CO, FL, FR, GA, ID, LA, MA, ME, NH, NJ, NY, OH, PA, RI, TN, TX.',
+                'description' => 'Filter by Vulnerable User Driver License State Province. Provide a comma-separated list or an array of values. Possible values: 96, AK, AZ, CA, CO, CT, DC, FL, FR, GA, IA, ID, IL, KS, LA, MA, MD, ME, MI, MN, NC, NH, NJ, NV, NY, OH, ON, OT, PA, RI, SC, TN, TX, UT, VA, WA.',
             ],
             'non_motorist_primary_injury' => [
                 'type' => 'array',
@@ -11692,7 +9776,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Seating Position. Provide a comma-separated list or an array of values. Possible values: Enclosed passenger area, Front seat - left side, Front seat – right side, Not reported, Other, Reported but invalid, Riding on exterior, Trailing unit, Unenclosed passenger area, Unknown.',
+                'description' => 'Filter by Vulnerable User Seating Position. Provide a comma-separated list or an array of values. Possible values: Enclosed passenger area, Front seat - left side, Front seat – right side, Not reported, Other, Reported but invalid, Riding on exterior, Second seat - left side, Second seat - right side, Trailing unit, Unenclosed passenger area, Unknown.',
             ],
             'non_motorist_traffic_control' => [
                 'type' => 'array',
@@ -11706,21 +9790,21 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Trapped. Provide a comma-separated list or an array of values. Possible values: Freed by nonmechanical means, Not reported, Not trapped, Unknown.',
+                'description' => 'Filter by Vulnerable User Trapped. Provide a comma-separated list or an array of values. Possible values: Freed by mechanical means, Freed by nonmechanical means, Not reported, Not trapped, Unknown.',
             ],
             'non_motorist_origin_dest' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Origin Destination. Provide a comma-separated list or an array of values. Possible values: Going to or from a Delivery Vehicle, Going to or from a School Bus or a School Bus Stop, Going to or from an Ice Cream or Food Truck, Going to or from School (K-12), Going to or from Transit, Not Reported, Other, Unknown.',
+                'description' => 'Filter by Vulnerable User Origin Destination. Provide a comma-separated list or an array of values. Possible values: Going to or from a Delivery Vehicle, Going to or from a Mailbox, Going to or from a School Bus or a School Bus Stop, Going to or from an Ice Cream or Food Truck, Going to or from School (K-12), Going to or from Transit, Not Reported, Other, Reported but Invalid, Unknown.',
             ],
             'non_mtrst_test_type_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Test Type. Provide a comma-separated list or an array of values. Possible values: Blood, Breath, Not Reported, Test Not Given, Unknown.',
+                'description' => 'Filter by Vulnerable User Test Type. Provide a comma-separated list or an array of values. Possible values: Blood, Breath, Not Reported, Other, Test Not Given, Unknown.',
             ],
             'non_mtrst_test_status_descr' => [
                 'type' => 'array',
@@ -11734,7 +9818,7 @@ return [
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Test Result. Provide a comma-separated list or an array of values. Possible values: Not Reported, Test Not Given, Unknown, Unknown, if tested.',
+                'description' => 'Filter by Vulnerable User Test Result. Provide a comma-separated list or an array of values. Possible values: 0.00 - 0.01, 0.08 or greater, BAC Test Performed, Results Unknown, Not Reported, Positive Reading with no Actual Value, Test Not Given, Unknown, Unknown, if tested.',
             ],
             'crash_date_text_raw' => [
                 'type' => 'string',
@@ -11789,98 +9873,8 @@ return [
             5 => [
                 'name' => 'ward',
                 'label' => 'Ward',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Ward',
-                'options' => [
-                    0 => [
-                        'value' => '01',
-                        'label' => '01',
-                    ],
-                    1 => [
-                        'value' => '02',
-                        'label' => '02',
-                    ],
-                    2 => [
-                        'value' => '03',
-                        'label' => '03',
-                    ],
-                    3 => [
-                        'value' => '04',
-                        'label' => '04',
-                    ],
-                    4 => [
-                        'value' => '05',
-                        'label' => '05',
-                    ],
-                    5 => [
-                        'value' => '06',
-                        'label' => '06',
-                    ],
-                    6 => [
-                        'value' => '07',
-                        'label' => '07',
-                    ],
-                    7 => [
-                        'value' => '08',
-                        'label' => '08',
-                    ],
-                    8 => [
-                        'value' => '09',
-                        'label' => '09',
-                    ],
-                    9 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    10 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    11 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                    12 => [
-                        'value' => '13',
-                        'label' => '13',
-                    ],
-                    13 => [
-                        'value' => '14',
-                        'label' => '14',
-                    ],
-                    14 => [
-                        'value' => '15',
-                        'label' => '15',
-                    ],
-                    15 => [
-                        'value' => '16',
-                        'label' => '16',
-                    ],
-                    16 => [
-                        'value' => '17',
-                        'label' => '17',
-                    ],
-                    17 => [
-                        'value' => '18',
-                        'label' => '18',
-                    ],
-                    18 => [
-                        'value' => '19',
-                        'label' => '19',
-                    ],
-                    19 => [
-                        'value' => '20',
-                        'label' => '20',
-                    ],
-                    20 => [
-                        'value' => '21',
-                        'label' => '21',
-                    ],
-                    21 => [
-                        'value' => '22',
-                        'label' => '22',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Ward',
             ],
             6 => [
                 'name' => 'language_code',
@@ -11960,11 +9954,8 @@ return [
                 'description' => 'Filter by Address.',
             ],
             'ward' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Ward. Provide a comma-separated list or an array of values. Possible values: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22.',
+                'type' => 'string',
+                'description' => 'Filter by Ward.',
             ],
             'language_code' => [
                 'type' => 'string',
@@ -12047,62 +10038,8 @@ return [
             9 => [
                 'name' => 'neighborhood',
                 'label' => 'Neighborhood',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Neighborhood',
-                'options' => [
-                    0 => [
-                        'value' => 'Baldwin',
-                        'label' => 'Baldwin',
-                    ],
-                    1 => [
-                        'value' => 'Cambridgeport',
-                        'label' => 'Cambridgeport',
-                    ],
-                    2 => [
-                        'value' => 'East Cambridge',
-                        'label' => 'East Cambridge',
-                    ],
-                    3 => [
-                        'value' => 'Highlands',
-                        'label' => 'Highlands',
-                    ],
-                    4 => [
-                        'value' => 'Inman/Harrington',
-                        'label' => 'Inman/Harrington',
-                    ],
-                    5 => [
-                        'value' => 'Mid-Cambridge',
-                        'label' => 'Mid-Cambridge',
-                    ],
-                    6 => [
-                        'value' => 'MIT',
-                        'label' => 'MIT',
-                    ],
-                    7 => [
-                        'value' => 'North Cambridge',
-                        'label' => 'North Cambridge',
-                    ],
-                    8 => [
-                        'value' => 'Peabody',
-                        'label' => 'Peabody',
-                    ],
-                    9 => [
-                        'value' => 'Riverside',
-                        'label' => 'Riverside',
-                    ],
-                    10 => [
-                        'value' => 'Strawberry Hill',
-                        'label' => 'Strawberry Hill',
-                    ],
-                    11 => [
-                        'value' => 'The Port',
-                        'label' => 'The Port',
-                    ],
-                    12 => [
-                        'value' => 'West Cambridge',
-                        'label' => 'West Cambridge',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Neighborhood',
             ],
             10 => [
                 'name' => 'location_address',
@@ -12198,11 +10135,8 @@ return [
                 'description' => 'Filter by Reporting Area.',
             ],
             'neighborhood' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Neighborhood. Provide a comma-separated list or an array of values. Possible values: Baldwin, Cambridgeport, East Cambridge, Highlands, Inman/Harrington, Mid-Cambridge, MIT, North Cambridge, Peabody, Riverside, Strawberry Hill, The Port, West Cambridge.',
+                'type' => 'string',
+                'description' => 'Filter by Neighborhood.',
             ],
             'location_address' => [
                 'type' => 'string',
@@ -12269,66 +10203,8 @@ return [
             7 => [
                 'name' => 'district',
                 'label' => 'District',
-                'type' => 'multiselect',
-                'placeholder' => 'Select District',
-                'options' => [
-                    0 => [
-                        'value' => 'A1',
-                        'label' => 'A1',
-                    ],
-                    1 => [
-                        'value' => 'A15',
-                        'label' => 'A15',
-                    ],
-                    2 => [
-                        'value' => 'A7',
-                        'label' => 'A7',
-                    ],
-                    3 => [
-                        'value' => 'B2',
-                        'label' => 'B2',
-                    ],
-                    4 => [
-                        'value' => 'B3',
-                        'label' => 'B3',
-                    ],
-                    5 => [
-                        'value' => 'C11',
-                        'label' => 'C11',
-                    ],
-                    6 => [
-                        'value' => 'C6',
-                        'label' => 'C6',
-                    ],
-                    7 => [
-                        'value' => 'D14',
-                        'label' => 'D14',
-                    ],
-                    8 => [
-                        'value' => 'D4',
-                        'label' => 'D4',
-                    ],
-                    9 => [
-                        'value' => 'E13',
-                        'label' => 'E13',
-                    ],
-                    10 => [
-                        'value' => 'E18',
-                        'label' => 'E18',
-                    ],
-                    11 => [
-                        'value' => 'E5',
-                        'label' => 'E5',
-                    ],
-                    12 => [
-                        'value' => 'External',
-                        'label' => 'External',
-                    ],
-                    13 => [
-                        'value' => 'Outside of',
-                        'label' => 'Outside of',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter District',
             ],
             8 => [
                 'name' => 'reporting_area',
@@ -12337,303 +10213,136 @@ return [
                 'placeholder' => 'Enter Reporting Area',
             ],
             9 => [
-                'name' => 'shooting',
-                'label' => 'Shooting',
-                'type' => 'boolean',
+                'name' => 'shooting_min',
+                'label' => 'Shooting Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Shooting',
             ],
             10 => [
-                'name' => 'year',
-                'label' => 'Year',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Year',
-                'options' => [
-                    0 => [
-                        'value' => '2023',
-                        'label' => '2023',
-                    ],
-                    1 => [
-                        'value' => '2024',
-                        'label' => '2024',
-                    ],
-                    2 => [
-                        'value' => '2025',
-                        'label' => '2025',
-                    ],
-                ],
+                'name' => 'shooting_max',
+                'label' => 'Shooting Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Shooting',
             ],
             11 => [
-                'name' => 'month',
-                'label' => 'Month',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Month',
-                'options' => [
-                    0 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    1 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    2 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    3 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    4 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    5 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    6 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    7 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    8 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                    9 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    10 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    11 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                ],
+                'name' => 'year_min',
+                'label' => 'Year Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Year',
             ],
             12 => [
-                'name' => 'day_of_week',
-                'label' => 'Day Of Week',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Day Of Week',
-                'options' => [
-                    0 => [
-                        'value' => 'Friday',
-                        'label' => 'Friday',
-                    ],
-                    1 => [
-                        'value' => 'Monday',
-                        'label' => 'Monday',
-                    ],
-                    2 => [
-                        'value' => 'Saturday',
-                        'label' => 'Saturday',
-                    ],
-                    3 => [
-                        'value' => 'Sunday',
-                        'label' => 'Sunday',
-                    ],
-                    4 => [
-                        'value' => 'Thursday',
-                        'label' => 'Thursday',
-                    ],
-                    5 => [
-                        'value' => 'Tuesday',
-                        'label' => 'Tuesday',
-                    ],
-                    6 => [
-                        'value' => 'Wednesday',
-                        'label' => 'Wednesday',
-                    ],
-                ],
+                'name' => 'year_max',
+                'label' => 'Year Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Year',
             ],
             13 => [
-                'name' => 'hour',
-                'label' => 'Hour',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Hour',
-                'options' => [
-                    0 => [
-                        'value' => '0',
-                        'label' => '0',
-                    ],
-                    1 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    2 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    3 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    4 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    5 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    6 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    7 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    8 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    9 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                    10 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    11 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    12 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                    13 => [
-                        'value' => '13',
-                        'label' => '13',
-                    ],
-                    14 => [
-                        'value' => '14',
-                        'label' => '14',
-                    ],
-                    15 => [
-                        'value' => '15',
-                        'label' => '15',
-                    ],
-                    16 => [
-                        'value' => '16',
-                        'label' => '16',
-                    ],
-                    17 => [
-                        'value' => '17',
-                        'label' => '17',
-                    ],
-                    18 => [
-                        'value' => '18',
-                        'label' => '18',
-                    ],
-                    19 => [
-                        'value' => '19',
-                        'label' => '19',
-                    ],
-                    20 => [
-                        'value' => '20',
-                        'label' => '20',
-                    ],
-                    21 => [
-                        'value' => '21',
-                        'label' => '21',
-                    ],
-                    22 => [
-                        'value' => '22',
-                        'label' => '22',
-                    ],
-                    23 => [
-                        'value' => '23',
-                        'label' => '23',
-                    ],
-                ],
+                'name' => 'month_min',
+                'label' => 'Month Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Month',
             ],
             14 => [
+                'name' => 'month_max',
+                'label' => 'Month Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Month',
+            ],
+            15 => [
+                'name' => 'day_of_week',
+                'label' => 'Day Of Week',
+                'type' => 'text',
+                'placeholder' => 'Enter Day Of Week',
+            ],
+            16 => [
+                'name' => 'hour_min',
+                'label' => 'Hour Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Hour',
+            ],
+            17 => [
+                'name' => 'hour_max',
+                'label' => 'Hour Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Hour',
+            ],
+            18 => [
                 'name' => 'ucr_part',
                 'label' => 'Ucr Part',
                 'type' => 'text',
                 'placeholder' => 'Enter Ucr Part',
             ],
-            15 => [
+            19 => [
                 'name' => 'street',
                 'label' => 'Street',
                 'type' => 'text',
                 'placeholder' => 'Enter Street',
             ],
-            16 => [
+            20 => [
                 'name' => 'lat_min',
                 'label' => 'Lat Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Lat',
             ],
-            17 => [
+            21 => [
                 'name' => 'lat_max',
                 'label' => 'Lat Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Lat',
             ],
-            18 => [
+            22 => [
                 'name' => 'long_min',
                 'label' => 'Long Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Long',
             ],
-            19 => [
+            23 => [
                 'name' => 'long_max',
                 'label' => 'Long Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Long',
             ],
-            20 => [
+            24 => [
                 'name' => 'location',
                 'label' => 'Location',
                 'type' => 'text',
                 'placeholder' => 'Enter Location',
             ],
-            21 => [
+            25 => [
                 'name' => 'source_city',
                 'label' => 'Source City',
                 'type' => 'text',
                 'placeholder' => 'Enter Source City',
             ],
-            22 => [
-                'name' => 'crime_details',
-                'label' => 'Crime Details',
-                'type' => 'text',
-                'placeholder' => 'Enter Crime Details',
-            ],
-            23 => [
+            26 => [
                 'name' => 'crime_start_time_start',
                 'label' => 'Crime Start Time Start',
                 'type' => 'date',
                 'placeholder' => 'Start date for Crime Start Time',
             ],
-            24 => [
+            27 => [
                 'name' => 'crime_start_time_end',
                 'label' => 'Crime Start Time End',
                 'type' => 'date',
                 'placeholder' => 'End date for Crime Start Time',
             ],
-            25 => [
+            28 => [
                 'name' => 'crime_end_time_start',
                 'label' => 'Crime End Time Start',
                 'type' => 'date',
                 'placeholder' => 'Start date for Crime End Time',
             ],
-            26 => [
+            29 => [
                 'name' => 'crime_end_time_end',
                 'label' => 'Crime End Time End',
                 'type' => 'date',
                 'placeholder' => 'End date for Crime End Time',
+            ],
+            30 => [
+                'name' => 'crime_details',
+                'label' => 'Crime Details',
+                'type' => 'text',
+                'placeholder' => 'Enter Crime Details',
             ],
         ],
         'contextData' => 'Dataset of Boston Crimes. Filter by attributes like incident number, language code, offense code group.',
@@ -12702,47 +10411,48 @@ return [
                 'description' => 'Filter by Offense Description.',
             ],
             'district' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by District. Provide a comma-separated list or an array of values. Possible values: A1, A15, A7, B2, B3, C11, C6, D14, D4, E13, E18, E5, External, Outside of.',
+                'type' => 'string',
+                'description' => 'Filter by District.',
             ],
             'reporting_area' => [
                 'type' => 'string',
                 'description' => 'Filter by Reporting Area.',
             ],
-            'shooting' => [
-                'type' => 'boolean',
-                'description' => 'Filter by Shooting (true/false).',
+            'shooting_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Shooting.',
             ],
-            'year' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Year. Provide a comma-separated list or an array of values. Possible values: 2023, 2024, 2025.',
+            'shooting_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Shooting.',
             ],
-            'month' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Month. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.',
+            'year_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Year.',
+            ],
+            'year_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Year.',
+            ],
+            'month_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Month.',
+            ],
+            'month_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Month.',
             ],
             'day_of_week' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Day Of Week. Provide a comma-separated list or an array of values. Possible values: Friday, Monday, Saturday, Sunday, Thursday, Tuesday, Wednesday.',
+                'type' => 'string',
+                'description' => 'Filter by Day Of Week.',
             ],
-            'hour' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Hour. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23.',
+            'hour_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Hour.',
+            ],
+            'hour_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Hour.',
             ],
             'ucr_part' => [
                 'type' => 'string',
@@ -12776,10 +10486,6 @@ return [
                 'type' => 'string',
                 'description' => 'Filter by Source City.',
             ],
-            'crime_details' => [
-                'type' => 'string',
-                'description' => 'Filter by Crime Details.',
-            ],
             'crime_start_time_start' => [
                 'type' => 'string',
                 'format' => 'date',
@@ -12799,6 +10505,10 @@ return [
                 'type' => 'string',
                 'format' => 'date',
                 'description' => 'End date for Crime End Time (YYYY-MM-DD)',
+            ],
+            'crime_details' => [
+                'type' => 'string',
+                'description' => 'Filter by Crime Details.',
             ],
         ],
     ],
@@ -12843,34 +10553,14 @@ return [
             6 => [
                 'name' => 'on_time',
                 'label' => 'On Time',
-                'type' => 'multiselect',
-                'placeholder' => 'Select On Time',
-                'options' => [
-                    0 => [
-                        'value' => 'ONTIME',
-                        'label' => 'ONTIME',
-                    ],
-                    1 => [
-                        'value' => 'OVERDUE',
-                        'label' => 'OVERDUE',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter On Time',
             ],
             7 => [
                 'name' => 'case_status',
                 'label' => 'Case Status',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Case Status',
-                'options' => [
-                    0 => [
-                        'value' => 'Closed',
-                        'label' => 'Closed',
-                    ],
-                    1 => [
-                        'value' => 'Open',
-                        'label' => 'Open',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Case Status',
             ],
             8 => [
                 'name' => 'closure_reason',
@@ -12887,222 +10577,14 @@ return [
             10 => [
                 'name' => 'subject',
                 'label' => 'Subject',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Subject',
-                'options' => [
-                    0 => [
-                        'value' => 'Animal Control',
-                        'label' => 'Animal Control',
-                    ],
-                    1 => [
-                        'value' => 'Boston Police Department',
-                        'label' => 'Boston Police Department',
-                    ],
-                    2 => [
-                        'value' => 'Boston Water & Sewer Commission',
-                        'label' => 'Boston Water & Sewer Commission',
-                    ],
-                    3 => [
-                        'value' => 'Inspectional Services',
-                        'label' => 'Inspectional Services',
-                    ],
-                    4 => [
-                        'value' => 'Mayor\'s 24 Hour Hotline',
-                        'label' => 'Mayor\'s 24 Hour Hotline',
-                    ],
-                    5 => [
-                        'value' => 'Neighborhood Services',
-                        'label' => 'Neighborhood Services',
-                    ],
-                    6 => [
-                        'value' => 'Parks & Recreation Department',
-                        'label' => 'Parks & Recreation Department',
-                    ],
-                    7 => [
-                        'value' => 'Property Management',
-                        'label' => 'Property Management',
-                    ],
-                    8 => [
-                        'value' => 'Public Works Department',
-                        'label' => 'Public Works Department',
-                    ],
-                    9 => [
-                        'value' => 'Transportation - Traffic Division',
-                        'label' => 'Transportation - Traffic Division',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Subject',
             ],
             11 => [
                 'name' => 'reason',
                 'label' => 'Reason',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Reason',
-                'options' => [
-                    0 => [
-                        'value' => 'Abandoned Bicycle',
-                        'label' => 'Abandoned Bicycle',
-                    ],
-                    1 => [
-                        'value' => 'Administrative & General Requests',
-                        'label' => 'Administrative & General Requests',
-                    ],
-                    2 => [
-                        'value' => 'Air Pollution Control',
-                        'label' => 'Air Pollution Control',
-                    ],
-                    3 => [
-                        'value' => 'Animal Issues',
-                        'label' => 'Animal Issues',
-                    ],
-                    4 => [
-                        'value' => 'Billing',
-                        'label' => 'Billing',
-                    ],
-                    5 => [
-                        'value' => 'Boston Bikes',
-                        'label' => 'Boston Bikes',
-                    ],
-                    6 => [
-                        'value' => 'Bridge Maintenance',
-                        'label' => 'Bridge Maintenance',
-                    ],
-                    7 => [
-                        'value' => 'Building',
-                        'label' => 'Building',
-                    ],
-                    8 => [
-                        'value' => 'Catchbasin',
-                        'label' => 'Catchbasin',
-                    ],
-                    9 => [
-                        'value' => 'Cemetery',
-                        'label' => 'Cemetery',
-                    ],
-                    10 => [
-                        'value' => 'Code Enforcement',
-                        'label' => 'Code Enforcement',
-                    ],
-                    11 => [
-                        'value' => 'Employee & General Comments',
-                        'label' => 'Employee & General Comments',
-                    ],
-                    12 => [
-                        'value' => 'Enforcement & Abandoned Vehicles',
-                        'label' => 'Enforcement & Abandoned Vehicles',
-                    ],
-                    13 => [
-                        'value' => 'Environmental Services',
-                        'label' => 'Environmental Services',
-                    ],
-                    14 => [
-                        'value' => 'Fire Hydrant',
-                        'label' => 'Fire Hydrant',
-                    ],
-                    15 => [
-                        'value' => 'Generic Noise Disturbance',
-                        'label' => 'Generic Noise Disturbance',
-                    ],
-                    16 => [
-                        'value' => 'Graffiti',
-                        'label' => 'Graffiti',
-                    ],
-                    17 => [
-                        'value' => 'Health',
-                        'label' => 'Health',
-                    ],
-                    18 => [
-                        'value' => 'Highway Maintenance',
-                        'label' => 'Highway Maintenance',
-                    ],
-                    19 => [
-                        'value' => 'Housing',
-                        'label' => 'Housing',
-                    ],
-                    20 => [
-                        'value' => 'Massport',
-                        'label' => 'Massport',
-                    ],
-                    21 => [
-                        'value' => 'Needle Program',
-                        'label' => 'Needle Program',
-                    ],
-                    22 => [
-                        'value' => 'Neighborhood Services Issues',
-                        'label' => 'Neighborhood Services Issues',
-                    ],
-                    23 => [
-                        'value' => 'Noise Disturbance',
-                        'label' => 'Noise Disturbance',
-                    ],
-                    24 => [
-                        'value' => 'Notification',
-                        'label' => 'Notification',
-                    ],
-                    25 => [
-                        'value' => 'Office of The Parking Clerk',
-                        'label' => 'Office of The Parking Clerk',
-                    ],
-                    26 => [
-                        'value' => 'Operations',
-                        'label' => 'Operations',
-                    ],
-                    27 => [
-                        'value' => 'Park Maintenance & Safety',
-                        'label' => 'Park Maintenance & Safety',
-                    ],
-                    28 => [
-                        'value' => 'Parking Complaints',
-                        'label' => 'Parking Complaints',
-                    ],
-                    29 => [
-                        'value' => 'Pothole',
-                        'label' => 'Pothole',
-                    ],
-                    30 => [
-                        'value' => 'Programs',
-                        'label' => 'Programs',
-                    ],
-                    31 => [
-                        'value' => 'Recycling',
-                        'label' => 'Recycling',
-                    ],
-                    32 => [
-                        'value' => 'Sanitation',
-                        'label' => 'Sanitation',
-                    ],
-                    33 => [
-                        'value' => 'Sidewalk Cover / Manhole',
-                        'label' => 'Sidewalk Cover / Manhole',
-                    ],
-                    34 => [
-                        'value' => 'Signs & Signals',
-                        'label' => 'Signs & Signals',
-                    ],
-                    35 => [
-                        'value' => 'Street Cleaning',
-                        'label' => 'Street Cleaning',
-                    ],
-                    36 => [
-                        'value' => 'Street Lights',
-                        'label' => 'Street Lights',
-                    ],
-                    37 => [
-                        'value' => 'Traffic Management & Engineering',
-                        'label' => 'Traffic Management & Engineering',
-                    ],
-                    38 => [
-                        'value' => 'Trees',
-                        'label' => 'Trees',
-                    ],
-                    39 => [
-                        'value' => 'Valet',
-                        'label' => 'Valet',
-                    ],
-                    40 => [
-                        'value' => 'Weights and Measures',
-                        'label' => 'Weights and Measures',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Reason',
             ],
             12 => [
                 'name' => 'type',
@@ -13119,74 +10601,8 @@ return [
             14 => [
                 'name' => 'department',
                 'label' => 'Department',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Department',
-                'options' => [
-                    0 => [
-                        'value' => 'ANML',
-                        'label' => 'ANML',
-                    ],
-                    1 => [
-                        'value' => 'BHA_',
-                        'label' => 'BHA_',
-                    ],
-                    2 => [
-                        'value' => 'BPD_',
-                        'label' => 'BPD_',
-                    ],
-                    3 => [
-                        'value' => 'BPS_',
-                        'label' => 'BPS_',
-                    ],
-                    4 => [
-                        'value' => 'BTDT',
-                        'label' => 'BTDT',
-                    ],
-                    5 => [
-                        'value' => 'BWSC',
-                        'label' => 'BWSC',
-                    ],
-                    6 => [
-                        'value' => 'DISB',
-                        'label' => 'DISB',
-                    ],
-                    7 => [
-                        'value' => 'DND_',
-                        'label' => 'DND_',
-                    ],
-                    8 => [
-                        'value' => 'GEN_',
-                        'label' => 'GEN_',
-                    ],
-                    9 => [
-                        'value' => 'GRNi',
-                        'label' => 'GRNi',
-                    ],
-                    10 => [
-                        'value' => 'INFO',
-                        'label' => 'INFO',
-                    ],
-                    11 => [
-                        'value' => 'ISD',
-                        'label' => 'ISD',
-                    ],
-                    12 => [
-                        'value' => 'ONS_',
-                        'label' => 'ONS_',
-                    ],
-                    13 => [
-                        'value' => 'PARK',
-                        'label' => 'PARK',
-                    ],
-                    14 => [
-                        'value' => 'PROP',
-                        'label' => 'PROP',
-                    ],
-                    15 => [
-                        'value' => 'PWDx',
-                        'label' => 'PWDx',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Department',
             ],
             15 => [
                 'name' => 'submitted_photo',
@@ -13209,434 +10625,38 @@ return [
             18 => [
                 'name' => 'fire_district',
                 'label' => 'Fire District',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Fire District',
-                'options' => [
-                    0 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    1 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    2 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    3 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                    4 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    5 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    6 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    7 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    8 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    9 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Fire District',
             ],
             19 => [
                 'name' => 'pwd_district',
                 'label' => 'Pwd District',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Pwd District',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '02',
-                        'label' => '02',
-                    ],
-                    2 => [
-                        'value' => '03',
-                        'label' => '03',
-                    ],
-                    3 => [
-                        'value' => '04',
-                        'label' => '04',
-                    ],
-                    4 => [
-                        'value' => '05',
-                        'label' => '05',
-                    ],
-                    5 => [
-                        'value' => '06',
-                        'label' => '06',
-                    ],
-                    6 => [
-                        'value' => '07',
-                        'label' => '07',
-                    ],
-                    7 => [
-                        'value' => '08',
-                        'label' => '08',
-                    ],
-                    8 => [
-                        'value' => '09',
-                        'label' => '09',
-                    ],
-                    9 => [
-                        'value' => '10A',
-                        'label' => '10A',
-                    ],
-                    10 => [
-                        'value' => '10B',
-                        'label' => '10B',
-                    ],
-                    11 => [
-                        'value' => '1A',
-                        'label' => '1A',
-                    ],
-                    12 => [
-                        'value' => '1B',
-                        'label' => '1B',
-                    ],
-                    13 => [
-                        'value' => '1C',
-                        'label' => '1C',
-                    ],
-                    14 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    15 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    16 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    17 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    18 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    19 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    20 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    21 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Pwd District',
             ],
             20 => [
                 'name' => 'city_council_district',
                 'label' => 'City Council District',
-                'type' => 'multiselect',
-                'placeholder' => 'Select City Council District',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '0',
-                        'label' => '0',
-                    ],
-                    2 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    3 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    4 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    5 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    6 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    7 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    8 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    9 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    10 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter City Council District',
             ],
             21 => [
                 'name' => 'police_district',
                 'label' => 'Police District',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Police District',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => 'A1',
-                        'label' => 'A1',
-                    ],
-                    2 => [
-                        'value' => 'A15',
-                        'label' => 'A15',
-                    ],
-                    3 => [
-                        'value' => 'A7',
-                        'label' => 'A7',
-                    ],
-                    4 => [
-                        'value' => 'B2',
-                        'label' => 'B2',
-                    ],
-                    5 => [
-                        'value' => 'B3',
-                        'label' => 'B3',
-                    ],
-                    6 => [
-                        'value' => 'C11',
-                        'label' => 'C11',
-                    ],
-                    7 => [
-                        'value' => 'C6',
-                        'label' => 'C6',
-                    ],
-                    8 => [
-                        'value' => 'D14',
-                        'label' => 'D14',
-                    ],
-                    9 => [
-                        'value' => 'D4',
-                        'label' => 'D4',
-                    ],
-                    10 => [
-                        'value' => 'E13',
-                        'label' => 'E13',
-                    ],
-                    11 => [
-                        'value' => 'E18',
-                        'label' => 'E18',
-                    ],
-                    12 => [
-                        'value' => 'E5',
-                        'label' => 'E5',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Police District',
             ],
             22 => [
                 'name' => 'neighborhood',
                 'label' => 'Neighborhood',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Neighborhood',
-                'options' => [
-                    0 => [
-                        'value' => 'Allston',
-                        'label' => 'Allston',
-                    ],
-                    1 => [
-                        'value' => 'Allston / Brighton',
-                        'label' => 'Allston / Brighton',
-                    ],
-                    2 => [
-                        'value' => 'Back Bay',
-                        'label' => 'Back Bay',
-                    ],
-                    3 => [
-                        'value' => 'Beacon Hill',
-                        'label' => 'Beacon Hill',
-                    ],
-                    4 => [
-                        'value' => 'Boston',
-                        'label' => 'Boston',
-                    ],
-                    5 => [
-                        'value' => 'Brighton',
-                        'label' => 'Brighton',
-                    ],
-                    6 => [
-                        'value' => 'Charlestown',
-                        'label' => 'Charlestown',
-                    ],
-                    7 => [
-                        'value' => 'Chestnut Hill',
-                        'label' => 'Chestnut Hill',
-                    ],
-                    8 => [
-                        'value' => 'Dorchester',
-                        'label' => 'Dorchester',
-                    ],
-                    9 => [
-                        'value' => 'Downtown / Financial District',
-                        'label' => 'Downtown / Financial District',
-                    ],
-                    10 => [
-                        'value' => 'East Boston',
-                        'label' => 'East Boston',
-                    ],
-                    11 => [
-                        'value' => 'Fenway / Kenmore / Audubon Circle / Longwood',
-                        'label' => 'Fenway / Kenmore / Audubon Circle / Longwood',
-                    ],
-                    12 => [
-                        'value' => 'Greater Mattapan',
-                        'label' => 'Greater Mattapan',
-                    ],
-                    13 => [
-                        'value' => 'Hyde Park',
-                        'label' => 'Hyde Park',
-                    ],
-                    14 => [
-                        'value' => 'Jamaica Plain',
-                        'label' => 'Jamaica Plain',
-                    ],
-                    15 => [
-                        'value' => 'Mattapan',
-                        'label' => 'Mattapan',
-                    ],
-                    16 => [
-                        'value' => 'Mission Hill',
-                        'label' => 'Mission Hill',
-                    ],
-                    17 => [
-                        'value' => 'Roslindale',
-                        'label' => 'Roslindale',
-                    ],
-                    18 => [
-                        'value' => 'Roxbury',
-                        'label' => 'Roxbury',
-                    ],
-                    19 => [
-                        'value' => 'South Boston',
-                        'label' => 'South Boston',
-                    ],
-                    20 => [
-                        'value' => 'South Boston / South Boston Waterfront',
-                        'label' => 'South Boston / South Boston Waterfront',
-                    ],
-                    21 => [
-                        'value' => 'South End',
-                        'label' => 'South End',
-                    ],
-                    22 => [
-                        'value' => 'West Roxbury',
-                        'label' => 'West Roxbury',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Neighborhood',
             ],
             23 => [
                 'name' => 'neighborhood_services_district',
                 'label' => 'Neighborhood Services District',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Neighborhood Services District',
-                'options' => [
-                    0 => [
-                        'value' => ' ',
-                        'label' => ' ',
-                    ],
-                    1 => [
-                        'value' => '0',
-                        'label' => '0',
-                    ],
-                    2 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    3 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    4 => [
-                        'value' => '11',
-                        'label' => '11',
-                    ],
-                    5 => [
-                        'value' => '12',
-                        'label' => '12',
-                    ],
-                    6 => [
-                        'value' => '13',
-                        'label' => '13',
-                    ],
-                    7 => [
-                        'value' => '14',
-                        'label' => '14',
-                    ],
-                    8 => [
-                        'value' => '15',
-                        'label' => '15',
-                    ],
-                    9 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    10 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    11 => [
-                        'value' => '4',
-                        'label' => '4',
-                    ],
-                    12 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    13 => [
-                        'value' => '6',
-                        'label' => '6',
-                    ],
-                    14 => [
-                        'value' => '7',
-                        'label' => '7',
-                    ],
-                    15 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    16 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Neighborhood Services District',
             ],
             24 => [
                 'name' => 'ward',
@@ -13657,230 +10677,72 @@ return [
                 'placeholder' => 'Enter Location Street Name',
             ],
             27 => [
-                'name' => 'location_zipcode',
-                'label' => 'Location Zipcode',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Location Zipcode',
-                'options' => [
-                    0 => [
-                        'value' => '2108',
-                        'label' => '2108',
-                    ],
-                    1 => [
-                        'value' => '2109',
-                        'label' => '2109',
-                    ],
-                    2 => [
-                        'value' => '2110',
-                        'label' => '2110',
-                    ],
-                    3 => [
-                        'value' => '2111',
-                        'label' => '2111',
-                    ],
-                    4 => [
-                        'value' => '2113',
-                        'label' => '2113',
-                    ],
-                    5 => [
-                        'value' => '2114',
-                        'label' => '2114',
-                    ],
-                    6 => [
-                        'value' => '2115',
-                        'label' => '2115',
-                    ],
-                    7 => [
-                        'value' => '2116',
-                        'label' => '2116',
-                    ],
-                    8 => [
-                        'value' => '2118',
-                        'label' => '2118',
-                    ],
-                    9 => [
-                        'value' => '2119',
-                        'label' => '2119',
-                    ],
-                    10 => [
-                        'value' => '2120',
-                        'label' => '2120',
-                    ],
-                    11 => [
-                        'value' => '2121',
-                        'label' => '2121',
-                    ],
-                    12 => [
-                        'value' => '2122',
-                        'label' => '2122',
-                    ],
-                    13 => [
-                        'value' => '2124',
-                        'label' => '2124',
-                    ],
-                    14 => [
-                        'value' => '2125',
-                        'label' => '2125',
-                    ],
-                    15 => [
-                        'value' => '2126',
-                        'label' => '2126',
-                    ],
-                    16 => [
-                        'value' => '2127',
-                        'label' => '2127',
-                    ],
-                    17 => [
-                        'value' => '2128',
-                        'label' => '2128',
-                    ],
-                    18 => [
-                        'value' => '2129',
-                        'label' => '2129',
-                    ],
-                    19 => [
-                        'value' => '2130',
-                        'label' => '2130',
-                    ],
-                    20 => [
-                        'value' => '2131',
-                        'label' => '2131',
-                    ],
-                    21 => [
-                        'value' => '2132',
-                        'label' => '2132',
-                    ],
-                    22 => [
-                        'value' => '2133',
-                        'label' => '2133',
-                    ],
-                    23 => [
-                        'value' => '2134',
-                        'label' => '2134',
-                    ],
-                    24 => [
-                        'value' => '2135',
-                        'label' => '2135',
-                    ],
-                    25 => [
-                        'value' => '2136',
-                        'label' => '2136',
-                    ],
-                    26 => [
-                        'value' => '2163',
-                        'label' => '2163',
-                    ],
-                    27 => [
-                        'value' => '2199',
-                        'label' => '2199',
-                    ],
-                    28 => [
-                        'value' => '2201',
-                        'label' => '2201',
-                    ],
-                    29 => [
-                        'value' => '2203',
-                        'label' => '2203',
-                    ],
-                    30 => [
-                        'value' => '2210',
-                        'label' => '2210',
-                    ],
-                    31 => [
-                        'value' => '2215',
-                        'label' => '2215',
-                    ],
-                    32 => [
-                        'value' => '2446',
-                        'label' => '2446',
-                    ],
-                    33 => [
-                        'value' => '2467',
-                        'label' => '2467',
-                    ],
-                ],
+                'name' => 'location_zipcode_min',
+                'label' => 'Location Zipcode Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Location Zipcode',
             ],
             28 => [
+                'name' => 'location_zipcode_max',
+                'label' => 'Location Zipcode Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Location Zipcode',
+            ],
+            29 => [
                 'name' => 'latitude_min',
                 'label' => 'Latitude Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Latitude',
             ],
-            29 => [
+            30 => [
                 'name' => 'latitude_max',
                 'label' => 'Latitude Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Latitude',
             ],
-            30 => [
+            31 => [
                 'name' => 'longitude_min',
                 'label' => 'Longitude Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Longitude',
             ],
-            31 => [
+            32 => [
                 'name' => 'longitude_max',
                 'label' => 'Longitude Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Longitude',
             ],
-            32 => [
+            33 => [
                 'name' => 'source',
                 'label' => 'Source',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Source',
-                'options' => [
-                    0 => [
-                        'value' => 'Citizens Connect App',
-                        'label' => 'Citizens Connect App',
-                    ],
-                    1 => [
-                        'value' => 'City Worker App',
-                        'label' => 'City Worker App',
-                    ],
-                    2 => [
-                        'value' => 'Constituent Call',
-                        'label' => 'Constituent Call',
-                    ],
-                    3 => [
-                        'value' => 'Employee Generated',
-                        'label' => 'Employee Generated',
-                    ],
-                    4 => [
-                        'value' => 'Maximo Integration',
-                        'label' => 'Maximo Integration',
-                    ],
-                    5 => [
-                        'value' => 'Self Service',
-                        'label' => 'Self Service',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Source',
             ],
-            33 => [
+            34 => [
                 'name' => 'checksum',
                 'label' => 'Checksum',
                 'type' => 'text',
                 'placeholder' => 'Enter Checksum',
             ],
-            34 => [
+            35 => [
                 'name' => 'language_code',
                 'label' => 'Language Code',
                 'type' => 'text',
                 'placeholder' => 'Enter Language Code',
             ],
-            35 => [
+            36 => [
                 'name' => 'ward_number',
                 'label' => 'Ward Number',
                 'type' => 'text',
                 'placeholder' => 'Enter Ward Number',
             ],
-            36 => [
+            37 => [
                 'name' => 'threeoneonedescription',
                 'label' => 'Threeoneonedescription',
                 'type' => 'text',
                 'placeholder' => 'Enter Threeoneonedescription',
             ],
-            37 => [
+            38 => [
                 'name' => 'source_city',
                 'label' => 'Source City',
                 'type' => 'text',
@@ -13966,18 +10828,12 @@ return [
                 'description' => 'End date for Closed Dt (YYYY-MM-DD)',
             ],
             'on_time' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by On Time. Provide a comma-separated list or an array of values. Possible values: ONTIME, OVERDUE.',
+                'type' => 'string',
+                'description' => 'Filter by On Time.',
             ],
             'case_status' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Case Status. Provide a comma-separated list or an array of values. Possible values: Closed, Open.',
+                'type' => 'string',
+                'description' => 'Filter by Case Status.',
             ],
             'closure_reason' => [
                 'type' => 'string',
@@ -13988,18 +10844,12 @@ return [
                 'description' => 'Filter by Case Title.',
             ],
             'subject' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Subject. Provide a comma-separated list or an array of values. Possible values: Animal Control, Boston Police Department, Boston Water & Sewer Commission, Inspectional Services, Mayor\'s 24 Hour Hotline, Neighborhood Services, Parks & Recreation Department, Property Management, Public Works Department, Transportation - Traffic Division.',
+                'type' => 'string',
+                'description' => 'Filter by Subject.',
             ],
             'reason' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Reason. Provide a comma-separated list or an array of values. Possible values: Abandoned Bicycle, Administrative & General Requests, Air Pollution Control, Animal Issues, Billing, Boston Bikes, Bridge Maintenance, Building, Catchbasin, Cemetery, Code Enforcement, Employee & General Comments, Enforcement & Abandoned Vehicles, Environmental Services, Fire Hydrant, Generic Noise Disturbance, Graffiti, Health, Highway Maintenance, Housing, Massport, Needle Program, Neighborhood Services Issues, Noise Disturbance, Notification, Office of The Parking Clerk, Operations, Park Maintenance & Safety, Parking Complaints, Pothole, Programs, Recycling, Sanitation, Sidewalk Cover / Manhole, Signs & Signals, Street Cleaning, Street Lights, Traffic Management & Engineering, Trees, Valet, Weights and Measures.',
+                'type' => 'string',
+                'description' => 'Filter by Reason.',
             ],
             'type' => [
                 'type' => 'string',
@@ -14010,11 +10860,8 @@ return [
                 'description' => 'Filter by Queue.',
             ],
             'department' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Department. Provide a comma-separated list or an array of values. Possible values: ANML, BHA_, BPD_, BPS_, BTDT, BWSC, DISB, DND_, GEN_, GRNi, INFO, ISD, ONS_, PARK, PROP, PWDx.',
+                'type' => 'string',
+                'description' => 'Filter by Department.',
             ],
             'submitted_photo' => [
                 'type' => 'string',
@@ -14029,46 +10876,28 @@ return [
                 'description' => 'Filter by Location.',
             ],
             'fire_district' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Fire District. Provide a comma-separated list or an array of values. Possible values: 1, 10, 11, 12, 3, 4, 6, 7, 8, 9.',
+                'type' => 'string',
+                'description' => 'Filter by Fire District.',
             ],
             'pwd_district' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Pwd District. Provide a comma-separated list or an array of values. Possible values:  , 02, 03, 04, 05, 06, 07, 08, 09, 10A, 10B, 1A, 1B, 1C, 2, 3, 4, 5, 6, 7, 8, 9.',
+                'type' => 'string',
+                'description' => 'Filter by Pwd District.',
             ],
             'city_council_district' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by City Council District. Provide a comma-separated list or an array of values. Possible values:  , 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.',
+                'type' => 'string',
+                'description' => 'Filter by City Council District.',
             ],
             'police_district' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Police District. Provide a comma-separated list or an array of values. Possible values:  , A1, A15, A7, B2, B3, C11, C6, D14, D4, E13, E18, E5.',
+                'type' => 'string',
+                'description' => 'Filter by Police District.',
             ],
             'neighborhood' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Neighborhood. Provide a comma-separated list or an array of values. Possible values: Allston, Allston / Brighton, Back Bay, Beacon Hill, Boston, Brighton, Charlestown, Chestnut Hill, Dorchester, Downtown / Financial District, East Boston, Fenway / Kenmore / Audubon Circle / Longwood, Greater Mattapan, Hyde Park, Jamaica Plain, Mattapan, Mission Hill, Roslindale, Roxbury, South Boston, South Boston / South Boston Waterfront, South End, West Roxbury.',
+                'type' => 'string',
+                'description' => 'Filter by Neighborhood.',
             ],
             'neighborhood_services_district' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Neighborhood Services District. Provide a comma-separated list or an array of values. Possible values:  , 0, 1, 10, 11, 12, 13, 14, 15, 2, 3, 4, 5, 6, 7, 8, 9.',
+                'type' => 'string',
+                'description' => 'Filter by Neighborhood Services District.',
             ],
             'ward' => [
                 'type' => 'string',
@@ -14082,12 +10911,13 @@ return [
                 'type' => 'string',
                 'description' => 'Filter by Location Street Name.',
             ],
-            'location_zipcode' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Location Zipcode. Provide a comma-separated list or an array of values. Possible values: 2108, 2109, 2110, 2111, 2113, 2114, 2115, 2116, 2118, 2119, 2120, 2121, 2122, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 2132, 2133, 2134, 2135, 2136, 2163, 2199, 2201, 2203, 2210, 2215, 2446, 2467.',
+            'location_zipcode_min' => [
+                'type' => 'number',
+                'description' => 'Minimum value for Location Zipcode.',
+            ],
+            'location_zipcode_max' => [
+                'type' => 'number',
+                'description' => 'Maximum value for Location Zipcode.',
             ],
             'latitude_min' => [
                 'type' => 'number',
@@ -14106,11 +10936,8 @@ return [
                 'description' => 'Maximum value for Longitude.',
             ],
             'source' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Source. Provide a comma-separated list or an array of values. Possible values: Citizens Connect App, City Worker App, Constituent Call, Employee Generated, Maximo Integration, Self Service.',
+                'type' => 'string',
+                'description' => 'Filter by Source.',
             ],
             'checksum' => [
                 'type' => 'string',
