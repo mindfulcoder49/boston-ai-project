@@ -17,7 +17,7 @@ class DataPointSeeder extends Seeder
      * Define the Mappable models to process.
      * Each entry should be the fully qualified class name of the model.
      */
-    private const MODELS_TO_PROCESS = [
+    private const MODELS_TO_PROCESS = [ /*
         // Boston Models (ensure these implement Mappable)
         \App\Models\CrimeData::class,
         \App\Models\ThreeOneOneCase::class,
@@ -35,6 +35,9 @@ class DataPointSeeder extends Seeder
         \App\Models\CambridgeCrimeReportData::class,
         \App\Models\CambridgeHousingViolationData::class,
         \App\Models\CambridgeSanitaryInspectionData::class,
+         */
+        // New Model
+        \App\Models\PersonCrashData::class,
     ];
 
     public function run()

@@ -56,6 +56,20 @@ class GenerateModelMetadataCommand extends Command
                 $primaryKey = $modelInstance->getKeyName();
                 $this->line("[MODEL] Primary key: {$primaryKey}");
                 
+                // Attempt to get custom field labels from the model
+                $fieldLabels = [];
+                if (method_exists($modelClass, 'getFieldLabels')) {
+                    $fieldLabels = $modelClass::getFieldLabels();
+                    if (is_array($fieldLabels)) {
+                        $this->line("[MODEL] Custom field labels found: " . json_encode($fieldLabels));
+                    } else {
+                        $this->warn("[MODEL] getFieldLabels method in {$modelClass} did not return an array. Using default labeling.");
+                        $fieldLabels = [];
+                    }
+                } else {
+                    $this->line("[MODEL] No custom field labels method (getFieldLabels) found for {$modelClass}. Using default labeling.");
+                }
+
                 // Add current model's primary key to excluded fields for this model only
                 $currentModelExcludedFilterFields = $this->defaultExcludedFilterFields;
                 if (!in_array($primaryKey, $currentModelExcludedFilterFields)) {
@@ -149,10 +163,10 @@ class GenerateModelMetadataCommand extends Command
                 
                 $this->line("[GENERATION] Generating metadata for {$modelClass}...");
                 $allMetadata[$modelClass] = [
-                    'filterableFieldsDescription' => $this->generateFilterableFieldsDescription($fieldsInfo, $nThreshold, $modelClass, $currentModelExcludedFilterFields),
-                    'contextData' => $this->generateContextData($fieldsInfo, $modelClass, $currentModelExcludedFilterFields),
+                    'filterableFieldsDescription' => $this->generateFilterableFieldsDescription($fieldsInfo, $nThreshold, $modelClass, $currentModelExcludedFilterFields, $fieldLabels),
+                    'contextData' => $this->generateContextData($fieldsInfo, $modelClass, $currentModelExcludedFilterFields, $fieldLabels),
                     'searchableColumns' => $this->generateSearchableColumns($fieldsInfo, $modelClass),
-                    'gptSchemaProperties' => $this->generateGptSchemaProperties($fieldsInfo, $nThreshold, $modelClass, $currentModelExcludedFilterFields),
+                    'gptSchemaProperties' => $this->generateGptSchemaProperties($fieldsInfo, $nThreshold, $modelClass, $currentModelExcludedFilterFields, $fieldLabels),
                 ];
                 $this->line("[GENERATION] Finished generating metadata for {$modelClass}.");
 
@@ -247,10 +261,10 @@ class GenerateModelMetadataCommand extends Command
             return 'boolean';
         }
         
-        // Condition for select: DB count is known, positive, and within threshold, AND we actually have more than one distinct value to show.
+        // Condition for multiselect: DB count is known, positive, and within threshold, AND we actually have more than one distinct value to show.
         if ($fieldInfo['distinctCount'] > 0 && $fieldInfo['distinctCount'] <= $nThreshold && count($fieldInfo['distinctValues']) > 1) {
-            $this->line("        [UI_TYPE_DECISION] Determined UI Type: select (DistinctCount {$fieldInfo['distinctCount']} <= N {$nThreshold} AND FetchedOptions " . count($fieldInfo['distinctValues']) . " > 1)");
-            return 'select';
+            $this->line("        [UI_TYPE_DECISION] Determined UI Type: multiselect (DistinctCount {$fieldInfo['distinctCount']} <= N {$nThreshold} AND FetchedOptions " . count($fieldInfo['distinctValues']) . " > 1)");
+            return 'multiselect';
         }
         
         if ($fieldInfo['appType'] === 'number') {
@@ -267,7 +281,7 @@ class GenerateModelMetadataCommand extends Command
         return 'text';
     }
 
-    private function generateFilterableFieldsDescription(array $fieldsInfo, int $nThreshold, string $modelClass, array $excludedFilterFields): array
+    private function generateFilterableFieldsDescription(array $fieldsInfo, int $nThreshold, string $modelClass, array $excludedFilterFields, array $fieldLabels): array
     {
         $this->line("  [FILTERABLE_FIELDS] Generating for {$modelClass}");
         $items = [
@@ -285,7 +299,7 @@ class GenerateModelMetadataCommand extends Command
                 continue;
             }
 
-            $label = Str::title(str_replace('_', ' ', $column));
+            $label = $fieldLabels[$column] ?? Str::title(str_replace('_', ' ', $column));
             $uiType = $this->determineUiType($info, $nThreshold); // Logging is inside determineUiType
             $this->line("      [FILTERABLE_FIELDS] Label: '{$label}', Determined UI Type: '{$uiType}'");
             
@@ -319,12 +333,12 @@ class GenerateModelMetadataCommand extends Command
                 $this->line("      [FILTERABLE_FIELDS] Added min/max number inputs for '{$column}'.");
             } else {
                 $placeholder = "Enter {$label}";
-                if ($uiType === 'select') $placeholder = "Select {$label}";
+                if ($uiType === 'multiselect') $placeholder = "Select {$label}";
 
                 $fieldDesc = ['name' => $column, 'label' => $label, 'type' => $uiType, 'placeholder' => $placeholder];
 
-                if ($uiType === 'select' && !empty($info['distinctValues'])) {
-                    $this->line("      [FILTERABLE_FIELDS] UI Type is select and has distinct values. Count: " . count($info['distinctValues']));
+                if ($uiType === 'multiselect' && !empty($info['distinctValues'])) {
+                    $this->line("      [FILTERABLE_FIELDS] UI Type is multiselect and has distinct values. Count: " . count($info['distinctValues']));
                     $options = array_map(fn($val) => ['value' => (string)$val, 'label' => (string)$val], $info['distinctValues']);
                     // If boolean-like values, ensure consistent labels
                     if (count($options) == 2 && 
@@ -354,7 +368,7 @@ class GenerateModelMetadataCommand extends Command
         return $items;
     }
 
-    private function generateContextData(array $fieldsInfo, string $modelClass, array $excludedFilterFields): string
+    private function generateContextData(array $fieldsInfo, string $modelClass, array $excludedFilterFields, array $fieldLabels): string
     {
         $this->line("  [CONTEXT_DATA] Generating for {$modelClass}");
         $modelNamePlural = Str::plural($modelClass::getHumanName());
@@ -364,15 +378,18 @@ class GenerateModelMetadataCommand extends Command
         $count = 0;
         foreach ($fieldsInfo as $column => $info) {
             if (in_array($column, $excludedFilterFields) && !$info['isDateField']) continue;
+            
+            $label = $fieldLabels[$column] ?? Str::title(str_replace('_', ' ', $column));
+
             if ($info['isDateField']) {
-                 $sampleFilterableFields[] = "date (" . Str::title(str_replace('_', ' ', $column)) . ")";
+                 $sampleFilterableFields[] = "date (" . $label . ")";
                  $count++;
                  continue;
             }
 
             $uiType = $this->determineUiType($info, (int)$this->option('N')); // N is already int, but defensive
-            if ($uiType === 'select' || $uiType === 'text' || $uiType === 'boolean') {
-                 $sampleFilterableFields[] = Str::lower(Str::title(str_replace('_', ' ', $column)));
+            if ($uiType === 'multiselect' || $uiType === 'text' || $uiType === 'boolean') {
+                 $sampleFilterableFields[] = Str::lower($label);
                  $count++;
             }
             if ($count >= 3) break;
@@ -401,14 +418,16 @@ class GenerateModelMetadataCommand extends Command
         return $searchable;
     }
 
-    private function generateGptSchemaProperties(array $fieldsInfo, int $nThreshold, string $modelClass, array $excludedFilterFields): array
+    private function generateGptSchemaProperties(array $fieldsInfo, int $nThreshold, string $modelClass, array $excludedFilterFields, array $fieldLabels): array
     {
         $this->line("  [GPT_SCHEMA] Generating for {$modelClass}");
         $dateField = $modelClass::getDateField();
+        $dateFieldLabel = $fieldLabels[$dateField] ?? Str::title(str_replace('_', ' ', $dateField));
+
         $properties = [
             'search_term' => ['type' => 'string', 'description' => 'A general search term to query across multiple text fields.'],
-            'start_date' => ['type' => 'string', 'format' => 'date', 'description' => "Start date for '{$dateField}' (YYYY-MM-DD)"],
-            'end_date' => ['type' => 'string', 'format' => 'date', 'description' => "End date for '{$dateField}' (YYYY-MM-DD)"],
+            'start_date' => ['type' => 'string', 'format' => 'date', 'description' => "Start date for '{$dateFieldLabel}' (YYYY-MM-DD)"],
+            'end_date' => ['type' => 'string', 'format' => 'date', 'description' => "End date for '{$dateFieldLabel}' (YYYY-MM-DD)"],
             'limit' => ['type' => 'integer', 'description' => 'Limit the number of records. Default is 1000, max 5000.'],
         ];
 
@@ -420,7 +439,7 @@ class GenerateModelMetadataCommand extends Command
             }
             if ($info['isDateField']) continue; // Handled by start_date/end_date
 
-            $label = Str::title(str_replace('_', ' ', $column));
+            $label = $fieldLabels[$column] ?? Str::title(str_replace('_', ' ', $column));
             $uiType = $this->determineUiType($info, $nThreshold);
             $description = "Filter by {$label}.";
             $gptType = 'string'; // Default GPT type
@@ -443,44 +462,54 @@ class GenerateModelMetadataCommand extends Command
                     $properties["{$column}_max"] = ['type' => $gptNumericType, 'description' => "Maximum value for {$label}."];
                     $this->line("      [GPT_SCHEMA] Added min/max {$gptNumericType} properties for '{$column}'.");
                     continue 2; // Skip default property assignment at the end of the loop
-                case 'select':
-                    $gptType = 'string'; // Default for select, might be overridden to boolean
-                     if (!empty($info['distinctValues'])) {
+                case 'multiselect':
+                    $isPromotedToBooleanForGpt = false;
+                    $currentDescription = "Filter by {$label}."; // Base description
+
+                    if (!empty($info['distinctValues'])) {
                         $options = array_map(fn($val) => (string)$val, $info['distinctValues']);
-                        if (count($options) == 2 && 
+                        if (count($options) == 2 &&
                             ( (strtolower($options[0]) === '0' && strtolower($options[1]) === '1') ||
                               (strtolower($options[0]) === 'false' && strtolower($options[1]) === 'true') ||
-                              (strtolower($options[0]) === 'no' && strtolower($options[1]) === 'yes') 
+                              (strtolower($options[0]) === 'no' && strtolower($options[1]) === 'yes')
                             )
                         ) {
-                             $gptType = 'boolean'; // Override to boolean
-                             $description = "Filter by {$label} (true/false).";
-                        } else {
-                            $description .= ' Possible values: ' . implode(', ', $options) . '.';
+                             $gptType = 'boolean'; // This will be used by the fall-through logic
+                             $description = "Filter by {$label} (true/false)."; // Update main description for fall-through
+                             $isPromotedToBooleanForGpt = true;
+                             $this->line("        [GPT_SCHEMA] Column '{$column}' (UI type multiselect) promoted to boolean for GPT. Description: {$description}");
                         }
                     }
-                    break;
-                // case 'multiselect': // If enabling multiselect UI type
-                //     $properties[$column] = ['type' => 'array', 'description' => $description, 'items' => ['type' => 'string']];
-                //     if (!empty($info['distinctValues'])) {
-                //         $options = array_map(fn($val) => (string)$val, $info['distinctValues']);
-                //         $properties[$column]['description'] .= ' Possible values: ' . implode(', ', $options) . '.';
-                //     }
-                //     $this->line("      [GPT_SCHEMA] Added array property for multiselect '{$column}'.");
-                //     continue 2; // Skip default property assignment
+
+                    if ($isPromotedToBooleanForGpt) {
+                        // Let it fall through to the default property assignment logic,
+                        // $gptType and $description are already set.
+                    } else {
+                        // True multiselect (array of strings)
+                        $currentDescription = "Filter by {$label}. Provide a comma-separated list or an array of values.";
+                        if (!empty($info['distinctValues'])) {
+                            $optionsStrings = array_map(fn($val) => (string)$val, $info['distinctValues']);
+                            $currentDescription .= ' Possible values: ' . implode(', ', $optionsStrings) . '.';
+                        }
+                        $properties[$column] = [
+                            'type' => 'array',
+                            'items' => ['type' => 'string'],
+                            'description' => $currentDescription
+                        ];
+                        $this->line("      [GPT_SCHEMA] Added array property for multiselect '{$column}'. Description: " . $currentDescription);
+                        continue 2; // Skip default property assignment at the end of the loop
+                    }
+                    break; 
+                // Removed old commented-out 'multiselect' case here
                 default: // text
                     $gptType = 'string';
                     break;
             }
             
             $this->line("      [GPT_SCHEMA] Label: '{$label}', UI Type: '{$uiType}', GPT Type: '{$gptType}'");
-            if ($uiType === 'select' && !empty($info['distinctValues'])) {
-                if ($gptType === 'boolean') { // Check if it was promoted to boolean
-                    $this->line("        [GPT_SCHEMA] Options for '{$column}' determined as boolean for GPT. Description: {$description}");
-                } else {
-                    $this->line("        [GPT_SCHEMA] Added distinct values to GPT description for '{$column}'. Count: " . count($info['distinctValues']));
-                }
-            }
+            // The specific logging for multiselect (promoted to boolean or as array) is handled within its case.
+            // The general logging above and the final property log below are sufficient.
+            // Thus, the old conditional log block for 'select' type is removed.
             
             $propertyDefinition = ['type' => $gptType, 'description' => $description];
             // No need to add format:date here as uiType 'date' is handled separately above

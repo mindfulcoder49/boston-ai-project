@@ -44,79 +44,7 @@
     center: props.mapCenterCoordinates && props.mapCenterCoordinates.length === 2 ? props.mapCenterCoordinates : [42.3601, -71.0589], 
     zoom: 16 
   });
-  
-  const dataPointModelConfig = {
-    'crime_data': {
-      dataObjectKey: 'crime_data',
-      mainIdentifierLabel: 'Incident Number',
-      mainIdentifierField: 'incident_number',
-      descriptionLabel: 'Description',
-      descriptionField: 'offense_description',
-      additionalFields: [
-        // { label: 'District', key: 'district' } // Example if you add more fields
-      ]
-    },
-    'everett_crime_data': {
-      dataObjectKey: 'everett_crime_data',
-      mainIdentifierLabel: 'Case Number',
-      mainIdentifierField: 'case_number',
-      descriptionLabel: 'Description',
-      descriptionField: 'incident_description',
-      additionalFields: [
-        { label: 'Incident Type', key: 'incident_type' },
-        { label: 'Arrest Name', key: 'arrest_name', condition: (val) => val && val.trim() !== '' },
-        { label: 'Arrest Charges', key: 'arrest_charges', condition: (val) => val && val.trim() !== '' },
-      ]
-    },
-    'three_one_one_cases': {
-      dataObjectKey: 'three_one_one_case_data',
-      mainIdentifierLabel: 'Case ID',
-      mainIdentifierField: 'case_enquiry_id',
-      descriptionLabel: 'Title',
-      descriptionField: 'case_title',
-    },
-    'building_permits': {
-      dataObjectKey: 'building_permit_data',
-      mainIdentifierLabel: 'Permit Number',
-      mainIdentifierField: 'permitnumber',
-      descriptionLabel: 'Description',
-      descriptionField: 'description',
-      additionalFields: [
-        { label: 'Permit Type', key: 'permit_type' }
-      ]
-    },
-    'property_violations': {
-      dataObjectKey: 'property_violation_data',
-      mainIdentifierLabel: 'Ticket Number',
-      mainIdentifierField: 'ticket_number',
-      descriptionLabel: 'Description',
-      descriptionField: 'description',
-      additionalFields: [
-        { label: 'Violation Type', key: 'violation_type' }
-      ]
-    },
-    'construction_off_hours': {
-      dataObjectKey: 'construction_off_hour_data',
-      mainIdentifierLabel: 'Application Number',
-      mainIdentifierField: 'app_no',
-      descriptionLabel: 'Address', // Using address as a primary piece of info
-      descriptionField: 'address',
-    },
-    'food_inspections': {
-      dataObjectKey: 'food_inspection_data',
-      // This model has custom popup logic due to aggregation (violation_summary)
-      customPopupHandler: true, 
-      // Fallback fields if not aggregated (though current logic prioritizes custom handler)
-      mainIdentifierLabel: 'License No',
-      mainIdentifierField: 'licenseno',
-      descriptionLabel: 'Business Name',
-      descriptionField: 'businessname',
-       additionalFields: [
-        { label: 'Violation', key: 'violdesc' },
-        { label: 'Result', key: 'result' },
-      ]
-    }
-  };
+
   
   const getDivIconInternal = (dataPoint) => {
     let className = 'default-div-icon';
@@ -142,6 +70,9 @@
         break;
       case 'Food Inspection': // Add this case
         className = 'food-inspection-div-icon';
+        break;
+      case 'Car Crash':
+        className = 'crash-div-icon';
         break;
       default:
         break;

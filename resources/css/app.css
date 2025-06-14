@@ -14,6 +14,11 @@
   /* add a yellow icon for property violations */
   --property-violation-icon-color: rgb(255, 255, 0);
   --construction-off-hour-icon-color: rgb(114, 203, 209);
+  /* add an orange icon for food violations */
+  --food-inspection-icon-color: rgb(255, 165, 0);
+  /* add a purple icon for crash data */
+  --crash-icon-color: rgba(100,100,150);  /* Purple for crash data */
+
   /* add transparent versions of each color */
   --crime-icon-color-transparent: rgba(252, 127, 127, 0.9);
   --case-icon-color-transparent: rgba(59, 130, 246, 0.9);
@@ -23,6 +28,7 @@
   /* add an orange icon for food violations */
   --food-inspection-icon-color: rgb(255, 165, 0);
   --food-inspection-icon-color-transparent: rgba(255, 165, 0, 0.8);
+  --crash-icon-color-transparent: rgba(100, 100, 150, 0.6);  /* Transparent purple */
 
 
   --center-icon-border-color: black;
@@ -381,6 +387,20 @@ a {
   position: relative;
 }
 
+.crash-div-icon div,
+.crash-div-icon {
+  background-color: var(--crash-icon-color);
+  background-image: url("/images/carcrash.svg"); /* You'll need to create this SVG */
+  background-size: cover;
+  background-position: center;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  position: relative;
+}
+
 /* Filter button styles */
 .building-permit-filter-button {
   background-image: url("/images/permiticon.svg");
@@ -429,6 +449,15 @@ a {
   background-size: contain;
   background-repeat: no-repeat;
 }
+
+.car-crash-filter-button {
+  background-image: url("/images/carcrash.svg"); /* You'll need to create this SVG */
+  border: 10px solid var(--crash-icon-color-transparent);
+  background-position: left;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
 .checkbox-icon-display {
   display: inline-block;
   width: 2.1em; /* Scales with the label's font-size (text-sm) */
@@ -461,7 +490,8 @@ a {
   .aaa-case-filter-button,
   .property-violation-filter-button,
   .construction-off-hour-filter-button,
-  .food-inspection-filter-button {
+  .food-inspection-filter-button,
+  .car-crash-filter-button {
     background-position: center;
   }
 }
@@ -496,6 +526,11 @@ a {
   color: black;
 }
 
+.car-crash-filter-button.active {
+  background-color: var(--crash-icon-color-transparent);
+  color: black;
+}
+
 .aaa-case-filter-button .filter-button-text {
   background-color: var(--case-icon-color-transparent);
 }
@@ -520,6 +555,10 @@ a {
   background-color: var(--food-inspection-icon-color-transparent);
 }
 
+.car-crash-filter-button .filter-button-text {
+  background-color: var(--crash-icon-color-transparent);
+}
+
 
 
 :root {
@@ -532,7 +571,8 @@ a {
 .center-div-icon,
 .property-violation-div-icon,
 .construction-off-hour-div-icon,
-.food-inspection-div-icon {
+.food-inspection-div-icon,
+.crash-div-icon {
   transition: width 0.3s ease, height 0.3s ease; /* Smooth resizing */
 }
 

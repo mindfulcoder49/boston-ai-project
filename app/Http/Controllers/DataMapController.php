@@ -40,6 +40,7 @@ class DataMapController extends Controller
             'everett_crime' => \App\Models\EverettCrimeData::class,
             'cambridge_crime_reports' => \App\Models\CambridgeCrimeReportData::class,
             // Cambridge Models
+            'person_crash_data' => \App\Models\PersonCrashData::class,
         ];
 
         // Validate that all registered models use the Mappable trait

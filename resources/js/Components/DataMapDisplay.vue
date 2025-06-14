@@ -86,6 +86,9 @@ const getMarkerIcon = (alcivartechType, dataPoint) => {
     case 'Food Inspection':
       baseClassForType = 'food-inspection-div-icon';
       break;
+    case 'Car Crash':
+      baseClassForType = 'crash-div-icon';
+      break;
     default:
       // Handle unknown type: use Leaflet's default icon, but allow overrides/custom classes.
       let defaultIconFinalClassName = customizations.className || '';
@@ -443,6 +446,14 @@ defineExpose({
 }
 .cluster-food-inspection div {
   background-color: rgba(195, 105, 0, 0.6) !important;
+  color: white;
+}
+
+.cluster-car-crash {
+  background-color: rgba(169, 169, 200, 0.8) !important; 
+}
+.cluster-car-crash div {
+  background-color: rgba(100, 100, 120, 0.8) !important; 
   color: white;
 }
 

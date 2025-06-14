@@ -52,6 +52,8 @@ class GenericMapController extends Controller
         \App\Models\CambridgeCrimeReportData::class,
         \App\Models\CambridgeHousingViolationData::class,
         \App\Models\CambridgeSanitaryInspectionData::class,
+
+        \App\Models\PersonCrashData::class, // Assuming this is a Mappable model as well
     ];
 
     // Helper to get model class from table name (data_points.type)
