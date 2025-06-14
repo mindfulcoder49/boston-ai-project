@@ -83,7 +83,7 @@ const radialMapText = computed(() => {
 })
 
 const fullMapText = computed(() => {
-  if (!isAuthenticated.value) return 'Log in to unlock more data.'
+  if (!isAuthenticated.value) return 'Full historical map access available without login for a limited time!'
   if (plan.value === 'Registered User') return `Last 2 months (${fmt(2,'months')})`
   if (plan.value === 'Resident Awareness') return `Last 6 months (${fmt(6,'months')})`
   if (isPro.value) return 'All available history'
