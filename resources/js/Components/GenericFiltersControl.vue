@@ -1,9 +1,17 @@
 <template>
   <div class="p-4 border rounded-md shadow-sm bg-white">
     <h4 class="text-lg font-semibold mb-3">Filters</h4>
-    <div v-if="parsedFields.length === 0 && !dateField" class="text-gray-500">No filters available for this data type.</div>
-    
+    <div v-if="parsedFields.length === 0 && !dateField && isReadOnly" class="text-gray-500">No filters available for this data type.</div>
+    <div v-if="parsedFields.length === 0 && !dateField && !isReadOnly && localFilters.limit === undefined" class="text-gray-500">No filters available for this data type.</div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Limit Filter: Moved to top. Only shown if not read-only. -->
+      <!-- If read-only and 'limit' is configurable, it will be rendered by the dynamic loop below. -->
+      <div v-if="!isReadOnly" class="flex flex-col">
+          <label :for="`limit_${dataType}`" class="font-medium mb-1 text-sm">Record Limit</label>
+          <input type="number" :id="`limit_${dataType}`" v-model.number="localFilters.limit" @input="debouncedEmitUpdate" class="p-2 border rounded-md text-sm" placeholder="e.g., 1000">
+      </div>
+
       <!-- General Search Term Filter - Placed first if present -->
       <template v-for="field in parsedFields" :key="field.name">
         <div v-if="field.name === 'search_term'" class="flex flex-col md:col-span-2 lg:col-span-3"> <!-- Make it span more columns -->
@@ -32,7 +40,7 @@
       </template>
 
       <!-- Dynamic Filters -->
-      <div v-for="field in parsedFields.filter(f => f.name !== 'search_term')" :key="field.name" class="flex flex-col"> <!-- Exclude search_term here -->
+      <div v-for="field in parsedFields.filter(f => f.name !== 'search_term' && (isReadOnly || f.name !== 'limit'))" :key="field.name" class="flex flex-col"> <!-- Exclude search_term here -->
         <label :for="`filter_${field.name}_${dataType}`" class="font-medium mb-1 text-sm">{{ field.label }}</label>
         
         <input 
@@ -97,10 +105,7 @@
       </div>
 
        <!-- Limit Filter: Only shown if not read-only. If read-only and 'limit' is configurable, it will be rendered by the loop above. -->
-        <div v-if="!isReadOnly" class="flex flex-col">
-            <label :for="`limit_${dataType}`" class="font-medium mb-1 text-sm">Record Limit</label>
-            <input type="number" :id="`limit_${dataType}`" v-model.number="localFilters.limit" @input="debouncedEmitUpdate" class="p-2 border rounded-md text-sm" placeholder="e.g., 1000">
-        </div>
+        <!-- This block is now moved to the top -->
     </div>
 
     <div class="mt-4 flex space-x-2">
