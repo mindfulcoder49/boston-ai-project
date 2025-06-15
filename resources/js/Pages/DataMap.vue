@@ -1,7 +1,7 @@
 <template>
   <PageTemplate>
     <Head>
-      <title>{{ title }}</title>
+      <title>Single Data Map</title>
     </Head>
     <SubscriptionBanner />
     <MapToolbar :model-toolbar-configs-prop="allModelConfigurationsForToolbar" />
