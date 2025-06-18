@@ -93,6 +93,20 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'person_crash_data_db' => [
+            'driver' => 'mysql',
+            'host' => env('DB_PERSON_CRASH_HOST', '127.0.0.1'),
+            'port' => env('DB_PERSON_CRASH_PORT', '3306'),
+            'database' => env('DB_PERSON_CRASH_DATABASE', 'person_crash_data'),
+            'username' => env('DB_PERSON_CRASH_USERNAME', 'root'),
+            'password' => env('DB_PERSON_CRASH_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
     ],
 
     /*

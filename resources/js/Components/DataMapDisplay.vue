@@ -41,7 +41,8 @@ const props = defineProps({
   zoomLevel: {
     type: Number,
     default: 13
-  }
+  },
+  mapConfiguration: Object, // Add mapConfiguration prop
 });
 
 const emit = defineEmits(['marker-data-point-clicked', 'map-initialized-internal']);
@@ -60,74 +61,36 @@ const iconSettings = {
 
 const getMarkerIcon = (alcivartechType, dataPoint) => {
   const transparentPixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+  // Use mapConfiguration to dynamically determine icon properties
+  const config = props.mapConfiguration?.dataPointModelConfig || {};
+  const typeConfig = Object.values(config).find(
+    (entry) => entry.displayTitle === alcivartechType
+  );
+
+  if (!typeConfig) {
+    // Fallback to default icon if no configuration is found
+    return L.icon({
+      iconUrl: transparentPixel,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      className: 'default-div-icon',
+    });
+  }
+
   const customizations = getIconCustomizations(dataPoint);
-
-  let determinedIconUrl = customizations.iconUrlOverride || null;
-  // Start with the customization class, then prepend the base class for the type.
-  let determinedClassName = customizations.className || '';
-  let baseClassForType = '';
-
-  switch (alcivartechType) {
-    case 'Crime':
-      baseClassForType = 'crime-div-icon';
-      break;
-    case '311 Case':
-      baseClassForType = 'case-div-icon';
-      break;
-    case 'Building Permit':
-      baseClassForType = 'permit-div-icon';
-      break;
-    case 'Property Violation':
-      baseClassForType = 'property-violation-div-icon';
-      break;
-    case 'Construction Off Hour':
-      baseClassForType = 'construction-off-hour-div-icon';
-      break;
-    case 'Food Inspection':
-      baseClassForType = 'food-inspection-div-icon';
-      break;
-    case 'Car Crash':
-      baseClassForType = 'crash-div-icon';
-      break;
-    default:
-      // Handle unknown type: use Leaflet's default icon, but allow overrides/custom classes.
-      let defaultIconFinalClassName = customizations.className || '';
-      return L.icon({
-        iconUrl: customizations.iconUrlOverride || '/images/leaflet/marker-icon.png',
-        iconRetinaUrl: customizations.iconUrlOverride || '/images/leaflet/marker-icon-2x.png', // Assuming override is SVG or same for retina
-        shadowUrl: '/images/leaflet/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
-        className: defaultIconFinalClassName.trim()
-      });
-  }
-
-  // Prepend the base class for the specific alcivartechType to the determinedClassName
-  if (baseClassForType) {
-    determinedClassName = baseClassForType + (determinedClassName ? ` ${determinedClassName}` : '');
-  }
-
-  // If no explicit iconUrl override is provided, but we have classes for styling,
-  // set the iconUrl to a transparent pixel. This allows the CSS background-image to show.
-  if (!determinedIconUrl && determinedClassName) {
-    determinedIconUrl = transparentPixel;
-  } else if (!determinedIconUrl && !determinedClassName) {
-    // This case should ideally not be hit if all known types have a baseClassForType.
-    // As a fallback, use transparent pixel, assuming some default styling might apply or it's an error.
-    determinedIconUrl = transparentPixel;
-  }
-  // If determinedIconUrl was set by customizations.iconUrlOverride, it will be used.
+  const determinedIconUrl = customizations.iconUrlOverride || transparentPixel;
+  const determinedClassName = customizations.className || typeConfig.displayTitle.toLowerCase().replace(/\s+/g, '-') + '-div-icon';
 
   return L.icon({
     iconUrl: determinedIconUrl,
-    iconRetinaUrl: determinedIconUrl, // For SVGs, overrides, or transparent pixel, using the same URL is fine.
-    iconSize: iconSettings.iconSize,
-    iconAnchor: iconSettings.iconAnchor,
-    popupAnchor: iconSettings.popupAnchor,
-    shadowUrl: false, // No shadow for custom icons styled via CSS or specific SVGs
-    className: determinedClassName.trim()
+    iconRetinaUrl: determinedIconUrl,
+    iconSize: [38, 38],
+    iconAnchor: [19, 38],
+    popupAnchor: [0, -38],
+    shadowUrl: false,
+    className: determinedClassName.trim(),
   });
 };
 
@@ -177,6 +140,12 @@ const initializeMap = () => {
   mapInstance.value = markRaw(L.map(mapId, {
       // scrollWheelZoom: false,
   }).setView(props.mapCenterCoordinates, props.zoomLevel));
+
+  // Use mapConfiguration for additional setup if needed
+  if (props.mapConfiguration) {
+    console.log('Map configuration:', props.mapConfiguration);
+    // Example: Use props.mapConfiguration.dataPointModelConfig for custom logic
+  }
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 20,

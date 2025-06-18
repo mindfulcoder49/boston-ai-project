@@ -18,7 +18,8 @@ class PersonCrashDataSeeder extends Seeder
     {
         $directoryPath = storage_path('app/datasets/massachusetts/');
         $chunkSize = 250; // Adjust based on memory and performance
-        $tableName = 'person_crash_data';
+        $fullTableName = 'person_crash_data';
+        $originalTableName = 'person_crash_data'; // Assuming the original table name is the same
 
         if (!is_dir($directoryPath)) {
             $this->command->error("Directory not found: {$directoryPath}");
@@ -62,9 +63,11 @@ class PersonCrashDataSeeder extends Seeder
                 return strtolower(str_replace(' ', '_', $col));
             }, $header);
 
-            $dataToInsert = [];
+            $dataToInsertFull = [];
+            $dataToInsertOriginal = [];
             $rowCount = 0;
-            $totalUpserted = 0;
+            $totalUpsertedFull = 0;
+            $totalUpsertedOriginal = 0;
             $skippedRowCount = 0;
             $recordsProcessedSinceLastMessage = 0;
 
@@ -84,46 +87,46 @@ class PersonCrashDataSeeder extends Seeder
                 $transformedRecord['crash_date_text_raw'] = $record['crash_date_text'] ?? $record['crash_date'] ?? null;
                 $transformedRecord['crash_time_2_raw'] = $record['crash_time_2'] ?? null;
 
-                $dataToInsert[] = $transformedRecord;
+                $dataToInsertFull[] = $transformedRecord;
+
+                // Filter for six months of data for the original database
+                if (isset($transformedRecord['crash_datetime'])) {
+                    $crashDate = Carbon::parse($transformedRecord['crash_datetime']);
+                    if ($crashDate->greaterThanOrEqualTo(Carbon::now()->subMonths(6))) {
+                        $dataToInsertOriginal[] = $transformedRecord;
+                    }
+                }
+
                 $rowCount++;
                 $recordsProcessedSinceLastMessage++;
 
-                if (count($dataToInsert) >= $chunkSize) {
-                    try {
-                        DB::table($tableName)->upsert(
-                            $dataToInsert,
-                            ['crash_person_id'], // Use new single unique key
-                            array_diff(array_keys($dataToInsert[0]), ['crash_person_id'])
-                        );
-                        $totalUpserted += count($dataToInsert);
-                    } catch (\Exception $e) {
-                        Log::error("Error upserting chunk: " . $e->getMessage() . " - First record in failing chunk: " . json_encode($dataToInsert[0] ?? []));
-                    }
-                    $dataToInsert = [];
+                if (count($dataToInsertFull) >= $chunkSize) {
+                    $this->upsertData('person_crash_data_db', $fullTableName, $dataToInsertFull, $totalUpsertedFull);
+                    $dataToInsertFull = [];
 
                     if ($recordsProcessedSinceLastMessage >= 5000) {
-                        $this->command->line("Processed approximately {$rowCount} records. Total upserted: {$totalUpserted}.");
+                        $this->command->line("Processed approximately {$rowCount} records. Total upserted: {$totalUpsertedFull}.");
                         $recordsProcessedSinceLastMessage = 0;
                     }
                 }
-            }
 
-            if (!empty($dataToInsert)) {
-                try {
-                    DB::table($tableName)->upsert(
-                        $dataToInsert,
-                        ['crash_person_id'], // Use new single unique key
-                        array_diff(array_keys($dataToInsert[0]), ['crash_person_id'])
-                    );
-                    $totalUpserted += count($dataToInsert);
-                    $this->command->info("Upserted final chunk of " . count($dataToInsert) . " records. Total: {$totalUpserted}");
-                } catch (\Exception $e) {
-                    Log::error("Error upserting final chunk: " . $e->getMessage() . " - First record in failing chunk: " . json_encode($dataToInsert[0] ?? []));
+                if (count($dataToInsertOriginal) >= $chunkSize) {
+                    $this->upsertData('mysql', $originalTableName, $dataToInsertOriginal, $totalUpsertedOriginal);
+                    $dataToInsertOriginal = [];
                 }
             }
 
+            if (!empty($dataToInsertFull)) {
+                $this->upsertData('person_crash_data_db', $fullTableName, $dataToInsertFull, $totalUpsertedFull);
+                $this->command->info("Upserted final chunk of " . count($dataToInsertFull) . " records. Total: {$totalUpsertedFull}");
+            }
+
+            if (!empty($dataToInsertOriginal)) {
+                $this->upsertData('mysql', $originalTableName, $dataToInsertOriginal, $totalUpsertedOriginal);
+            }
+
             fclose($fileHandle);
-            $this->command->info("Finished processing file: {$csvPath}. Total records processed: {$rowCount}, Total records upserted: {$totalUpserted}.");
+            $this->command->info("Finished processing file: {$csvPath}. Total records processed: {$rowCount}, Total records upserted: {$totalUpsertedFull}.");
             if ($skippedRowCount > 0) {
                 $this->command->warn("{$skippedRowCount} rows were skipped due to column count mismatch.");
             }
@@ -131,6 +134,20 @@ class PersonCrashDataSeeder extends Seeder
 
         DB::enableQueryLog();
         $this->command->info("All files processed.");
+    }
+
+    private function upsertData($connection, $tableName, &$data, &$totalUpserted)
+    {
+        try {
+            DB::connection($connection)->table($tableName)->upsert(
+                $data,
+                ['crash_person_id'], // Unique key
+                array_diff(array_keys($data[0]), ['crash_person_id'])
+            );
+            $totalUpserted += count($data);
+        } catch (\Exception $e) {
+            Log::error("Error upserting data: " . $e->getMessage());
+        }
     }
 
     private function transformRecord(array $record): array

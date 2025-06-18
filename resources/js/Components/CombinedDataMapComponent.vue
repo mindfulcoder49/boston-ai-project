@@ -73,6 +73,7 @@
         :mapCenterCoordinates="mapCenter"
         :dataPointsToDisplay="combinedDataPointsForMap"
         :externalIdFieldProp="'alcivartech_external_id'" 
+        :mapConfiguration="mapConfiguration"
         @marker-data-point-clicked="handleMarkerClick"
         @map-initialized-internal="handleMapInitialized"
         class="h-[70vh] w-full rounded-md shadow-md generic-map" 
@@ -254,7 +255,8 @@ const props = defineProps({
   configurableFilterFieldsForView: { // { modelKey: ['field1', 'field2'] }
     type: Object,
     default: () => ({})
-  }
+  },
+  mapConfiguration: Object, // Add mapConfiguration prop
 });
 
 const page = usePage();

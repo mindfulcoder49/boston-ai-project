@@ -96,7 +96,8 @@ class DataMapController extends Controller
             $tierMinDate = Carbon::now()->subMonths(1);
         }
         
-        return $tierMinDate;
+        //return $tierMinDate;
+        return null;
     }
 
     private function getDataTypeConfig(string $modelClass): array
@@ -136,7 +137,13 @@ class DataMapController extends Controller
 
         $tierMinDate = $this->getMinDateForEffectiveUser($modelClass, Auth::user());
 
-        $query = $modelClass::query();
+        // Create an instance of the model to get the connection name
+        $modelInstance = new $modelClass();
+        $query = $modelClass::on($modelInstance->getConnectionName())->getQuery();
+        //log the query
+        Log::info("Query for {$dataType} on connection {$modelInstance->getConnectionName()}: " . $query->toSql());
+        Log::info("Query bindings: " . json_encode($query->getBindings()));
+
         if ($tierMinDate) {
             $query->where($config['dateField'], '>=', $tierMinDate->toDateString());
         }
@@ -158,12 +165,15 @@ class DataMapController extends Controller
             }
         }
         
+        $mapConfiguration = $this->generateMapConfiguration();
+
         $pageProps = [
             'initialData' => $initialData,
             'filters' => $request->all(),
             'dataType' => $dataType,
             'dataTypeConfig' => $config,
             'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar,
+            'mapConfiguration' => $mapConfiguration, // Add map configuration
         ];
 
         return Inertia::render('DataMap', $pageProps);
@@ -245,6 +255,8 @@ class DataMapController extends Controller
             }
         }
 
+        $mapConfiguration = $this->generateMapConfiguration();
+
         return Inertia::render('CombinedDataMap', [
             'modelMapping' => $this->getModelMapping(),
             'initialDataType' => $initialModelKey,
@@ -252,6 +264,7 @@ class DataMapController extends Controller
             'initialFilters' => $initialFilters,
             'allDataTypeDetails' => $allDataTypeDetails,
             'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar,
+            'mapConfiguration' => $mapConfiguration, // Add map configuration
         ]);
     }
 
@@ -428,7 +441,13 @@ class DataMapController extends Controller
 
         $data = $this->enrichData($data, $dataType, $modelClass);
 
-        return response()->json(['data' => $data, 'filtersApplied' => $filters]);
+        $mapConfiguration = $this->generateMapConfiguration();
+
+        return response()->json([
+            'data' => $data,
+            'filtersApplied' => $filters,
+            'mapConfiguration' => $mapConfiguration, // Add map configuration
+        ]);
     }
 
     public function enrichData( $data, string $dataType, string $modelClass)
@@ -653,5 +672,31 @@ class DataMapController extends Controller
         
         \Log::error('OpenAI GPT Error: Failed to get valid filter arguments. Response: ' . json_encode($responseBody));
         throw new \Exception('Failed to get valid filter arguments from OpenAI. Check logs for details. OpenAI Response: ' . json_encode($responseBody));
+    }
+
+    private function generateMapConfiguration(): array
+    {
+        $dataPointModelConfig = [];
+        $modelToSubObjectKeyMap = [];
+
+        foreach ($this->modelRegistry as $modelKey => $modelClass) {
+            if (!class_exists($modelClass) || !in_array(Mappable::class, class_uses_recursive($modelClass))) {
+                continue;
+            }
+
+            $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data';
+            $modelToSubObjectKeyMap[$modelKey] = $dataObjectKey;
+
+            $dataPointModelConfig[$modelKey] = [
+                'dataObjectKey' => $dataObjectKey,
+                'displayTitle' => $modelClass::getAlcivartechTypeForStyling(),
+                'popupConfig' => $modelClass::getPopupConfig(),
+            ];
+        }
+
+        return [
+            'dataPointModelConfig' => $dataPointModelConfig,
+            'modelToSubObjectKeyMap' => $modelToSubObjectKeyMap,
+        ];
     }
 }

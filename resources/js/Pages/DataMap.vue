@@ -13,6 +13,7 @@
       :is-read-only="false" 
       :initial-map-settings="initialMapSettings"
       :configurable-filter-fields-for-view="configurableFilterFieldsForView"
+      :map-configuration="mapConfiguration"
     />
   </PageTemplate>
 </template>
@@ -43,7 +44,8 @@ const props = defineProps({
   configurableFilterFieldsForView: {
     type: Array,
     default: () => []
-  }
+  },
+  mapConfiguration: Object, // Add mapConfiguration prop
 });
 
 const page = usePage();

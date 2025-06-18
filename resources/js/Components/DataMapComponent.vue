@@ -42,6 +42,7 @@
             :mapCenterCoordinates="mapCenter"
             :dataPointsToDisplay="displayedDataPoints"
             :externalIdFieldProp="dataTypeConfigProp?.externalIdField || 'id'"
+            :mapConfiguration="mapConfiguration"
             @marker-data-point-clicked="handleMarkerClick"
             @map-initialized-internal="handleMapInitialized"
             class="h-[70vh] w-full rounded-md shadow-md generic-map" 
@@ -189,7 +190,8 @@ const props = defineProps({
   configurableFilterFieldsForView: { // New prop for read-only view
     type: Array,
     default: () => []
-  }
+  },
+  mapConfiguration: Object, // Add mapConfiguration prop
 });
 
 const page = usePage();

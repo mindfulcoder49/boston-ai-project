@@ -11,7 +11,6 @@ class PersonCrashData extends Model
 {
     use HasFactory, Mappable;
 
-    protected $connection = 'person_crash_data_db'; // Use the new database connection
     protected $table = 'person_crash_data';
 
     // Note: Timestamps (created_at, updated_at) are not in the migration,
