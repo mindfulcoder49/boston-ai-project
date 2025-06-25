@@ -237,13 +237,5 @@ class CreatePersonCrashDataTable extends Migration
     public function down()
     {
         Schema::connection('person_crash_data_db')->dropIfExists('person_crash_data');
-        Schema::table('data_points', function (Blueprint $table) {
-            // It's good practice to drop the index before the foreign key
-            // Laravel's default index name convention is table_column_foreign
-            // or table_column_index. Providing the column name array usually works.
-            $table->dropForeign(['person_crash_data_id']);
-            $table->dropIndex(['person_crash_data_id']); // Drop index by column name
-            $table->dropColumn('person_crash_data_id');
-        });
     }
 }

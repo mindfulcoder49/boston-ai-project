@@ -93,6 +93,10 @@
       @on-image-click="handleImageClick" 
     />
 
+    <DataPointStatistics 
+      :dataPoints="filteredDataPoints" 
+      :mapConfiguration="mapConfiguration"
+      />
     <AiAssistant 
       :context="filteredDataPoints" 
       :language_codes="language_codes" 
@@ -127,6 +131,7 @@ import MapDisplay from '@/Components/MapDisplay.vue';
 import MapFiltersControl from '@/Components/MapFiltersControl.vue';
 import FoodInspection from '@/Components/FoodInspection.vue';
 import FoodInspectionTeaser from '@/Components/FoodInspectionTeaser.vue';
+import DataPointStatistics from '@/Components/DataPointStatistics.vue';
 import { usePage } from '@inertiajs/vue3'; // Import usePage
 import FeaturedUserMapsBanner from '@/Components/FeaturedUserMapsBanner.vue';
 import { map } from 'leaflet';
@@ -134,6 +139,7 @@ import { map } from 'leaflet';
 const page = usePage(); // Get page instance
 
 const mapDisplayRef = ref(null);
+const mapConfiguration = ref({});
 
 const filters = ref({});
 const allDataPoints = ref([]);
@@ -155,7 +161,6 @@ const maxDate = ref('');
 const selectedDataPoint = ref(null);
 const isMapInitialized = ref(false);
 const mapLoading = ref(false);
-const mapConfiguration = ref({}); // Ensure this is a ref
 
 const isAuthenticated = computed(() => !!page.props.auth.user); // Compute isAuthenticated
 

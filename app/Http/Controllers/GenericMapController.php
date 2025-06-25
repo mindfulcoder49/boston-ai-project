@@ -340,9 +340,20 @@ class GenericMapController extends Controller
             // Populate the modelToSubObjectKeyMap
             $modelToSubObjectKeyMap[$tableName] = $dataObjectKey;
 
+            $filterDesc = $modelClass::getFilterableFieldsDescription();
+            if (is_string($filterDesc)) {
+                try {
+                    $filterDesc = json_decode($filterDesc, true, 512, JSON_THROW_ON_ERROR);
+                } catch (\JsonException $e) {
+                    Log::error("Failed to decode filterFieldsDescription for {$modelClass}: " . $e->getMessage());
+                    $filterDesc = [];
+                }
+            }
+
             $baseConfigEntry = [
                 'dataObjectKey' => $dataObjectKey,
                 'displayTitle' => $modelClass::getAlcivartechTypeForStyling(),
+                'filterFieldsDescription' => $filterDesc,
             ];
 
             // Get specific popup config from the model
