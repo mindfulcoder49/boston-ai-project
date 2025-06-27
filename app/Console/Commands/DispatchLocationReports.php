@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Location;
 use App\Models\User; // Import User model
 use App\Jobs\SendLocationReportEmail;
+use App\Jobs\SendLocationReportEmailNoAI;
 use Illuminate\Support\Facades\Log; // For logging
 // Config is still used by User::getEffectiveTierDetails indirectly, so no need to remove its use here if other parts of the app rely on it.
 // use Illuminate\Support\Facades\Config; 
@@ -77,6 +78,7 @@ class DispatchLocationReports extends Command
                 $locationToSend = $configuredLocations->sortBy('id')->first();
 
                 if ($locationToSend) {
+                    SendLocationReportEmailNoAI::dispatch($locationToSend);
                     SendLocationReportEmail::dispatch($locationToSend);
                     $this->info("-- Dispatched report for Basic User ID: {$user->id}, Location ID: {$locationToSend->id} ('{$locationToSend->address}')");
                     $dispatchedCount++;
@@ -84,6 +86,7 @@ class DispatchLocationReports extends Command
             } elseif ($userTier === 'pro') {
                 // Pro plan: Send reports for ALL their configured locations.
                 foreach ($configuredLocations as $location) {
+                    SendLocationReportEmailNoAI::dispatch($location);
                     SendLocationReportEmail::dispatch($location);
                     $this->info("-- Dispatched report for Pro User ID: {$user->id}, Location ID: {$location->id} ('{$location->address}')");
                     $dispatchedCount++;

@@ -11,15 +11,10 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Mail\Mailer;
 use App\Http\Controllers\GenericMapController;
-use App\Http\Controllers\ThreeOneOneCaseController; // Added import
-use App\Http\Controllers\AiAssistantController; // Added import
+use App\Http\Controllers\ThreeOneOneCaseController;
 use Illuminate\Http\Request;
-// GuzzleHttp imports are no longer needed here if AiAssistantController handles its own client
-// use GuzzleHttp\Client;
-// use GuzzleHttp\Exception\RequestException;
-// use GuzzleHttp\Exception\ClientException;
-use Carbon\Carbon; // Import Carbon for date manipulation
-use App\Models\Report; // Added import
+use Carbon\Carbon;
+use App\Models\Report;
 use Illuminate\Support\Str;
 // Add all models from LINKABLE_MODELS
 use App\Models\CrimeData;
@@ -36,7 +31,7 @@ use App\Models\CambridgeHousingViolationData;
 use App\Models\CambridgeSanitaryInspectionData;
 use App\Models\PersonCrashData;
 
-class SendLocationReportEmail implements ShouldQueue
+class SendLocationReportEmailNoAI implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -97,7 +92,6 @@ class SendLocationReportEmail implements ShouldQueue
                     'address' => $this->location->address,
                 ],
                 'radius' => $this->radiusForReport, // Use stored radius
-                // 'language_codes' => [$this->location->language] // If getRadialMapData uses this
             ]);
             $mapDataResponse = $mapController->getRadialMapData($simulatedRequest);
             $mapData = $mapDataResponse->getData();
@@ -180,8 +174,6 @@ class SendLocationReportEmail implements ShouldQueue
                     if (!empty($serviceRequestIds)) {
                         Log::info("Attempting to fetch live 311 data for location {$this->location->id}, date/group '{$dateOrOlderKey}', IDs: " . implode(', ', $serviceRequestIds));
                         try {
-                            // Prepare a request object for getMultiple.
-                            // Assumes getMultiple expects 'service_request_ids' in the request input.
                             $idFetchingRequest = new Request();
                             $idFetchingRequest->merge(['service_request_ids' => $serviceRequestIds]);
 
@@ -189,10 +181,7 @@ class SendLocationReportEmail implements ShouldQueue
 
                             if ($liveDataResponse->getStatusCode() === 200) {
                                 $liveCasesData = json_decode($liveDataResponse->getContent(), false); // false for object output
-
-                                // Check if response is a Laravel Resource (e.g., has a 'data' property)
                                 $liveCases = $liveCasesData->data ?? $liveCasesData;
-
 
                                 if (is_array($liveCases) && !empty($liveCases)) {
                                     $liveCasesMap = [];
@@ -237,42 +226,64 @@ class SendLocationReportEmail implements ShouldQueue
             foreach ($groupedDataByDateAndModel as $dateOrOlderKey => $modelsOnDate) {
                 $dateReportParts = []; // Reports for this specific date/older_group
 
-                // Determine the display date for the report section header
                 $displayDate = ($dateOrOlderKey === 'older')
                     ? "Older than " . self::MAX_DAYS_INDIVIDUAL_REPORTS . " days"
-                    : Carbon::parse($dateOrOlderKey)->locale($this->location->language)->isoFormat('LL'); // e.g., "May 12, 2025" (localized)
+                    : Carbon::parse($dateOrOlderKey)->locale($this->location->language)->isoFormat('LL');
 
                 $dateReportParts[] = "### " . $displayDate . "\n"; // Date heading
 
                 foreach ($modelsOnDate as $modelClass => $dataPointsForModel) {
                     if (empty($dataPointsForModel)) {
-                        continue; // Skip if no data for this type on this date
+                        continue;
                     }
 
-                    $type = $modelClass::getHumanName(); // Use human name for better context
-                    // Pass the date context to the prompt if needed, or just the type
-                    $promptType = ($dateOrOlderKey === 'older') ? "$type (Older Events)" : "$type (Events from $displayDate)";
-                    // Call the static method from AiAssistantController
-                    $individualReport = AiAssistantController::generateReportSection(
-                        $promptType,
-                        $dataPointsForModel,
-                        $this->location->language
-                    );
+                    if (!$modelClass || !method_exists($modelClass, 'getPopupConfig')) {
+                        Log::warning("Cannot generate raw report section because model class '{$modelClass}' is not valid or does not have getPopupConfig method.", ['location_id' => $this->location->id]);
+                        continue;
+                    }
 
-                    if ($individualReport && $individualReport !== 'No report generated.' && $individualReport !== 'Report content generation was blocked due to safety settings.' && !str_starts_with($individualReport, "Error generating report section for")) {
-                        // Prepend the type to the individual report if not already included by Gemini
-                        // (Gemini prompt asks for a report on $type, so it might already be there)
-                        // For clarity, we can add it:
+                    $type = $modelClass::getHumanName();
+                    $popupConfig = $modelClass::getPopupConfig();
+                    $mainIdField = $popupConfig['mainIdentifierField'] ?? null;
+                    $mainIdLabel = $popupConfig['mainIdentifierLabel'] ?? 'ID';
+                    $descField = $popupConfig['descriptionField'] ?? null;
+                    $descLabel = $popupConfig['descriptionLabel'] ?? 'Description';
+                    $additionalFields = $popupConfig['additionalFields'] ?? [];
+                    $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data';
+
+                    $itemsMarkdown = [];
+                    foreach ($dataPointsForModel as $item) {
+                        $data = $item->{$dataObjectKey} ?? null;
+                        if (!$data) {
+                            continue;
+                        }
+
+                        $itemParts = [];
+                        
+                        if ($mainIdField && isset($data->{$mainIdField})) {
+                            $itemParts[] = "- **{$mainIdLabel}:** {$data->{$mainIdField}}";
+                        } else {
+                            $itemParts[] = "- Record";
+                        }
+
+                        if ($descField && isset($data->{$descField}) && !empty(trim($data->{$descField}))) {
+                            $itemParts[] = "  - **{$descLabel}:** {$data->{$descField}}";
+                        }
+
+                        foreach ($additionalFields as $field) {
+                            $key = $field['key'] ?? null;
+                            $label = $field['label'] ?? 'Info';
+                            if ($key && isset($data->{$key}) && !empty(trim((string)$data->{$key}))) {
+                                $itemParts[] = "  - **{$label}:** {$data->{$key}}";
+                            }
+                        }
+                        $itemsMarkdown[] = implode("\n", $itemParts);
+                    }
+
+                    $individualReport = implode("\n\n", $itemsMarkdown);
+
+                    if (!empty($individualReport)) {
                         $dateReportParts[] = "#### $type\n" . $individualReport . "\n";
-                    } else if ($individualReport === 'Report content generation was blocked due to safety settings.' || str_starts_with($individualReport, "Error generating report section for")) {
-                        // Log the issue but don't add it to the user-facing report
-                        Log::warning("Report section generation issue for email: {$individualReport}", [
-                            'location_id' => $this->location->id,
-                            'type_context' => $promptType,
-                            'language' => $this->location->language
-                        ]);
-                         // Optionally add a generic placeholder to the report if needed
-                        // $dateReportParts[] = "#### $type\n_A report section for $type could not be generated at this time._\n";
                     }
                 }
 
@@ -302,9 +313,7 @@ class SendLocationReportEmail implements ShouldQueue
 
             // Log the generated report details
             if ($this->location->user && $this->location->user->subscription('default')) {
-                 Log::info("Generated report for user: {$this->location->user->email} with subscription ID: {$this->location->user->subscription('default')->stripe_id} for location: {$this->location->address}");
-                 Log::info("User Info: " . json_encode($this->location->user->toArray()));
-                 Log::info("Subscription Info: " . json_encode($this->location->user->subscription('default')->toArray()));
+                 Log::info("Generated raw report for user: {$this->location->user->email} with subscription ID: {$this->location->user->subscription('default')->stripe_id} for location: {$this->location->address}");
             } else {
                 Log::warning("Could not log full user/subscription details for location ID: {$this->location->id}. User or subscription missing.");
             }
@@ -313,18 +322,17 @@ class SendLocationReportEmail implements ShouldQueue
             // --- 5. Save Report to Database (New Step) ---
             if (!empty($finalReport) && $this->location->user) { // Check $finalReport, not $dailyReportContent
                 try {
-                    $reportDateForTitle = Carbon::now()->format('Y-m-d'); // Or use a date derived from the report content if more appropriate
+                    $reportDateForTitle = Carbon::now()->format('Y-m-d');
                     Report::create([
                         'user_id' => $this->location->user_id,
                         'location_id' => $this->location->id,
-                        'title' => "Location Report for {$this->location->name_or_address} - {$reportDateForTitle}",
+                        'title' => "Location Report (Raw) for {$this->location->name_or_address} - {$reportDateForTitle}",
                         'content' => $finalReport, // Save the full report with header
                         'generated_at' => Carbon::now(),
                     ]);
-                    Log::info("Report saved to database for user: {$this->location->user->email}, location: {$this->location->address}");
+                    Log::info("Raw report saved to database for user: {$this->location->user->email}, location: {$this->location->address}");
                 } catch (\Exception $dbException) {
-                    Log::error("Failed to save report to database for user: {$this->location->user->email}, location: {$this->location->address}. Error: {$dbException->getMessage()}");
-                    // Decide if you want to proceed with email if DB save fails. For now, it continues.
+                    Log::error("Failed to save raw report to database for user: {$this->location->user->email}, location: {$this->location->address}. Error: {$dbException->getMessage()}");
                 }
             }
 
@@ -333,16 +341,14 @@ class SendLocationReportEmail implements ShouldQueue
             if (!empty($dailyReportContent)) { // Check if there was actual daily content, not just the header
                 $mailer->to($this->location->user->email)
                        ->send(new \App\Mail\SendLocationReport($this->location, $finalReport)); // Send full report
-                Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
+                Log::info("Raw report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
-                Log::info("No reports generated after date/type processing (empty dailyReportContent). No email was sent to {$this->location->user->email} for location: {$this->location->address}");
+                Log::info("No raw reports generated after date/type processing (empty dailyReportContent). No email was sent to {$this->location->user->email} for location: {$this->location->address}");
             }
 
         } catch (\Exception $e) {
-            Log::error("Error processing report or sending email for location {$this->location->address}: {$e->getMessage()}");
-            Log::error("Stack trace: " . $e->getTraceAsString()); // More detailed stack trace
-            // Optionally rethrow if you want the job to be marked as failed and potentially retried
-            // throw $e;
+            Log::error("Error processing raw report or sending email for location {$this->location->address}: {$e->getMessage()}");
+            Log::error("Stack trace: " . $e->getTraceAsString());
         }
     }
 }

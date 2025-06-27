@@ -124,11 +124,12 @@ class EverettCrimeData extends Model
     {
         return [
             'mainIdentifierLabel' => 'Incident Number',
-            'mainIdentifierField' => 'incident_number', // Verify field name
-            'descriptionLabel' => 'Offense',
-            'descriptionField' => 'offense_description', // Verify field name
+            'mainIdentifierField' => 'case_number',
+            'descriptionLabel' => 'Description',
+            'descriptionField' => 'incident_description',
             'additionalFields' => [
-                ['label' => 'Location', 'key' => 'location_description'], // Verify field name
+                ['label' => 'Location', 'key' => 'incident_address'],
+                ['label' => 'Type', 'key' => 'incident_type'],
             ],
         ];
     }

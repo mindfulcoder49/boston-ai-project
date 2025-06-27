@@ -18,6 +18,7 @@ class Location extends Model
         'longitude',
         'notes', // Assuming you might have a notes field
         'language', // Added language field
+        'report',
         // Add any other fields that should be editable by admin
     ];
 
