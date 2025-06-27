@@ -115,7 +115,7 @@ class GenericMapController extends Controller
     {
         $user = Auth::user();
         $currentPlanTier = 'free'; // Default for unauthenticated or free users
-        $daysToFilter = 31; // Default for unauthenticated users
+        $daysToFilter = 14; // Default for unauthenticated users
         $targetTable = 'data_points'; // Default table
 
         if ($user) {
@@ -123,10 +123,10 @@ class GenericMapController extends Controller
             $currentPlanTier = $effectiveTierDetails['tier'];
 
             if ($currentPlanTier === 'free') {
-                $daysToFilter = 31; // Authenticated free user
+                $daysToFilter = 14; // Authenticated free user
                 $targetTable = 'data_points';
             } elseif ($currentPlanTier === 'basic') {
-                $daysToFilter = 31; // Basic plan
+                $daysToFilter = 14; // Basic plan
                 $targetTable = 'data_points';
             } elseif ($currentPlanTier === 'pro') {
                 $targetTable = 'data_points'; // Pro plan uses data_points (or could be all_time_data_points if that exists)

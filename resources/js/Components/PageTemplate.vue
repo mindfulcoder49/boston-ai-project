@@ -188,7 +188,7 @@
     </nav> <!-- End of nav -->
 
     <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <DataVisibilityBanner /> 
+       <!-- <DataVisibilityBanner />  -->
       <slot></slot>
     </main>
 

@@ -24,7 +24,7 @@
               <img :src="value" alt="photo" class="max-w-xs mb-1" />
             </div>
           </div>
-          <div v-else>
+          <div v-else v-if="key !== 'violation_summary'">
             <strong>{{ formatLabel(key) }}:</strong>
             <span>{{ formatValue(key, value) }}</span>
           </div>
