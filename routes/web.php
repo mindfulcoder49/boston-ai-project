@@ -43,11 +43,19 @@ Route::post('/api/geocode-google-place', [TrashScheduleByAddressController::clas
 
 
 // Serve the Vue component directly
-Route::get('/', function () {
+Route::get('/map/{lat?}/{lng?}', function ($lat = null, $lng = null) {
     return Inertia::render('RadialMap', [
-        // Optional: pass initial props if needed
+        'initialLat' => $lat ? (float)$lat : null,
+        'initialLng' => $lng ? (float)$lng : null,
     ]);
-})->name('map.index');
+})->where([
+    'lat' => '[-+]?([0-9]*\.[0-9]+|[0-9]+)',
+    'lng' => '[-+]?([0-9]*\.[0-9]+|[0-9]+)'
+])->name('map.index');
+
+Route::get('/', function () {
+    return redirect()->route('map.index');
+});
 
 // New API endpoint for fetching map data
 Route::post('/api/map-data', [GenericMapController::class, 'getRadialMapData'])->name('map.data');
@@ -201,7 +209,7 @@ Route::post('/feedback', [EmailController::class, 'store'])
 Route::get('/data-metrics', [MetricsController::class, 'index'])->name('data.metrics'); // Added
 
 // Generalized Data Map Routes (New)
-Route::get('/map/{dataType}', [DataMapController::class, 'index'])
+Route::get('/data-map/{dataType}', [DataMapController::class, 'index'])
     //->middleware(['auth', 'verified']) // Assuming auth is needed
     ->name('data-map.index');
 

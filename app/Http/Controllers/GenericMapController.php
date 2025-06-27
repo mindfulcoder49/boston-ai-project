@@ -115,7 +115,7 @@ class GenericMapController extends Controller
     {
         $user = Auth::user();
         $currentPlanTier = 'free'; // Default for unauthenticated or free users
-        $daysToFilter = 7; // Default for unauthenticated users
+        $daysToFilter = 31; // Default for unauthenticated users
         $targetTable = 'data_points'; // Default table
 
         if ($user) {
@@ -123,10 +123,10 @@ class GenericMapController extends Controller
             $currentPlanTier = $effectiveTierDetails['tier'];
 
             if ($currentPlanTier === 'free') {
-                $daysToFilter = 14; // Authenticated free user
+                $daysToFilter = 31; // Authenticated free user
                 $targetTable = 'data_points';
             } elseif ($currentPlanTier === 'basic') {
-                $daysToFilter = 21; // Basic plan
+                $daysToFilter = 31; // Basic plan
                 $targetTable = 'data_points';
             } elseif ($currentPlanTier === 'pro') {
                 $targetTable = 'data_points'; // Pro plan uses data_points (or could be all_time_data_points if that exists)
@@ -149,28 +149,16 @@ class GenericMapController extends Controller
             'cutoffDateTime' => $cutoffDateTime ? $cutoffDateTime->toDateTimeString() : 'N/A (all time)',
         ]);
 
-        $defaultLatitude = 42.3601;
-        $defaultLongitude = -71.0589;
-        $defaultAddress = 'Boston, MA';
+        $centralLocation = $request->input('centralLocation');
 
-        // Set defaults if user is not logged in
-        if (Auth::check()) {
-            $user = Auth::user();
-            $location = $user->locations->first();
-            if ($location) {
-                $defaultLatitude = $location->latitude;
-                $defaultLongitude = $location->longitude;
-                $defaultAddress = $location->address;
-            }
+        // Fallback if frontend doesn't provide location, which it should.
+        if (!$centralLocation) {
+            $centralLocation = [
+                'latitude' => 42.3601,
+                'longitude' => -71.0589,
+                'address' => 'Boston, MA',
+            ];
         }
-
-        $centralLocation = $request->input('centralLocation', [
-            'latitude' => $defaultLatitude,
-            'longitude' => $defaultLongitude,
-            'address' => $defaultAddress,
-        ]);
-
-
 
         $language_codes = $request->input('language_codes', ['es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR', 'en-US']);
         //remove any invalid language codes
@@ -277,6 +265,7 @@ class GenericMapController extends Controller
 
 
             // Specific handling for FoodInspection if user is not authenticated
+            /*
             if (!Auth::check() && $modelClass === \App\Models\FoodInspection::class) {
                 $restrictedMessage = "Log In to See Food Inspection Information";
                 $foodDataKey = Str::snake(class_basename(\App\Models\FoodInspection::class)) . '_data';
@@ -301,6 +290,7 @@ class GenericMapController extends Controller
                 unset($point->latitude);
                 unset($point->longitude);
             }
+                */
             return $point;
         })->filter(function ($point) use ($cutoffDateTime) {
             // If there's no cutoff date (e.g., for an "all time" scenario, though not fully implemented for pro plan yet),
@@ -317,6 +307,7 @@ class GenericMapController extends Controller
             // Carbon::parse can handle various date string formats.
             return Carbon::parse($point->alcivartech_date)->startOfDay()->gte($cutoffDateTime);
         })->values(); // Reset keys after filtering
+        
         
         Log::info('Data points fetched and filtered.', ['totalDataPointsCount' => $dataPoints->count()]);
 

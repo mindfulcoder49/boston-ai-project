@@ -182,7 +182,8 @@
       }
       
       // Special handling for Food Inspections with aggregated data (using customPopupHandler flag)
-      if (config?.customPopupHandler && modelKey === 'food_inspections' && sourceData?._is_aggregated_food_violation && sourceData?.violation_summary) {
+      if ( sourceData?.violation_summary) {
+          console.log('Creating custom popup for aggregated food inspections:', dataPoint);
           // This is the existing custom logic for aggregated food inspections
           let initialDetailsHtml = `<div style="margin-bottom: 5px;"><strong>${new Date(sourceData.alcivartech_date || dataPoint.alcivartech_date).toLocaleString()}</strong> (Most Recent Activity)</div>`;
           initialDetailsHtml += `<div>Type: ${dataPoint.alcivartech_type}</div>`;

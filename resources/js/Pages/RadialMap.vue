@@ -4,24 +4,25 @@
       <title>Home</title>
     </Head>
 
-    <SubscriptionBanner />
     <FeaturedUserMapsBanner />
 
     <div class="before-map">
       <h1 class="text-2xl font-bold text-gray-800 text-center my-4">{{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.pageTitle }}
 
       </h1>
-
+      <!-- 
       <LanguageSelector
         :languageButtonLabels="languageButtonLabels"
         :currentLanguageCodes="language_codes"
         @language-code-selected="handleLanguageCodeSelected"
       />
+      
       <FoodInspectionTeaser
         :language_codes="language_codes"
         :dataPoints="dataPoints"
         :isAuthenticated="isAuthenticated"
         />
+        -->
 
       <CenterManagement
         :centralLocation="centralLocation"
@@ -121,7 +122,7 @@ import Crime from '@/Components/Crime.vue';
 import BuildingPermit from '@/Components/BuildingPermit.vue';
 import PropertyViolation from '@/Components/PropertyViolation.vue';
 import OffHours from '@/Components/OffHours.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import ImageCarousel from '@/Components/ImageCarousel.vue';
 import SubscriptionBanner from '@/Components/SubscriptionBanner.vue';
 
@@ -136,6 +137,17 @@ import { usePage } from '@inertiajs/vue3'; // Import usePage
 import FeaturedUserMapsBanner from '@/Components/FeaturedUserMapsBanner.vue';
 import { map } from 'leaflet';
 
+const props = defineProps({
+  initialLat: {
+    type: Number,
+    default: null,
+  },
+  initialLng: {
+    type: Number,
+    default: null,
+  },
+});
+
 const page = usePage(); // Get page instance
 
 const mapDisplayRef = ref(null);
@@ -146,9 +158,9 @@ const allDataPoints = ref([]);
 const pointsFilteredByDate = ref([]); // New ref for date-filtered data for the map
 const dataPoints = ref([]);
 const centralLocation = ref({
-  latitude: 42.3601,
-  longitude: -71.0589,
-  address: 'Boston, MA',
+  latitude: props.initialLat || 42.3601,
+  longitude: props.initialLng || -71.0589,
+  address: (props.initialLat && props.initialLng) ? `${props.initialLat.toFixed(4)}, ${props.initialLng.toFixed(4)}` : 'Boston, MA',
 });
 const reportRadius = ref(0.25); // Default radius for reports, can be made dynamic
 const centerSelectionActive = ref(false);
@@ -163,6 +175,16 @@ const isMapInitialized = ref(false);
 const mapLoading = ref(false);
 
 const isAuthenticated = computed(() => !!page.props.auth.user); // Compute isAuthenticated
+
+const updateUrlWithCurrentLocation = () => {
+    const { latitude, longitude } = centralLocation.value;
+    if (latitude && longitude) {
+        const url = `/map/${latitude.toFixed(6)}/${longitude.toFixed(6)}`;
+        // Use router.replace to update the URL without adding a new history entry
+        // and without reloading the page.
+        router.replace(url, { preserveState: true, preserveScroll: true });
+    }
+};
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 const translations = inject('translations');
@@ -337,6 +359,8 @@ const handleMapClickForNewCenter = (latlng) => {
         centralLocation.value.address = `${latlng.lat.toFixed(3)}, ${latlng.lng.toFixed(3)}`;
         mapCenter.value = [latlng.lat, latlng.lng];
         
+        updateUrlWithCurrentLocation();
+
         if (mapDisplayRef.value) mapDisplayRef.value.destroyMapAndClear();
         fetchData().then(() => {
             if (mapDisplayRef.value) mapDisplayRef.value.initializeNewMapAtCenter(mapCenter.value);
@@ -354,6 +378,9 @@ const handleAddressSearchUpdate = (coordinates) => {
         centralLocation.value.address = coordinates.lat + ', ' + coordinates.lng;
     }
     mapCenter.value = [coordinates.lat, coordinates.lng];
+
+    updateUrlWithCurrentLocation();
+
     if (mapDisplayRef.value) mapDisplayRef.value.destroyMapAndClear();
     fetchData().then(() => {
         if (mapDisplayRef.value) mapDisplayRef.value.initializeNewMapAtCenter([coordinates.lat, coordinates.lng], true);
@@ -371,6 +398,9 @@ const handleLoadLocation = (location) => {
       centralLocation.value.address = location.latitude + ', ' + location.longitude;
     }
     mapCenter.value = [location.latitude, location.longitude];
+
+    updateUrlWithCurrentLocation();
+
     if (mapDisplayRef.value) mapDisplayRef.value.destroyMapAndClear();
     fetchData().then(() => {
         if (mapDisplayRef.value) mapDisplayRef.value.initializeNewMapAtCenter([location.latitude, location.longitude], true);
@@ -585,10 +615,6 @@ const handleListClick = (data) => {
   }
 };
 
-watch(centralLocation, (newLoc) => {
-    mapCenter.value = [newLoc.latitude, newLoc.longitude];
-}, { deep: true });
-
 //watch the radius and fetch data when it changes after a 1 second delay
 watch(reportRadius, (newRadius) => {
     setTimeout(() => {
@@ -598,29 +624,39 @@ watch(reportRadius, (newRadius) => {
 
 
 onMounted(async () => {
+  // If coordinates are in the URL, they are used to initialize centralLocation.
+  // We just need to fetch data. The URL is already correct.
+  if (props.initialLat && props.initialLng) {
+    fetchData();
+    return;
+  }
+
+  // If no coordinates in URL, we need to determine the location,
+  // update the URL, and then fetch data.
+  let locationSetFromSaved = false;
   if (isAuthenticated.value) {
     try {
       const response = await axios.get('/locations');
       if (response.data && response.data.length > 0) {
-        // User has saved locations, load the first one
-        handleLoadLocation(response.data[0]); 
-        // handleLoadLocation calls fetchData, so we don't need another call here.
-      } else {
-        // No saved locations, or empty array returned
-        fetchData(); // Fetch data for default location
+        // This will set centralLocation, update URL, and fetch data.
+        handleLoadLocation(response.data[0]);
+        locationSetFromSaved = true;
       }
     } catch (error) {
       console.error('Error fetching user locations on mount:', error);
       if (error.response && error.response.status === 419) {
         window.location.reload();
-      } else {
-        // Error fetching locations (e.g., network issue, or 401 if not truly authenticated by backend)
-        // Fallback to default data load
-        fetchData();
       }
+      // Continue to default location if fetching saved locations fails.
     }
-  } else {
-    // User is not authenticated, load default data
+  }
+
+  // If not authenticated, or no saved locations, or fetch failed,
+  // use the default location.
+  if (!locationSetFromSaved) {
+    // The centralLocation is already initialized with defaults.
+    // We just need to update the URL and fetch data.
+    updateUrlWithCurrentLocation();
     fetchData();
   }
 });

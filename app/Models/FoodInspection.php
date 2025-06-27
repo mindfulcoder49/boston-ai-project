@@ -113,6 +113,7 @@ class FoodInspection extends Model
             'additionalFields' => [
                 ['label' => 'Business Name', 'key' => 'businessname'],
                 ['label' => 'Result', 'key' => 'result'],
+                ['label' => 'Violation History', 'key' => 'violation_summary']
             ],
         ];
     }
