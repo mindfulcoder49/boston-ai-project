@@ -19,7 +19,7 @@ class AddSpatialIndexToPersonCrashDataTable extends Migration
 
         // Step 2: Populate the new 'location' column from existing lat/lon data.
         DB::connection('person_crash_data_db')->update(
-            'UPDATE person_crash_data SET location = ST_SRID(POINT(lon, lat), 4326) WHERE lon IS NOT NULL AND lat IS NOT NULL'
+            'UPDATE person_crash_data SET location = ST_GeomFromText(CONCAT("POINT(", lon, " ", lat, ")"), 4326) WHERE lon IS NOT NULL AND lat IS NOT NULL'
         );
 
         // Step 3: Modify the column to be NOT NULL and then add the spatial index.
