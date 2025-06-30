@@ -173,8 +173,11 @@ const initializeFilters = () => {
     const newFilters = {
         start_date: props.initialFilters?.start_date || '',
         end_date: props.initialFilters?.end_date || '',
-        limit: props.initialFilters?.limit || 1000,
     };
+    if (!props.isReadOnly) {
+        newFilters.limit = props.initialFilters?.limit || 1000;
+    }
+
     parsedFields.value.forEach(field => {
         if (props.initialFilters && props.initialFilters.hasOwnProperty(field.name)) {
             if (field.type === 'boolean') {

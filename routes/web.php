@@ -23,6 +23,8 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Auth\SocialLoginController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\ReportController; // Added
+use App\Http\Controllers\ReportMapController; // Added
+use App\Http\Controllers\ReportIndexController; // Added
 use App\Http\Controllers\SavedMapController; // Added
 use App\Http\Controllers\AdminController; // Added
 use App\Http\Controllers\AdminMapController; // Added
@@ -86,6 +88,10 @@ Route::middleware('auth')->group(function () {
     // Add edit route if you plan an edit page: Route::get('/saved-maps/{savedMap}/edit', [SavedMapController::class, 'edit'])->name('saved-maps.edit');
 
 });
+
+Route::get('/csvreports/map', [ReportIndexController::class, 'index'])->name('reports.map.index'); // New route
+Route::get('/csvreports/map/{filename}', [ReportMapController::class, 'show'])->name('reports.map.show');
+
 
 Route::get('/saved-maps', [SavedMapController::class, 'index'])->name('saved-maps.index');
 Route::get('/saved-maps/{savedMap}/view', [SavedMapController::class, 'view'])->name('saved-maps.view'); // Publicly viewable link

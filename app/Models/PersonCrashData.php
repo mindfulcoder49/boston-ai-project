@@ -29,7 +29,7 @@ class PersonCrashData extends Model
         'milemarker', 'exit_rte', 'dist_dirc_exit', 'exit_numb', 'dist_dirc_landmark',
         'landmark', 'rdwy_jnct_type_descr', 'traf_cntrl_devc_type_descr',
         'trafy_descr_descr', 'jurisdictn', 'first_hrmf_event_loc_descr',
-        'is_geocoded_status', 'geocoding_method_name', 'x_coord', 'y_coord', 'lat', 'lon',
+        'is_geocoded_status', 'geocoding_method_name', 'x_coord', 'y_coord', 'lat', 'lon', 'location',
         'rmv_doc_ids', 'crash_rpt_ids', 'age_drvr_yngst', 'age_drvr_oldest',
         'age_nonmtrst_yngst', 'age_nonmtrst_oldest', 'drvr_distracted_cl', 'district_num',
         'rpa_abbr', 'vehc_emer_use_cl', 'vehc_towed_from_scene_cl', 'cnty_name',

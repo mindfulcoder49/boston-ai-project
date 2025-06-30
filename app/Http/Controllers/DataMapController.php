@@ -174,6 +174,7 @@ class DataMapController extends Controller
             'dataTypeConfig' => $config,
             'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar,
             'mapConfiguration' => $mapConfiguration, // Add map configuration
+            'initialClusterRadius' => $request->input('clusterRadius', 80), // Add this line
         ];
 
         return Inertia::render('DataMap', $pageProps);
@@ -480,6 +481,11 @@ class DataMapController extends Controller
                 $point->longitude = $point->{$lngField} ?? null;
             }
             
+            // Unset the raw location field to prevent JSON encoding errors with binary data.
+            if (isset($point->location)) {
+                unset($point->location);
+            }
+            
             $point->alcivartech_date = $point->{$dateFieldFromConfig} ?? null;
 
             return $point;
@@ -674,7 +680,7 @@ class DataMapController extends Controller
         throw new \Exception('Failed to get valid filter arguments from OpenAI. Check logs for details. OpenAI Response: ' . json_encode($responseBody));
     }
 
-    private function generateMapConfiguration(): array
+    public function generateMapConfiguration(): array
     {
         $dataPointModelConfig = [];
         $modelToSubObjectKeyMap = [];

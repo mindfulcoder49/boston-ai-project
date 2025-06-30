@@ -26,7 +26,7 @@ class PersonCrashDataSeeder extends Seeder
             return;
         }
 
-        $files = glob($directoryPath . '*_Person_Level_Crash_Details.csv');
+        $files = glob($directoryPath . '*2025_Person_Level_Crash_Details.csv');
         if (empty($files)) {
             $this->command->warn("No CSV files found in directory: {$directoryPath}");
             return;
@@ -82,6 +82,13 @@ class PersonCrashDataSeeder extends Seeder
 
                 $record = array_combine($dbColumns, $row);
                 $transformedRecord = $this->transformRecord($record);
+
+                // Skip records without lat/lon, as location is required.
+                if ($transformedRecord['location'] === null) {
+                    $skippedRowCount++;
+                    $rowCount++;
+                    continue;
+                }
 
                 $transformedRecord['objectid_source'] = $record['objectid'] ?? null;
                 $transformedRecord['crash_date_text_raw'] = $record['crash_date_text'] ?? $record['crash_date'] ?? null;
@@ -382,6 +389,16 @@ class PersonCrashDataSeeder extends Seeder
                     $transformed[$dbKey] = $currentVal !== null ? (string)$currentVal : null;
                     break;
             }
+        }
+
+        // Set location from lat/lon
+        if (isset($transformed['lat'], $transformed['lon'])) {
+            $lat = $transformed['lat'];
+            $lon = $transformed['lon'];
+            // Use DB::raw to prevent query builder from treating it as a string.
+            $transformed['location'] = DB::raw("ST_SRID(POINT($lon, $lat), 4326)");
+        } else {
+            $transformed['location'] = null;
         }
 
         // Construct crash_person_id from transformed values

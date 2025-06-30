@@ -82,10 +82,15 @@ export function applyClientFilters(data, filters, dataTypeDetails) {
           if (isNaN(dItemValue.getTime()) || isNaN(dFilterValue.getTime())) return false; // Invalid date
           return isMin ? dItemValue >= dFilterValue : dItemValue <= dFilterValue;
         } else { // Numeric range
-          const nItemValue = parseFloat(itemValue);
-          const nFilterValue = parseFloat(filterValue);
-          if (isNaN(nItemValue) || isNaN(nFilterValue)) return false; // Not a number
-          return isMin ? nItemValue >= nFilterValue : nItemValue <= nFilterValue;
+          const numItemValue = parseFloat(itemValue);
+          const numFilterValue = parseFloat(filterValue);
+
+          // If either value is not a valid number, the filter doesn't apply to this item.
+          if (isNaN(numItemValue) || isNaN(numFilterValue)) {
+            return false;
+          }
+
+          return isMin ? numItemValue >= numFilterValue : numItemValue <= numFilterValue;
         }
       });
     } else if (Array.isArray(filterValue)) {

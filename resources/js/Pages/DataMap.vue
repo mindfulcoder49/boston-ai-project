@@ -10,10 +10,12 @@
       :page-filters-prop="filters"
       :data-type-prop="dataType"
       :data-type-config-prop="dataTypeConfig"
-      :is-read-only="false" 
+      :is-read-only="isReadOnly"
       :initial-map-settings="initialMapSettings"
       :configurable-filter-fields-for-view="configurableFilterFieldsForView"
       :map-configuration="mapConfiguration"
+      :initial-cluster-radius-prop="initialClusterRadius"
+      :default-filters="defaultFilters"
     />
   </PageTemplate>
 </template>
@@ -24,7 +26,7 @@ import PageTemplate from '@/Components/PageTemplate.vue';
 import MapToolbar from '@/Components/MapToolbar.vue';
 import SubscriptionBanner from '@/Components/SubscriptionBanner.vue';
 import { Head, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 
 const props = defineProps({
   initialData: Array,
@@ -46,13 +48,31 @@ const props = defineProps({
     default: () => []
   },
   mapConfiguration: Object, // Add mapConfiguration prop
+  initialClusterRadius: {
+    type: [Number, String],
+    default: 80
+  },
+  defaultFilters: {
+    type: Object,
+    default: () => ({})
+  }
+});
+
+onMounted(() => {
+  console.log('[DataMap.vue] Props on mount:', {
+    dataType: props.dataType,
+    isReadOnly: props.isReadOnly,
+    initialDataCount: props.initialData?.length,
+    filters: props.filters,
+    initialClusterRadius: props.initialClusterRadius,
+  });
 });
 
 const page = usePage();
 
 const title = computed(() => {
   if (props.dataTypeConfig && props.dataTypeConfig.humanName) {
-    return `${props.dataTypeConfig.humanName} Map`;
+    return props.isReadOnly ? props.dataTypeConfig.humanName : `${props.dataTypeConfig.humanName} Map`;
   }
   const dt = props.dataType || page.props.dataType; // Fallback if dataTypeConfig not fully populated
   if (dt) {

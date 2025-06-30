@@ -43,6 +43,11 @@ const props = defineProps({
     default: 13
   },
   mapConfiguration: Object, // Add mapConfiguration prop
+  dataTypeConfigProp: Object, // Pass the full config for dynamic icons
+  clusterRadiusProp: { // New prop for clustering radius
+    type: Number,
+    default: 80
+  }
 });
 
 const emit = defineEmits(['marker-data-point-clicked', 'map-initialized-internal']);
@@ -61,6 +66,23 @@ const iconSettings = {
 
 const getMarkerIcon = (alcivartechType, dataPoint) => {
   const transparentPixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+  // Check for dynamic icon configuration first
+  const dynamicIconConfig = props.dataTypeConfigProp?.dynamicIcon;
+  if (dynamicIconConfig?.enabled && dynamicIconConfig.textField) {
+    const value = dataPoint[dynamicIconConfig.textField] || '0';
+    // Only show icon if value is greater than 0
+    if (parseInt(value, 10) > 0) {
+      return L.divIcon({
+        html: `<span>${value}</span>`,
+        className: `leaflet-div-icon ${dynamicIconConfig.className || 'report-value-icon'}`,
+        iconSize: [30, 30],
+      });
+    } else {
+      // Return a transparent icon for zero-value points so they don't clutter the map
+      return L.icon({ iconUrl: transparentPixel, iconSize: [1, 1] });
+    }
+  }
 
   // Use mapConfiguration to dynamically determine icon properties
   const config = props.mapConfiguration?.dataPointModelConfig || {};
@@ -196,6 +218,17 @@ const createPopupContent = (dataPoint) => {
   return content;
 };
 
+const reinitializeClusterGroups = () => {
+    // Clear existing groups from the map
+    Object.values(markerClusterGroups.value).forEach(group => {
+        if (mapInstance.value.hasLayer(group)) {
+            mapInstance.value.removeLayer(group);
+        }
+    });
+    markerClusterGroups.value = {}; // Reset the groups object
+    // The groups will be recreated on the next updateMarkers call
+};
+
 const updateMarkers = (newDataPoints) => {
   if (!mapInstance.value) {
     return;
@@ -221,7 +254,7 @@ const updateMarkers = (newDataPoints) => {
       // Ensure a cluster group exists for this model
       if (!markerClusterGroups.value[alcivartechModel]) {
         const newClusterGroup = markRaw(L.markerClusterGroup({
-          maxClusterRadius: getClusterRadius,
+          maxClusterRadius: props.clusterRadiusProp, // Use the prop here
           // Style cluster icons based on alcivartech_type
           iconCreateFunction: createTypedIconCreateFunction(alcivartechType) 
         }));
@@ -300,6 +333,13 @@ watch(() => props.mapCenterCoordinates, (newCenter) => {
     mapInstance.value.setView(newCenter, props.zoomLevel);
   }
 }, { deep: true });
+
+watch(() => props.clusterRadiusProp, (newRadius) => {
+    if (mapInstance.value) {
+        reinitializeClusterGroups();
+        updateMarkers(props.dataPointsToDisplay); // Redraw markers with new setting
+    }
+});
 
 
 // Expose methods to parent component
@@ -433,6 +473,24 @@ defineExpose({
 .cluster-mixed div {
   background-color: rgba(128, 128, 128, 0.6) !important;
   color: white;
+}
+
+/* Style for the new dynamic report value icon */
+.report-value-icon {
+  background-color: rgba(220, 53, 69, 0.9); /* A strong red color */
+  border: 2px solid #fff;
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.report-value-icon span {
+  line-height: 1;
 }
 
 </style>

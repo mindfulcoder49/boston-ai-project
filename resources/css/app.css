@@ -256,16 +256,30 @@ a {
 .crime-collision-injury-icon div, /* For L.divIcon's inner div if that's styled */
 .crime-collision-injury-icon {    /* For L.divIcon outer or L.icon <img> */
   background-image: url("/images/crime-collision-injury.svg") !important; /* Create this SVG */
-  /* Or, if not changing image, add other visual distinction: */
-  /* border: 3px solid red !important; */
-  /* background-color: darkred !important; */ /* Example */
+  background-color: var(--crime-icon-color);
+  background-size: cover;
+  background-position: center;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  position: relative;
 }
 
 /* Crime - Collision no Injury */
 .crime-collision-no-injury-icon div,
 .crime-collision-no-injury-icon {
   background-image: url("/images/crime-collision-no-injury.svg") !important; /* Create this SVG */
-  /* background-color: orange !important; */ /* Example */
+  background-color: var(--crime-icon-color);
+  background-size: cover;
+  background-position: center;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  position: relative;
 }
 
 /* Crime - Assault */
@@ -388,7 +402,9 @@ a {
 }
 
 .crash-div-icon div,
-.crash-div-icon {
+.crash-div-icon,
+.car-crash-div-icon,
+.car-crash-div-icon div  {
   background-color: var(--crash-icon-color);
   background-image: url("/images/carcrash.svg"); /* You'll need to create this SVG */
   background-size: cover;

@@ -33,6 +33,28 @@
        <div v-if="isLoading && nlpSubmitted" class="mt-2 text-sm text-indigo-500">Fetching data based on your query...</div>
     </div>
 
+    <!-- UI Controls Section -->
+    <div class="p-4 border rounded-md shadow-sm bg-white">
+      <h3 class="text-xl font-semibold mb-3">Map Controls</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Clustering Radius Control -->
+        <div>
+          <label for="clusterRadius" class="block text-sm font-medium text-gray-700">
+            Clustering Distance: <span class="font-bold">{{ clusterRadius }}px</span>
+          </label>
+          <p class="text-xs text-gray-500 mb-1">Larger values group more markers together.</p>
+          <input
+            type="range"
+            id="clusterRadius"
+            min="0"
+            max="150"
+            step="5"
+            v-model.number="clusterRadius"
+            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
+      </div>
+    </div>
 
     
     <!-- Map Display Section -->
@@ -43,6 +65,8 @@
             :dataPointsToDisplay="displayedDataPoints"
             :externalIdFieldProp="dataTypeConfigProp?.externalIdField || 'id'"
             :mapConfiguration="mapConfiguration"
+            :dataTypeConfigProp="dataTypeConfigProp"
+            :clusterRadiusProp="clusterRadius"
             @marker-data-point-clicked="handleMarkerClick"
             @map-initialized-internal="handleMapInitialized"
             class="h-[70vh] w-full rounded-md shadow-md generic-map" 
@@ -192,6 +216,14 @@ const props = defineProps({
     default: () => []
   },
   mapConfiguration: Object, // Add mapConfiguration prop
+  initialClusterRadiusProp: {
+    type: [Number, String],
+    default: 80
+  },
+  defaultFilters: {
+    type: Object,
+    default: () => ({})
+  }
 });
 
 const page = usePage();
@@ -205,6 +237,7 @@ const currentFilters = ref({});
 const naturalLanguageQuery = ref('');
 const nlpError = ref('');
 const nlpSubmitted = ref(false); // To distinguish general loading from NLP loading
+const clusterRadius = ref(80); // New state for clustering radius
 
 const selectedDataPoint = ref(null);
 const mapCenter = ref([42.3601, -71.0589]); // Default Boston center, adjust as needed
@@ -283,17 +316,19 @@ const filterFieldsForReadOnlyView = computed(() => {
     }
   }
 
-  if (!props.isReadOnly) return baseDescriptionArray;
-
-  if (!props.configurableFilterFieldsForView || props.configurableFilterFieldsForView.length === 0) return [];
-  
-  const configurableSet = new Set(props.configurableFilterFieldsForView);
-  let filteredDesc = baseDescriptionArray.filter(field => configurableSet.has(field.name));
-
-  if (configurableSet.has('limit') && !filteredDesc.some(field => field.name === 'limit')) {
-    filteredDesc.push({ name: 'limit', label: 'Record Limit', type: 'number', placeholder: 'e.g., 1000' });
+  if (!props.isReadOnly) {
+    return baseDescriptionArray;
   }
-  return filteredDesc;
+
+  // In read-only mode:
+  // If configurableFilterFieldsForView is provided (for saved maps), use that to filter.
+  if (props.configurableFilterFieldsForView && props.configurableFilterFieldsForView.length > 0) {
+    const configurableSet = new Set(props.configurableFilterFieldsForView);
+    return baseDescriptionArray.filter(field => configurableSet.has(field.name));
+  }
+  
+  // Otherwise (for report maps), show all defined filters for client-side use.
+  return baseDescriptionArray;
 });
 
 
@@ -386,6 +421,8 @@ const submitNlpQuery = async () => {
 const applyClientSideFilters = (filters) => {
   if (!props.isReadOnly) return;
 
+  console.log('[DataMapComponent] Applying client-side filters:', JSON.parse(JSON.stringify(filters)));
+
   const dataTypeDetails = {
     dateField: props.dataTypeConfigProp?.dateField,
     searchableColumns: props.dataTypeConfigProp?.searchableColumns || [],
@@ -397,6 +434,8 @@ const applyClientSideFilters = (filters) => {
     filters, 
     dataTypeDetails
   );
+
+  console.log(`[DataMapComponent] Filtering complete. ${clientFilteredDataPoints.value.length} points remaining.`);
   
   // Optionally, re-center map based on filtered data if needed, though usually not for read-only views.
   // For now, map center is fixed by initialMapSettings in read-only.
@@ -513,45 +552,92 @@ const handleSaveMap = async () => {
 
 
 onMounted(() => {
-  mapCenter.value = props.initialMapSettings?.center || [42.3601, -71.0589];
+    console.log('[DataMapComponent] Mounted. Initializing...');
+    // Merge default filters with page (URL) filters. Page filters take precedence.
+    const combinedFilters = { ...(props.defaultFilters || {}), ...(props.pageFiltersProp || {}) };
 
-  const initialData = props.initialDataProp || [];
-  dataPoints.value = initialData; // Store original full dataset for non-readonly
-  
-  currentFilters.value = { ...(props.pageFiltersProp || {}), limit: 1000 }; 
+    console.log('[DataMapComponent] Received Props:', {
+        isReadOnly: props.isReadOnly,
+        initialDataCount: props.initialDataProp?.length,
+        pageFilters: JSON.parse(JSON.stringify(props.pageFiltersProp)),
+        defaultFilters: JSON.parse(JSON.stringify(props.defaultFilters)),
+        combinedFilters: JSON.parse(JSON.stringify(combinedFilters)),
+        clusterRadiusProp: props.initialClusterRadiusProp,
+    });
 
-  if (props.isReadOnly) {
-    clientFilteredDataPoints.value = initialData; // Initialize with all data for client-side filtering
-    // Apply initial saved filters client-side if any are configurable
-    if (props.configurableFilterFieldsForView && props.configurableFilterFieldsForView.length > 0) {
-        const initialConfigurableFilters = {};
-        Object.keys(props.pageFiltersProp || {}).forEach(key => {
-            if (props.configurableFilterFieldsForView.includes(key) || 
-                (key === 'date_range' && (props.configurableFilterFieldsForView.includes(props.dataTypeConfigProp?.dateField) || props.configurableFilterFieldsForView.includes('date_range')))) { // Special handling for date_range if date field is configurable
-                initialConfigurableFilters[key] = props.pageFiltersProp[key];
-            }
-        });
-        currentFilters.value = initialConfigurableFilters; // Set currentFilters to only the configurable ones that were saved
-        applyClientSideFilters(currentFilters.value);
+    mapCenter.value = props.initialMapSettings?.center || [42.3601, -71.0589];
+    
+    // Correctly initialize clusterRadius from the combined filters, handling the '0' case.
+    const radiusFromFilters = combinedFilters.clusterRadius;
+    // Use nullish coalescing (??) to prioritize the filter parameter, even if it's '0'.
+    const rawRadius = radiusFromFilters ?? props.initialClusterRadiusProp;
+    const parsedRadius = parseInt(rawRadius, 10);
+
+    // Check if parsedRadius is a valid number (including 0). If not, default to 80.
+    clusterRadius.value = !isNaN(parsedRadius) ? parsedRadius : 80;
+    
+    delete combinedFilters.clusterRadius; // Now remove it from the filters object.
+
+    const initialData = props.initialDataProp || [];
+    dataPoints.value = initialData; // Store original dataset for non-readonly
+
+    currentFilters.value = combinedFilters;
+    
+    console.log('[DataMapComponent] Initial currentFilters set (clusterRadius excluded):', JSON.parse(JSON.stringify(currentFilters.value)));
+    console.log(`[DataMapComponent] Cluster radius initialized to: ${clusterRadius.value}`);
+
+    if (!props.isReadOnly) {
+        // Ensure we have a default limit in non-readonly
+        if (currentFilters.value.limit === undefined) {
+            currentFilters.value.limit = 1000;
+        }
+        // If there's any filter besides limit or if we have no data, fetch fresh data
+        const hasFilters = Object.keys(currentFilters.value).filter(k => k !== 'limit').length > 0;
+        if (hasFilters || dataPoints.value.length === 0) {
+            fetchData(currentFilters.value);
+        }
     } else {
-        currentFilters.value = {}; // No configurable filters, so no active filters on view page
+        // For read-only maps, just apply client-side filters
+        clientFilteredDataPoints.value = initialData;
+        console.log(`[DataMapComponent] Read-only mode. Initial clientFilteredDataPoints count: ${clientFilteredDataPoints.value.length}`);
+        applyClientSideFilters(currentFilters.value);
     }
-  } else {
-    const initialFetchRequired = Object.keys(currentFilters.value).filter(k => k !== 'limit').length > 0 || dataPoints.value.length === 0;
-    if (initialFetchRequired) {
-        fetchData(currentFilters.value);
-    } else if (dataPoints.value.length > 0) {
-          const firstPointWithCoords = dataPoints.value.find(dp => (dp.latitude || dp.lat) && (dp.longitude || dp.long || dp.lng));
-          if (firstPointWithCoords) {
-              const lat = parseFloat(firstPointWithCoords.latitude || firstPointWithCoords.lat);
-              const lon = parseFloat(firstPointWithCoords.longitude || firstPointWithCoords.long || firstPointWithCoords.lng);
-              if (!isNaN(lat) && !isNaN(lon)) {
-                   mapCenter.value = [lat, lon];
-              }
-          }
-    }
-  }
 });
+
+const debounce = (func, delay) => {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), delay);
+  };
+};
+
+const updateUrlWithState = debounce(() => {
+    const queryParams = { ...currentFilters.value };
+
+    // Add clusterRadius to the query params
+    queryParams.clusterRadius = clusterRadius.value;
+
+    // Clean up empty filters before updating URL
+    Object.keys(queryParams).forEach(key => {
+        const value = queryParams[key];
+        if (value === null || value === '' || (Array.isArray(value) && value.length === 0)) {
+            delete queryParams[key];
+        }
+    });
+
+    // Use browser's History API to update URL without reloading the page
+    const queryString = new URLSearchParams(queryParams).toString();
+    const newUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
+    window.history.replaceState({ path: newUrl }, '', newUrl);
+
+}, 300); // 300ms debounce delay
+
+// Watch for changes in filters and cluster radius to update the URL
+watch([currentFilters, clusterRadius], () => {
+    updateUrlWithState();
+}, { deep: true });
+
 
 const handleMapInitialized = (map) => {
     isMapInitialized.value = true;
