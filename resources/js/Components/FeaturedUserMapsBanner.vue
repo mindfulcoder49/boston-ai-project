@@ -18,7 +18,7 @@
             </Link>
           </div>
         </div>
-         <div class="mt-4 text-center">
+         <div class="mt-4 text-center flex justify-center items-center flex-wrap gap-3">
             <Link
               :href="route('saved-maps.index')"
               class="inline-block px-5 py-2 bg-white text-blue-700 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-sm text-sm"
@@ -26,18 +26,34 @@
             >
               View All Public Maps
             </Link>
+            <Link
+              :href="route('reports.map.index')"
+              class="inline-block px-5 py-2 bg-white text-blue-700 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-sm text-sm"
+              @click="trackBannerClick('view_report_maps')"
+            >
+              View Report Maps
+            </Link>
           </div>
       </div>
       <div v-else-if="!$page.props.auth.user" class="text-center">
-        <h3 class="text-xl font-semibold">Discover Community Maps!</h3>
-        <p class="text-sm mt-1 mb-3 text-blue-100">Explore maps created and shared by our users, or sign up to create your own.</p>
-        <Link
-          :href="route('saved-maps.index')"
-          class="px-6 py-2 bg-white text-blue-700 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-md"
-           @click="trackBannerClick('guest_view_public_maps')"
-        >
-          Explore Public Maps
-        </Link>
+        <h3 class="text-xl font-semibold">Discover Community & Report Maps!</h3>
+        <p class="text-sm mt-1 mb-3 text-blue-100">Explore maps created by our community or view our curated data reports.</p>
+        <div class="flex justify-center items-center flex-wrap gap-3">
+          <Link
+            :href="route('saved-maps.index')"
+            class="px-6 py-2 bg-white text-blue-700 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-md"
+             @click="trackBannerClick('guest_view_public_maps')"
+          >
+            Explore Public Maps
+          </Link>
+          <Link
+            :href="route('reports.map.index')"
+            class="px-6 py-2 bg-white text-blue-700 font-semibold rounded-md hover:bg-blue-50 transition-colors duration-150 ease-in-out shadow-md"
+             @click="trackBannerClick('guest_view_report_maps')"
+          >
+            View Report Maps
+          </Link>
+        </div>
       </div>
       <!-- If logged in and no featured maps, banner can be hidden by v-if condition -->
     </div>
