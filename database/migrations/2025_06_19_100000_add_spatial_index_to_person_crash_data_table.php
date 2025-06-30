@@ -14,10 +14,8 @@ class AddSpatialIndexToPersonCrashDataTable extends Migration
      */
     public function up()
     {
-        // Step 1: Add the 'location' column as nullable first.
-        Schema::connection('person_crash_data_db')->table('person_crash_data', function (Blueprint $table) {
-            $table->point('location', 4326)->after('lon')->nullable();
-        });
+        // Step 1: Add the 'location' column as nullable first using a raw statement for MariaDB compatibility.
+        DB::connection('person_crash_data_db')->statement('ALTER TABLE `person_crash_data` ADD `location` POINT NULL AFTER `lon`');
 
         // Step 2: Populate the new 'location' column from existing lat/lon data.
         DB::connection('person_crash_data_db')->update(
@@ -25,9 +23,8 @@ class AddSpatialIndexToPersonCrashDataTable extends Migration
         );
 
         // Step 3: Modify the column to be NOT NULL and then add the spatial index.
-        // This requires all rows to have a non-null 'location' value.
+        DB::connection('person_crash_data_db')->statement('ALTER TABLE `person_crash_data` MODIFY `location` POINT NOT NULL');
         Schema::connection('person_crash_data_db')->table('person_crash_data', function (Blueprint $table) {
-            $table->point('location', 4326)->nullable(false)->change();
             $table->spatialIndex('location');
         });
     }
