@@ -100,7 +100,7 @@ class GenerateIntersectionCrashReport extends Command
                 }
             } else {
                 // Swapped longitude/latitude to match location data
-                $pointText = "POINT({$intersection->latitude} {$intersection->longitude})";
+                $pointText = "POINT({$intersection->longitude} {$intersection->latitude})";
 
                 // Using DB::raw for the geometry function is more reliable with parameter binding.
                 $crashQuery = PersonCrashData::where('city_town_name', 'CAMBRIDGE')
