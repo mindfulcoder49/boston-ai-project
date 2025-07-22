@@ -1,0 +1,3014 @@
+Anomaly Report
+
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: CHGOCC
+Week Index: 0
+Z-Score: -2.032009558385
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: CHGOCC
+Week Index: 1
+Z-Score: -2.032009558385
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: CHGOCC
+Week Index: 2
+Z-Score: -2.220892006091
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: CHGOCC
+Week Index: 3
+Z-Score: -2.032009558385
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: ELECTRICAL
+Week Index: 1
+Z-Score: -2.070546601389
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: ELECTRICAL
+Week Index: 2
+Z-Score: -2.2576469619863
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: ELECTRICAL
+Week Index: 3
+Z-Score: -2.1640967816877
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: FA
+Week Index: 2
+Z-Score: -2.1009528257674
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: GAS
+Week Index: 3
+Z-Score: -2.7000729206837
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: INTEXT
+Week Index: 0
+Z-Score: -2.4216410940326
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: INTEXT
+Week Index: 1
+Z-Score: -2.4216410940326
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: INTEXT
+Week Index: 2
+Z-Score: -2.0040370619086
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: INTEXT
+Week Index: 3
+Z-Score: -3.1176478142393
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: INTREN
+Week Index: 0
+Z-Score: -2.4694364517766
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: INTREN
+Week Index: 3
+Z-Score: -3.0964713804602
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: PLUMBING
+Week Index: 0
+Z-Score: -2.1409072422716
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: PLUMBING
+Week Index: 1
+Z-Score: -2.4508355877073
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: PLUMBING
+Week Index: 3
+Z-Score: -3.5183665553191
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: AWNING
+Week Index: 2
+Z-Score: 2.2905827273358
+-------------------------
+Model: App\Models\BuildingPermit
+Field: worktype
+Value: BFCHMINFIN
+Week Index: 1
+Z-Score: 2.5957596025901
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Certificate of Occupancy
+Week Index: 1
+Z-Score: -2.2084922531665
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Certificate of Occupancy
+Week Index: 2
+Z-Score: -2.5534231455633
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Certificate of Occupancy
+Week Index: 3
+Z-Score: -2.8983540379602
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Electrical Fire Alarms
+Week Index: 1
+Z-Score: -2.1635299376413
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Electrical Fire Alarms
+Week Index: 3
+Z-Score: -2.2203215506887
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Electrical Permit
+Week Index: 0
+Z-Score: -2.0433984320841
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Electrical Permit
+Week Index: 1
+Z-Score: -2.1552753631837
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Electrical Permit
+Week Index: 3
+Z-Score: -3.520173922599
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Foundation Permit
+Week Index: 2
+Z-Score: 2.1213528369592
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Gas Permit
+Week Index: 3
+Z-Score: -2.7216661705594
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Long Form/Alteration Permit
+Week Index: 0
+Z-Score: -2.5105372361914
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Long Form/Alteration Permit
+Week Index: 1
+Z-Score: -2.6677919412337
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Long Form/Alteration Permit
+Week Index: 2
+Z-Score: -2.6677919412337
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Long Form/Alteration Permit
+Week Index: 3
+Z-Score: -2.6677919412337
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Plumbing Permit
+Week Index: 0
+Z-Score: -2.179182971612
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Plumbing Permit
+Week Index: 1
+Z-Score: -2.4876641146653
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Plumbing Permit
+Week Index: 3
+Z-Score: -3.5502102740713
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Short Form Bldg Permit
+Week Index: 0
+Z-Score: -2.8177611557153
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Short Form Bldg Permit
+Week Index: 1
+Z-Score: -2.340811599634
+-------------------------
+Model: App\Models\BuildingPermit
+Field: permittypedescr
+Value: Short Form Bldg Permit
+Week Index: 3
+Z-Score: -3.3458124499481
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Change Occupancy
+Week Index: 0
+Z-Score: -2.032009558385
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Change Occupancy
+Week Index: 1
+Z-Score: -2.032009558385
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Change Occupancy
+Week Index: 2
+Z-Score: -2.220892006091
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Change Occupancy
+Week Index: 3
+Z-Score: -2.032009558385
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Electrical
+Week Index: 1
+Z-Score: -2.070546601389
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Electrical
+Week Index: 2
+Z-Score: -2.2576469619863
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Electrical
+Week Index: 3
+Z-Score: -2.1640967816877
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Fire Alarm
+Week Index: 2
+Z-Score: -2.1009528257674
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Gas
+Week Index: 3
+Z-Score: -2.7000729206837
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Interior/Exterior Work
+Week Index: 0
+Z-Score: -2.4216410940326
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Interior/Exterior Work
+Week Index: 1
+Z-Score: -2.4216410940326
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Interior/Exterior Work
+Week Index: 2
+Z-Score: -2.0040370619086
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Interior/Exterior Work
+Week Index: 3
+Z-Score: -3.1176478142393
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Plumbing
+Week Index: 0
+Z-Score: -2.1409072422716
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Plumbing
+Week Index: 1
+Z-Score: -2.4508355877073
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Plumbing
+Week Index: 3
+Z-Score: -3.5183665553191
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Renovations - Interior NSC
+Week Index: 0
+Z-Score: -2.4694364517766
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Renovations - Interior NSC
+Week Index: 3
+Z-Score: -3.0964713804602
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Awning
+Week Index: 2
+Z-Score: 2.2905827273358
+-------------------------
+Model: App\Models\BuildingPermit
+Field: description
+Value: Installation of InteriorFinish
+Week Index: 1
+Z-Score: 2.5957596025901
+-------------------------
+Model: App\Models\BuildingPermit
+Field: status
+Value: Closed
+Week Index: 1
+Z-Score: -2.1202719210792
+-------------------------
+Model: App\Models\BuildingPermit
+Field: status
+Value: Closed
+Week Index: 3
+Z-Score: -3.5824756260014
+-------------------------
+Model: App\Models\BuildingPermit
+Field: status
+Value: Open
+Week Index: 0
+Z-Score: -3.9203843702357
+-------------------------
+Model: App\Models\BuildingPermit
+Field: status
+Value: Open
+Week Index: 1
+Z-Score: -3.9203843702357
+-------------------------
+Model: App\Models\BuildingPermit
+Field: status
+Value: Open
+Week Index: 2
+Z-Score: -3.9203843702357
+-------------------------
+Model: App\Models\BuildingPermit
+Field: status
+Value: Open
+Week Index: 3
+Z-Score: -3.9203843702357
+-------------------------
+Model: App\Models\BuildingPermit
+Field: language_code
+Value: en-US
+Week Index: 0
+Z-Score: -4.2785392074498
+-------------------------
+Model: App\Models\BuildingPermit
+Field: language_code
+Value: en-US
+Week Index: 1
+Z-Score: -4.2785392074498
+-------------------------
+Model: App\Models\BuildingPermit
+Field: language_code
+Value: en-US
+Week Index: 2
+Z-Score: -4.2785392074498
+-------------------------
+Model: App\Models\BuildingPermit
+Field: language_code
+Value: en-US
+Week Index: 3
+Z-Score: -4.2785392074498
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: 1-2FAM
+Week Index: 0
+Z-Score: -2.7461717582969
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: 1-2FAM
+Week Index: 1
+Z-Score: -2.5790498231083
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: 1-2FAM
+Week Index: 2
+Z-Score: -2.0219767058132
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: 1-2FAM
+Week Index: 3
+Z-Score: -3.4842936387129
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: 1-3FAM
+Week Index: 0
+Z-Score: -2.7172710940651
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: 1-3FAM
+Week Index: 2
+Z-Score: -3.4876403994238
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: 1-3FAM
+Week Index: 3
+Z-Score: -3.6160352836503
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: 1-4FAM
+Week Index: 3
+Z-Score: -2.096951342402
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Comm
+Week Index: 0
+Z-Score: -2.4231855563904
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Comm
+Week Index: 1
+Z-Score: -2.5479049584164
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Comm
+Week Index: 2
+Z-Score: -2.4410026138226
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Comm
+Week Index: 3
+Z-Score: -3.581294289489
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Mixed
+Week Index: 0
+Z-Score: -2.3947623356819
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Mixed
+Week Index: 3
+Z-Score: -2.8629572613526
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Multi
+Week Index: 1
+Z-Score: -2.233529019326
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Multi
+Week Index: 2
+Z-Score: -2.3797254792299
+-------------------------
+Model: App\Models\BuildingPermit
+Field: occupancytype
+Value: Multi
+Week Index: 3
+Z-Score: -2.087332559422
+-------------------------
+Model: App\Models\BuildingPermit
+Field: state
+Value: MA
+Week Index: 0
+Z-Score: -4.2785392074498
+-------------------------
+Model: App\Models\BuildingPermit
+Field: state
+Value: MA
+Week Index: 1
+Z-Score: -4.2785392074498
+-------------------------
+Model: App\Models\BuildingPermit
+Field: state
+Value: MA
+Week Index: 2
+Z-Score: -4.2785392074498
+-------------------------
+Model: App\Models\BuildingPermit
+Field: state
+Value: MA
+Week Index: 3
+Z-Score: -4.2785392074498
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02108
+Week Index: 2
+Z-Score: -2.0622572981787
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02108
+Week Index: 3
+Z-Score: -2.3520533717106
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02109
+Week Index: 3
+Z-Score: -2.0829908836389
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02110
+Week Index: 0
+Z-Score: -2.0800292349104
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02110
+Week Index: 2
+Z-Score: -2.0800292349104
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02110
+Week Index: 3
+Z-Score: -2.591883393147
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02114
+Week Index: 2
+Z-Score: -2.4101019283066
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02115
+Week Index: 3
+Z-Score: -2.3346404551733
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02116
+Week Index: 0
+Z-Score: -2.4687047357397
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02116
+Week Index: 1
+Z-Score: -2.2284752913929
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02116
+Week Index: 3
+Z-Score: -3.2494504298668
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02118
+Week Index: 0
+Z-Score: -2.2168453617012
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02118
+Week Index: 3
+Z-Score: -2.6385335411732
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02122
+Week Index: 3
+Z-Score: -2.854445818253
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02124
+Week Index: 1
+Z-Score: -2.2556206608417
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02124
+Week Index: 2
+Z-Score: -2.2556206608417
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02125
+Week Index: 1
+Z-Score: -2.1561050540318
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02125
+Week Index: 2
+Z-Score: -2.1561050540318
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02125
+Week Index: 3
+Z-Score: -2.8740498122375
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02127
+Week Index: 0
+Z-Score: -2.2736586550636
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02127
+Week Index: 1
+Z-Score: -2.1112687326735
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02127
+Week Index: 3
+Z-Score: -2.9232183446241
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02128
+Week Index: 0
+Z-Score: -2.058941383764
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02128
+Week Index: 3
+Z-Score: -2.8631303556593
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02129
+Week Index: 0
+Z-Score: -2.0292457981378
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02129
+Week Index: 1
+Z-Score: -2.2487039735799
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02129
+Week Index: 3
+Z-Score: -2.6876203244642
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02130
+Week Index: 0
+Z-Score: -2.3350948504847
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02130
+Week Index: 1
+Z-Score: -2.5508176011507
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02130
+Week Index: 3
+Z-Score: -3.1260782695933
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02131
+Week Index: 2
+Z-Score: -2.7620008547883
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02131
+Week Index: 3
+Z-Score: -2.7620008547883
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02132
+Week Index: 0
+Z-Score: -2.6484222256206
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02132
+Week Index: 1
+Z-Score: -2.4132832860739
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02132
+Week Index: 2
+Z-Score: -2.4916629325894
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02132
+Week Index: 3
+Z-Score: -2.8051815186518
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02135
+Week Index: 1
+Z-Score: -2.0482616346384
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02135
+Week Index: 3
+Z-Score: -2.6751658490477
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02136
+Week Index: 0
+Z-Score: -2.6136357411005
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02136
+Week Index: 1
+Z-Score: -2.0404929774367
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02136
+Week Index: 3
+Z-Score: -2.777390816433
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02210
+Week Index: 1
+Z-Score: -2.345950830925
+-------------------------
+Model: App\Models\BuildingPermit
+Field: zip
+Value: 02210
+Week Index: 3
+Z-Score: -2.4634654561385
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: status
+Value: Active
+Week Index: 3
+Z-Score: -2.0484209464688
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: number_of_residential_units
+Value: 
+Week Index: 1
+Z-Score: -2.0392820721122
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: number_of_residential_units
+Value: 
+Week Index: 2
+Z-Score: -2.1091904102156
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: number_of_residential_units
+Value: 
+Week Index: 3
+Z-Score: -2.2490070864224
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: proposed_property_use
+Value: 
+Week Index: 1
+Z-Score: -2.0303767843048
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: proposed_property_use
+Value: 
+Week Index: 2
+Z-Score: -2.100529722883
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: proposed_property_use
+Value: 
+Week Index: 3
+Z-Score: -2.2408356000394
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: proposed_property_use
+Value: Multi-Family (3 units or greater)
+Week Index: 1
+Z-Score: 3.75
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: created_at
+Value: 2025-06-18 14:21:12
+Week Index: 1
+Z-Score: -2.2455245382145
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: created_at
+Value: 2025-06-18 14:21:12
+Week Index: 3
+Z-Score: -2.407767667527
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: updated_at
+Value: 2025-06-18 14:21:12
+Week Index: 1
+Z-Score: -2.2462884512715
+-------------------------
+Model: App\Models\CambridgeBuildingPermitData
+Field: updated_at
+Value: 2025-06-18 14:21:12
+Week Index: 3
+Z-Score: -2.4086227530038
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Cambridgeport
+Week Index: 0
+Z-Score: -2.5835958167417
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Cambridgeport
+Week Index: 1
+Z-Score: -2.5835958167417
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Cambridgeport
+Week Index: 2
+Z-Score: -2.5835958167417
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Cambridgeport
+Week Index: 3
+Z-Score: -2.1291539330968
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: East Cambridge
+Week Index: 0
+Z-Score: -2.5302824700738
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: East Cambridge
+Week Index: 1
+Z-Score: -2.5302824700738
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: East Cambridge
+Week Index: 2
+Z-Score: -2.5302824700738
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: East Cambridge
+Week Index: 3
+Z-Score: -2.3482373775067
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Mid-Cambridge
+Week Index: 0
+Z-Score: -2.4151965785827
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Mid-Cambridge
+Week Index: 1
+Z-Score: -2.4151965785827
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Mid-Cambridge
+Week Index: 2
+Z-Score: -2.4151965785827
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: North Cambridge
+Week Index: 0
+Z-Score: -2.254617680037
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: North Cambridge
+Week Index: 1
+Z-Score: -2.254617680037
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: North Cambridge
+Week Index: 2
+Z-Score: -2.254617680037
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Riverside
+Week Index: 0
+Z-Score: -2.3811237935723
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Riverside
+Week Index: 1
+Z-Score: -2.1609902478995
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Riverside
+Week Index: 2
+Z-Score: -2.3811237935723
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: Riverside
+Week Index: 3
+Z-Score: -2.3811237935723
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: The Port
+Week Index: 0
+Z-Score: -2.3892783179472
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: The Port
+Week Index: 1
+Z-Score: -2.3892783179472
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: The Port
+Week Index: 2
+Z-Score: -2.3892783179472
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: West Cambridge
+Week Index: 0
+Z-Score: -2.1360555796151
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: West Cambridge
+Week Index: 1
+Z-Score: -2.1360555796151
+-------------------------
+Model: App\Models\CambridgeCrimeReportData
+Field: neighborhood
+Value: West Cambridge
+Week Index: 2
+Z-Score: -2.1360555796151
+-------------------------
+Model: App\Models\CambridgeSanitaryInspectionData
+Field: code_case_status
+Value: Complete
+Week Index: 3
+Z-Score: 13.033738031554
+-------------------------
+Model: App\Models\CambridgeSanitaryInspectionData
+Field: created_at
+Value: 2025-06-18 14:21:29
+Week Index: 3
+Z-Score: 4.3712600328495
+-------------------------
+Model: App\Models\CambridgeSanitaryInspectionData
+Field: created_at
+Value: 2025-06-18 14:21:28
+Week Index: 3
+Z-Score: 9.4952246505322
+-------------------------
+Model: App\Models\CambridgeSanitaryInspectionData
+Field: updated_at
+Value: 2025-07-07 19:49:33
+Week Index: 3
+Z-Score: 6.8012152688096
+-------------------------
+Model: App\Models\CambridgeSanitaryInspectionData
+Field: updated_at
+Value: 2025-07-07 19:49:32
+Week Index: 3
+Z-Score: 9.1272022995121
+-------------------------
+Model: App\Models\CambridgeThreeOneOneCase
+Field: created_at
+Value: 2025-06-18 14:21:27
+Week Index: 3
+Z-Score: -2.3958727500261
+-------------------------
+Model: App\Models\CambridgeThreeOneOneCase
+Field: updated_at
+Value: 2025-06-18 14:21:27
+Week Index: 3
+Z-Score: -2.3958727500261
+-------------------------
+Model: App\Models\CrimeData
+Field: district
+Value: D4
+Week Index: 2
+Z-Score: -2.2281193473074
+-------------------------
+Model: App\Models\CrimeData
+Field: year
+Value: 2025
+Week Index: 3
+Z-Score: -3.7858414315876
+-------------------------
+Model: App\Models\CrimeData
+Field: month
+Value: 4
+Week Index: 3
+Z-Score: -2.1145356556847
+-------------------------
+Model: App\Models\CrimeData
+Field: hour
+Value: 3
+Week Index: 1
+Z-Score: 2.597571758952
+-------------------------
+Model: App\Models\CrimeData
+Field: hour
+Value: 8
+Week Index: 3
+Z-Score: -2.0384293776565
+-------------------------
+Model: App\Models\CrimeData
+Field: hour
+Value: 9
+Week Index: 3
+Z-Score: -2.1067979816412
+-------------------------
+Model: App\Models\CrimeData
+Field: hour
+Value: 12
+Week Index: 2
+Z-Score: -2.5034968673026
+-------------------------
+Model: App\Models\EverettCrimeData
+Field: year
+Value: 2025
+Week Index: 3
+Z-Score: -2.1493948621595
+-------------------------
+Model: App\Models\EverettCrimeData
+Field: day_of_week
+Value: Tuesday
+Week Index: 3
+Z-Score: -2.1049658622117
+-------------------------
+Model: App\Models\EverettCrimeData
+Field: hour
+Value: 8
+Week Index: 3
+Z-Score: -2.2334802105363
+-------------------------
+Model: App\Models\EverettCrimeData
+Field: hour
+Value: 9
+Week Index: 3
+Z-Score: -2.2075407016616
+-------------------------
+Model: App\Models\EverettCrimeData
+Field: hour
+Value: 21
+Week Index: 1
+Z-Score: 2.0996578614094
+-------------------------
+Model: App\Models\EverettCrimeData
+Field: arrest_age
+Value: 35
+Week Index: 1
+Z-Score: 2.3302069121419
+-------------------------
+Model: App\Models\EverettCrimeData
+Field: arrest_age
+Value: 29
+Week Index: 3
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\FoodInspection
+Field: licstatus
+Value: Active
+Week Index: 3
+Z-Score: 3.7949659254244
+-------------------------
+Model: App\Models\FoodInspection
+Field: licstatus
+Value: Inactive
+Week Index: 3
+Z-Score: 13.817843444163
+-------------------------
+Model: App\Models\FoodInspection
+Field: licstatus
+Value: Deleted
+Week Index: 0
+Z-Score: 2.5207844720155
+-------------------------
+Model: App\Models\FoodInspection
+Field: licensecat
+Value: FS
+Week Index: 0
+Z-Score: -2.08692483706
+-------------------------
+Model: App\Models\FoodInspection
+Field: licensecat
+Value: FS
+Week Index: 1
+Z-Score: -2.0918750188749
+-------------------------
+Model: App\Models\FoodInspection
+Field: licensecat
+Value: FS
+Week Index: 2
+Z-Score: -2.0522735643556
+-------------------------
+Model: App\Models\FoodInspection
+Field: licensecat
+Value: FS
+Week Index: 3
+Z-Score: 11.050857699731
+-------------------------
+Model: App\Models\FoodInspection
+Field: licensecat
+Value: FT
+Week Index: 3
+Z-Score: 14.008022590618
+-------------------------
+Model: App\Models\FoodInspection
+Field: licensecat
+Value: RF
+Week Index: 3
+Z-Score: 11.740944194717
+-------------------------
+Model: App\Models\FoodInspection
+Field: descript
+Value: Eating & Drinking
+Week Index: 0
+Z-Score: -2.08692483706
+-------------------------
+Model: App\Models\FoodInspection
+Field: descript
+Value: Eating & Drinking
+Week Index: 1
+Z-Score: -2.0918750188749
+-------------------------
+Model: App\Models\FoodInspection
+Field: descript
+Value: Eating & Drinking
+Week Index: 2
+Z-Score: -2.0522735643556
+-------------------------
+Model: App\Models\FoodInspection
+Field: descript
+Value: Eating & Drinking
+Week Index: 3
+Z-Score: 11.050857699731
+-------------------------
+Model: App\Models\FoodInspection
+Field: descript
+Value: Eating & Drinking w/ Take Out
+Week Index: 3
+Z-Score: 14.008022590618
+-------------------------
+Model: App\Models\FoodInspection
+Field: descript
+Value: Retail Food
+Week Index: 3
+Z-Score: 11.740944194717
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Fail
+Week Index: 0
+Z-Score: -2.467271441828
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Fail
+Week Index: 1
+Z-Score: -2.4400917837962
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Fail
+Week Index: 2
+Z-Score: -2.4129121257644
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Fail
+Week Index: 3
+Z-Score: 10.721657618088
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Filed
+Week Index: 3
+Z-Score: 6.8540794220195
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_OutBus
+Week Index: 3
+Z-Score: 21.998152101637
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Pass
+Week Index: 0
+Z-Score: -2.8095046664133
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Pass
+Week Index: 1
+Z-Score: -2.8406375578095
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Pass
+Week Index: 2
+Z-Score: -2.8717704492056
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Pass
+Week Index: 3
+Z-Score: 7.9105876043182
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_Hearing
+Week Index: 3
+Z-Score: 3.1274454340455
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: HE_NotReq
+Week Index: 3
+Z-Score: 3.8300514784401
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: Pass
+Week Index: 3
+Z-Score: 6.5790223912832
+-------------------------
+Model: App\Models\FoodInspection
+Field: result
+Value: Fail
+Week Index: 3
+Z-Score: 2.9020913194187
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: 
+Week Index: 3
+Z-Score: 9.3172472786468
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: *
+Week Index: 0
+Z-Score: -2.6720222528367
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: *
+Week Index: 1
+Z-Score: -2.6861204052949
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: *
+Week Index: 2
+Z-Score: -2.667322868684
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: *
+Week Index: 3
+Z-Score: 10.23248663058
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: ***
+Week Index: 0
+Z-Score: -2.141593174884
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: ***
+Week Index: 1
+Z-Score: -2.141593174884
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: ***
+Week Index: 2
+Z-Score: -2.141593174884
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_level
+Value: ***
+Week Index: 3
+Z-Score: 8.9292105639337
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: 
+Week Index: 3
+Z-Score: 9.3172472786468
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: Fail
+Week Index: 0
+Z-Score: -2.8109538901321
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: Fail
+Week Index: 1
+Z-Score: -2.8046949172176
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: Fail
+Week Index: 2
+Z-Score: -2.7859179984741
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: Fail
+Week Index: 3
+Z-Score: -2.7608821068162
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: Pass
+Week Index: 0
+Z-Score: -2.8084557749097
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: Pass
+Week Index: 1
+Z-Score: -2.7609309843653
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: Pass
+Week Index: 2
+Z-Score: -2.7134061938208
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value: Pass
+Week Index: 3
+Z-Score: 8.0668004613461
+-------------------------
+Model: App\Models\FoodInspection
+Field: viol_status
+Value:  
+Week Index: 3
+Z-Score: 9.3305292420592
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: ALLSTON
+Week Index: 3
+Z-Score: 4.8258747584663
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: BOSTON
+Week Index: 3
+Z-Score: 14.619936473969
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: BRIGHTON
+Week Index: 3
+Z-Score: 4.5026945034162
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: DORCHESTER
+Week Index: 3
+Z-Score: 10.759763081284
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: EAST BOSTON
+Week Index: 3
+Z-Score: 5.3934822991234
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: HYDE PARK
+Week Index: 3
+Z-Score: 5.7989829510378
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: JAMAICA PLAIN
+Week Index: 3
+Z-Score: 4.4319838193597
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: ROSLINDALE
+Week Index: 3
+Z-Score: 5.452329200467
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: ROXBURY
+Week Index: 3
+Z-Score: 5.7330881259363
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: SOUTH BOSTON
+Week Index: 3
+Z-Score: 3.9612980339508
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: WEST ROXBURY
+Week Index: 3
+Z-Score: 8.7767256601397
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: CHARLESTOWN
+Week Index: 3
+Z-Score: 5.5830911845815
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: MATTAPAN
+Week Index: 3
+Z-Score: 2.076625128198
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: CHARLESTOWN/
+Week Index: 1
+Z-Score: 3.6711487757013
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: CHARLESTOWN/
+Week Index: 2
+Z-Score: 3.6711487757013
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value:  
+Week Index: 3
+Z-Score: 3.8040278687207
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: FENWAY
+Week Index: 0
+Z-Score: 3.1122948510378
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: ROXBURY/BOSTON
+Week Index: 0
+Z-Score: 2.2034612663163
+-------------------------
+Model: App\Models\FoodInspection
+Field: city
+Value: FINANCIAL DISTRICT/
+Week Index: 3
+Z-Score: 2.5817794995006
+-------------------------
+Model: App\Models\FoodInspection
+Field: state
+Value: MA
+Week Index: 0
+Z-Score: -2.0089808988109
+-------------------------
+Model: App\Models\FoodInspection
+Field: state
+Value: MA
+Week Index: 3
+Z-Score: 12.835264117742
+-------------------------
+Model: App\Models\FoodInspection
+Field: state
+Value: 
+Week Index: 3
+Z-Score: 4.0281267093278
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 
+Week Index: 3
+Z-Score: 7.1559239400735
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02108
+Week Index: 3
+Z-Score: 8.8245713898561
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02111
+Week Index: 3
+Z-Score: 8.4000191319887
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02113
+Week Index: 3
+Z-Score: 5.8011552800698
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02114
+Week Index: 3
+Z-Score: 7.8478360999432
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02115
+Week Index: 3
+Z-Score: 10.880208475501
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02116
+Week Index: 3
+Z-Score: 7.8018366019936
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02118
+Week Index: 3
+Z-Score: 7.2383370598255
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02119
+Week Index: 3
+Z-Score: 2.8910193870563
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02122
+Week Index: 3
+Z-Score: 7.0448815516101
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02124
+Week Index: 3
+Z-Score: 7.7803129464702
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02125
+Week Index: 3
+Z-Score: 9.6714185717353
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02127
+Week Index: 3
+Z-Score: 3.3959205868916
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02128
+Week Index: 3
+Z-Score: 4.7347558070368
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02130
+Week Index: 3
+Z-Score: 4.5017937087439
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02131
+Week Index: 3
+Z-Score: 4.916655968147
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02132
+Week Index: 3
+Z-Score: 8.8793749241638
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02134
+Week Index: 3
+Z-Score: 4.8596404075235
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02135
+Week Index: 3
+Z-Score: 4.5328565306921
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02136
+Week Index: 3
+Z-Score: 5.6379415921777
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02199
+Week Index: 3
+Z-Score: 3.143738401211
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02215
+Week Index: 3
+Z-Score: 8.2906293466697
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02109
+Week Index: 3
+Z-Score: 16.9810666738
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02110
+Week Index: 3
+Z-Score: 14.567679833416
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02121
+Week Index: 3
+Z-Score: 3.8469594113195
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02129
+Week Index: 3
+Z-Score: 5.9134073633199
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02210
+Week Index: 3
+Z-Score: 3.5966429493655
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02163
+Week Index: 1
+Z-Score: 3.7261904807938
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02163
+Week Index: 2
+Z-Score: 3.5027075600336
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02126
+Week Index: 3
+Z-Score: 2.1136891813233
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02148
+Week Index: 3
+Z-Score: 4.1667774213182
+-------------------------
+Model: App\Models\FoodInspection
+Field: zip
+Value: 02125-1663
+Week Index: 0
+Z-Score: 2.528141499716
+-------------------------
+Model: App\Models\FoodInspection
+Field: language_code
+Value: en-US
+Week Index: 0
+Z-Score: -2.0020935501223
+-------------------------
+Model: App\Models\FoodInspection
+Field: language_code
+Value: en-US
+Week Index: 3
+Z-Score: 12.845423933355
+-------------------------
+Model: App\Models\PersonCrashData
+Field: crash_hour
+Value: 3
+Week Index: 1
+Z-Score: 2.2106594549982
+-------------------------
+Model: App\Models\PersonCrashData
+Field: crash_hour
+Value: 16
+Week Index: 3
+Z-Score: 2.5279263119032
+-------------------------
+Model: App\Models\PersonCrashData
+Field: max_injr_svrty_cl
+Value: Possible Injury (C)
+Week Index: 0
+Z-Score: 2.0602368182729
+-------------------------
+Model: App\Models\PersonCrashData
+Field: numb_nonfatal_injr
+Value: 6
+Week Index: 3
+Z-Score: 2.2642630045727
+-------------------------
+Model: App\Models\PersonCrashData
+Field: manr_coll_descr
+Value: Rear to Side
+Week Index: 0
+Z-Score: 2.2588078404835
+-------------------------
+Model: App\Models\PersonCrashData
+Field: ambnt_light_descr
+Value: Dusk
+Week Index: 0
+Z-Score: 2.4486303269893
+-------------------------
+Model: App\Models\PersonCrashData
+Field: ambnt_light_descr
+Value: Not reported
+Week Index: 1
+Z-Score: 2.0715128206416
+-------------------------
+Model: App\Models\PersonCrashData
+Field: weath_cond_descr
+Value: Unknown
+Week Index: 2
+Z-Score: 2.4354839023788
+-------------------------
+Model: App\Models\PersonCrashData
+Field: weath_cond_descr
+Value: Fog, smog, smoke
+Week Index: 2
+Z-Score: 2.0378255903383
+-------------------------
+Model: App\Models\PersonCrashData
+Field: weath_cond_descr
+Value: Fog, smog, smoke
+Week Index: 3
+Z-Score: 2.288818771553
+-------------------------
+Model: App\Models\PersonCrashData
+Field: weath_cond_descr
+Value: Cloudy/Sleet, hail (freezing rain or drizzle)
+Week Index: 0
+Z-Score: 2.5930776880394
+-------------------------
+Model: App\Models\PersonCrashData
+Field: weath_cond_descr
+Value: Cloudy/Snow
+Week Index: 3
+Z-Score: 2.4576509613861
+-------------------------
+Model: App\Models\PersonCrashData
+Field: weath_cond_descr
+Value: Fog, smog, smoke/Cloudy
+Week Index: 2
+Z-Score: 2.1345647297666
+-------------------------
+Model: App\Models\PersonCrashData
+Field: weath_cond_descr
+Value: Snow/Blowing sand, snow
+Week Index: 3
+Z-Score: 2.22158968918
+-------------------------
+Model: App\Models\PersonCrashData
+Field: weath_cond_descr
+Value: Snow/Cloudy
+Week Index: 3
+Z-Score: 2.2959031571242
+-------------------------
+Model: App\Models\PersonCrashData
+Field: road_surf_cond_descr
+Value: Snow
+Week Index: 3
+Z-Score: 2.0902177255448
+-------------------------
+Model: App\Models\PersonCrashData
+Field: first_hrmf_event_descr
+Value: Collision with animal - deer
+Week Index: 0
+Z-Score: 2.1631018074388
+-------------------------
+Model: App\Models\PersonCrashData
+Field: first_hrmf_event_descr
+Value: Collision with bridge overhead structure
+Week Index: 0
+Z-Score: 4.1977798235159
+-------------------------
+Model: App\Models\PersonCrashData
+Field: first_hrmf_event_descr
+Value: Unknown non-collision
+Week Index: 0
+Z-Score: 2.0869967789998
+-------------------------
+Model: App\Models\PersonCrashData
+Field: mm_rte
+Value: 24
+Week Index: 0
+Z-Score: 2.1061293747122
+-------------------------
+Model: App\Models\PersonCrashData
+Field: mm_rte
+Value: 24
+Week Index: 2
+Z-Score: 2.1061293747122
+-------------------------
+Model: App\Models\PersonCrashData
+Field: exit_rte
+Value: 24
+Week Index: 1
+Z-Score: 2.0494095238839
+-------------------------
+Model: App\Models\PersonCrashData
+Field: exit_rte
+Value: 93SB
+Week Index: 0
+Z-Score: 2.1324559599327
+-------------------------
+Model: App\Models\PersonCrashData
+Field: exit_rte
+Value: 2
+Week Index: 2
+Z-Score: 2.3074152946127
+-------------------------
+Model: App\Models\PersonCrashData
+Field: rdwy_jnct_type_descr
+Value: Five-point or more
+Week Index: 2
+Z-Score: 2.3857360555908
+-------------------------
+Model: App\Models\PersonCrashData
+Field: traf_cntrl_devc_type_descr
+Value: Flashing traffic control signal
+Week Index: 2
+Z-Score: 2.312589124695
+-------------------------
+Model: App\Models\PersonCrashData
+Field: traf_cntrl_devc_type_descr
+Value: Railway crossing device
+Week Index: 1
+Z-Score: 2.0156484241754
+-------------------------
+Model: App\Models\PersonCrashData
+Field: jurisdictn
+Value: 
+Week Index: 2
+Z-Score: 3.5792975324913
+-------------------------
+Model: App\Models\PersonCrashData
+Field: jurisdictn
+Value: 
+Week Index: 3
+Z-Score: 3.0094168689141
+-------------------------
+Model: App\Models\PersonCrashData
+Field: jurisdictn
+Value: Private
+Week Index: 0
+Z-Score: 2.3605864570171
+-------------------------
+Model: App\Models\PersonCrashData
+Field: first_hrmf_event_loc_descr
+Value: Shoulder - paved
+Week Index: 2
+Z-Score: 2.036262624252
+-------------------------
+Model: App\Models\PersonCrashData
+Field: first_hrmf_event_loc_descr
+Value: Shoulder - unpaved
+Week Index: 0
+Z-Score: 2.6273633239461
+-------------------------
+Model: App\Models\PersonCrashData
+Field: age_nonmtrst_yngst
+Value: 16-20
+Week Index: 0
+Z-Score: 2.72933590157
+-------------------------
+Model: App\Models\PersonCrashData
+Field: age_nonmtrst_yngst
+Value: 75-84
+Week Index: 3
+Z-Score: 2.5141221754472
+-------------------------
+Model: App\Models\PersonCrashData
+Field: age_nonmtrst_oldest
+Value: 16-20
+Week Index: 0
+Z-Score: 2.0731180249915
+-------------------------
+Model: App\Models\PersonCrashData
+Field: age_nonmtrst_oldest
+Value: 75-84
+Week Index: 3
+Z-Score: 2.5920431625067
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_emer_use_cl
+Value: V1:(No) / V2:(No) / V4:(No)
+Week Index: 1
+Z-Score: 2.3046638387921
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_emer_use_cl
+Value: V1:(No) / V2:(Yes) / V3:(No)
+Week Index: 3
+Z-Score: 2.1219082112011
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_emer_use_cl
+Value: V1:(No) / V3:(No) / V4:(No)
+Week Index: 1
+Z-Score: 2.395579005131
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_emer_use_cl
+Value: V3:(No) / V4:(No)
+Week Index: 0
+Z-Score: 2.0062794503021
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_emer_use_cl
+Value: V1:(Yes) / V2:(No) / V3:(No)
+Week Index: 1
+Z-Score: 2.6445370493834
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_emer_use_cl
+Value: V1:(No) / V2:(Reported but invalid)
+Week Index: 1
+Z-Score: 2.050609665441
+-------------------------
+Model: App\Models\PersonCrashData
+Field: fmsca_rptbl_cl
+Value: V1:(Yes, federally reportable) / V2:(Yes, federally reportable)
+Week Index: 0
+Z-Score: 2.051283571164
+-------------------------
+Model: App\Models\PersonCrashData
+Field: fmsca_rptbl_cl
+Value: V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally re
+Week Index: 2
+Z-Score: 2.9176841456454
+-------------------------
+Model: App\Models\PersonCrashData
+Field: road_cntrb_descr
+Value: Road surface condition (wet, icy, snow, slush, etc.)
+Week Index: 3
+Z-Score: 2.0331202460407
+-------------------------
+Model: App\Models\PersonCrashData
+Field: road_cntrb_descr
+Value: Toll/booth/plaza related
+Week Index: 2
+Z-Score: 2.3605864570171
+-------------------------
+Model: App\Models\PersonCrashData
+Field: speed_limit
+Value: 5
+Week Index: 3
+Z-Score: -2.166252594898
+-------------------------
+Model: App\Models\PersonCrashData
+Field: aadt_year
+Value: 2011
+Week Index: 1
+Z-Score: 2.5914399905245
+-------------------------
+Model: App\Models\PersonCrashData
+Field: curb
+Value: 
+Week Index: 2
+Z-Score: 3.0972439193924
+-------------------------
+Model: App\Models\PersonCrashData
+Field: curb
+Value: 
+Week Index: 3
+Z-Score: 2.9803587707945
+-------------------------
+Model: App\Models\PersonCrashData
+Field: lt_sidewlk
+Value: 
+Week Index: 2
+Z-Score: 2.9367759658241
+-------------------------
+Model: App\Models\PersonCrashData
+Field: lt_sidewlk
+Value: 
+Week Index: 3
+Z-Score: 2.8474700336291
+-------------------------
+Model: App\Models\PersonCrashData
+Field: lt_sidewlk
+Value: 12.0
+Week Index: 1
+Z-Score: 2.0903628309296
+-------------------------
+Model: App\Models\PersonCrashData
+Field: lt_sidewlk
+Value: 16.0
+Week Index: 0
+Z-Score: 2.280496294651
+-------------------------
+Model: App\Models\PersonCrashData
+Field: rt_sidewlk
+Value: 
+Week Index: 2
+Z-Score: 2.6255378797479
+-------------------------
+Model: App\Models\PersonCrashData
+Field: rt_sidewlk
+Value: 
+Week Index: 3
+Z-Score: 3.0060506159433
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_lt_w
+Value: 
+Week Index: 2
+Z-Score: 3.4319426557312
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_lt_w
+Value: 
+Week Index: 3
+Z-Score: 3.0213140476272
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_lt_w
+Value: 6.0
+Week Index: 2
+Z-Score: 2.6679509771591
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_lt_t
+Value: 
+Week Index: 2
+Z-Score: 3.4373292435387
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_lt_t
+Value: 
+Week Index: 3
+Z-Score: 3.0146880697685
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 
+Week Index: 2
+Z-Score: 3.4666836881276
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 
+Week Index: 3
+Z-Score: 3.0000585035799
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 10.0
+Week Index: 2
+Z-Score: 2.3887618488703
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 16.0
+Week Index: 0
+Z-Score: 2.2648681641254
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 18.0
+Week Index: 0
+Z-Score: 2.0969758523138
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 15.0
+Week Index: 0
+Z-Score: 2.2674077357549
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 17.0
+Week Index: 0
+Z-Score: 2.0735600064565
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 47.0
+Week Index: 1
+Z-Score: 2.707298974465
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_wd
+Value: 13.0
+Week Index: 3
+Z-Score: 2.2136965665348
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_tp
+Value: 
+Week Index: 2
+Z-Score: 3.4666836881276
+-------------------------
+Model: App\Models\PersonCrashData
+Field: surface_tp
+Value: 
+Week Index: 3
+Z-Score: 3.0000585035799
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_rt_w
+Value: 
+Week Index: 2
+Z-Score: 3.5082724266799
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_rt_w
+Value: 
+Week Index: 3
+Z-Score: 2.9350252981374
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_rt_w
+Value: 11.0
+Week Index: 2
+Z-Score: 2.7944137336176
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_rt_w
+Value: 13.0
+Week Index: 3
+Z-Score: 2.1213203435596
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_rt_t
+Value: 
+Week Index: 2
+Z-Score: 3.5082724266799
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_rt_t
+Value: 
+Week Index: 3
+Z-Score: 2.9350252981374
+-------------------------
+Model: App\Models\PersonCrashData
+Field: num_lanes
+Value: 
+Week Index: 2
+Z-Score: 3.4907392053593
+-------------------------
+Model: App\Models\PersonCrashData
+Field: num_lanes
+Value: 
+Week Index: 3
+Z-Score: 3.0478096471572
+-------------------------
+Model: App\Models\PersonCrashData
+Field: opp_lanes
+Value: 
+Week Index: 2
+Z-Score: 3.4798614362146
+-------------------------
+Model: App\Models\PersonCrashData
+Field: opp_lanes
+Value: 
+Week Index: 3
+Z-Score: 3.0601363314424
+-------------------------
+Model: App\Models\PersonCrashData
+Field: med_type
+Value: 
+Week Index: 2
+Z-Score: 3.5276389241073
+-------------------------
+Model: App\Models\PersonCrashData
+Field: med_type
+Value: 
+Week Index: 3
+Z-Score: 2.8884926473301
+-------------------------
+Model: App\Models\PersonCrashData
+Field: urban_type
+Value: 
+Week Index: 2
+Z-Score: 3.569834450151
+-------------------------
+Model: App\Models\PersonCrashData
+Field: urban_type
+Value: 
+Week Index: 3
+Z-Score: 3.0094560672942
+-------------------------
+Model: App\Models\PersonCrashData
+Field: f_class
+Value: 
+Week Index: 2
+Z-Score: 3.5812456700936
+-------------------------
+Model: App\Models\PersonCrashData
+Field: f_class
+Value: 
+Week Index: 3
+Z-Score: 2.9969560903845
+-------------------------
+Model: App\Models\PersonCrashData
+Field: urban_area
+Value: 
+Week Index: 2
+Z-Score: 3.569834450151
+-------------------------
+Model: App\Models\PersonCrashData
+Field: urban_area
+Value: 
+Week Index: 3
+Z-Score: 3.0094560672942
+-------------------------
+Model: App\Models\PersonCrashData
+Field: urban_area
+Value: Nashua (NH-MA)
+Week Index: 3
+Z-Score: 2.0142542581825
+-------------------------
+Model: App\Models\PersonCrashData
+Field: urban_area
+Value: North Adams (MA-VT)
+Week Index: 0
+Z-Score: 2.1418224703543
+-------------------------
+Model: App\Models\PersonCrashData
+Field: urban_area
+Value: South Deerfield
+Week Index: 1
+Z-Score: 2.4432512650536
+-------------------------
+Model: App\Models\PersonCrashData
+Field: urban_area
+Value: Ware
+Week Index: 2
+Z-Score: 2.1163022008807
+-------------------------
+Model: App\Models\PersonCrashData
+Field: facility
+Value: 
+Week Index: 2
+Z-Score: 3.6807502686351
+-------------------------
+Model: App\Models\PersonCrashData
+Field: facility
+Value: 
+Week Index: 3
+Z-Score: 2.7452337562125
+-------------------------
+Model: App\Models\PersonCrashData
+Field: operation
+Value: 
+Week Index: 2
+Z-Score: 3.5229282367274
+-------------------------
+Model: App\Models\PersonCrashData
+Field: operation
+Value: 
+Week Index: 3
+Z-Score: 2.7745938073572
+-------------------------
+Model: App\Models\PersonCrashData
+Field: control
+Value: 
+Week Index: 2
+Z-Score: 3.4389686356263
+-------------------------
+Model: App\Models\PersonCrashData
+Field: control
+Value: 
+Week Index: 3
+Z-Score: 3.0793849330383
+-------------------------
+Model: App\Models\PersonCrashData
+Field: struct_cnd
+Value: 
+Week Index: 2
+Z-Score: 3.4451493284571
+-------------------------
+Model: App\Models\PersonCrashData
+Field: struct_cnd
+Value: 
+Week Index: 3
+Z-Score: 2.7408521167572
+-------------------------
+Model: App\Models\PersonCrashData
+Field: terrain
+Value: 
+Week Index: 2
+Z-Score: 3.4353315008377
+-------------------------
+Model: App\Models\PersonCrashData
+Field: terrain
+Value: 
+Week Index: 3
+Z-Score: 3.0495941460541
+-------------------------
+Model: App\Models\PersonCrashData
+Field: op_dir_sl
+Value: 15
+Week Index: 3
+Z-Score: 2.3332959554456
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_ul_t
+Value: 
+Week Index: 2
+Z-Score: 3.4589118894464
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_ul_t
+Value: 
+Week Index: 3
+Z-Score: 3.0183581216854
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_ul_w
+Value: 
+Week Index: 2
+Z-Score: 3.4511667481741
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_ul_w
+Value: 
+Week Index: 3
+Z-Score: 3.0222540832388
+-------------------------
+Model: App\Models\PersonCrashData
+Field: shldr_ul_w
+Value: 2.0
+Week Index: 0
+Z-Score: 2.0822487744856
+-------------------------
+Model: App\Models\PersonCrashData
+Field: t_exc_type
+Value: All vehicles over 28 feet in length excluded
+Week Index: 0
+Z-Score: 2.0157073789195
+-------------------------
+Model: App\Models\PersonCrashData
+Field: t_exc_time
+Value: 4PM to 6PM
+Week Index: 0
+Z-Score: 2.0157073789195
+-------------------------
+Model: App\Models\PersonCrashData
+Field: f_f_class
+Value: 
+Week Index: 2
+Z-Score: 3.5812456700936
+-------------------------
+Model: App\Models\PersonCrashData
+Field: f_f_class
+Value: 
+Week Index: 3
+Z-Score: 2.9969560903845
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_unit_numb
+Value: 7
+Week Index: 1
+Z-Score: 2.9583100198451
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_age
+Value: 18
+Week Index: 0
+Z-Score: 2.0693303558415
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_age
+Value: 58
+Week Index: 0
+Z-Score: 2.6205695144202
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_age
+Value: 64
+Week Index: 3
+Z-Score: 2.838032981239
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_age
+Value: 82
+Week Index: 0
+Z-Score: 2.321083563383
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_age
+Value: 86
+Week Index: 1
+Z-Score: -2.0248977679044
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_age
+Value: 94
+Week Index: 3
+Z-Score: 2.3570226039552
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_age
+Value: 91
+Week Index: 2
+Z-Score: 2.9383522192737
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_age
+Value: 99
+Week Index: 1
+Z-Score: 2.0412414523193
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_distracted_type_descr
+Value: Manually operating an electronic device
+Week Index: 0
+Z-Score: 2.5871418181699
+-------------------------
+Model: App\Models\PersonCrashData
+Field: driver_distracted_type_descr
+Value: Other activity (searching, eating, personal hygiene, etc.)
+Week Index: 3
+Z-Score: -2.0323435162559
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: FL
+Week Index: 2
+Z-Score: 2.2276318668764
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: IL
+Week Index: 1
+Z-Score: 3.0935872483687
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: NC
+Week Index: 2
+Z-Score: 3.0422104831659
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: LA
+Week Index: 1
+Z-Score: 2.2883102141894
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: TX
+Week Index: 2
+Z-Score: 3.4400325898135
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: DE
+Week Index: 1
+Z-Score: 2.9215327373407
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: FR
+Week Index: 1
+Z-Score: 2.7424137786507
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: ON
+Week Index: 3
+Z-Score: 2.6666666666667
+-------------------------
+Model: App\Models\PersonCrashData
+Field: drvr_lcn_state
+Value: NV
+Week Index: 3
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: max_injr_svrty_vl
+Value: Not Applicable
+Week Index: 1
+Z-Score: 2.1159135487384
+-------------------------
+Model: App\Models\PersonCrashData
+Field: most_hrmf_event
+Value: Collision with animal - deer
+Week Index: 0
+Z-Score: 2.118330530682
+-------------------------
+Model: App\Models\PersonCrashData
+Field: most_hrmf_event
+Value: Collision with bridge overhead structure
+Week Index: 0
+Z-Score: 3.9508312065326
+-------------------------
+Model: App\Models\PersonCrashData
+Field: most_hrmf_event
+Value: Collision with ditch
+Week Index: 0
+Z-Score: 2.1679919454717
+-------------------------
+Model: App\Models\PersonCrashData
+Field: most_hrmf_event
+Value: Collision with mail box
+Week Index: 0
+Z-Score: 2.5351399711588
+-------------------------
+Model: App\Models\PersonCrashData
+Field: most_hrmf_event
+Value: Unknown non-collision
+Week Index: 0
+Z-Score: 2.981635261164
+-------------------------
+Model: App\Models\PersonCrashData
+Field: most_hrmf_event
+Value: Fire/explosion
+Week Index: 3
+Z-Score: 2.5313992695031
+-------------------------
+Model: App\Models\PersonCrashData
+Field: total_occpt_in_vehc
+Value: 3
+Week Index: 2
+Z-Score: 2.0091729809227
+-------------------------
+Model: App\Models\PersonCrashData
+Field: total_occpt_in_vehc
+Value: 10
+Week Index: 0
+Z-Score: 2.0412414523193
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_manr_act_descr
+Value: Other
+Week Index: 0
+Z-Score: 2.3633566268032
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_manr_act_descr
+Value: Overtaking/passing
+Week Index: 0
+Z-Score: 2.0263972435045
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_confg_descr
+Value: Registered farm equipment
+Week Index: 2
+Z-Score: 2.6666666666667
+-------------------------
+Model: App\Models\PersonCrashData
+Field: owner_addr_state
+Value: OK
+Week Index: 0
+Z-Score: 2.0648419543578
+-------------------------
+Model: App\Models\PersonCrashData
+Field: owner_addr_state
+Value: MO
+Week Index: 2
+Z-Score: -2.0930724738891
+-------------------------
+Model: App\Models\PersonCrashData
+Field: owner_addr_state
+Value: AL
+Week Index: 3
+Z-Score: 2.2622790693359
+-------------------------
+Model: App\Models\PersonCrashData
+Field: owner_addr_state
+Value: OR
+Week Index: 2
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_reg_state
+Value: CA
+Week Index: 0
+Z-Score: 2.0758258014086
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_reg_state
+Value: CO
+Week Index: 2
+Z-Score: 2.3303010600141
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_reg_state
+Value: NU
+Week Index: 0
+Z-Score: 2.1403738865229
+-------------------------
+Model: App\Models\PersonCrashData
+Field: vehc_reg_state
+Value: ON
+Week Index: 0
+Z-Score: 2.636487024392
+-------------------------
+Model: App\Models\PersonCrashData
+Field: pers_numb
+Value: 25
+Week Index: 2
+Z-Score: 2.1408720964442
+-------------------------
+Model: App\Models\PersonCrashData
+Field: pers_numb
+Value: 26
+Week Index: 2
+Z-Score: 2.1408720964442
+-------------------------
+Model: App\Models\PersonCrashData
+Field: pers_numb
+Value: 27
+Week Index: 2
+Z-Score: 2.1408720964442
+-------------------------
+Model: App\Models\PersonCrashData
+Field: pers_numb
+Value: 28
+Week Index: 2
+Z-Score: 2.0225995873897
+-------------------------
+Model: App\Models\PersonCrashData
+Field: pers_numb
+Value: 29
+Week Index: 2
+Z-Score: 2.0225995873897
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: FL
+Week Index: 2
+Z-Score: 2.0483803526117
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: IL
+Week Index: 1
+Z-Score: 2.0006577865661
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: NC
+Week Index: 2
+Z-Score: 2.6385093591889
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: PA
+Week Index: 0
+Z-Score: 2.1652399604919
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: UT
+Week Index: 0
+Z-Score: 2.1213203435596
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: VA
+Week Index: 2
+Z-Score: 2.5066760144795
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: KY
+Week Index: 2
+Z-Score: 3.0151134457776
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: AZ
+Week Index: 0
+Z-Score: 2.6366122464122
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: CO
+Week Index: 3
+Z-Score: 2.1155435413918
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: DE
+Week Index: 2
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: ON
+Week Index: 3
+Z-Score: 2.0412414523193
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: WA
+Week Index: 0
+Z-Score: 2.4819863839789
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: AR
+Week Index: 0
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: state_prvn_code
+Value: NV
+Week Index: 2
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_type_cl
+Value: VU3: Pedestrian
+Week Index: 3
+Z-Score: 2.0011225580443
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_type_cl
+Value: VU4: Pedestrian
+Week Index: 2
+Z-Score: 2.4470113596839
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_type_cl
+Value: VU2: Non-Motorized Scooter Rider
+Week Index: 3
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_type_cl
+Value: VU2: Pedestrian / VU3: Pedestrian
+Week Index: 1
+Z-Score: 2.7088808625871
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_actn_cl
+Value: VU2: Entering or crossing location / VU3: Entering or crossing location
+Week Index: 2
+Z-Score: 2.2563042992711
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_actn_cl
+Value: VU2: Walking, running or cycling / VU3: Walking, running or cycling
+Week Index: 1
+Z-Score: 2.4748737341529
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_loc_cl
+Value: VU4: Marked crosswalk at intersection (includes use of paint raised or other roadway material)
+Week Index: 1
+Z-Score: 2.0970064133035
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_loc_cl
+Value: VU2: Unknown
+Week Index: 1
+Z-Score: 2.6666666666667
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_loc_cl
+Value: VU2: In roadway / VU3: In roadway
+Week Index: 1
+Z-Score: 2.5207844720155
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_act_descr
+Value: None
+Week Index: 0
+Z-Score: 2.0155644370746
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_type_descr
+Value: Motorized Scooter Rider
+Week Index: 0
+Z-Score: 2.4633161501453
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_origin_dest_cl
+Value: VU2: Other / VU3: Other
+Week Index: 0
+Z-Score: 2.4111851471452
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_distracted_by_cl
+Value: VU2:(Other activity (searching, eating, personal hygiene, etc.))
+Week Index: 1
+Z-Score: 3.3282011773514
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_alc_suspd_type_cl
+Value: VU4: No
+Week Index: 1
+Z-Score: 2.552147636195
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_alc_suspd_type_cl
+Value: VU2: No / VU3: No
+Week Index: 0
+Z-Score: 2.4673016920822
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_alc_suspd_type_cl
+Value: VU2: Yes
+Week Index: 2
+Z-Score: 2.3452078799117
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_drug_suspd_type_cl
+Value: VU4: No
+Week Index: 1
+Z-Score: 2.4060516585487
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_mtrst_drug_suspd_type_cl
+Value: VU2: No / VU3: No
+Week Index: 0
+Z-Score: 2.4673016920822
+-------------------------
+Model: App\Models\PersonCrashData
+Field: traffic_control_type_descr
+Value: VU2: None
+Week Index: 3
+Z-Score: -2.130190374523
+-------------------------
+Model: App\Models\PersonCrashData
+Field: traffic_control_type_descr
+Value: VU2: Person - Crossing guard
+Week Index: 1
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_cntrb_circ_2
+Value: Failure to use Proper Crosswalk
+Week Index: 2
+Z-Score: 2.4748737341529
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_cntrb_circ_2
+Value: Other (Explain in Narrative)
+Week Index: 0
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_cntrb_circ_2
+Value: In Roadway (Standing, Lying, Working, Playing, etc.)
+Week Index: 0
+Z-Score: 2.4748737341529
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_cntrb_circ_2
+Value: Unknown
+Week Index: 1
+Z-Score: 2.5980762113533
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_cntrb_circ_2
+Value: Inattentive (Talking, Eating, etc.)
+Week Index: 2
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_contact_point
+Value: Unknown
+Week Index: 0
+Z-Score: 2.6705268309806
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_distracted_by_1
+Value: Other activity (searching, eating, personal hygiene, etc.)
+Week Index: 1
+Z-Score: 2.3603873774083
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_event_sequence_1
+Value: Collision with parked motor vehicle, stationary
+Week Index: 3
+Z-Score: 2.2677868380554
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_event_sequence_2
+Value: Unknown
+Week Index: 0
+Z-Score: 2.1962941985733
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_event_sequence_2
+Value: Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)
+Week Index: 0
+Z-Score: 2.6666666666667
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_event_sequence_2
+Value: Overtaking/passing
+Week Index: 0
+Z-Score: 2.0412414523193
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_event_sequence_4
+Value: Crossing Roadway
+Week Index: 0
+Z-Score: 2
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_primary_injury
+Value: Unknown
+Week Index: 0
+Z-Score: 2.2709431191069
+-------------------------
+Model: App\Models\PersonCrashData
+Field: non_motorist_traffic_control
+Value: Person - Crossing guard
+Week Index: 1
+Z-Score: 2.3570226039552
+-------------------------
