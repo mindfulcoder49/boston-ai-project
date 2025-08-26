@@ -30,6 +30,12 @@ use App\Http\Controllers\AdminController; // Added
 use App\Http\Controllers\AdminMapController; // Added
 use App\Http\Controllers\AdminLocationController; // Added
 
+use App\Http\Controllers\TrendsController;
+use App\Http\Controllers\StatisticalAnalysisReportController;
+
+Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
+Route::get('/reports/statistical-analysis/{modelKey}/{columnName}', [StatisticalAnalysisReportController::class, 'show'])->name('reports.statistical-analysis.show');
+
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('locations', LocationController::class);

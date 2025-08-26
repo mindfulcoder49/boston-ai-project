@@ -69,4 +69,8 @@ return [
         'user_role' => env('SCRAPER_X_USER_ROLE', 'guest'),
         'wait_seconds' => env('SCRAPER_WAIT_SECONDS', '5'),
     ],
+
+    'analysis_api' => [
+        'url' => env('ANALYSIS_API_URL'),
+    ],
 ];

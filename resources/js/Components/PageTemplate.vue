@@ -23,6 +23,9 @@
                         <NavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')">
                             Full Data Map
                         </NavLink>
+                        <NavLink :href="route('trends.index')" :active="route().current('trends.index')">
+                            Trends
+                        </NavLink>
                         <NavLink v-if="isAuthenticated" :href="route('reports.index')" :active="route().current('reports.index') || route().current('reports.show')">
                             Report History
                         </NavLink>
