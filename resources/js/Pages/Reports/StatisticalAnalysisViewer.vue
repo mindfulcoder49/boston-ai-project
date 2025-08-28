@@ -19,50 +19,45 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-
 const props = defineProps({
     jobId: String,
     apiBaseUrl: String,
     reportTitle: String,
+    reportData: {
+        type: Object,
+        required: false,
+        default: null,
+    },
 });
 
-const reportData = ref(null);
-const isLoading = ref(true);
+const isLoading = ref(false);
 const error = ref(null);
 
 let mapAnomaliesInstance = null;
 let mapTrendsInstance = null;
 
-const P_VALUE_ANOMALY = computed(() => reportData.value?.parameters?.p_value_anomaly || 0.05);
-const P_VALUE_TREND = computed(() => reportData.value?.parameters?.p_value_trend || 0.05);
+const P_VALUE_ANOMALY = computed(() => props.reportData?.parameters?.p_value_anomaly || 0.05);
+const P_VALUE_TREND = computed(() => props.reportData?.parameters?.p_value_trend || 0.05);
 
 onMounted(async () => {
+    if (!props.reportData) {
+        error.value = 'Failed to load report data. The analysis results might not be available.';
+        return;
+    }
+
     try {
-        const response = await fetch(`${props.apiBaseUrl}/api/v1/jobs/${props.jobId}/results/stage4_h3_anomaly.json`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const data = await response.json();
-        reportData.value = data;
-
-        // --- THE FIX ---
-        // 1. We have the data, so set loading to false.
-        //    This will trigger Vue to re-render the template and show the v-else-if block.
-        isLoading.value = false;
-
-        // 2. Wait for Vue's DOM update to complete.
+        // Wait for Vue's DOM update to complete.
         await nextTick();
 
-        // 3. Now that the DOM is updated and the map containers exist, initialize everything.
+        // Now that the DOM is updated and the map containers exist, initialize everything.
         initializeMaps();
         processAndDisplayData();
 
     } catch (e) {
-        console.error('Failed to fetch or process report data:', e);
-        error.value = `Failed to load report data. Please check the analysis job status. (${e.message})`;
-        isLoading.value = false; // Also ensure loading is false on error
+        console.error('Failed to process report data:', e);
+        error.value = `Failed to process report data. (${e.message})`;
     }
 });
-
 
 const initializeMaps = () => {
     const anomalyContainer = document.getElementById('map-anomalies');
@@ -93,16 +88,16 @@ const trendFindings = ref([]);
 const findingsByH3 = ref({});
 
 const processAndDisplayData = () => {
-    if (!reportData.value) return;
+    if (!props.reportData) return;
 
-    const params = reportData.value.parameters;
+    const params = props.reportData.parameters;
     const h3Col = `h3_index_${params.h3_resolution}`;
 
     const localAllFindings = [];
     const localAnomalyFindings = [];
     const localTrendFindings = [];
 
-    (reportData.value.results || []).forEach(row => {
+    (props.reportData.results || []).forEach(row => {
         if (row.trend_analysis) {
             const trendP = row.trend_analysis.p_value;
             if (trendP !== null && trendP < P_VALUE_TREND.value) {
@@ -172,7 +167,7 @@ const updateAnomaliesMap = () => {
 
     const h3Summary = {};
     anomalyFindings.value.forEach(finding => {
-        const h3Index = finding.details[`h3_index_${reportData.value.parameters.h3_resolution}`];
+        const h3Index = finding.details[`h3_index_${props.reportData.parameters.h3_resolution}`];
         if (!h3Index) return;
         if (!h3Summary[h3Index]) h3Summary[h3Index] = { anomalies: [] };
         h3Summary[h3Index].anomalies.push(finding);
@@ -206,7 +201,7 @@ const updateTrendsMap = () => {
     
     const h3Summary = {};
     trendFindings.value.forEach(finding => {
-        const h3Index = finding.details[`h3_index_${reportData.value.parameters.h3_resolution}`];
+        const h3Index = finding.details[`h3_index_${props.reportData.parameters.h3_resolution}`];
         if(!h3Index) return;
         if (!h3Summary[h3Index]) h3Summary[h3Index] = { trends: [], total_slope: 0 };
         h3Summary[h3Index].trends.push(finding);
