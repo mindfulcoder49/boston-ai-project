@@ -119,6 +119,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                                 'p_value_trend' => 0.05,
                                 'analysis_weeks_trend' => 4,
                                 'analysis_weeks_anomaly' => 4,
+                                'generate_plots' => false,
                             ],
                         ],
                     ],
