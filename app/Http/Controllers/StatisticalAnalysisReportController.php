@@ -28,8 +28,8 @@ class StatisticalAnalysisReportController extends Controller
 
         return Inertia::render('Reports/StatisticalAnalysisViewer', [
             'jobId' => $trend->job_id,
-            //'apiBaseUrl' => config('services.analysis_api.url'),
-            'apiBaseUrl' => 'http://localhost:8080',
+            'apiBaseUrl' => config('services.analysis_api.url'),
+            //'apiBaseUrl' => 'http://localhost:8080',
             'reportTitle' => $modelClass::getHumanName() . ' by ' . Str::of($columnName)->replace('_', ' ')->title(),
         ]);
     }
