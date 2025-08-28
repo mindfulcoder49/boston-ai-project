@@ -33,8 +33,8 @@ const props = defineProps({
 const isLoading = ref(false);
 const error = ref(null);
 
-let mapAnomaliesInstance = null;
-let mapTrendsInstance = null;
+let mapAnomaliesInstances = {};
+let mapTrendsInstances = {};
 
 const P_VALUE_ANOMALY = computed(() => props.reportData?.parameters?.p_value_anomaly || 0.05);
 const P_VALUE_TREND = computed(() => props.reportData?.parameters?.p_value_trend || 0.05);
@@ -46,12 +46,13 @@ onMounted(async () => {
     }
 
     try {
-        // Wait for Vue's DOM update to complete.
+        processAndDisplayData();
+
+        // Wait for Vue's DOM update to complete, which now includes the new map containers.
         await nextTick();
 
-        // Now that the DOM is updated and the map containers exist, initialize everything.
-        initializeMaps();
-        processAndDisplayData();
+        // Now that the DOM is updated, initialize all maps.
+        initializeAllMaps();
 
     } catch (e) {
         console.error('Failed to process report data:', e);
@@ -59,33 +60,63 @@ onMounted(async () => {
     }
 });
 
-const initializeMaps = () => {
-    const anomalyContainer = document.getElementById('map-anomalies');
-    const trendsContainer = document.getElementById('map-trends');
+const initializeAllMaps = () => {
+    if (Object.keys(findingsBySecondaryGroup.value).length === 0) return;
 
-    if (!anomalyContainer || !trendsContainer) {
-        const errorMessage = "Failed to initialize maps because the map container elements were not found in the DOM.";
-        console.error(errorMessage);
-        error.value = errorMessage;
-        return;
+    for (const secGroup in findingsBySecondaryGroup.value) {
+        const sanitizedSecGroup = sanitizeForFilename(secGroup);
+
+        // Initialize Anomaly Map for the group
+        const anomalyContainerId = `map-anomalies-${sanitizedSecGroup}`;
+        const anomalyContainer = document.getElementById(anomalyContainerId);
+        if (anomalyContainer && !mapAnomaliesInstances[secGroup]) {
+            const map = L.map(anomalyContainer).setView([42.3601, -71.0589], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            }).addTo(map);
+            mapAnomaliesInstances[secGroup] = map;
+            updateAnomaliesMap(secGroup);
+        }
+
+        // Initialize Trend Map for the group
+        const trendContainerId = `map-trends-${sanitizedSecGroup}`;
+        const trendContainer = document.getElementById(trendContainerId);
+        if (trendContainer && !mapTrendsInstances[secGroup]) {
+            const map = L.map(trendContainer).setView([42.3601, -71.0589], 12);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            }).addTo(map);
+            mapTrendsInstances[secGroup] = map;
+            updateTrendsMap(secGroup);
+        }
     }
-
-    mapAnomaliesInstance = L.map(anomalyContainer).setView([42.3601, -71.0589], 12);
-    mapTrendsInstance = L.map(trendsContainer).setView([42.3601, -71.0589], 12);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-    }).addTo(mapAnomaliesInstance);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-    }).addTo(mapTrendsInstance);
 };
 
 const allFindings = ref([]);
 const anomalyFindings = ref([]);
 const trendFindings = ref([]);
 const findingsByH3 = ref({});
+
+const findingsBySecondaryGroup = computed(() => {
+    const grouped = {};
+    allFindings.value.forEach(finding => {
+        const secGroup = finding.details.secondary_group;
+        if (!secGroup) return;
+
+        if (!grouped[secGroup]) {
+            grouped[secGroup] = {
+                anomalies: [],
+                trends: [],
+            };
+        }
+        if (finding.type === 'Anomaly') {
+            grouped[secGroup].anomalies.push(finding);
+        } else if (finding.type === 'Trend') {
+            grouped[secGroup].trends.push(finding);
+        }
+    });
+    return grouped;
+});
 
 const processAndDisplayData = () => {
     if (!props.reportData) return;
@@ -121,7 +152,7 @@ const processAndDisplayData = () => {
 
     localAllFindings.sort((a, b) => {
         const pValA = a.type === 'Trend' ? a.details.trend_analysis.p_value : a.week_details.anomaly_p_value;
-        const pValB = b.type === 'Trend' ? b.details.trend_analysis.p_value : b.week_details.anomaly_p_value;
+        const pValB = b.type === 'Trend' ? a.details.trend_analysis.p_value : b.week_details.anomaly_p_value;
         return (a.details[h3Col] || '').localeCompare(b.details[h3Col] || '') || pValA - pValB;
     });
 
@@ -146,8 +177,7 @@ const processAndDisplayData = () => {
     trendFindings.value = localTrendFindings;
     findingsByH3.value = localFindingsByH3;
 
-    updateAnomaliesMap();
-    updateTrendsMap();
+    // Map updates are now triggered from initializeAllMaps after DOM is ready
 };
 
 const getAnomalyColor = (count) => {
@@ -162,23 +192,26 @@ const getAnomalyColor = (count) => {
 const getTrendColor = (slope) => (slope > 0 ? '#d73027' : '#4575b4');
 const sanitizeForFilename = (name) => String(name).replace(/[\\/*?:"<>|]/g, "");
 
-const updateAnomaliesMap = () => {
-    if (anomalyFindings.value.length === 0 || !mapAnomaliesInstance) return;
+const updateAnomaliesMap = (secGroup) => {
+    const mapInstance = mapAnomaliesInstances[secGroup];
+    const findings = findingsBySecondaryGroup.value[secGroup]?.anomalies || [];
+
+    if (findings.length === 0 || !mapInstance) return;
 
     const h3Summary = {};
-    anomalyFindings.value.forEach(finding => {
+    findings.forEach(finding => {
         const h3Index = finding.details[`h3_index_${props.reportData.parameters.h3_resolution}`];
         if (!h3Index) return;
         if (!h3Summary[h3Index]) h3Summary[h3Index] = { anomalies: [] };
         h3Summary[h3Index].anomalies.push(finding);
     });
 
-    const allLats = anomalyFindings.value.map(f => f.details.lat).filter(Boolean);
-    const allLons = anomalyFindings.value.map(f => f.details.lon).filter(Boolean);
+    const allLats = findings.map(f => f.details.lat).filter(Boolean);
+    const allLons = findings.map(f => f.details.lon).filter(Boolean);
     if (allLats.length > 0) {
         const avgLat = allLats.reduce((a, b) => a + b, 0) / allLats.length;
         const avgLon = allLons.reduce((a, b) => a + b, 0) / allLons.length;
-        mapAnomaliesInstance.setView([avgLat, avgLon], 12);
+        mapInstance.setView([avgLat, avgLon], 12);
     }
 
     Object.keys(h3Summary).forEach(h3Index => {
@@ -191,16 +224,19 @@ const updateAnomaliesMap = () => {
         });
         popupHtml += "</ul>";
         L.polygon(boundary, { color: 'black', weight: 1, fillColor: getAnomalyColor(numAnomalies), fillOpacity: 0.7 })
-            .addTo(mapAnomaliesInstance)
+            .addTo(mapInstance)
             .bindPopup(popupHtml);
     });
 };
 
-const updateTrendsMap = () => {
-    if (trendFindings.value.length === 0 || !mapTrendsInstance) return;
+const updateTrendsMap = (secGroup) => {
+    const mapInstance = mapTrendsInstances[secGroup];
+    const findings = findingsBySecondaryGroup.value[secGroup]?.trends || [];
+    
+    if (findings.length === 0 || !mapInstance) return;
     
     const h3Summary = {};
-    trendFindings.value.forEach(finding => {
+    findings.forEach(finding => {
         const h3Index = finding.details[`h3_index_${props.reportData.parameters.h3_resolution}`];
         if(!h3Index) return;
         if (!h3Summary[h3Index]) h3Summary[h3Index] = { trends: [], total_slope: 0 };
@@ -208,12 +244,12 @@ const updateTrendsMap = () => {
         h3Summary[h3Index].total_slope += finding.details.trend_analysis.slope;
     });
 
-    const allLats = trendFindings.value.map(f => f.details.lat).filter(Boolean);
-    const allLons = trendFindings.value.map(f => f.details.lon).filter(Boolean);
+    const allLats = findings.map(f => f.details.lat).filter(Boolean);
+    const allLons = findings.map(f => f.details.lon).filter(Boolean);
     if (allLats.length > 0) {
         const avgLat = allLats.reduce((a, b) => a + b, 0) / allLats.length;
         const avgLon = allLons.reduce((a, b) => a + b, 0) / allLons.length;
-        mapTrendsInstance.setView([avgLat, avgLon], 12);
+        mapInstance.setView([avgLat, avgLon], 12);
     }
 
     Object.keys(h3Summary).forEach(h3Index => {
@@ -227,7 +263,7 @@ const updateTrendsMap = () => {
         popupHtml += "</ul>";
         const avgSlope = summary.total_slope / summary.trends.length;
         L.polygon(boundary, { color: 'black', weight: 1, fillColor: getTrendColor(avgSlope), fillOpacity: 0.7 })
-            .addTo(mapTrendsInstance)
+            .addTo(mapInstance)
             .bindPopup(popupHtml);
     });
 };
@@ -249,17 +285,35 @@ const updateTrendsMap = () => {
                 <h1 class="text-4xl font-bold text-center text-gray-800">{{ reportTitle }}</h1>
                 <h2 class="text-lg text-center text-gray-500">Job ID: {{ jobId }}</h2>
                 
-                <section>
-                    <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Spatial Overview of Anomalies</h2>
-                    <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant anomalies. Color indicates the number of distinct anomaly types in a cell.</p>
-                    <div id="map-anomalies" class="h-[500px] w-full border rounded-lg shadow-md"></div>
-                </section>
+                <div v-if="allFindings.length > 0" class="space-y-12">
+                    <section v-for="(groupData, secGroup) in findingsBySecondaryGroup" :key="secGroup" class="p-6 border rounded-lg bg-gray-50/50">
+                        <h2 class="text-3xl font-bold mb-4 text-gray-700">Analysis for: <span class="text-indigo-600">{{ secGroup }}</span></h2>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <h3 class="text-2xl font-semibold border-b pb-2 mb-4">Spatial Overview of Anomalies</h3>
+                                <div v-if="groupData.anomalies.length > 0">
+                                    <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant anomalies. Color indicates the number of distinct anomaly types in a cell.</p>
+                                    <div :id="`map-anomalies-${sanitizeForFilename(secGroup)}`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
+                                </div>
+                                <div v-else class="flex items-center justify-center h-[500px] border rounded-lg bg-gray-100 text-gray-500">
+                                    No significant anomalies found for this category.
+                                </div>
+                            </div>
 
-                <section>
-                    <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Spatial Overview of Trends</h2>
-                    <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant trends. Red indicates an upward trend; blue indicates a downward trend.</p>
-                    <div id="map-trends" class="h-[500px] w-full border rounded-lg shadow-md"></div>
-                </section>
+                            <div>
+                                <h3 class="text-2xl font-semibold border-b pb-2 mb-4">Spatial Overview of Trends</h3>
+                                <div v-if="groupData.trends.length > 0">
+                                    <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant trends. Red indicates an upward trend; blue indicates a downward trend.</p>
+                                    <div :id="`map-trends-${sanitizeForFilename(secGroup)}`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
+                                </div>
+                                <div v-else class="flex items-center justify-center h-[500px] border rounded-lg bg-gray-100 text-gray-500">
+                                    No significant trends found for this category.
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
 
                 <section>
                     <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Summary of All Significant Findings</h2>
