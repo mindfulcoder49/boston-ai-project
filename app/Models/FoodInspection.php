@@ -12,6 +12,13 @@ class FoodInspection extends Model
 
     protected $table = 'food_inspections';
 
+    public static $statisticalAnalysisColumns = [
+        'licstatus',
+        'licensecat',
+        'result',
+        'viol_level',
+    ];
+
     protected $fillable = [
         'external_id', // Assuming this is the primary external ID, was licenseno in placeholder
         'businessname',

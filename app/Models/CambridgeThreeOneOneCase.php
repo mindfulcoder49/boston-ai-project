@@ -13,6 +13,11 @@ class CambridgeThreeOneOneCase extends Model
 
     protected $table = 'cambridge_311_service_requests';
 
+    public static $statisticalAnalysisColumns = [
+        'issue_type',
+        'issue_category',
+    ];
+
     protected $fillable = [
         'ticket_id_external',
         'city',

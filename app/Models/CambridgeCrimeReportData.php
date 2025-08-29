@@ -13,6 +13,11 @@ class CambridgeCrimeReportData extends Model
 
     protected $table = 'cambridge_crime_reports_data';
 
+    public static $statisticalAnalysisColumns = [
+        'crime',
+        'neighborhood',
+    ];
+
     protected $fillable = [
         'file_number_external',
         'date_of_report',

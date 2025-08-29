@@ -12,6 +12,13 @@ class BuildingPermit extends Model
 
     protected $table = 'building_permits';
 
+    public static $statisticalAnalysisColumns = [
+        'worktype',
+        'permittypedescr',
+        'status',
+        'occupancytype',
+    ];
+
     protected $fillable = [
         'permitnumber',
         'worktype',

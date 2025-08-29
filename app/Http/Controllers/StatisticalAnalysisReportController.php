@@ -55,7 +55,13 @@ class StatisticalAnalysisReportController extends Controller
             ]);
         }
 
-        $reportTitle = $modelClass::getHumanName() . ' by ' . Str::of($columnName)->replace('_', ' ')->title();
+        $reportTitle = $modelClass::getHumanName();
+        if ($columnName !== 'unified') {
+            $reportTitle .= ' by ' . Str::of($columnName)->replace('_', ' ')->title();
+        } else {
+            $reportTitle .= ' - Unified Analysis';
+        }
+        
         Log::info("Rendering report view.", ['job_id' => $jobId, 'reportTitle' => $reportTitle, 'data_found' => !is_null($reportData)]);
 
         return Inertia::render('Reports/StatisticalAnalysisViewer', [

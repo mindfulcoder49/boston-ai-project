@@ -70,13 +70,25 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                 continue;
             }
 
-            $fieldsForAnalysis = $this->getFieldsForAnalysisFromMetadata($modelMetadata);
-            if (empty($fieldsForAnalysis)) {
-                $this->warn("No suitable fields found for analysis in model {$modelClass} based on metadata.");
-                continue;
+            // Always include a unified analysis.
+            $fieldsForAnalysis = ['__unified__'];
+            $dbExportColumns = [];
+
+            if (property_exists($modelClass, 'statisticalAnalysisColumns') && !empty($modelClass::$statisticalAnalysisColumns)) {
+                $specificColumns = $modelClass::$statisticalAnalysisColumns;
+                $this->line("    Found explicit analysis columns: <fg=yellow>" . implode(', ', $specificColumns) . "</fg=yellow>");
+                // Add specific columns to the list of jobs to run and columns to export.
+                $fieldsForAnalysis = array_merge($fieldsForAnalysis, $specificColumns);
+                $dbExportColumns = $specificColumns;
+            } else {
+                $this->line("    No explicit analysis columns found. Will perform a single unified analysis for the model.");
             }
 
             $modelKey = Str::kebab(class_basename($modelClass));
+
+            // Define all columns needed for the export from the database.
+            // This now correctly includes only the specific columns for analysis.
+            // The unified 'source_dataset' column is added dynamically during export.
 
             // 1. Create a single export for all fields for this model
             $exportFilename = "{$this->exportDirectory}/{$modelKey}_all_fields.csv";
@@ -85,7 +97,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                 $this->line("    Using existing data export for all fields: <fg=gray>{$exportFilename}</fg=gray>");
             } else {
                 $this->line('    No existing export found for all fields. Generating new CSV...');
-                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $fieldsForAnalysis, $exportFilename);
+                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $dbExportColumns, $exportFilename, $modelClass);
                 $this->info("    Successfully generated new data export for all fields.");
             }
             $publicUrl = Storage::url($exportFilename);
@@ -93,11 +105,15 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
 
 
             foreach ($fieldsForAnalysis as $field) {
-                $this->info("--> Preparing job for analysis field: <fg=yellow>{$field}</fg=yellow>");
+                $isUnifiedAnalysis = $field === '__unified__';
+                $analysisField = $isUnifiedAnalysis ? 'source_dataset' : $field;
+                $jobSuffix = $isUnifiedAnalysis ? 'unified' : $field;
+
+                $this->info("--> Preparing job for analysis field: <fg=yellow>{$analysisField}</fg=yellow>");
 
                 // 2. Prepare and Dispatch API Job for each field
                 $this->line('    Dispatching job to analysis API...');
-                $jobId = "laravel-{$modelKey}-{$field}-" . time();
+                $jobId = "laravel-{$modelKey}-{$jobSuffix}-" . time();
 
                 $payload = [
                     'job_id' => $jobId,
@@ -107,7 +123,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                             'timestamp_col' => $dateField,
                             'lat_col' => $latField,
                             'lon_col' => $lonField,
-                            'secondary_group_col' => $field,
+                            'secondary_group_col' => $analysisField,
                         ],
                     ],
                     'config' => [
@@ -130,14 +146,14 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                 if ($response->successful() && $response->status() === 202) {
                     $this->info("    Successfully dispatched job. Job ID: <fg=green>{$jobId}</fg=green>");
                     // 3. Update the database with the new job
-                    $this->info("    Updating trends database for {$modelClass} -> {$field}...");
+                    $this->info("    Updating trends database for {$modelClass} -> {$jobSuffix}...");
                     Trend::updateOrCreate(
-                        ['model_class' => $modelClass, 'column_name' => $field],
+                        ['model_class' => $modelClass, 'column_name' => $jobSuffix],
                         ['job_id' => $jobId]
                     );
                     $this->info("    Trends database updated successfully.");
                 } else {
-                    $this->error("    Failed to dispatch job for {$modelClass} -> {$field}. Status: {$response->status()}");
+                    $this->error("    Failed to dispatch job for {$modelClass} -> {$jobSuffix}. Status: {$response->status()}");
                     $this->error("    Response: " . $response->body());
                 }
             }
@@ -147,11 +163,11 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         return 0;
     }
 
-    private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename)
+    private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename, string $modelClass)
     {
         $filePath = Storage::disk('public')->path($filename);
 
-        $this->line("      Fields to be included in export: <fg=yellow>" . implode(', ', $fieldsToAnalyze) . "</fg=yellow>");
+        $this->line("      DB columns to export: <fg=yellow>" . (empty($fieldsToAnalyze) ? 'None' : implode(', ', $fieldsToAnalyze)) . "</fg=yellow>");
 
         $this->line("      Counting rows to export for {$tableName}...");
         $query = DB::table($tableName)->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
@@ -160,7 +176,9 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         if ($totalRows === 0) {
             $this->warn("      No rows to export. Creating an empty file with a header.");
             $fileHandle = fopen($filePath, 'w');
-            fputcsv($fileHandle, array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze));
+            // Header includes core fields, specific analysis fields, and the unified field
+            $header = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze, ['source_dataset']);
+            fputcsv($fileHandle, $header);
             fclose($fileHandle);
             return;
         }
@@ -168,7 +186,8 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         $this->info("      Total rows to export: {$totalRows}");
 
         $fileHandle = fopen($filePath, 'w');
-        $header = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze);
+        // The final CSV header will always include source_dataset for the unified analysis.
+        $header = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze, ['source_dataset']);
         fputcsv($fileHandle, $header);
 
         $primaryKey = DB::getSchemaBuilder()->getIndexes($tableName)[0]['columns'][0] ?? 'id';
@@ -176,16 +195,21 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         $progressBar = $this->output->createProgressBar($totalRows);
         $progressBar->start();
 
+        // Select only the columns that exist in the database.
         $selectColumns = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze);
         $query = DB::table($tableName)->select($selectColumns)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
 
+        $unifiedValue = $modelClass::getHumanName();
+
         $query->orderBy($primaryKey)->lazy()
-            ->each(function ($row) use ($fileHandle, $header, $progressBar) {
+            ->each(function ($row) use ($fileHandle, $selectColumns, $progressBar, $unifiedValue) {
                 $rowData = [];
-                foreach ($header as $col) {
+                foreach ($selectColumns as $col) {
                     $rowData[] = $row->$col;
                 }
+                // Always append the unified value for the source_dataset column.
+                $rowData[] = $unifiedValue;
                 fputcsv($fileHandle, $rowData);
                 $progressBar->advance();
             });
@@ -205,7 +229,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         $files = File::files($path);
         foreach ($files as $file) {
             $className = 'App\\Models\\' . $file->getBasename('.php');
-            if (class_exists($className) && method_exists($className, 'getMappableTraitUsageCheck')) {
+            if (class_exists($className) && method_exists($className, 'getMappableTraitUsageCheck') && property_exists($className, 'statisticalAnalysisColumns')) {
                 $modelClasses[] = $className;
             }
         }

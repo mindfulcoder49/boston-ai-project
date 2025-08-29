@@ -13,6 +13,13 @@ class CrimeData extends Model
     // Specify the table name if it doesn't follow Laravel's naming conventions
     protected $table = 'crime_data';
 
+    public static $statisticalAnalysisColumns = [
+        'offense_code_group',
+        'district',
+        'shooting',
+        'day_of_week',
+    ];
+
     // Define the fillable fields for mass assignment
     protected $fillable = [
         'incident_number',

@@ -12,6 +12,10 @@ class EverettCrimeData extends Model
 
     protected $table = 'everett_crime_data';
 
+    public static $statisticalAnalysisColumns = [
+        'incident_type',
+    ];
+
     protected $fillable = [
         'case_number',
         'incident_log_file_date',

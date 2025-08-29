@@ -30,6 +30,13 @@ class ThreeOneOneCase extends Model
      */
     protected $keyType = 'int';
 
+    public static $statisticalAnalysisColumns = [
+        'reason',
+        'type',
+        'department',
+        'neighborhood',
+    ];
+
     //add fillable
     protected $fillable = [
         'case_enquiry_id', 
