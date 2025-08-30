@@ -35,6 +35,7 @@ const error = ref(null);
 
 let mapAnomaliesInstances = {};
 let mapTrendsInstances = {};
+let h3Layers = {}; // To store references to H3 polygon layers
 
 const P_VALUE_ANOMALY = computed(() => props.reportData?.parameters?.p_value_anomaly || 0.05);
 const P_VALUE_TREND = computed(() => props.reportData?.parameters?.p_value_trend || 0.05);
@@ -65,6 +66,7 @@ const initializeAllMaps = () => {
 
     for (const secGroup in findingsBySecondaryGroup.value) {
         const sanitizedSecGroup = sanitizeForFilename(secGroup);
+        h3Layers[secGroup] = { anomalies: {}, trends: {} };
 
         // Initialize Anomaly Map for the group
         const anomalyContainerId = `map-anomalies-${sanitizedSecGroup}`;
@@ -192,6 +194,25 @@ const getAnomalyColor = (count) => {
 const getTrendColor = (slope) => (slope > 0 ? '#d73027' : '#4575b4');
 const sanitizeForFilename = (name) => String(name).replace(/[\\/*?:"<>|]/g, "");
 
+const viewHexagonOnMap = (h3Index, findingType, secGroup) => {
+    const sanitizedSecGroup = sanitizeForFilename(secGroup);
+    const mapType = findingType === 'Anomaly' ? 'anomalies' : 'trends';
+    const mapId = `map-${mapType}-${sanitizedSecGroup}`;
+    
+    const mapElement = document.getElementById(mapId);
+    if (mapElement) {
+        mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    const layer = h3Layers[secGroup]?.[mapType]?.[h3Index];
+    if (layer) {
+        // Use a timeout to ensure scrolling is complete before opening popup
+        setTimeout(() => {
+            layer.openPopup();
+        }, 500); // Adjust delay if needed
+    }
+};
+
 const updateAnomaliesMap = (secGroup) => {
     const mapInstance = mapAnomaliesInstances[secGroup];
     const findings = findingsBySecondaryGroup.value[secGroup]?.anomalies || [];
@@ -223,9 +244,10 @@ const updateAnomaliesMap = (secGroup) => {
             popupHtml += `<li>${a.details.secondary_group} on ${a.week_details.week}: Count ${a.week_details.count} (p=${a.week_details.anomaly_p_value.toPrecision(2)})</li>`
         });
         popupHtml += "</ul>";
-        L.polygon(boundary, { color: 'black', weight: 1, fillColor: getAnomalyColor(numAnomalies), fillOpacity: 0.7 })
+        const polygon = L.polygon(boundary, { color: 'black', weight: 1, fillColor: getAnomalyColor(numAnomalies), fillOpacity: 0.7 })
             .addTo(mapInstance)
             .bindPopup(popupHtml);
+        h3Layers[secGroup].anomalies[h3Index] = polygon;
     });
 };
 
@@ -262,9 +284,10 @@ const updateTrendsMap = (secGroup) => {
         });
         popupHtml += "</ul>";
         const avgSlope = summary.total_slope / summary.trends.length;
-        L.polygon(boundary, { color: 'black', weight: 1, fillColor: getTrendColor(avgSlope), fillOpacity: 0.7 })
+        const polygon = L.polygon(boundary, { color: 'black', weight: 1, fillColor: getTrendColor(avgSlope), fillOpacity: 0.7 })
             .addTo(mapInstance)
             .bindPopup(popupHtml);
+        h3Layers[secGroup].trends[h3Index] = polygon;
     });
 };
 
@@ -285,8 +308,22 @@ const updateTrendsMap = (secGroup) => {
                 <h1 class="text-4xl font-bold text-center text-gray-800">{{ reportTitle }}</h1>
                 <h2 class="text-lg text-center text-gray-500">Job ID: {{ jobId }}</h2>
                 
+                <section v-if="allFindings.length > 0" class="p-6 border rounded-lg bg-gray-50/50">
+                    <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Summary by Category</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div v-for="(groupData, secGroup) in findingsBySecondaryGroup" :key="`summary-${secGroup}`" class="p-4 border rounded-lg bg-white shadow hover:shadow-md transition-shadow">
+                            <h3 class="font-bold text-lg text-indigo-700">
+                                <a :href="`#analysis-${sanitizeForFilename(secGroup)}`" class="hover:underline">{{ secGroup }}</a>
+                            </h3>
+                            <p class="text-sm text-gray-600 mt-2">
+                                Found <strong>{{ groupData.anomalies.length }}</strong> significant anomalies and <strong>{{ groupData.trends.length }}</strong> significant trends.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
                 <div v-if="allFindings.length > 0" class="space-y-12">
-                    <section v-for="(groupData, secGroup) in findingsBySecondaryGroup" :key="secGroup" class="p-6 border rounded-lg bg-gray-50/50">
+                    <section v-for="(groupData, secGroup) in findingsBySecondaryGroup" :key="secGroup" :id="`analysis-${sanitizeForFilename(secGroup)}`" class="p-6 border rounded-lg bg-gray-50/50 scroll-mt-4">
                         <h2 class="text-3xl font-bold mb-4 text-gray-700">Analysis for: <span class="text-indigo-600">{{ secGroup }}</span></h2>
                         
                         <div class="space-y-8">
@@ -332,7 +369,14 @@ const updateTrendsMap = (secGroup) => {
                             </thead>
                             <tbody>
                                 <tr v-for="(finding, index) in allFindings" :key="index" class="hover:bg-gray-50">
-                                    <td class="py-2 px-4 border-b"><a :href="`#${finding.details[`h3_index_${reportData.parameters.h3_resolution}`]}`" class="text-blue-600 hover:underline">{{ finding.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</a></td>
+                                    <td class="py-2 px-4 border-b">
+                                        <div class="flex items-center space-x-2">
+                                            <a :href="`#${finding.details[`h3_index_${reportData.parameters.h3_resolution}`]}`" class="text-blue-600 hover:underline">{{ finding.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</a>
+                                            <button @click="viewHexagonOnMap(finding.details[`h3_index_${reportData.parameters.h3_resolution}`], finding.type, finding.details.secondary_group)" class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-2 rounded">
+                                                View on Map
+                                            </button>
+                                        </div>
+                                    </td>
                                     <td class="py-2 px-4 border-b">{{ finding.details.secondary_group }}</td>
                                     <td class="py-2 px-4 border-b"><span :class="{'bg-yellow-200 text-yellow-800': finding.type === 'Anomaly', 'bg-blue-200 text-blue-800': finding.type === 'Trend'}" class="px-2 py-1 rounded-full text-xs font-medium">{{ finding.type }}</span></td>
                                     <td v-if="finding.type === 'Trend'" class="py-2 px-4 border-b">Last {{ reportData.parameters.analysis_weeks_trend }} Weeks</td>
@@ -366,6 +410,9 @@ const updateTrendsMap = (secGroup) => {
                                         <li v-for="(finding, fIndex) in findingsInGroup" :key="fIndex">
                                             <template v-if="finding.type === 'Trend'"><strong>Trend</strong>: {{ finding.details.trend_analysis.description }} (Slope: {{ (finding.details.trend_analysis.slope || 0).toFixed(2) }}, p-value: {{ (finding.details.trend_analysis.p_value || 0).toPrecision(4) }})</template>
                                             <template v-if="finding.type === 'Anomaly'"><strong>Anomaly on {{ finding.week_details.week }}</strong>: Count {{ finding.week_details.count }} (vs avg {{ (finding.details.historical_weekly_avg || 0).toFixed(2) }}), Z-Score: {{ (finding.week_details.z_score || 0).toFixed(2) }}, p-value: {{ (finding.week_details.anomaly_p_value || 0).toPrecision(4) }})</template>
+                                            <button @click="viewHexagonOnMap(h3Index, finding.type, secGroup)" class="ml-2 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-2 rounded">
+                                                View on Map
+                                            </button>
                                         </li>
                                     </ul>
                                     <img :src="`${apiBaseUrl}/api/v1/jobs/${jobId}/results/plot_${h3Index}_${sanitizeForFilename(secGroup)}.png`" 
@@ -385,6 +432,6 @@ const updateTrendsMap = (secGroup) => {
 <style>
 /* Add scroll-margin-top for better anchor link positioning with sticky headers */
 .scroll-mt-4 {
-    scroll-margin-top: 1rem; /* Adjust as needed */
+    scroll-margin-top: 4rem; /* Adjust as needed */
 }
 </style>

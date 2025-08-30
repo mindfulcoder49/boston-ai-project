@@ -70,7 +70,7 @@
                                             </span>
                                             {{ userName }}
                                             <svg class="ml-2 -mr-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 111.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z" clip-rule="evenodd" />
                                             </svg>
                                         </button>
                                     </span>
@@ -129,6 +129,7 @@
                 <ResponsiveNavLink :href="route('map.index')" :active="route().current('map.index')"> Home </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('saved-maps.index')" :active="route().current('saved-maps.index')"> User Maps </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')"> Full Data Map </ResponsiveNavLink>
+                <ResponsiveNavLink :href="route('trends.index')" :active="route().current('trends.index')"> Trends </ResponsiveNavLink>
                 <ResponsiveNavLink v-if="isAuthenticated" :href="route('reports.index')" :active="route().current('reports.index') || route().current('reports.show')"> Report History </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('subscription.index')" :active="route().current('subscription.index')"> Subscription </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('data.metrics')" :active="route().current('data.metrics')"> Data Metrics </ResponsiveNavLink>
