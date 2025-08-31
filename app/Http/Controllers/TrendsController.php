@@ -27,8 +27,10 @@ class TrendsController extends Controller
 
             foreach ($analyses as $analysis) {
                 $modelData['analyses'][] = [
+                    'trend_id' => $analysis->id,
                     'column_name' => $analysis->column_name,
                     'column_label' => Str::of($analysis->column_name)->replace('_', ' ')->title(),
+                    'h3_resolution' => $analysis->h3_resolution,
                 ];
             }
 

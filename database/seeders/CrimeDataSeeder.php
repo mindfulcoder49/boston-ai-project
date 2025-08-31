@@ -28,6 +28,7 @@ class CrimeDataSeeder extends Seeder
     ];
 
     private array $bostonAddressCache = [];
+    private array $offenseCodeGroups = [];
 
     private function normalizeBostonStreetName(string $streetName): string
     {
@@ -121,11 +122,24 @@ class CrimeDataSeeder extends Seeder
         $this->command->info("Finished loading " . count($trashAddresses) . " Boston addresses into cache, grouped by " . count($this->bostonAddressCache) . " unique street names.");
     }
 
+    private function loadOffenseCodeGroups(): void
+    {
+        $this->command->info("Loading offense code groups...");
+        $path = database_path('seeders/offense_code_groups.json');
+        if (!File::exists($path)) {
+            $this->command->error("offense_code_groups.json not found!");
+            return;
+        }
+        $json = File::get($path);
+        $this->offenseCodeGroups = json_decode($json, true);
+        $this->command->info("Loaded " . count($this->offenseCodeGroups) . " offense code groups.");
+    }
 
     public function run()
     {
         $this->command->info("Starting Boston Crime Data Seeder...");
         $this->loadBostonAddressData(); // Load cache once
+        $this->loadOffenseCodeGroups();
 
         $name = 'crime-incident-reports';
         // Get all files from the datasets folder in Storage
@@ -240,10 +254,13 @@ class CrimeDataSeeder extends Seeder
 
             $occurred_on_date = $this->formatDate($crime['OCCURRED_ON_DATE']);
 
+            $offenseCode = trim($crime['OFFENSE_CODE'] ?? '');
+            $offenseCodeGroup = $this->offenseCodeGroups[$offenseCode] ?? $crime['OFFENSE_CODE_GROUP'] ?? 'Miscellaneous';
+
             $dataBatch[] = [
                 'incident_number' => $crime['INCIDENT_NUMBER'],
-                'offense_code' => $crime['OFFENSE_CODE'],
-                'offense_code_group' => $crime['OFFENSE_CODE_GROUP'],
+                'offense_code' => $offenseCode,
+                'offense_code_group' => $offenseCodeGroup,
                 'offense_description' => $crime['OFFENSE_DESCRIPTION'],
                 'district' => $crime['DISTRICT'],
                 'reporting_area' => $crime['REPORTING_AREA'],

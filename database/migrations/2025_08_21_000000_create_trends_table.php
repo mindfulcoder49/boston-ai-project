@@ -16,9 +16,22 @@ return new class extends Migration
             $table->string('model_class');
             $table->string('column_name');
             $table->string('job_id');
+            $table->integer('h3_resolution');
+            $table->float('p_value_anomaly');
+            $table->float('p_value_trend');
+            $table->integer('analysis_weeks_trend');
+            $table->integer('analysis_weeks_anomaly');
             $table->timestamps();
 
-            $table->unique(['model_class', 'column_name']);
+            $table->unique([
+                'model_class',
+                'column_name',
+                'h3_resolution',
+                'p_value_anomaly',
+                'p_value_trend',
+                'analysis_weeks_trend',
+                'analysis_weeks_anomaly',
+            ], 'trends_unique_parameters');
         });
     }
 

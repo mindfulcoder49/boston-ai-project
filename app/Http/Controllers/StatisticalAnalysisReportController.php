@@ -12,26 +12,25 @@ use App\Models\Trend;
 
 class StatisticalAnalysisReportController extends Controller
 {
-    public function show($modelKey, $columnName)
+    public function show($trendId)
     {
-        Log::info("Attempting to show statistical analysis report.", ['modelKey' => $modelKey, 'columnName' => $columnName]);
+        Log::info("Attempting to show statistical analysis report.", ['trendId' => $trendId]);
 
-        $modelClass = $this->getModelClassFromKey($modelKey);
-
-        if (!$modelClass) {
-            Log::error("Model not found for modelKey.", ['modelKey' => $modelKey]);
-            abort(404, "Model not found.");
-        }
-        Log::info("Resolved model class.", ['modelKey' => $modelKey, 'modelClass' => $modelClass]);
-
-        $trend = Trend::where('model_class', $modelClass)
-            ->where('column_name', $columnName)
-            ->first();
+        $trend = Trend::find($trendId);
 
         if (!$trend) {
-            Log::warning("Analysis report trend record not found in database.", ['modelClass' => $modelClass, 'columnName' => $columnName]);
-            abort(404, "Analysis report not found for this model and column.");
+            Log::warning("Analysis report trend record not found in database.", ['trendId' => $trendId]);
+            abort(404, "Analysis report not found.");
         }
+
+        $modelClass = $trend->model_class;
+        $columnName = $trend->column_name;
+
+        if (!class_exists($modelClass)) {
+            Log::error("Model class not found for trend.", ['trendId' => $trendId, 'modelClass' => $modelClass]);
+            abort(404, "Model class not found.");
+        }
+        Log::info("Resolved model class from trend.", ['trendId' => $trendId, 'modelClass' => $modelClass, 'columnName' => $columnName]);
 
         $jobId = $trend->job_id;
         Log::info("Found trend record in database.", ['job_id' => $jobId]);

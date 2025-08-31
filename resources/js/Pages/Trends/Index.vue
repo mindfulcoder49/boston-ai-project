@@ -21,12 +21,12 @@ const props = defineProps({
               <div v-for="model in reportsByModel" :key="model.model_key" class="p-6 border rounded-lg shadow-md bg-gray-50">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">{{ model.model_name }}</h2>
                 <ul class="space-y-2 list-disc list-inside">
-                  <li v-for="analysis in model.analyses" :key="analysis.column_name">
+                  <li v-for="analysis in model.analyses" :key="analysis.trend_id">
                     <Link
-                      :href="route('reports.statistical-analysis.show', { modelKey: model.model_key, columnName: analysis.column_name })"
+                      :href="route('reports.statistical-analysis.show', { trendId: analysis.trend_id })"
                       class="text-indigo-600 hover:text-indigo-800 hover:underline"
                     >
-                      Analysis by {{ analysis.column_label }}
+                      Analysis by {{ analysis.column_label }} (Resolution: {{ analysis.h3_resolution }})
                     </Link>
                   </li>
                 </ul>

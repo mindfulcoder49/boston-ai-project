@@ -25,5 +25,10 @@ class Trend extends Model
         'model_class',
         'column_name',
         'job_id',
+        'h3_resolution',
+        'p_value_anomaly',
+        'p_value_trend',
+        'analysis_weeks_trend',
+        'analysis_weeks_anomaly',
     ];
 }

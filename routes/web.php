@@ -34,7 +34,7 @@ use App\Http\Controllers\TrendsController;
 use App\Http\Controllers\StatisticalAnalysisReportController;
 
 Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
-Route::get('/reports/statistical-analysis/{modelKey}/{columnName}', [StatisticalAnalysisReportController::class, 'show'])->name('reports.statistical-analysis.show');
+Route::get('/reports/statistical-analysis/{trendId}', [StatisticalAnalysisReportController::class, 'show'])->name('reports.statistical-analysis.show');
 
 
 Route::middleware(['auth'])->group(function () {

@@ -109,52 +109,71 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                 $analysisField = $isUnifiedAnalysis ? 'source_dataset' : $field;
                 $jobSuffix = $isUnifiedAnalysis ? 'unified' : $field;
 
-                $this->info("--> Preparing job for analysis field: <fg=yellow>{$analysisField}</fg=yellow>");
+                $this->info("--> Preparing jobs for analysis field: <fg=yellow>{$analysisField}</fg=yellow>");
 
-                // 2. Prepare and Dispatch API Job for each field
-                $this->line('    Dispatching job to analysis API...');
-                $jobId = "laravel-{$modelKey}-{$jobSuffix}-" . time();
+                $resolutions = [8, 7, 6]; // Run analysis for multiple resolutions
 
-                $payload = [
-                    'job_id' => $jobId,
-                    'data_sources' => [
-                        [
-                            'data_url' => url($publicUrl),
-                            'timestamp_col' => $dateField,
-                            'lat_col' => $latField,
-                            'lon_col' => $lonField,
-                            'secondary_group_col' => $analysisField,
-                        ],
-                    ],
-                    'config' => [
-                        'analysis_stages' => ['stage4_h3_anomaly'],
-                        'parameters' => [
-                            'stage4_h3_anomaly' => [
-                                'h3_resolution' => 8,
-                                'p_value_anomaly' => 0.05,
-                                'p_value_trend' => 0.05,
-                                'analysis_weeks_trend' => 4,
-                                'analysis_weeks_anomaly' => 4,
-                                'generate_plots' => false,
+                foreach ($resolutions as $resolution) {
+                    $this->info("  --> Preparing job for resolution: <fg=cyan>{$resolution}</fg=cyan>");
+
+                    // 2. Prepare and Dispatch API Job for each field
+                    $this->line('    Dispatching job to analysis API...');
+                    $jobId = "laravel-{$modelKey}-{$jobSuffix}-res{$resolution}-" . time();
+
+                    $analysisParameters = [
+                        'h3_resolution' => $resolution,
+                        'p_value_anomaly' => 0.05,
+                        'p_value_trend' => 0.05,
+                        'analysis_weeks_trend' => 4,
+                        'analysis_weeks_anomaly' => 4,
+                        'generate_plots' => false,
+                    ];
+
+                    $payload = [
+                        'job_id' => $jobId,
+                        'data_sources' => [
+                            [
+                                'data_url' => url($publicUrl),
+                                'timestamp_col' => $dateField,
+                                'lat_col' => $latField,
+                                'lon_col' => $lonField,
+                                'secondary_group_col' => $analysisField,
                             ],
                         ],
-                    ],
-                ];
+                        'config' => [
+                            'analysis_stages' => ['stage4_h3_anomaly'],
+                            'parameters' => [
+                                'stage4_h3_anomaly' => $analysisParameters,
+                            ],
+                        ],
+                    ];
 
-                $response = Http::timeout(30)->post("{$apiBaseUrl}/api/v1/jobs", $payload);
+                    $response = Http::timeout(30)->post("{$apiBaseUrl}/api/v1/jobs", $payload);
 
-                if ($response->successful() && $response->status() === 202) {
-                    $this->info("    Successfully dispatched job. Job ID: <fg=green>{$jobId}</fg=green>");
-                    // 3. Update the database with the new job
-                    $this->info("    Updating trends database for {$modelClass} -> {$jobSuffix}...");
-                    Trend::updateOrCreate(
-                        ['model_class' => $modelClass, 'column_name' => $jobSuffix],
-                        ['job_id' => $jobId]
-                    );
-                    $this->info("    Trends database updated successfully.");
-                } else {
-                    $this->error("    Failed to dispatch job for {$modelClass} -> {$jobSuffix}. Status: {$response->status()}");
-                    $this->error("    Response: " . $response->body());
+                    if ($response->successful() && $response->status() === 202) {
+                        $this->info("    Successfully dispatched job. Job ID: <fg=green>{$jobId}</fg=green>");
+                        // 3. Update the database with the new job
+                        $this->info("    Updating trends database for {$modelClass} -> {$jobSuffix} at resolution {$resolution}...");
+
+                        $searchCriteria = [
+                            'model_class' => $modelClass,
+                            'column_name' => $jobSuffix,
+                            'h3_resolution' => $analysisParameters['h3_resolution'],
+                            'p_value_anomaly' => $analysisParameters['p_value_anomaly'],
+                            'p_value_trend' => $analysisParameters['p_value_trend'],
+                            'analysis_weeks_trend' => $analysisParameters['analysis_weeks_trend'],
+                            'analysis_weeks_anomaly' => $analysisParameters['analysis_weeks_anomaly'],
+                        ];
+
+                        Trend::updateOrCreate(
+                            $searchCriteria,
+                            ['job_id' => $jobId]
+                        );
+                        $this->info("    Trends database updated successfully.");
+                    } else {
+                        $this->error("    Failed to dispatch job for {$modelClass} -> {$jobSuffix} at resolution {$resolution}. Status: {$response->status()}");
+                        $this->error("    Response: " . $response->body());
+                    }
                 }
             }
         }
