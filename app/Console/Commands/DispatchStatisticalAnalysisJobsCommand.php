@@ -18,7 +18,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:dispatch-statistical-analysis-jobs {--fresh : Force regeneration of all data exports}';
+    protected $signature = 'app:dispatch-statistical-analysis-jobs {model? : The model class to process (e.g., Crime)} {--fresh : Force regeneration of all data exports}';
 
     /**
      * The console command description.
@@ -47,7 +47,31 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
 
         Storage::disk('public')->makeDirectory($this->exportDirectory);
 
-        $modelClasses = $this->getModelClasses();
+        $allModelClasses = $this->getModelClasses();
+        $specificModel = $this->argument('model');
+        $modelClasses = [];
+
+        if ($specificModel) {
+            $resolvedModelClass = null;
+            if (class_exists($specificModel)) {
+                $resolvedModelClass = $specificModel;
+            } elseif (class_exists('App\\Models\\' . $specificModel)) {
+                $resolvedModelClass = 'App\\Models\\' . $specificModel;
+            }
+
+            if ($resolvedModelClass && in_array($resolvedModelClass, $allModelClasses)) {
+                $this->info("Processing only specified model: {$resolvedModelClass}");
+                $modelClasses = [$resolvedModelClass];
+            } else {
+                $this->error("The specified model '{$specificModel}' is not a valid or analyzable model.");
+                $this->line('Available models: ' . implode(', ', array_map('class_basename', $allModelClasses)));
+                return 1;
+            }
+        } else {
+            $this->info('No specific model provided. Processing all discoverable models.');
+            $modelClasses = $allModelClasses;
+        }
+
         $allModelMetadata = config('model_metadata_suggestions', []);
 
         foreach ($modelClasses as $modelClass) {
