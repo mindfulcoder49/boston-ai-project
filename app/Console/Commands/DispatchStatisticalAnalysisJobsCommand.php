@@ -135,7 +135,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
 
                 $this->info("--> Preparing jobs for analysis field: <fg=yellow>{$analysisField}</fg=yellow>");
 
-                $resolutions = [8, 7, 6]; // Run analysis for multiple resolutions
+                $resolutions = [9, 8, 7, 6, 5]; // Run analysis for multiple resolutions
 
                 foreach ($resolutions as $resolution) {
                     $this->info("  --> Preparing job for resolution: <fg=cyan>{$resolution}</fg=cyan>");
