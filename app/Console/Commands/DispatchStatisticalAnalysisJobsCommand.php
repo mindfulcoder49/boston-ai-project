@@ -151,6 +151,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                         'analysis_weeks_trend' => 4,
                         'analysis_weeks_anomaly' => 4,
                         'generate_plots' => false,
+                        'plot_generation' => 'none',
                     ];
 
                     $payload = [
