@@ -15,9 +15,7 @@ class CrimeData extends Model
 
     public static $statisticalAnalysisColumns = [
         'offense_code_group',
-        'district',
-        'shooting',
-        'day_of_week',
+        'offense_description',
     ];
 
     // Define the fillable fields for mass assignment
