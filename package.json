@@ -22,7 +22,7 @@
     },
     "dependencies": {
         "echarts": "^5.4.3",
-        "h3-js": "^4.2.1",
+        "h3-js": "^4.3.0",
         "leaflet.markercluster": "^1.5.3",
         "lodash-es": "^4.17.21",
         "markdown-it": "^14.1.0",
