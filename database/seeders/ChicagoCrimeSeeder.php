@@ -136,11 +136,8 @@ class ChicagoCrimeSeeder extends Seeder
 
             $updateSqlParts = [];
             foreach ($updateColumns as $col) {
-                // For location, we can't use VALUES() because it's a raw expression.
-                // We will re-construct it. For others, VALUES() is fine and more efficient.
+                // For location, we must use VALUES() with the coordinate columns.
                 if ($col === 'location') {
-                    // This part is tricky. We assume latitude and longitude are present for location.
-                    // We will get their values from the new data being inserted.
                     $updateSqlParts[] = "`location` = ST_SRID(POINT(VALUES(`longitude`), VALUES(`latitude`)), 4326)";
                 } else {
                     $updateSqlParts[] = "`{$col}` = VALUES(`{$col}`)";
@@ -150,15 +147,21 @@ class ChicagoCrimeSeeder extends Seeder
 
             $valuesPlaceholders = [];
             $bindings = [];
-            $grammar = DB::connection($connection)->getQueryGrammar();
 
             foreach ($data as $row) {
                 $rowPlaceholders = [];
                 foreach ($columns as $column) {
                     $value = $row[$column];
+                    // We now handle the DB::raw expression from transformRecord
                     if ($value instanceof \Illuminate\Database\Query\Expression) {
-                        // Get the raw string from the expression
-                        $rowPlaceholders[] = $value->getValue($grammar);
+                        // The expression is "ST_SRID(POINT($lon, $lat), 4326)"
+                        // We need to extract lon and lat and use placeholders
+                        preg_match('/POINT\(([^,]+), ([^\)]+)\)/', $value->getValue(DB::connection($connection)->getQueryGrammar()), $matches);
+                        $lon = $matches[1];
+                        $lat = $matches[2];
+                        $rowPlaceholders[] = 'ST_SRID(POINT(?, ?), 4326)';
+                        $bindings[] = $lon;
+                        $bindings[] = $lat;
                     } else {
                         $rowPlaceholders[] = '?';
                         $bindings[] = $value;
@@ -175,7 +178,7 @@ class ChicagoCrimeSeeder extends Seeder
 
             $totalUpserted += count($data);
         } catch (\Exception $e) {
-            Log::error("Error upserting data to {$connection}.{$tableName}: " . $e->getMessage());
+            Log::error("Error upserting data to {$connection}.{$tableName}: " . $e->getMessage(), ['exception' => $e]);
             $this->command->error("Error upserting data to {$connection}.{$tableName}. See log for details.");
         }
     }

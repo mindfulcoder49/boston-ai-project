@@ -42,6 +42,7 @@ Thumbs.db
 /public/hot
 
 *.csv
+/storage/app/datasets/*.csv
 *manifest.txt
 *m4n1f3st.txt
 
