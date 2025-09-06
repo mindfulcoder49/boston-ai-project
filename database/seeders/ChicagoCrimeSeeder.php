@@ -130,52 +130,11 @@ class ChicagoCrimeSeeder extends Seeder
         }
 
         try {
-            $columns = array_keys($data[0]);
-            $columnsSql = '`' . implode('`,`', $columns) . '`';
-            $updateColumns = array_diff($columns, ['id']);
-
-            $updateSqlParts = [];
-            foreach ($updateColumns as $col) {
-                // For location, we must use VALUES() with the coordinate columns.
-                if ($col === 'location') {
-                    $updateSqlParts[] = "`location` = ST_SRID(POINT(VALUES(`longitude`), VALUES(`latitude`)), 4326)";
-                } else {
-                    $updateSqlParts[] = "`{$col}` = VALUES(`{$col}`)";
-                }
-            }
-            $updateSql = implode(', ', $updateSqlParts);
-
-            $valuesPlaceholders = [];
-            $bindings = [];
-
-            foreach ($data as $row) {
-                $rowPlaceholders = [];
-                foreach ($columns as $column) {
-                    $value = $row[$column];
-                    // We now handle the DB::raw expression from transformRecord
-                    if ($value instanceof \Illuminate\Database\Query\Expression) {
-                        // The expression is "ST_SRID(POINT($lon, $lat), 4326)"
-                        // We need to extract lon and lat and use placeholders
-                        preg_match('/POINT\(([^,]+), ([^\)]+)\)/', $value->getValue(DB::connection($connection)->getQueryGrammar()), $matches);
-                        $lon = $matches[1];
-                        $lat = $matches[2];
-                        $rowPlaceholders[] = 'ST_SRID(POINT(?, ?), 4326)';
-                        $bindings[] = $lon;
-                        $bindings[] = $lat;
-                    } else {
-                        $rowPlaceholders[] = '?';
-                        $bindings[] = $value;
-                    }
-                }
-                $valuesPlaceholders[] = '(' . implode(',', $rowPlaceholders) . ')';
-            }
-
-            $valuesSql = implode(',', $valuesPlaceholders);
-
-            $sql = "INSERT INTO `{$tableName}` ({$columnsSql}) VALUES {$valuesSql} ON DUPLICATE KEY UPDATE {$updateSql}";
-
-            DB::connection($connection)->insert($sql, $bindings);
-
+            DB::connection($connection)->table($tableName)->upsert(
+                $data,
+                ['id'], // Unique key
+                array_diff(array_keys($data[0]), ['id']) // Columns to update
+            );
             $totalUpserted += count($data);
         } catch (\Exception $e) {
             Log::error("Error upserting data to {$connection}.{$tableName}: " . $e->getMessage(), ['exception' => $e]);
