@@ -132,20 +132,33 @@ class ChicagoCrimeSeeder extends Seeder
         try {
             $columns = array_keys($data[0]);
             $columnsSql = '`' . implode('`,`', $columns) . '`';
-
             $updateColumns = array_diff($columns, ['id']);
-            $updateSql = implode(', ', array_map(function ($col) {
-                return "`{$col}` = VALUES(`{$col}`)";
-            }, $updateColumns));
+
+            $updateSqlParts = [];
+            foreach ($updateColumns as $col) {
+                // For location, we can't use VALUES() because it's a raw expression.
+                // We will re-construct it. For others, VALUES() is fine and more efficient.
+                if ($col === 'location') {
+                    // This part is tricky. We assume latitude and longitude are present for location.
+                    // We will get their values from the new data being inserted.
+                    $updateSqlParts[] = "`location` = ST_SRID(POINT(VALUES(`longitude`), VALUES(`latitude`)), 4326)";
+                } else {
+                    $updateSqlParts[] = "`{$col}` = VALUES(`{$col}`)";
+                }
+            }
+            $updateSql = implode(', ', $updateSqlParts);
 
             $valuesPlaceholders = [];
             $bindings = [];
+            $grammar = DB::connection($connection)->getQueryGrammar();
+
             foreach ($data as $row) {
                 $rowPlaceholders = [];
                 foreach ($columns as $column) {
                     $value = $row[$column];
                     if ($value instanceof \Illuminate\Database\Query\Expression) {
-                        $rowPlaceholders[] = $value->getValue(DB::connection($connection)->getQueryGrammar());
+                        // Get the raw string from the expression
+                        $rowPlaceholders[] = $value->getValue($grammar);
                     } else {
                         $rowPlaceholders[] = '?';
                         $bindings[] = $value;
