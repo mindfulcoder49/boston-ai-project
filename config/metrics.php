@@ -8,128 +8,128 @@ return array (
     array (
       'modelName' => 'Boston Crime',
       'tableName' => 'crime_data',
-      'totalRecords' => 205268,
+      'totalRecords' => 208507,
       'minDate' => '2023-01-01',
-      'maxDate' => '2025-08-18',
-      'recordsLast30Days' => 6425,
-      'recordsLast90Days' => 19744,
-      'recordsLast1Year' => 79191,
+      'maxDate' => '2025-09-01',
+      'recordsLast30Days' => 6414,
+      'recordsLast90Days' => 19841,
+      'recordsLast1Year' => 79208,
       'offenseGroupDistribution' => 
       array (
         0 => 
         array (
           'offense_description' => 'INVESTIGATE PERSON',
-          'total' => 20291,
+          'total' => 20659,
         ),
         1 => 
         array (
           'offense_description' => 'SICK ASSIST',
-          'total' => 17926,
+          'total' => 18209,
         ),
         2 => 
         array (
           'offense_description' => 'M/V - LEAVING SCENE - PROPERTY DAMAGE',
-          'total' => 12099,
+          'total' => 12304,
         ),
         3 => 
         array (
           'offense_description' => 'LARCENY SHOPLIFTING',
-          'total' => 9184,
+          'total' => 9360,
         ),
         4 => 
         array (
           'offense_description' => 'INVESTIGATE PROPERTY',
-          'total' => 9134,
+          'total' => 9253,
         ),
         5 => 
         array (
           'offense_description' => 'TOWED MOTOR VEHICLE',
-          'total' => 8937,
+          'total' => 9079,
         ),
         6 => 
         array (
           'offense_description' => 'ASSAULT - SIMPLE',
-          'total' => 8305,
+          'total' => 8435,
         ),
         7 => 
         array (
           'offense_description' => 'VANDALISM',
-          'total' => 7359,
+          'total' => 7472,
         ),
         8 => 
         array (
           'offense_description' => 'PROPERTY - LOST/ MISSING',
-          'total' => 6989,
+          'total' => 7104,
         ),
         9 => 
         array (
           'offense_description' => 'DRUGS - POSSESSION/ SALE/ MANUFACTURING/ USE',
-          'total' => 5437,
+          'total' => 5532,
         ),
       ),
-      'shootingIncidents' => 1462,
+      'shootingIncidents' => 1492,
     ),
     1 => 
     array (
       'modelName' => '311 Cases',
       'tableName' => 'three_one_one_cases',
-      'totalRecords' => 178483,
+      'totalRecords' => 192518,
       'minDate' => '2025-01-01',
-      'maxDate' => '2025-08-18',
-      'recordsLast30Days' => 25919,
-      'recordsLast90Days' => 74856,
-      'recordsLast1Year' => 178483,
+      'maxDate' => '2025-09-01',
+      'recordsLast30Days' => 27869,
+      'recordsLast90Days' => 77118,
+      'recordsLast1Year' => 192518,
       'caseStatusDistribution' => 
       array (
         0 => 
         array (
           'case_status' => 'Closed',
-          'total' => 128416,
+          'total' => 138675,
         ),
         1 => 
         array (
           'case_status' => 'Open',
-          'total' => 50067,
+          'total' => 53843,
         ),
       ),
-      'averageClosureTimeHours' => 96.39,
+      'averageClosureTimeHours' => 95.14,
     ),
     2 => 
     array (
       'modelName' => 'Food Inspections',
       'tableName' => 'food_inspections',
-      'totalRecords' => 847233,
+      'totalRecords' => 848843,
       'minDate' => '2006-04-04',
-      'maxDate' => '2025-08-18',
-      'recordsLast30Days' => 3713,
-      'recordsLast90Days' => 9619,
-      'recordsLast1Year' => 42696,
+      'maxDate' => '2025-08-30',
+      'recordsLast30Days' => 3670,
+      'recordsLast90Days' => 9760,
+      'recordsLast1Year' => 42631,
       'resultDistribution' => 
       array (
         0 => 
         array (
           'result' => 'HE_Fail',
-          'total' => 354108,
+          'total' => 354760,
         ),
         1 => 
         array (
           'result' => 'HE_Pass',
-          'total' => 270133,
+          'total' => 270608,
         ),
         2 => 
         array (
           'result' => 'HE_Filed',
-          'total' => 91289,
+          'total' => 91390,
         ),
         3 => 
         array (
           'result' => 'HE_FailExt',
-          'total' => 67125,
+          'total' => 67422,
         ),
         4 => 
         array (
           'result' => 'HE_Hearing',
-          'total' => 26259,
+          'total' => 26320,
         ),
       ),
       'violationLevelDistribution' => 
@@ -137,22 +137,22 @@ return array (
         0 => 
         array (
           'viol_level' => 'Low',
-          'total' => 559139,
+          'total' => 560023,
         ),
         1 => 
         array (
           'viol_level' => 'High',
-          'total' => 122678,
+          'total' => 122849,
         ),
         2 => 
         array (
           'viol_level' => 'Medium',
-          'total' => 100562,
+          'total' => 101024,
         ),
         3 => 
         array (
           'viol_level' => 'Other',
-          'total' => 5853,
+          'total' => 5868,
         ),
       ),
     ),
@@ -160,23 +160,23 @@ return array (
     array (
       'modelName' => 'Property Violations',
       'tableName' => 'property_violations',
-      'totalRecords' => 16590,
+      'totalRecords' => 16610,
       'minDate' => '2009-12-01',
-      'maxDate' => '2025-08-18',
-      'recordsLast30Days' => 60,
-      'recordsLast90Days' => 194,
-      'recordsLast1Year' => 790,
+      'maxDate' => '2025-08-28',
+      'recordsLast30Days' => 61,
+      'recordsLast90Days' => 205,
+      'recordsLast1Year' => 780,
       'statusDistribution' => 
       array (
         0 => 
         array (
           'status' => 'Closed',
-          'total' => 15416,
+          'total' => 15469,
         ),
         1 => 
         array (
           'status' => 'Open',
-          'total' => 1173,
+          'total' => 1140,
         ),
         2 => 
         array (
@@ -190,7 +190,7 @@ return array (
         array (
           'code' => '105.1',
           'description' => 'Failure to Obtain Permit',
-          'total' => 4079,
+          'total' => 4084,
         ),
         1 => 
         array (
@@ -202,31 +202,31 @@ return array (
         array (
           'code' => '102.8',
           'description' => 'Maintenance',
-          'total' => 1164,
+          'total' => 1169,
         ),
         3 => 
         array (
           'code' => '1001.3.2',
           'description' => 'Testing & Certification',
-          'total' => 890,
+          'total' => 896,
         ),
         4 => 
         array (
           'code' => '116.1',
           'description' => 'Unsafe and Dangerous',
-          'total' => 850,
+          'total' => 849,
         ),
         5 => 
         array (
           'code' => '116',
           'description' => 'Unsafe Structures',
-          'total' => 616,
+          'total' => 620,
         ),
         6 => 
         array (
           'code' => '104.6',
           'description' => 'Right of Entry',
-          'total' => 548,
+          'total' => 549,
         ),
         7 => 
         array (
@@ -252,63 +252,63 @@ return array (
     array (
       'modelName' => 'Building Permits',
       'tableName' => 'building_permits',
-      'totalRecords' => 623792,
+      'totalRecords' => 625702,
       'minDate' => '2006-09-26',
-      'maxDate' => '2025-08-18',
-      'recordsLast30Days' => 3257,
-      'recordsLast90Days' => 8988,
-      'recordsLast1Year' => 35897,
+      'maxDate' => '2025-09-01',
+      'recordsLast30Days' => 3327,
+      'recordsLast90Days' => 9553,
+      'recordsLast1Year' => 36816,
       'workTypeDistribution' => 
       array (
         0 => 
         array (
           'worktype' => 'ELECTRICAL',
-          'total' => 126309,
+          'total' => 126708,
         ),
         1 => 
         array (
           'worktype' => 'PLUMBING',
-          'total' => 84507,
+          'total' => 84752,
         ),
         2 => 
         array (
           'worktype' => 'GAS',
-          'total' => 61789,
+          'total' => 61929,
         ),
         3 => 
         array (
           'worktype' => 'INTREN',
-          'total' => 53496,
+          'total' => 53604,
         ),
         4 => 
         array (
           'worktype' => 'LVOLT',
-          'total' => 42417,
+          'total' => 42543,
         ),
         5 => 
         array (
           'worktype' => 'INTEXT',
-          'total' => 37555,
+          'total' => 37656,
         ),
         6 => 
         array (
           'worktype' => 'FA',
-          'total' => 33216,
+          'total' => 33303,
         ),
         7 => 
         array (
           'worktype' => 'OTHER',
-          'total' => 23769,
+          'total' => 23871,
         ),
         8 => 
         array (
           'worktype' => 'ROOF',
-          'total' => 23261,
+          'total' => 23330,
         ),
         9 => 
         array (
           'worktype' => 'EXTREN',
-          'total' => 21907,
+          'total' => 21969,
         ),
       ),
       'permitStatusDistribution' => 
@@ -316,12 +316,12 @@ return array (
         0 => 
         array (
           'status' => 'Open',
-          'total' => 365555,
+          'total' => 366436,
         ),
         1 => 
         array (
           'status' => 'Closed',
-          'total' => 258232,
+          'total' => 259261,
         ),
         2 => 
         array (
@@ -340,67 +340,67 @@ return array (
     array (
       'modelName' => 'Construction Off Hours',
       'tableName' => 'construction_off_hours',
-      'totalRecords' => 329,
+      'totalRecords' => 354,
       'minDate' => '2022-06-20',
       'maxDate' => '2033-04-08',
-      'recordsLast30Days' => 58,
-      'recordsLast90Days' => 320,
-      'recordsLast1Year' => 328,
+      'recordsLast30Days' => 56,
+      'recordsLast90Days' => 242,
+      'recordsLast1Year' => 353,
     ),
     6 => 
     array (
       'modelName' => 'Everett Crime',
       'tableName' => 'everett_crime_data',
-      'totalRecords' => 16709,
+      'totalRecords' => 18171,
       'minDate' => '2024-12-31',
-      'maxDate' => '2025-08-18',
-      'recordsLast30Days' => 2237,
-      'recordsLast90Days' => 6865,
-      'recordsLast1Year' => 16709,
+      'maxDate' => '2025-09-01',
+      'recordsLast30Days' => 2426,
+      'recordsLast90Days' => 7239,
+      'recordsLast1Year' => 18171,
     ),
     7 => 
     array (
       'modelName' => 'Cambridge 311 Service Request',
       'tableName' => 'cambridge_311_service_requests',
-      'totalRecords' => 131953,
+      'totalRecords' => 132619,
       'minDate' => '2009-02-10',
-      'maxDate' => '2025-08-18',
-      'recordsLast30Days' => 1439,
-      'recordsLast90Days' => 4379,
-      'recordsLast1Year' => 16528,
+      'maxDate' => '2025-09-02',
+      'recordsLast30Days' => 1416,
+      'recordsLast90Days' => 4306,
+      'recordsLast1Year' => 16546,
     ),
     8 => 
     array (
       'modelName' => 'Cambridge Building Permit',
       'tableName' => 'cambridge_building_permits_data',
-      'totalRecords' => 12713,
+      'totalRecords' => 12801,
       'minDate' => '2018-07-03',
-      'maxDate' => '2025-08-15',
-      'recordsLast30Days' => 198,
-      'recordsLast90Days' => 445,
-      'recordsLast1Year' => 1678,
+      'maxDate' => '2025-08-29',
+      'recordsLast30Days' => 187,
+      'recordsLast90Days' => 474,
+      'recordsLast1Year' => 1702,
     ),
     9 => 
     array (
       'modelName' => 'Cambridge Crime Report',
       'tableName' => 'cambridge_crime_reports_data',
-      'totalRecords' => 107728,
+      'totalRecords' => 107919,
       'minDate' => '1924-08-07',
-      'maxDate' => '2025-08-16',
-      'recordsLast30Days' => 774,
-      'recordsLast90Days' => 3231,
-      'recordsLast1Year' => 9942,
+      'maxDate' => '2025-08-25',
+      'recordsLast30Days' => 516,
+      'recordsLast90Days' => 2823,
+      'recordsLast1Year' => 9835,
     ),
     10 => 
     array (
       'modelName' => 'Cambridge Housing Violation',
       'tableName' => 'cambridge_housing_violation_data',
-      'totalRecords' => 4743,
+      'totalRecords' => 4807,
       'minDate' => '2018-11-30',
-      'maxDate' => '2025-08-15',
-      'recordsLast30Days' => 72,
-      'recordsLast90Days' => 211,
-      'recordsLast1Year' => 1188,
+      'maxDate' => '2025-08-29',
+      'recordsLast30Days' => 95,
+      'recordsLast90Days' => 240,
+      'recordsLast1Year' => 1226,
     ),
     11 => 
     array (
@@ -410,8 +410,8 @@ return array (
       'minDate' => '2021-05-12',
       'maxDate' => '2025-06-06',
       'recordsLast30Days' => 0,
-      'recordsLast90Days' => 63,
-      'recordsLast1Year' => 2033,
+      'recordsLast90Days' => 8,
+      'recordsLast1Year' => 1890,
     ),
   ),
 );

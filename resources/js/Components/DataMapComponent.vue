@@ -240,7 +240,7 @@ const nlpSubmitted = ref(false); // To distinguish general loading from NLP load
 const clusterRadius = ref(80); // New state for clustering radius
 
 const selectedDataPoint = ref(null);
-const mapCenter = ref([42.3601, -71.0589]); // Default Boston center, adjust as needed
+const mapCenter = ref(props.initialMapSettings?.center); // Default Boston center, adjust as needed
 const isLoading = ref(false);
 const isMapInitialized = ref(false);
 
@@ -563,9 +563,10 @@ onMounted(() => {
         defaultFilters: JSON.parse(JSON.stringify(props.defaultFilters)),
         combinedFilters: JSON.parse(JSON.stringify(combinedFilters)),
         clusterRadiusProp: props.initialClusterRadiusProp,
+        initialMapSettings: JSON.parse(JSON.stringify(props.initialMapSettings)),
     });
 
-    mapCenter.value = props.initialMapSettings?.center || [42.3601, -71.0589];
+    mapCenter.value = props.initialMapSettings?.center;
     
     // Correctly initialize clusterRadius from the combined filters, handling the '0' case.
     const radiusFromFilters = combinedFilters.clusterRadius;

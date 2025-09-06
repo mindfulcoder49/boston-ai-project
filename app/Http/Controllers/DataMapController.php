@@ -41,6 +41,8 @@ class DataMapController extends Controller
             'cambridge_crime_reports' => \App\Models\CambridgeCrimeReportData::class,
             // Cambridge Models
             'person_crash_data' => \App\Models\PersonCrashData::class,
+
+            'chicago_crime' => \App\Models\ChicagoCrime::class,
         ];
 
         // Validate that all registered models use the Mappable trait
@@ -51,6 +53,25 @@ class DataMapController extends Controller
                 // For now, we'll log an error. This should be addressed during development.
             }
         }
+    }
+
+    protected function getCityContextForDataType(string $dataType): array
+    {
+        // Chicago models
+        if (Str::startsWith($dataType, 'chicago_')) {
+            return [
+                'city' => 'chicago',
+                'center' => [41.8781, -87.6298], // lat, lon
+                'zoom' => 11,
+            ];
+        }
+
+        // Default to Boston for all others (Boston, Cambridge, Everett, etc.)
+        return [
+            'city' => 'boston',
+            'center' => [42.3601, -71.0589], // lat, lon
+            'zoom' => 12,
+        ];
     }
 
     public function getModelMapping(): array
@@ -134,6 +155,7 @@ class DataMapController extends Controller
     {
         $modelClass = $this->getModelClassForDataType($dataType);
         $config = $this->getDataTypeConfig($modelClass);
+        $cityContext = $this->getCityContextForDataType($dataType);
 
         $tierMinDate = $this->getMinDateForEffectiveUser($modelClass, Auth::user());
 
@@ -175,6 +197,10 @@ class DataMapController extends Controller
             'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar,
             'mapConfiguration' => $mapConfiguration, // Add map configuration
             'initialClusterRadius' => $request->input('clusterRadius', 80), // Add this line
+            'initialMapSettings' => [
+                'center' => $cityContext['center'],
+                'zoom' => $cityContext['zoom'],
+            ],
         ];
 
         return Inertia::render('DataMap', $pageProps);
@@ -408,11 +434,14 @@ class DataMapController extends Controller
         if (!empty($filters['search_term']) && !empty($searchableColumns)) {
             $searchTerm = $filters['search_term'];
             $query->where(function ($q) use ($searchableColumns, $searchTerm, $modelClass) { // Added $modelClass for logging
+                $modelInstance = app($modelClass);
+                $connection = $modelInstance->getConnectionName();
+                $table = $modelInstance->getTable();
                 foreach ($searchableColumns as $col) {
-                     if (Schema::hasColumn(app($modelClass)->getTable(), $col)) { // Check column existence
+                     if (Schema::connection($connection)->hasColumn($table, $col)) { // Check column existence on correct connection
                          $q->orWhere($col, 'LIKE', '%' . $searchTerm . '%');
                      } else {
-                        Log::warning("Searchable column '{$col}' not found in table for model {$modelClass}. Skipping in search_term.");
+                        Log::warning("Searchable column '{$col}' not found in table '{$table}' on connection '{$connection}' for model {$modelClass}. Skipping in search_term.");
                     }
                 }
             });

@@ -857,6 +857,891 @@ return [
             ],
         ],
     ],
+    'App\\Models\\ChicagoCrime' => [
+        'filterableFieldsDescription' => [
+            0 => [
+                'name' => 'search_term',
+                'label' => 'General Search',
+                'type' => 'text',
+                'placeholder' => 'Search across all fields...',
+            ],
+            1 => [
+                'name' => 'case_number',
+                'label' => 'Case Number',
+                'type' => 'text',
+                'placeholder' => 'Enter Case Number',
+            ],
+            2 => [
+                'name' => 'block',
+                'label' => 'Block',
+                'type' => 'text',
+                'placeholder' => 'Enter Block',
+            ],
+            3 => [
+                'name' => 'iucr',
+                'label' => 'IUCR',
+                'type' => 'text',
+                'placeholder' => 'Enter IUCR',
+            ],
+            4 => [
+                'name' => 'primary_type',
+                'label' => 'Primary Type',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Primary Type',
+                'options' => [
+                    0 => [
+                        'value' => 'ARSON',
+                        'label' => 'ARSON',
+                    ],
+                    1 => [
+                        'value' => 'ASSAULT',
+                        'label' => 'ASSAULT',
+                    ],
+                    2 => [
+                        'value' => 'BATTERY',
+                        'label' => 'BATTERY',
+                    ],
+                    3 => [
+                        'value' => 'BURGLARY',
+                        'label' => 'BURGLARY',
+                    ],
+                    4 => [
+                        'value' => 'CONCEALED CARRY LICENSE VIOLATION',
+                        'label' => 'CONCEALED CARRY LICENSE VIOLATION',
+                    ],
+                    5 => [
+                        'value' => 'CRIM SEXUAL ASSAULT',
+                        'label' => 'CRIM SEXUAL ASSAULT',
+                    ],
+                    6 => [
+                        'value' => 'CRIMINAL DAMAGE',
+                        'label' => 'CRIMINAL DAMAGE',
+                    ],
+                    7 => [
+                        'value' => 'CRIMINAL SEXUAL ASSAULT',
+                        'label' => 'CRIMINAL SEXUAL ASSAULT',
+                    ],
+                    8 => [
+                        'value' => 'CRIMINAL TRESPASS',
+                        'label' => 'CRIMINAL TRESPASS',
+                    ],
+                    9 => [
+                        'value' => 'DECEPTIVE PRACTICE',
+                        'label' => 'DECEPTIVE PRACTICE',
+                    ],
+                    10 => [
+                        'value' => 'GAMBLING',
+                        'label' => 'GAMBLING',
+                    ],
+                    11 => [
+                        'value' => 'HOMICIDE',
+                        'label' => 'HOMICIDE',
+                    ],
+                    12 => [
+                        'value' => 'HUMAN TRAFFICKING',
+                        'label' => 'HUMAN TRAFFICKING',
+                    ],
+                    13 => [
+                        'value' => 'INTERFERENCE WITH PUBLIC OFFICER',
+                        'label' => 'INTERFERENCE WITH PUBLIC OFFICER',
+                    ],
+                    14 => [
+                        'value' => 'INTIMIDATION',
+                        'label' => 'INTIMIDATION',
+                    ],
+                    15 => [
+                        'value' => 'KIDNAPPING',
+                        'label' => 'KIDNAPPING',
+                    ],
+                    16 => [
+                        'value' => 'LIQUOR LAW VIOLATION',
+                        'label' => 'LIQUOR LAW VIOLATION',
+                    ],
+                    17 => [
+                        'value' => 'MOTOR VEHICLE THEFT',
+                        'label' => 'MOTOR VEHICLE THEFT',
+                    ],
+                    18 => [
+                        'value' => 'NARCOTICS',
+                        'label' => 'NARCOTICS',
+                    ],
+                    19 => [
+                        'value' => 'NON-CRIMINAL',
+                        'label' => 'NON-CRIMINAL',
+                    ],
+                    20 => [
+                        'value' => 'OBSCENITY',
+                        'label' => 'OBSCENITY',
+                    ],
+                    21 => [
+                        'value' => 'OFFENSE INVOLVING CHILDREN',
+                        'label' => 'OFFENSE INVOLVING CHILDREN',
+                    ],
+                    22 => [
+                        'value' => 'OTHER NARCOTIC VIOLATION',
+                        'label' => 'OTHER NARCOTIC VIOLATION',
+                    ],
+                    23 => [
+                        'value' => 'OTHER OFFENSE',
+                        'label' => 'OTHER OFFENSE',
+                    ],
+                    24 => [
+                        'value' => 'PROSTITUTION',
+                        'label' => 'PROSTITUTION',
+                    ],
+                    25 => [
+                        'value' => 'PUBLIC INDECENCY',
+                        'label' => 'PUBLIC INDECENCY',
+                    ],
+                    26 => [
+                        'value' => 'PUBLIC PEACE VIOLATION',
+                        'label' => 'PUBLIC PEACE VIOLATION',
+                    ],
+                    27 => [
+                        'value' => 'RITUALISM',
+                        'label' => 'RITUALISM',
+                    ],
+                    28 => [
+                        'value' => 'ROBBERY',
+                        'label' => 'ROBBERY',
+                    ],
+                    29 => [
+                        'value' => 'SEX OFFENSE',
+                        'label' => 'SEX OFFENSE',
+                    ],
+                    30 => [
+                        'value' => 'STALKING',
+                        'label' => 'STALKING',
+                    ],
+                    31 => [
+                        'value' => 'THEFT',
+                        'label' => 'THEFT',
+                    ],
+                    32 => [
+                        'value' => 'WEAPONS VIOLATION',
+                        'label' => 'WEAPONS VIOLATION',
+                    ],
+                ],
+            ],
+            5 => [
+                'name' => 'description',
+                'label' => 'Description',
+                'type' => 'text',
+                'placeholder' => 'Enter Description',
+            ],
+            6 => [
+                'name' => 'location_description',
+                'label' => 'Location Description',
+                'type' => 'text',
+                'placeholder' => 'Enter Location Description',
+            ],
+            7 => [
+                'name' => 'arrest',
+                'label' => 'Arrest',
+                'type' => 'boolean',
+            ],
+            8 => [
+                'name' => 'domestic',
+                'label' => 'Domestic',
+                'type' => 'boolean',
+            ],
+            9 => [
+                'name' => 'beat_min',
+                'label' => 'Beat Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Beat',
+            ],
+            10 => [
+                'name' => 'beat_max',
+                'label' => 'Beat Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Beat',
+            ],
+            11 => [
+                'name' => 'district',
+                'label' => 'District',
+                'type' => 'multiselect',
+                'placeholder' => 'Select District',
+                'options' => [
+                    0 => [
+                        'value' => '1',
+                        'label' => '1',
+                    ],
+                    1 => [
+                        'value' => '2',
+                        'label' => '2',
+                    ],
+                    2 => [
+                        'value' => '3',
+                        'label' => '3',
+                    ],
+                    3 => [
+                        'value' => '4',
+                        'label' => '4',
+                    ],
+                    4 => [
+                        'value' => '5',
+                        'label' => '5',
+                    ],
+                    5 => [
+                        'value' => '6',
+                        'label' => '6',
+                    ],
+                    6 => [
+                        'value' => '7',
+                        'label' => '7',
+                    ],
+                    7 => [
+                        'value' => '8',
+                        'label' => '8',
+                    ],
+                    8 => [
+                        'value' => '9',
+                        'label' => '9',
+                    ],
+                    9 => [
+                        'value' => '10',
+                        'label' => '10',
+                    ],
+                    10 => [
+                        'value' => '11',
+                        'label' => '11',
+                    ],
+                    11 => [
+                        'value' => '12',
+                        'label' => '12',
+                    ],
+                    12 => [
+                        'value' => '14',
+                        'label' => '14',
+                    ],
+                    13 => [
+                        'value' => '15',
+                        'label' => '15',
+                    ],
+                    14 => [
+                        'value' => '16',
+                        'label' => '16',
+                    ],
+                    15 => [
+                        'value' => '17',
+                        'label' => '17',
+                    ],
+                    16 => [
+                        'value' => '18',
+                        'label' => '18',
+                    ],
+                    17 => [
+                        'value' => '19',
+                        'label' => '19',
+                    ],
+                    18 => [
+                        'value' => '20',
+                        'label' => '20',
+                    ],
+                    19 => [
+                        'value' => '22',
+                        'label' => '22',
+                    ],
+                    20 => [
+                        'value' => '24',
+                        'label' => '24',
+                    ],
+                    21 => [
+                        'value' => '25',
+                        'label' => '25',
+                    ],
+                    22 => [
+                        'value' => '31',
+                        'label' => '31',
+                    ],
+                ],
+            ],
+            12 => [
+                'name' => 'ward',
+                'label' => 'Ward',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Ward',
+                'options' => [
+                    0 => [
+                        'value' => '1',
+                        'label' => '1',
+                    ],
+                    1 => [
+                        'value' => '2',
+                        'label' => '2',
+                    ],
+                    2 => [
+                        'value' => '3',
+                        'label' => '3',
+                    ],
+                    3 => [
+                        'value' => '4',
+                        'label' => '4',
+                    ],
+                    4 => [
+                        'value' => '5',
+                        'label' => '5',
+                    ],
+                    5 => [
+                        'value' => '6',
+                        'label' => '6',
+                    ],
+                    6 => [
+                        'value' => '7',
+                        'label' => '7',
+                    ],
+                    7 => [
+                        'value' => '8',
+                        'label' => '8',
+                    ],
+                    8 => [
+                        'value' => '9',
+                        'label' => '9',
+                    ],
+                    9 => [
+                        'value' => '10',
+                        'label' => '10',
+                    ],
+                    10 => [
+                        'value' => '11',
+                        'label' => '11',
+                    ],
+                    11 => [
+                        'value' => '12',
+                        'label' => '12',
+                    ],
+                    12 => [
+                        'value' => '13',
+                        'label' => '13',
+                    ],
+                    13 => [
+                        'value' => '14',
+                        'label' => '14',
+                    ],
+                    14 => [
+                        'value' => '15',
+                        'label' => '15',
+                    ],
+                    15 => [
+                        'value' => '16',
+                        'label' => '16',
+                    ],
+                    16 => [
+                        'value' => '17',
+                        'label' => '17',
+                    ],
+                    17 => [
+                        'value' => '18',
+                        'label' => '18',
+                    ],
+                    18 => [
+                        'value' => '19',
+                        'label' => '19',
+                    ],
+                    19 => [
+                        'value' => '20',
+                        'label' => '20',
+                    ],
+                    20 => [
+                        'value' => '21',
+                        'label' => '21',
+                    ],
+                    21 => [
+                        'value' => '22',
+                        'label' => '22',
+                    ],
+                    22 => [
+                        'value' => '23',
+                        'label' => '23',
+                    ],
+                    23 => [
+                        'value' => '24',
+                        'label' => '24',
+                    ],
+                    24 => [
+                        'value' => '25',
+                        'label' => '25',
+                    ],
+                    25 => [
+                        'value' => '26',
+                        'label' => '26',
+                    ],
+                    26 => [
+                        'value' => '27',
+                        'label' => '27',
+                    ],
+                    27 => [
+                        'value' => '28',
+                        'label' => '28',
+                    ],
+                    28 => [
+                        'value' => '29',
+                        'label' => '29',
+                    ],
+                    29 => [
+                        'value' => '30',
+                        'label' => '30',
+                    ],
+                    30 => [
+                        'value' => '31',
+                        'label' => '31',
+                    ],
+                    31 => [
+                        'value' => '32',
+                        'label' => '32',
+                    ],
+                    32 => [
+                        'value' => '33',
+                        'label' => '33',
+                    ],
+                    33 => [
+                        'value' => '34',
+                        'label' => '34',
+                    ],
+                    34 => [
+                        'value' => '35',
+                        'label' => '35',
+                    ],
+                    35 => [
+                        'value' => '36',
+                        'label' => '36',
+                    ],
+                    36 => [
+                        'value' => '37',
+                        'label' => '37',
+                    ],
+                    37 => [
+                        'value' => '38',
+                        'label' => '38',
+                    ],
+                    38 => [
+                        'value' => '39',
+                        'label' => '39',
+                    ],
+                    39 => [
+                        'value' => '40',
+                        'label' => '40',
+                    ],
+                    40 => [
+                        'value' => '41',
+                        'label' => '41',
+                    ],
+                    41 => [
+                        'value' => '42',
+                        'label' => '42',
+                    ],
+                    42 => [
+                        'value' => '43',
+                        'label' => '43',
+                    ],
+                    43 => [
+                        'value' => '44',
+                        'label' => '44',
+                    ],
+                    44 => [
+                        'value' => '45',
+                        'label' => '45',
+                    ],
+                    45 => [
+                        'value' => '46',
+                        'label' => '46',
+                    ],
+                    46 => [
+                        'value' => '47',
+                        'label' => '47',
+                    ],
+                    47 => [
+                        'value' => '48',
+                        'label' => '48',
+                    ],
+                    48 => [
+                        'value' => '49',
+                        'label' => '49',
+                    ],
+                ],
+            ],
+            13 => [
+                'name' => 'community_area',
+                'label' => 'Community Area',
+                'type' => 'text',
+                'placeholder' => 'Enter Community Area',
+            ],
+            14 => [
+                'name' => 'fbi_code',
+                'label' => 'FBI Code',
+                'type' => 'multiselect',
+                'placeholder' => 'Select FBI Code',
+                'options' => [
+                    0 => [
+                        'value' => '01A',
+                        'label' => '01A',
+                    ],
+                    1 => [
+                        'value' => '01B',
+                        'label' => '01B',
+                    ],
+                    2 => [
+                        'value' => '02',
+                        'label' => '02',
+                    ],
+                    3 => [
+                        'value' => '03',
+                        'label' => '03',
+                    ],
+                    4 => [
+                        'value' => '04A',
+                        'label' => '04A',
+                    ],
+                    5 => [
+                        'value' => '04B',
+                        'label' => '04B',
+                    ],
+                    6 => [
+                        'value' => '05',
+                        'label' => '05',
+                    ],
+                    7 => [
+                        'value' => '06',
+                        'label' => '06',
+                    ],
+                    8 => [
+                        'value' => '07',
+                        'label' => '07',
+                    ],
+                    9 => [
+                        'value' => '08A',
+                        'label' => '08A',
+                    ],
+                    10 => [
+                        'value' => '08B',
+                        'label' => '08B',
+                    ],
+                    11 => [
+                        'value' => '09',
+                        'label' => '09',
+                    ],
+                    12 => [
+                        'value' => '10',
+                        'label' => '10',
+                    ],
+                    13 => [
+                        'value' => '11',
+                        'label' => '11',
+                    ],
+                    14 => [
+                        'value' => '12',
+                        'label' => '12',
+                    ],
+                    15 => [
+                        'value' => '13',
+                        'label' => '13',
+                    ],
+                    16 => [
+                        'value' => '14',
+                        'label' => '14',
+                    ],
+                    17 => [
+                        'value' => '15',
+                        'label' => '15',
+                    ],
+                    18 => [
+                        'value' => '16',
+                        'label' => '16',
+                    ],
+                    19 => [
+                        'value' => '17',
+                        'label' => '17',
+                    ],
+                    20 => [
+                        'value' => '18',
+                        'label' => '18',
+                    ],
+                    21 => [
+                        'value' => '19',
+                        'label' => '19',
+                    ],
+                    22 => [
+                        'value' => '20',
+                        'label' => '20',
+                    ],
+                    23 => [
+                        'value' => '22',
+                        'label' => '22',
+                    ],
+                    24 => [
+                        'value' => '24',
+                        'label' => '24',
+                    ],
+                    25 => [
+                        'value' => '26',
+                        'label' => '26',
+                    ],
+                ],
+            ],
+            15 => [
+                'name' => 'x_coordinate_min',
+                'label' => 'X Coordinate Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for X Coordinate',
+            ],
+            16 => [
+                'name' => 'x_coordinate_max',
+                'label' => 'X Coordinate Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for X Coordinate',
+            ],
+            17 => [
+                'name' => 'y_coordinate_min',
+                'label' => 'Y Coordinate Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Y Coordinate',
+            ],
+            18 => [
+                'name' => 'y_coordinate_max',
+                'label' => 'Y Coordinate Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Y Coordinate',
+            ],
+            19 => [
+                'name' => 'year',
+                'label' => 'Year',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Year',
+                'options' => [
+                    0 => [
+                        'value' => '2019',
+                        'label' => '2019',
+                    ],
+                    1 => [
+                        'value' => '2020',
+                        'label' => '2020',
+                    ],
+                    2 => [
+                        'value' => '2021',
+                        'label' => '2021',
+                    ],
+                    3 => [
+                        'value' => '2022',
+                        'label' => '2022',
+                    ],
+                    4 => [
+                        'value' => '2023',
+                        'label' => '2023',
+                    ],
+                    5 => [
+                        'value' => '2024',
+                        'label' => '2024',
+                    ],
+                    6 => [
+                        'value' => '2025',
+                        'label' => '2025',
+                    ],
+                ],
+            ],
+            20 => [
+                'name' => 'updated_on_start',
+                'label' => 'Updated On Start',
+                'type' => 'date',
+                'placeholder' => 'Start date for Updated On',
+            ],
+            21 => [
+                'name' => 'updated_on_end',
+                'label' => 'Updated On End',
+                'type' => 'date',
+                'placeholder' => 'End date for Updated On',
+            ],
+            22 => [
+                'name' => 'latitude_min',
+                'label' => 'Latitude Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Latitude',
+            ],
+            23 => [
+                'name' => 'latitude_max',
+                'label' => 'Latitude Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Latitude',
+            ],
+            24 => [
+                'name' => 'longitude_min',
+                'label' => 'Longitude Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Longitude',
+            ],
+            25 => [
+                'name' => 'longitude_max',
+                'label' => 'Longitude Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Longitude',
+            ],
+            26 => [
+                'name' => 'location_min',
+                'label' => 'Location Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Location',
+            ],
+            27 => [
+                'name' => 'location_max',
+                'label' => 'Location Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Location',
+            ],
+        ],
+        'contextData' => 'Dataset of Chicago Crimes. Filter by attributes like case number, date (Date), block.',
+        'searchableColumns' => [
+            0 => 'case_number',
+            1 => 'block',
+            2 => 'primary_type',
+            3 => 'description',
+            4 => 'location_description',
+        ],
+        'gptSchemaProperties' => [
+            'search_term' => [
+                'type' => 'string',
+                'description' => 'A general search term to query across multiple text fields.',
+            ],
+            'start_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for \'Date\' (YYYY-MM-DD)',
+            ],
+            'end_date' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for \'Date\' (YYYY-MM-DD)',
+            ],
+            'limit' => [
+                'type' => 'integer',
+                'description' => 'Limit the number of records. Default is 1000, max 5000.',
+            ],
+            'case_number' => [
+                'type' => 'string',
+                'description' => 'Filter by Case Number.',
+            ],
+            'block' => [
+                'type' => 'string',
+                'description' => 'Filter by Block.',
+            ],
+            'iucr' => [
+                'type' => 'string',
+                'description' => 'Filter by IUCR.',
+            ],
+            'primary_type' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'string',
+                ],
+                'description' => 'Filter by Primary Type. Provide a comma-separated list or an array of values. Possible values: ARSON, ASSAULT, BATTERY, BURGLARY, CONCEALED CARRY LICENSE VIOLATION, CRIM SEXUAL ASSAULT, CRIMINAL DAMAGE, CRIMINAL SEXUAL ASSAULT, CRIMINAL TRESPASS, DECEPTIVE PRACTICE, GAMBLING, HOMICIDE, HUMAN TRAFFICKING, INTERFERENCE WITH PUBLIC OFFICER, INTIMIDATION, KIDNAPPING, LIQUOR LAW VIOLATION, MOTOR VEHICLE THEFT, NARCOTICS, NON-CRIMINAL, OBSCENITY, OFFENSE INVOLVING CHILDREN, OTHER NARCOTIC VIOLATION, OTHER OFFENSE, PROSTITUTION, PUBLIC INDECENCY, PUBLIC PEACE VIOLATION, RITUALISM, ROBBERY, SEX OFFENSE, STALKING, THEFT, WEAPONS VIOLATION.',
+            ],
+            'description' => [
+                'type' => 'string',
+                'description' => 'Filter by Description.',
+            ],
+            'location_description' => [
+                'type' => 'string',
+                'description' => 'Filter by Location Description.',
+            ],
+            'arrest' => [
+                'type' => 'boolean',
+                'description' => 'Filter by Arrest.',
+            ],
+            'domestic' => [
+                'type' => 'boolean',
+                'description' => 'Filter by Domestic.',
+            ],
+            'beat_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Beat.',
+            ],
+            'beat_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Beat.',
+            ],
+            'district' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'string',
+                ],
+                'description' => 'Filter by District. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 22, 24, 25, 31.',
+            ],
+            'ward' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'string',
+                ],
+                'description' => 'Filter by Ward. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49.',
+            ],
+            'community_area' => [
+                'type' => 'string',
+                'description' => 'Filter by Community Area.',
+            ],
+            'fbi_code' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'string',
+                ],
+                'description' => 'Filter by FBI Code. Provide a comma-separated list or an array of values. Possible values: 01A, 01B, 02, 03, 04A, 04B, 05, 06, 07, 08A, 08B, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 24, 26.',
+            ],
+            'x_coordinate_min' => [
+                'type' => 'number',
+                'description' => 'Minimum value for X Coordinate.',
+            ],
+            'x_coordinate_max' => [
+                'type' => 'number',
+                'description' => 'Maximum value for X Coordinate.',
+            ],
+            'y_coordinate_min' => [
+                'type' => 'number',
+                'description' => 'Minimum value for Y Coordinate.',
+            ],
+            'y_coordinate_max' => [
+                'type' => 'number',
+                'description' => 'Maximum value for Y Coordinate.',
+            ],
+            'year' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'string',
+                ],
+                'description' => 'Filter by Year. Provide a comma-separated list or an array of values. Possible values: 2019, 2020, 2021, 2022, 2023, 2024, 2025.',
+            ],
+            'updated_on_start' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'Start date for Updated On (YYYY-MM-DD)',
+            ],
+            'updated_on_end' => [
+                'type' => 'string',
+                'format' => 'date',
+                'description' => 'End date for Updated On (YYYY-MM-DD)',
+            ],
+            'latitude_min' => [
+                'type' => 'number',
+                'description' => 'Minimum value for Latitude.',
+            ],
+            'latitude_max' => [
+                'type' => 'number',
+                'description' => 'Maximum value for Latitude.',
+            ],
+            'longitude_min' => [
+                'type' => 'number',
+                'description' => 'Minimum value for Longitude.',
+            ],
+            'longitude_max' => [
+                'type' => 'number',
+                'description' => 'Maximum value for Longitude.',
+            ],
+            'location_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Location.',
+            ],
+            'location_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Location.',
+            ],
+        ],
+    ],
     'App\\Models\\CambridgeBuildingPermitData' => [
         'filterableFieldsDescription' => [
             0 => [
@@ -3530,6 +4415,10 @@ Cambridge, MA 02139
                         'label' => '8',
                     ],
                     8 => [
+                        'value' => '9',
+                        'label' => '9',
+                    ],
+                    9 => [
                         'value' => '12',
                         'label' => '12',
                     ],
@@ -3900,24 +4789,24 @@ Cambridge, MA 02139
                         'label' => '59',
                     ],
                     44 => [
+                        'value' => '60',
+                        'label' => '60',
+                    ],
+                    45 => [
                         'value' => '61',
                         'label' => '61',
                     ],
-                    45 => [
+                    46 => [
                         'value' => '62',
                         'label' => '62',
                     ],
-                    46 => [
+                    47 => [
                         'value' => '63',
                         'label' => '63',
                     ],
-                    47 => [
+                    48 => [
                         'value' => '65',
                         'label' => '65',
-                    ],
-                    48 => [
-                        'value' => '911',
-                        'label' => '911',
                     ],
                 ],
             ],
@@ -4009,7 +4898,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Month. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 12.',
+                'description' => 'Filter by Month. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 12.',
             ],
             'day_of_week' => [
                 'type' => 'array',
@@ -4058,7 +4947,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Arrest Age. Provide a comma-separated list or an array of values. Possible values: -71, 0, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 61, 62, 63, 65, 911.',
+                'description' => 'Filter by Arrest Age. Provide a comma-separated list or an array of values. Possible values: -71, 0, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65.',
             ],
             'arrest_date_parsed' => [
                 'type' => 'string',
@@ -4239,10 +5128,14 @@ Cambridge, MA 02139
                         'label' => 'Non-fatal injury',
                     ],
                     2 => [
+                        'value' => 'Not Reported',
+                        'label' => 'Not Reported',
+                    ],
+                    3 => [
                         'value' => 'Property damage only (none injured)',
                         'label' => 'Property damage only (none injured)',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
@@ -4267,30 +5160,38 @@ Cambridge, MA 02139
                         'label' => 'No Apparent Injury (O)',
                     ],
                     3 => [
+                        'value' => 'No injury',
+                        'label' => 'No injury',
+                    ],
+                    4 => [
+                        'value' => 'Non-fatal injury - Possible',
+                        'label' => 'Non-fatal injury - Possible',
+                    ],
+                    5 => [
                         'value' => 'Not Applicable',
                         'label' => 'Not Applicable',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    5 => [
+                    7 => [
                         'value' => 'Possible Injury (C)',
                         'label' => 'Possible Injury (C)',
                     ],
-                    6 => [
+                    8 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
                     ],
-                    7 => [
+                    9 => [
                         'value' => 'Suspected Minor Injury (B)',
                         'label' => 'Suspected Minor Injury (B)',
                     ],
-                    8 => [
+                    10 => [
                         'value' => 'Suspected Serious Injury (A)',
                         'label' => 'Suspected Serious Injury (A)',
                     ],
-                    9 => [
+                    11 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
@@ -4335,12 +5236,24 @@ Cambridge, MA 02139
                         'label' => '8',
                     ],
                     8 => [
+                        'value' => '9',
+                        'label' => '9',
+                    ],
+                    9 => [
                         'value' => '10',
                         'label' => '10',
                     ],
-                    9 => [
+                    10 => [
+                        'value' => '11',
+                        'label' => '11',
+                    ],
+                    11 => [
                         'value' => '13',
                         'label' => '13',
+                    ],
+                    12 => [
+                        'value' => '14',
+                        'label' => '14',
                     ],
                 ],
             ],
@@ -4394,6 +5307,14 @@ Cambridge, MA 02139
                         'value' => '10',
                         'label' => '10',
                     ],
+                    11 => [
+                        'value' => '11',
+                        'label' => '11',
+                    ],
+                    12 => [
+                        'value' => '12',
+                        'label' => '12',
+                    ],
                 ],
             ],
             10 => [
@@ -4427,14 +5348,18 @@ Cambridge, MA 02139
                 'placeholder' => 'Select Police Agency Type',
                 'options' => [
                     0 => [
+                        'value' => 'Campus police',
+                        'label' => 'Campus police',
+                    ],
+                    1 => [
                         'value' => 'Local police',
                         'label' => 'Local police',
                     ],
-                    1 => [
+                    2 => [
                         'value' => 'MBTA police',
                         'label' => 'MBTA police',
                     ],
-                    2 => [
+                    3 => [
                         'value' => 'State police',
                         'label' => 'State police',
                     ],
@@ -4447,10 +5372,14 @@ Cambridge, MA 02139
                 'placeholder' => 'Select Year',
                 'options' => [
                     0 => [
+                        'value' => '2023',
+                        'label' => '2023',
+                    ],
+                    1 => [
                         'value' => '2024',
                         'label' => '2024',
                     ],
-                    1 => [
+                    2 => [
                         'value' => '2025',
                         'label' => '2025',
                     ],
@@ -4613,26 +5542,30 @@ Cambridge, MA 02139
                         'label' => 'Other',
                     ],
                     4 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    5 => [
                         'value' => 'Sand, mud, dirt, oil, gravel',
                         'label' => 'Sand, mud, dirt, oil, gravel',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Slush',
                         'label' => 'Slush',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Snow',
                         'label' => 'Snow',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Water (standing, moving)',
                         'label' => 'Water (standing, moving)',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Wet',
                         'label' => 'Wet',
                     ],
@@ -4753,10 +5686,14 @@ Cambridge, MA 02139
                         'label' => 'Overturn/rollover',
                     ],
                     27 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    28 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    28 => [
+                    29 => [
                         'value' => 'Unknown non-collision',
                         'label' => 'Unknown non-collision',
                     ],
@@ -4891,18 +5828,22 @@ Cambridge, MA 02139
                         'label' => 'Railway grade crossing',
                     ],
                     8 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    9 => [
                         'value' => 'T-intersection',
                         'label' => 'T-intersection',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Traffic circle',
                         'label' => 'Traffic circle',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    11 => [
+                    12 => [
                         'value' => 'Y-intersection',
                         'label' => 'Y-intersection',
                     ],
@@ -4935,26 +5876,30 @@ Cambridge, MA 02139
                         'label' => 'Railway crossing device',
                     ],
                     5 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    6 => [
                         'value' => 'School zone signs',
                         'label' => 'School zone signs',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Stop signs',
                         'label' => 'Stop signs',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Traffic control signal',
                         'label' => 'Traffic control signal',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Warning signs',
                         'label' => 'Warning signs',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'Yield signs',
                         'label' => 'Yield signs',
                     ],
@@ -5015,44 +5960,60 @@ Cambridge, MA 02139
                         'label' => 'Department of Conservation and Recreation',
                     ],
                     3 => [
+                        'value' => 'Federal Institutional',
+                        'label' => 'Federal Institutional',
+                    ],
+                    4 => [
                         'value' => 'Federal Park or Forest',
                         'label' => 'Federal Park or Forest',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Massachusetts Department of Transportation',
                         'label' => 'Massachusetts Department of Transportation',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Massachusetts Port Authority',
                         'label' => 'Massachusetts Port Authority',
                     ],
-                    6 => [
+                    7 => [
+                        'value' => 'Other Federal',
+                        'label' => 'Other Federal',
+                    ],
+                    8 => [
                         'value' => 'Private',
                         'label' => 'Private',
                     ],
-                    7 => [
+                    9 => [
+                        'value' => 'State college or university',
+                        'label' => 'State college or university',
+                    ],
+                    10 => [
                         'value' => 'State Institutional',
                         'label' => 'State Institutional',
                     ],
-                    8 => [
+                    11 => [
                         'value' => 'State Park or Forest',
                         'label' => 'State Park or Forest',
                     ],
-                    9 => [
+                    12 => [
                         'value' => 'Unaccepted by city or town',
                         'label' => 'Unaccepted by city or town',
                     ],
-                    10 => [
+                    13 => [
                         'value' => 'US Air Force',
                         'label' => 'US Air Force',
                     ],
-                    11 => [
+                    14 => [
                         'value' => 'US Army',
                         'label' => 'US Army',
                     ],
-                    12 => [
+                    15 => [
                         'value' => 'US Army Corps of Engineers',
                         'label' => 'US Army Corps of Engineers',
+                    ],
+                    16 => [
+                        'value' => 'US Navy',
+                        'label' => 'US Navy',
                     ],
                 ],
             ],
@@ -5075,26 +6036,30 @@ Cambridge, MA 02139
                         'label' => 'Outside roadway',
                     ],
                     3 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    4 => [
                         'value' => 'Roadside',
                         'label' => 'Roadside',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Roadway',
                         'label' => 'Roadway',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Shoulder - paved',
                         'label' => 'Shoulder - paved',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Shoulder - travel lane',
                         'label' => 'Shoulder - travel lane',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Shoulder - unpaved',
                         'label' => 'Shoulder - unpaved',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
@@ -5589,146 +6554,8 @@ Cambridge, MA 02139
             62 => [
                 'name' => 'fmsca_rptbl_cl',
                 'label' => 'FMCSA Reportable (All Vehicles)',
-                'type' => 'multiselect',
-                'placeholder' => 'Select FMCSA Reportable (All Vehicles)',
-                'options' => [
-                    0 => [
-                        'value' => 'V1:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable)',
-                    ],
-                    1 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable)',
-                    ],
-                    2 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    3 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    4 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable)',
-                    ],
-                    5 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable)',
-                    ],
-                    6 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally re',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally re',
-                    ],
-                    7 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(Yes, federally reportable)',
-                    ],
-                    8 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable)',
-                    ],
-                    9 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally reportable)',
-                    ],
-                    10 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable)',
-                    ],
-                    11 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable)',
-                    ],
-                    12 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable)',
-                    ],
-                    13 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    14 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                        'label' => 'V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                    ],
-                    15 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable)',
-                    ],
-                    16 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    17 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    18 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                    ],
-                    19 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable)',
-                    ],
-                    20 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable)',
-                    ],
-                    21 => [
-                        'value' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(Yes, federally reportable)',
-                        'label' => 'V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(Yes, federally reportable)',
-                    ],
-                    22 => [
-                        'value' => 'V1:(Yes, federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable)',
-                    ],
-                    23 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable)',
-                    ],
-                    24 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    25 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    26 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor',
-                    ],
-                    27 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable)',
-                    ],
-                    28 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    29 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable)',
-                    ],
-                    30 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                    31 => [
-                        'value' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                        'label' => 'V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable)',
-                    ],
-                    32 => [
-                        'value' => 'V2:(No, not federally reportable)',
-                        'label' => 'V2:(No, not federally reportable)',
-                    ],
-                    33 => [
-                        'value' => 'V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                        'label' => 'V2:(No, not federally reportable) / V3:(No, not federally reportable)',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter FMCSA Reportable (All Vehicles)',
             ],
             63 => [
                 'name' => 'fmsca_rptbl',
@@ -5747,14 +6574,42 @@ Cambridge, MA 02139
                 'placeholder' => 'Select Locality',
                 'options' => [
                     0 => [
+                        'value' => 'CHARLESTOWN',
+                        'label' => 'CHARLESTOWN',
+                    ],
+                    1 => [
+                        'value' => 'FLORENCE',
+                        'label' => 'FLORENCE',
+                    ],
+                    2 => [
+                        'value' => 'HYANNIS',
+                        'label' => 'HYANNIS',
+                    ],
+                    3 => [
                         'value' => 'HYDE PARK',
                         'label' => 'HYDE PARK',
                     ],
-                    1 => [
+                    4 => [
+                        'value' => 'LEEDS',
+                        'label' => 'LEEDS',
+                    ],
+                    5 => [
                         'value' => 'MATTAPAN',
                         'label' => 'MATTAPAN',
                     ],
-                    2 => [
+                    6 => [
+                        'value' => 'MONTAGUE CENTER',
+                        'label' => 'MONTAGUE CENTER',
+                    ],
+                    7 => [
+                        'value' => 'ROSLINDALE',
+                        'label' => 'ROSLINDALE',
+                    ],
+                    8 => [
+                        'value' => 'ROXBURY',
+                        'label' => 'ROXBURY',
+                    ],
+                    9 => [
                         'value' => 'THORNDIKE',
                         'label' => 'THORNDIKE',
                     ],
@@ -5834,130 +6689,18 @@ Cambridge, MA 02139
                 'type' => 'boolean',
             ],
             68 => [
-                'name' => 'speed_limit',
-                'label' => 'Speed Limit',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Speed Limit',
-                'options' => [
-                    0 => [
-                        'value' => '1',
-                        'label' => '1',
-                    ],
-                    1 => [
-                        'value' => '2',
-                        'label' => '2',
-                    ],
-                    2 => [
-                        'value' => '3',
-                        'label' => '3',
-                    ],
-                    3 => [
-                        'value' => '5',
-                        'label' => '5',
-                    ],
-                    4 => [
-                        'value' => '8',
-                        'label' => '8',
-                    ],
-                    5 => [
-                        'value' => '9',
-                        'label' => '9',
-                    ],
-                    6 => [
-                        'value' => '10',
-                        'label' => '10',
-                    ],
-                    7 => [
-                        'value' => '14',
-                        'label' => '14',
-                    ],
-                    8 => [
-                        'value' => '15',
-                        'label' => '15',
-                    ],
-                    9 => [
-                        'value' => '20',
-                        'label' => '20',
-                    ],
-                    10 => [
-                        'value' => '22',
-                        'label' => '22',
-                    ],
-                    11 => [
-                        'value' => '23',
-                        'label' => '23',
-                    ],
-                    12 => [
-                        'value' => '24',
-                        'label' => '24',
-                    ],
-                    13 => [
-                        'value' => '25',
-                        'label' => '25',
-                    ],
-                    14 => [
-                        'value' => '26',
-                        'label' => '26',
-                    ],
-                    15 => [
-                        'value' => '28',
-                        'label' => '28',
-                    ],
-                    16 => [
-                        'value' => '29',
-                        'label' => '29',
-                    ],
-                    17 => [
-                        'value' => '30',
-                        'label' => '30',
-                    ],
-                    18 => [
-                        'value' => '35',
-                        'label' => '35',
-                    ],
-                    19 => [
-                        'value' => '36',
-                        'label' => '36',
-                    ],
-                    20 => [
-                        'value' => '40',
-                        'label' => '40',
-                    ],
-                    21 => [
-                        'value' => '43',
-                        'label' => '43',
-                    ],
-                    22 => [
-                        'value' => '45',
-                        'label' => '45',
-                    ],
-                    23 => [
-                        'value' => '50',
-                        'label' => '50',
-                    ],
-                    24 => [
-                        'value' => '55',
-                        'label' => '55',
-                    ],
-                    25 => [
-                        'value' => '60',
-                        'label' => '60',
-                    ],
-                    26 => [
-                        'value' => '65',
-                        'label' => '65',
-                    ],
-                    27 => [
-                        'value' => '85',
-                        'label' => '85',
-                    ],
-                    28 => [
-                        'value' => '88',
-                        'label' => '88',
-                    ],
-                ],
+                'name' => 'speed_limit_min',
+                'label' => 'Speed Limit Min',
+                'type' => 'number',
+                'placeholder' => 'Min value for Speed Limit',
             ],
             69 => [
+                'name' => 'speed_limit_max',
+                'label' => 'Speed Limit Max',
+                'type' => 'number',
+                'placeholder' => 'Max value for Speed Limit',
+            ],
+            70 => [
                 'name' => 'traf_cntrl_devc_func_descr',
                 'label' => 'Traffic Control Device Functioning',
                 'type' => 'multiselect',
@@ -5972,33 +6715,37 @@ Cambridge, MA 02139
                         'label' => 'Not reported',
                     ],
                     2 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    3 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'Yes, device functioning',
                         'label' => 'Yes, device functioning',
                     ],
                 ],
             ],
-            70 => [
+            71 => [
                 'name' => 'work_zone_reld_descr',
                 'label' => 'Work Zone Related',
                 'type' => 'boolean',
             ],
-            71 => [
+            72 => [
                 'name' => 'aadt_min',
                 'label' => 'AADT-linked RD Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for AADT-linked RD',
             ],
-            72 => [
+            73 => [
                 'name' => 'aadt_max',
                 'label' => 'AADT-linked RD Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for AADT-linked RD',
             ],
-            73 => [
+            74 => [
                 'name' => 'aadt_year',
                 'label' => 'AADT Year-linked RD',
                 'type' => 'multiselect',
@@ -6009,72 +6756,76 @@ Cambridge, MA 02139
                         'label' => '2009',
                     ],
                     1 => [
+                        'value' => '2010',
+                        'label' => '2010',
+                    ],
+                    2 => [
                         'value' => '2011',
                         'label' => '2011',
                     ],
-                    2 => [
+                    3 => [
                         'value' => '2012',
                         'label' => '2012',
                     ],
-                    3 => [
+                    4 => [
                         'value' => '2013',
                         'label' => '2013',
                     ],
-                    4 => [
+                    5 => [
                         'value' => '2014',
                         'label' => '2014',
                     ],
-                    5 => [
+                    6 => [
                         'value' => '2015',
                         'label' => '2015',
                     ],
-                    6 => [
+                    7 => [
                         'value' => '2016',
                         'label' => '2016',
                     ],
-                    7 => [
+                    8 => [
                         'value' => '2017',
                         'label' => '2017',
                     ],
-                    8 => [
+                    9 => [
                         'value' => '2018',
                         'label' => '2018',
                     ],
-                    9 => [
+                    10 => [
                         'value' => '2019',
                         'label' => '2019',
                     ],
-                    10 => [
+                    11 => [
                         'value' => '2020',
                         'label' => '2020',
                     ],
                 ],
             ],
-            74 => [
+            75 => [
                 'name' => 'pk_pct_sut',
                 'label' => 'Peak % Single Unit Trucks-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Peak % Single Unit Trucks-linked RD',
             ],
-            75 => [
+            76 => [
                 'name' => 'av_pct_sut',
                 'label' => 'Average Daily % Single Unit Trucks-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Average Daily % Single Unit Trucks-linked RD',
             ],
-            76 => [
+            77 => [
                 'name' => 'pk_pct_ct',
                 'label' => 'Peak % Combo Trucks-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Peak % Combo Trucks-linked RD',
             ],
-            77 => [
+            78 => [
                 'name' => 'av_pct_ct',
                 'label' => 'Average Daily % Combo Trucks-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Average Daily % Combo Trucks-linked RD',
             ],
-            78 => [
+            79 => [
                 'name' => 'curb',
                 'label' => 'Curb-linked RD',
                 'type' => 'multiselect',
@@ -6110,23 +6861,27 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            79 => [
+            80 => [
                 'name' => 'truck_rte',
                 'label' => 'Truck Route-linked RD',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Truck Route-linked RD',
                 'options' => [
                     0 => [
+                        'value' => 'DCR Parkway - Recreational Vehicles Only',
+                        'label' => 'DCR Parkway - Recreational Vehicles Only',
+                    ],
+                    1 => [
                         'value' => 'Designated truck route ONLY under State Authority.  Fully available to both types of STAA vehicles described above',
                         'label' => 'Designated truck route ONLY under State Authority.  Fully available to both types of STAA vehicles described above',
                     ],
-                    1 => [
+                    2 => [
                         'value' => 'Not a parkway - not on a designated truck route',
                         'label' => 'Not a parkway - not on a designated truck route',
                     ],
                 ],
             ],
-            80 => [
+            81 => [
                 'name' => 'lt_sidewlk',
                 'label' => 'Left Sidewalk Width-linked RD',
                 'type' => 'multiselect',
@@ -6213,20 +6968,28 @@ Cambridge, MA 02139
                         'label' => '22.0',
                     ],
                     20 => [
+                        'value' => '23.0',
+                        'label' => '23.0',
+                    ],
+                    21 => [
                         'value' => '26.0',
                         'label' => '26.0',
                     ],
-                    21 => [
+                    22 => [
                         'value' => '27.0',
                         'label' => '27.0',
                     ],
-                    22 => [
+                    23 => [
+                        'value' => '28.0',
+                        'label' => '28.0',
+                    ],
+                    24 => [
                         'value' => '30.0',
                         'label' => '30.0',
                     ],
                 ],
             ],
-            81 => [
+            82 => [
                 'name' => 'rt_sidewlk',
                 'label' => 'Right Sidewalk Width-linked RD',
                 'type' => 'multiselect',
@@ -6317,12 +7080,20 @@ Cambridge, MA 02139
                         'label' => '22.0',
                     ],
                     21 => [
+                        'value' => '24.0',
+                        'label' => '24.0',
+                    ],
+                    22 => [
                         'value' => '26.0',
                         'label' => '26.0',
                     ],
+                    23 => [
+                        'value' => '50.0',
+                        'label' => '50.0',
+                    ],
                 ],
             ],
-            82 => [
+            83 => [
                 'name' => 'shldr_lt_w',
                 'label' => 'Left Shoulder Width-linked RD',
                 'type' => 'multiselect',
@@ -6377,20 +7148,36 @@ Cambridge, MA 02139
                         'label' => '13.0',
                     ],
                     12 => [
+                        'value' => '14.0',
+                        'label' => '14.0',
+                    ],
+                    13 => [
+                        'value' => '15.0',
+                        'label' => '15.0',
+                    ],
+                    14 => [
                         'value' => '17.0',
                         'label' => '17.0',
                     ],
-                    13 => [
+                    15 => [
                         'value' => '20.0',
                         'label' => '20.0',
                     ],
-                    14 => [
+                    16 => [
                         'value' => '22.0',
                         'label' => '22.0',
                     ],
+                    17 => [
+                        'value' => '24.0',
+                        'label' => '24.0',
+                    ],
+                    18 => [
+                        'value' => '28.0',
+                        'label' => '28.0',
+                    ],
                 ],
             ],
-            83 => [
+            84 => [
                 'name' => 'shldr_lt_t',
                 'label' => 'Left Shoulder Type-linked RD',
                 'type' => 'multiselect',
@@ -6418,13 +7205,13 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            84 => [
+            85 => [
                 'name' => 'surface_wd',
                 'label' => 'Surface Width-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Surface Width-linked RD',
             ],
-            85 => [
+            86 => [
                 'name' => 'surface_tp',
                 'label' => 'Surface Type-linked RD',
                 'type' => 'multiselect',
@@ -6468,7 +7255,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            86 => [
+            87 => [
                 'name' => 'shldr_rt_w',
                 'label' => 'Right Shoulder Width-linked RD',
                 'type' => 'multiselect',
@@ -6551,24 +7338,40 @@ Cambridge, MA 02139
                         'label' => '18.0',
                     ],
                     19 => [
+                        'value' => '19.0',
+                        'label' => '19.0',
+                    ],
+                    20 => [
                         'value' => '20.0',
                         'label' => '20.0',
                     ],
-                    20 => [
+                    21 => [
                         'value' => '22.0',
                         'label' => '22.0',
                     ],
-                    21 => [
+                    22 => [
                         'value' => '23.0',
                         'label' => '23.0',
                     ],
-                    22 => [
+                    23 => [
+                        'value' => '24.0',
+                        'label' => '24.0',
+                    ],
+                    24 => [
+                        'value' => '26.0',
+                        'label' => '26.0',
+                    ],
+                    25 => [
                         'value' => '30.0',
                         'label' => '30.0',
                     ],
+                    26 => [
+                        'value' => '36.0',
+                        'label' => '36.0',
+                    ],
                 ],
             ],
-            87 => [
+            88 => [
                 'name' => 'shldr_rt_t',
                 'label' => 'Right Shoulder Type-linked RD',
                 'type' => 'multiselect',
@@ -6600,7 +7403,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            88 => [
+            89 => [
                 'name' => 'num_lanes',
                 'label' => 'Number of Travel Lanes-linked RD',
                 'type' => 'multiselect',
@@ -6630,9 +7433,13 @@ Cambridge, MA 02139
                         'value' => '5',
                         'label' => '5',
                     ],
+                    6 => [
+                        'value' => '6',
+                        'label' => '6',
+                    ],
                 ],
             ],
-            89 => [
+            90 => [
                 'name' => 'opp_lanes',
                 'label' => 'Number of Opposing Travel Lanes-linked RD',
                 'type' => 'multiselect',
@@ -6660,13 +7467,13 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            90 => [
+            91 => [
                 'name' => 'med_width',
                 'label' => 'Median Width-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Median Width-linked RD',
             ],
-            91 => [
+            92 => [
                 'name' => 'med_type',
                 'label' => 'Median Type-linked RD',
                 'type' => 'multiselect',
@@ -6706,7 +7513,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            92 => [
+            93 => [
                 'name' => 'urban_type',
                 'label' => 'Urban Type-linked RD',
                 'type' => 'multiselect',
@@ -6734,7 +7541,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            93 => [
+            94 => [
                 'name' => 'f_class',
                 'label' => 'Functional Classification-linked RD',
                 'type' => 'multiselect',
@@ -6766,7 +7573,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            94 => [
+            95 => [
                 'name' => 'urban_area',
                 'label' => 'Urbanized Area-linked RD',
                 'type' => 'multiselect',
@@ -6785,82 +7592,86 @@ Cambridge, MA 02139
                         'label' => 'Boston (MA-NH-RI)',
                     ],
                     3 => [
+                        'value' => 'Great Barrington',
+                        'label' => 'Great Barrington',
+                    ],
+                    4 => [
                         'value' => 'Greenfield',
                         'label' => 'Greenfield',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Lee',
                         'label' => 'Lee',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Leominster-Fitchburg',
                         'label' => 'Leominster-Fitchburg',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Nantucket',
                         'label' => 'Nantucket',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Nashua (NH-MA)',
                         'label' => 'Nashua (NH-MA)',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'New Bedford',
                         'label' => 'New Bedford',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'North Adams (MA-VT)',
                         'label' => 'North Adams (MA-VT)',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'North Brookfield',
                         'label' => 'North Brookfield',
                     ],
-                    11 => [
+                    12 => [
                         'value' => 'Pittsfield',
                         'label' => 'Pittsfield',
                     ],
-                    12 => [
+                    13 => [
                         'value' => 'Providence (RI-MA)',
                         'label' => 'Providence (RI-MA)',
                     ],
-                    13 => [
+                    14 => [
                         'value' => 'Provincetown',
                         'label' => 'Provincetown',
                     ],
-                    14 => [
+                    15 => [
                         'value' => 'RURAL',
                         'label' => 'RURAL',
                     ],
-                    15 => [
+                    16 => [
                         'value' => 'South Deerfield',
                         'label' => 'South Deerfield',
                     ],
-                    16 => [
+                    17 => [
                         'value' => 'Springfield (MA-CT)',
                         'label' => 'Springfield (MA-CT)',
                     ],
-                    17 => [
+                    18 => [
                         'value' => 'Vineyard Haven',
                         'label' => 'Vineyard Haven',
                     ],
-                    18 => [
+                    19 => [
                         'value' => 'Ware',
                         'label' => 'Ware',
                     ],
-                    19 => [
+                    20 => [
                         'value' => 'Worcester (MA-CT)',
                         'label' => 'Worcester (MA-CT)',
                     ],
                 ],
             ],
-            95 => [
+            96 => [
                 'name' => 'fd_aid_rte',
                 'label' => 'Federal Aid Route-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Federal Aid Route-linked RD',
             ],
-            96 => [
+            97 => [
                 'name' => 'facility',
                 'label' => 'Facility Type-linked RD',
                 'type' => 'multiselect',
@@ -6879,36 +7690,40 @@ Cambridge, MA 02139
                         'label' => 'Mainline roadway',
                     ],
                     3 => [
+                        'value' => 'Private Way',
+                        'label' => 'Private Way',
+                    ],
+                    4 => [
                         'value' => 'Ramp - NB/EB',
                         'label' => 'Ramp - NB/EB',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Ramp - SB/WB',
                         'label' => 'Ramp - SB/WB',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Rotary',
                         'label' => 'Rotary',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Roundabout',
                         'label' => 'Roundabout',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Simple Ramp - Tunnel',
                         'label' => 'Simple Ramp - Tunnel',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Simple Ramp/ Channelized Turning Lane',
                         'label' => 'Simple Ramp/ Channelized Turning Lane',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Tunnel',
                         'label' => 'Tunnel',
                     ],
                 ],
             ],
-            97 => [
+            98 => [
                 'name' => 'operation',
                 'label' => 'Street Operation-linked RD',
                 'type' => 'multiselect',
@@ -6928,7 +7743,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            98 => [
+            99 => [
                 'name' => 'control',
                 'label' => 'Access Control-linked RD',
                 'type' => 'multiselect',
@@ -6948,7 +7763,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            99 => [
+            100 => [
                 'name' => 'peak_lane',
                 'label' => 'Number of Peak Hour Lanes-linked RD',
                 'type' => 'multiselect',
@@ -6976,7 +7791,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            100 => [
+            101 => [
                 'name' => 'speed_lim',
                 'label' => 'Speed Limit-linked RD',
                 'type' => 'multiselect',
@@ -6987,88 +7802,92 @@ Cambridge, MA 02139
                         'label' => '0',
                     ],
                     1 => [
+                        'value' => '5',
+                        'label' => '5',
+                    ],
+                    2 => [
                         'value' => '10',
                         'label' => '10',
                     ],
-                    2 => [
+                    3 => [
                         'value' => '15',
                         'label' => '15',
                     ],
-                    3 => [
+                    4 => [
                         'value' => '20',
                         'label' => '20',
                     ],
-                    4 => [
+                    5 => [
                         'value' => '24',
                         'label' => '24',
                     ],
-                    5 => [
+                    6 => [
                         'value' => '25',
                         'label' => '25',
                     ],
-                    6 => [
+                    7 => [
                         'value' => '30',
                         'label' => '30',
                     ],
-                    7 => [
+                    8 => [
                         'value' => '35',
                         'label' => '35',
                     ],
-                    8 => [
+                    9 => [
                         'value' => '40',
                         'label' => '40',
                     ],
-                    9 => [
+                    10 => [
                         'value' => '45',
                         'label' => '45',
                     ],
-                    10 => [
+                    11 => [
                         'value' => '50',
                         'label' => '50',
                     ],
-                    11 => [
+                    12 => [
                         'value' => '55',
                         'label' => '55',
                     ],
-                    12 => [
+                    13 => [
                         'value' => '60',
                         'label' => '60',
                     ],
-                    13 => [
+                    14 => [
                         'value' => '65',
                         'label' => '65',
                     ],
-                    14 => [
+                    15 => [
                         'value' => '99',
                         'label' => '99',
                     ],
                 ],
             ],
-            101 => [
+            102 => [
                 'name' => 'streetname',
                 'label' => 'Street Name-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Street Name-linked RD',
             ],
-            102 => [
+            103 => [
                 'name' => 'fromstreetname',
                 'label' => 'From Street Name-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter From Street Name-linked RD',
             ],
-            103 => [
+            104 => [
                 'name' => 'tostreetname',
                 'label' => 'To Street Name-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter To Street Name-linked RD',
             ],
-            104 => [
+            105 => [
                 'name' => 'city',
                 'label' => 'City-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter City-linked RD',
             ],
-            105 => [
+            106 => [
                 'name' => 'struct_cnd',
                 'label' => 'Structural Condition-linked RD',
                 'type' => 'multiselect',
@@ -7096,7 +7915,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            106 => [
+            107 => [
                 'name' => 'terrain',
                 'label' => 'Terrain-linked RD',
                 'type' => 'multiselect',
@@ -7116,13 +7935,13 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            107 => [
+            108 => [
                 'name' => 'urban_loc_type',
                 'label' => 'Urban Location Type-linked RD',
                 'type' => 'text',
                 'placeholder' => 'Enter Urban Location Type-linked RD',
             ],
-            108 => [
+            109 => [
                 'name' => 'aadt_deriv',
                 'label' => 'AADT Derivation-linked RD',
                 'type' => 'multiselect',
@@ -7172,21 +7991,25 @@ Cambridge, MA 02139
                         'value' => 'Pulled back from HPMS network estimation routine',
                         'label' => 'Pulled back from HPMS network estimation routine',
                     ],
+                    11 => [
+                        'value' => 'Unknown Source',
+                        'label' => 'Unknown Source',
+                    ],
                 ],
             ],
-            109 => [
+            110 => [
                 'name' => 'statn_num_min',
                 'label' => 'AADT Station Number-linked RD Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for AADT Station Number-linked RD',
             ],
-            110 => [
+            111 => [
                 'name' => 'statn_num_max',
                 'label' => 'AADT Station Number-linked RD Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for AADT Station Number-linked RD',
             ],
-            111 => [
+            112 => [
                 'name' => 'op_dir_sl',
                 'label' => 'Opposing Direction Speed Limit-linked RD',
                 'type' => 'multiselect',
@@ -7233,12 +8056,16 @@ Cambridge, MA 02139
                         'label' => '55',
                     ],
                     10 => [
+                        'value' => '65',
+                        'label' => '65',
+                    ],
+                    11 => [
                         'value' => '99',
                         'label' => '99',
                     ],
                 ],
             ],
-            112 => [
+            113 => [
                 'name' => 'shldr_ul_t',
                 'label' => 'Undivided Left Shoulder Type-linked RD',
                 'type' => 'multiselect',
@@ -7266,7 +8093,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            113 => [
+            114 => [
                 'name' => 'shldr_ul_w',
                 'label' => 'Undivided Left Shoulder Width-linked RD',
                 'type' => 'multiselect',
@@ -7314,7 +8141,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            114 => [
+            115 => [
                 'name' => 't_exc_type',
                 'label' => 'Truck Exclusion Type-linked RD',
                 'type' => 'multiselect',
@@ -7329,36 +8156,40 @@ Cambridge, MA 02139
                         'label' => 'All vehicles over 2.5 tons excluded',
                     ],
                     2 => [
+                        'value' => 'All vehicles over 20 tons excluded',
+                        'label' => 'All vehicles over 20 tons excluded',
+                    ],
+                    3 => [
                         'value' => 'All vehicles over 2000 pounds excluded',
                         'label' => 'All vehicles over 2000 pounds excluded',
                     ],
-                    3 => [
+                    4 => [
                         'value' => 'All vehicles over 28 feet in length excluded',
                         'label' => 'All vehicles over 28 feet in length excluded',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'All vehicles over 3 tons excluded',
                         'label' => 'All vehicles over 3 tons excluded',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'All vehicles over 5 tons excluded',
                         'label' => 'All vehicles over 5 tons excluded',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Cambridge Overnight Exclusions',
                         'label' => 'Cambridge Overnight Exclusions',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Commercial vehicles over 5 tons carry capacity excluded',
                         'label' => 'Commercial vehicles over 5 tons carry capacity excluded',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Hazardous Truck Route',
                         'label' => 'Hazardous Truck Route',
                     ],
                 ],
             ],
-            115 => [
+            116 => [
                 'name' => 't_exc_time',
                 'label' => 'Truck Exclusion Time-linked RD',
                 'type' => 'multiselect',
@@ -7373,72 +8204,80 @@ Cambridge, MA 02139
                         'label' => '11PM to 6AM, 7 Days',
                     ],
                     2 => [
+                        'value' => '11PM to 6AM, NB Only, 7 Days',
+                        'label' => '11PM to 6AM, NB Only, 7 Days',
+                    ],
+                    3 => [
                         'value' => '11PM to 7AM, 7 Days',
                         'label' => '11PM to 7AM, 7 Days',
                     ],
-                    3 => [
+                    4 => [
                         'value' => '24 Hours, 7 Days',
                         'label' => '24 Hours, 7 Days',
                     ],
-                    4 => [
+                    5 => [
                         'value' => '4PM to 6PM',
                         'label' => '4PM to 6PM',
                     ],
-                    5 => [
+                    6 => [
                         'value' => '5AM to 8PM, 7 Days',
                         'label' => '5AM to 8PM, 7 Days',
                     ],
-                    6 => [
+                    7 => [
                         'value' => '6AM to 10PM, 7 Days',
                         'label' => '6AM to 10PM, 7 Days',
                     ],
-                    7 => [
+                    8 => [
                         'value' => '6AM to 6PM, 7 Days',
                         'label' => '6AM to 6PM, 7 Days',
                     ],
-                    8 => [
+                    9 => [
                         'value' => '6AM to 7PM, 7 Days',
                         'label' => '6AM to 7PM, 7 Days',
                     ],
-                    9 => [
+                    10 => [
                         'value' => '6PM to 6AM, 7 Days',
                         'label' => '6PM to 6AM, 7 Days',
                     ],
-                    10 => [
+                    11 => [
+                        'value' => '7AM to 11PM, 7 Days',
+                        'label' => '7AM to 11PM, 7 Days',
+                    ],
+                    12 => [
                         'value' => '7AM to 6PM, 7 Days',
                         'label' => '7AM to 6PM, 7 Days',
                     ],
-                    11 => [
+                    13 => [
                         'value' => '7PM to 7AM, 7 Days',
                         'label' => '7PM to 7AM, 7 Days',
                     ],
-                    12 => [
+                    14 => [
                         'value' => '8AM to 930AM and 2PM to 330PM, School Days Only',
                         'label' => '8AM to 930AM and 2PM to 330PM, School Days Only',
                     ],
-                    13 => [
+                    15 => [
                         'value' => '8PM to 6AM, 7 Days',
                         'label' => '8PM to 6AM, 7 Days',
                     ],
-                    14 => [
+                    16 => [
                         'value' => '8PM to 7AM, 7 Days',
                         'label' => '8PM to 7AM, 7 Days',
                     ],
-                    15 => [
+                    17 => [
                         'value' => '9PM to 6AM, 7 Days',
                         'label' => '9PM to 6AM, 7 Days',
                     ],
-                    16 => [
+                    18 => [
                         'value' => '9PM to 7AM, 7 Days',
                         'label' => '9PM to 7AM, 7 Days',
                     ],
-                    17 => [
+                    19 => [
                         'value' => 'None',
                         'label' => 'None',
                     ],
                 ],
             ],
-            116 => [
+            117 => [
                 'name' => 'f_f_class',
                 'label' => 'Federal Functional Classification-linked RD',
                 'type' => 'multiselect',
@@ -7474,7 +8313,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            117 => [
+            118 => [
                 'name' => 'vehc_unit_numb',
                 'label' => 'Vehicle Unit Number',
                 'type' => 'multiselect',
@@ -7532,32 +8371,36 @@ Cambridge, MA 02139
                         'value' => '13',
                         'label' => '13',
                     ],
+                    13 => [
+                        'value' => '14',
+                        'label' => '14',
+                    ],
                 ],
             ],
-            118 => [
+            119 => [
                 'name' => 'alc_suspd_type_descr',
                 'label' => 'Alcohol Suspected',
                 'type' => 'boolean',
             ],
-            119 => [
+            120 => [
                 'name' => 'driver_age_min',
                 'label' => 'Driver Age Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Driver Age',
             ],
-            120 => [
+            121 => [
                 'name' => 'driver_age_max',
                 'label' => 'Driver Age Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Driver Age',
             ],
-            121 => [
+            122 => [
                 'name' => 'drvr_cntrb_circ_descr',
                 'label' => 'Driver Contributing Circ.',
                 'type' => 'text',
                 'placeholder' => 'Enter Driver Contributing Circ.',
             ],
-            122 => [
+            123 => [
                 'name' => 'driver_distracted_type_descr',
                 'label' => 'Driver Distracted',
                 'type' => 'multiselect',
@@ -7609,33 +8452,33 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            123 => [
+            124 => [
                 'name' => 'drvr_lcn_state',
                 'label' => 'Driver License State',
                 'type' => 'text',
                 'placeholder' => 'Enter Driver License State',
             ],
-            124 => [
+            125 => [
                 'name' => 'drug_suspd_type_descr',
                 'label' => 'Drugs Suspected',
                 'type' => 'boolean',
             ],
-            125 => [
+            126 => [
                 'name' => 'emergency_use_desc',
                 'label' => 'Emergency Use',
                 'type' => 'boolean',
             ],
-            126 => [
+            127 => [
                 'name' => 'fmsca_rptbl_vl',
                 'label' => 'FMCSA Reportable (Vehicle)',
                 'type' => 'boolean',
             ],
-            127 => [
+            128 => [
                 'name' => 'haz_mat_placard_descr',
                 'label' => 'Hazmat Placard',
                 'type' => 'boolean',
             ],
-            128 => [
+            129 => [
                 'name' => 'max_injr_svrty_vl',
                 'label' => 'Maximum Injury Severity in Vehicle',
                 'type' => 'multiselect',
@@ -7654,36 +8497,40 @@ Cambridge, MA 02139
                         'label' => 'No Apparent Injury (O)',
                     ],
                     3 => [
+                        'value' => 'No injury',
+                        'label' => 'No injury',
+                    ],
+                    4 => [
                         'value' => 'Not Applicable',
                         'label' => 'Not Applicable',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Possible Injury (C)',
                         'label' => 'Possible Injury (C)',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Suspected Minor Injury (B)',
                         'label' => 'Suspected Minor Injury (B)',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Suspected Serious Injury (A)',
                         'label' => 'Suspected Serious Injury (A)',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            129 => [
+            130 => [
                 'name' => 'most_hrmf_event',
                 'label' => 'Most Harmful Event (Vehicle)',
                 'type' => 'multiselect',
@@ -7851,143 +8698,211 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            130 => [
+            131 => [
                 'name' => 'total_occpt_in_vehc',
                 'label' => 'Total Occupants in Vehicle',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Total Occupants in Vehicle',
                 'options' => [
                     0 => [
+                        'value' => '0',
+                        'label' => '0',
+                    ],
+                    1 => [
                         'value' => '1',
                         'label' => '1',
                     ],
-                    1 => [
+                    2 => [
                         'value' => '2',
                         'label' => '2',
                     ],
-                    2 => [
+                    3 => [
                         'value' => '3',
                         'label' => '3',
                     ],
-                    3 => [
+                    4 => [
                         'value' => '4',
                         'label' => '4',
                     ],
-                    4 => [
+                    5 => [
                         'value' => '5',
                         'label' => '5',
                     ],
-                    5 => [
+                    6 => [
                         'value' => '6',
                         'label' => '6',
                     ],
-                    6 => [
+                    7 => [
                         'value' => '7',
                         'label' => '7',
                     ],
-                    7 => [
+                    8 => [
                         'value' => '8',
                         'label' => '8',
                     ],
-                    8 => [
+                    9 => [
                         'value' => '9',
                         'label' => '9',
                     ],
-                    9 => [
+                    10 => [
                         'value' => '10',
                         'label' => '10',
                     ],
-                    10 => [
+                    11 => [
                         'value' => '11',
                         'label' => '11',
                     ],
-                    11 => [
+                    12 => [
                         'value' => '12',
                         'label' => '12',
                     ],
-                    12 => [
+                    13 => [
                         'value' => '13',
                         'label' => '13',
                     ],
-                    13 => [
+                    14 => [
                         'value' => '14',
                         'label' => '14',
                     ],
-                    14 => [
+                    15 => [
                         'value' => '15',
                         'label' => '15',
                     ],
-                    15 => [
+                    16 => [
                         'value' => '16',
                         'label' => '16',
                     ],
-                    16 => [
+                    17 => [
                         'value' => '17',
                         'label' => '17',
                     ],
-                    17 => [
+                    18 => [
                         'value' => '18',
                         'label' => '18',
                     ],
-                    18 => [
+                    19 => [
+                        'value' => '19',
+                        'label' => '19',
+                    ],
+                    20 => [
+                        'value' => '20',
+                        'label' => '20',
+                    ],
+                    21 => [
                         'value' => '21',
                         'label' => '21',
                     ],
-                    19 => [
+                    22 => [
                         'value' => '22',
                         'label' => '22',
                     ],
-                    20 => [
+                    23 => [
+                        'value' => '23',
+                        'label' => '23',
+                    ],
+                    24 => [
                         'value' => '24',
                         'label' => '24',
                     ],
-                    21 => [
+                    25 => [
+                        'value' => '25',
+                        'label' => '25',
+                    ],
+                    26 => [
                         'value' => '26',
                         'label' => '26',
                     ],
-                    22 => [
+                    27 => [
+                        'value' => '27',
+                        'label' => '27',
+                    ],
+                    28 => [
                         'value' => '28',
                         'label' => '28',
                     ],
-                    23 => [
+                    29 => [
+                        'value' => '29',
+                        'label' => '29',
+                    ],
+                    30 => [
+                        'value' => '30',
+                        'label' => '30',
+                    ],
+                    31 => [
+                        'value' => '31',
+                        'label' => '31',
+                    ],
+                    32 => [
                         'value' => '32',
                         'label' => '32',
                     ],
-                    24 => [
+                    33 => [
                         'value' => '33',
                         'label' => '33',
                     ],
-                    25 => [
+                    34 => [
                         'value' => '34',
                         'label' => '34',
                     ],
-                    26 => [
+                    35 => [
                         'value' => '35',
                         'label' => '35',
                     ],
-                    27 => [
+                    36 => [
+                        'value' => '36',
+                        'label' => '36',
+                    ],
+                    37 => [
+                        'value' => '37',
+                        'label' => '37',
+                    ],
+                    38 => [
                         'value' => '38',
                         'label' => '38',
                     ],
-                    28 => [
+                    39 => [
+                        'value' => '39',
+                        'label' => '39',
+                    ],
+                    40 => [
                         'value' => '40',
                         'label' => '40',
                     ],
-                    29 => [
+                    41 => [
+                        'value' => '41',
+                        'label' => '41',
+                    ],
+                    42 => [
+                        'value' => '42',
+                        'label' => '42',
+                    ],
+                    43 => [
+                        'value' => '45',
+                        'label' => '45',
+                    ],
+                    44 => [
                         'value' => '46',
                         'label' => '46',
                     ],
-                    30 => [
+                    45 => [
+                        'value' => '47',
+                        'label' => '47',
+                    ],
+                    46 => [
                         'value' => '49',
                         'label' => '49',
                     ],
-                    31 => [
-                        'value' => '56',
-                        'label' => '56',
+                    47 => [
+                        'value' => '50',
+                        'label' => '50',
+                    ],
+                    48 => [
+                        'value' => '54',
+                        'label' => '54',
                     ],
                 ],
             ],
-            131 => [
+            132 => [
                 'name' => 'vehc_manr_act_descr',
                 'label' => 'Vehicle Action Prior to Crash',
                 'type' => 'multiselect',
@@ -8055,7 +8970,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            132 => [
+            133 => [
                 'name' => 'vehc_confg_descr',
                 'label' => 'Vehicle Configuration',
                 'type' => 'multiselect',
@@ -8155,71 +9070,79 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            133 => [
+            134 => [
                 'name' => 'vehc_most_dmgd_area',
                 'label' => 'Vehicle Most Damaged Area',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Most Damaged Area',
             ],
-            134 => [
+            135 => [
                 'name' => 'owner_addr_city_town',
                 'label' => 'Vehicle Owner City Town',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Owner City Town',
             ],
-            135 => [
+            136 => [
                 'name' => 'owner_addr_state',
                 'label' => 'Vehicle Owner State',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Owner State',
             ],
-            136 => [
+            137 => [
                 'name' => 'vehc_reg_state',
                 'label' => 'Vehicle Registration State',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Registration State',
             ],
-            137 => [
+            138 => [
                 'name' => 'vehc_reg_type_code',
                 'label' => 'Vehicle Registration Type',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Registration Type',
             ],
-            138 => [
+            139 => [
                 'name' => 'vehc_seq_events',
                 'label' => 'Vehicle Sequence of Events',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Sequence of Events',
             ],
-            139 => [
+            140 => [
                 'name' => 'vehc_towed_from_scene',
                 'label' => 'Vehicle Towed From Scene',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Vehicle Towed From Scene',
                 'options' => [
                     0 => [
+                        'value' => 'Invalid',
+                        'label' => 'Invalid',
+                    ],
+                    1 => [
                         'value' => 'No',
                         'label' => 'No',
                     ],
-                    1 => [
+                    2 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    2 => [
+                    3 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    4 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    3 => [
+                    5 => [
                         'value' => 'Yes, other reason not disabled',
                         'label' => 'Yes, other reason not disabled',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'Yes, vehicle or trailer disabled',
                         'label' => 'Yes, vehicle or trailer disabled',
                     ],
                 ],
             ],
-            140 => [
+            141 => [
                 'name' => 'trvl_dirc_descr',
                 'label' => 'Travel Direction',
                 'type' => 'multiselect',
@@ -8255,55 +9178,55 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            141 => [
+            142 => [
                 'name' => 'vehicle_make_descr',
                 'label' => 'Vehicle Make',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Make',
             ],
-            142 => [
+            143 => [
                 'name' => 'vehicle_model_descr',
                 'label' => 'Vehicle Model',
                 'type' => 'text',
                 'placeholder' => 'Enter Vehicle Model',
             ],
-            143 => [
+            144 => [
                 'name' => 'vehicle_vin',
                 'label' => 'VIN',
                 'type' => 'text',
                 'placeholder' => 'Enter VIN',
             ],
-            144 => [
+            145 => [
                 'name' => 'driver_violation_cl',
                 'label' => 'Driver Violation (All Vehicles)',
                 'type' => 'text',
                 'placeholder' => 'Enter Driver Violation (All Vehicles)',
             ],
-            145 => [
+            146 => [
                 'name' => 'pers_numb_min',
                 'label' => 'Person Number Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Person Number',
             ],
-            146 => [
+            147 => [
                 'name' => 'pers_numb_max',
                 'label' => 'Person Number Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Person Number',
             ],
-            147 => [
+            148 => [
                 'name' => 'age_min',
                 'label' => 'Age Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Age',
             ],
-            148 => [
+            149 => [
                 'name' => 'age_max',
                 'label' => 'Age Max',
                 'type' => 'number',
                 'placeholder' => 'Max value for Age',
             ],
-            149 => [
+            150 => [
                 'name' => 'ejctn_descr',
                 'label' => 'Ejection Description',
                 'type' => 'multiselect',
@@ -8326,16 +9249,20 @@ Cambridge, MA 02139
                         'label' => 'Partially ejected',
                     ],
                     4 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    5 => [
                         'value' => 'Totally ejected',
                         'label' => 'Totally ejected',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            150 => [
+            151 => [
                 'name' => 'injy_stat_descr',
                 'label' => 'Injury Type',
                 'type' => 'multiselect',
@@ -8354,54 +9281,62 @@ Cambridge, MA 02139
                         'label' => 'No Apparent Injury (O)',
                     ],
                     3 => [
+                        'value' => 'No injury',
+                        'label' => 'No injury',
+                    ],
+                    4 => [
+                        'value' => 'Non-fatal injury - Possible',
+                        'label' => 'Non-fatal injury - Possible',
+                    ],
+                    5 => [
                         'value' => 'Not Applicable',
                         'label' => 'Not Applicable',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    5 => [
+                    7 => [
                         'value' => 'Possible Injury (C)',
                         'label' => 'Possible Injury (C)',
                     ],
-                    6 => [
+                    8 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
                     ],
-                    7 => [
+                    9 => [
                         'value' => 'Suspected Minor Injury (B)',
                         'label' => 'Suspected Minor Injury (B)',
                     ],
-                    8 => [
+                    10 => [
                         'value' => 'Suspected Serious Injury (A)',
                         'label' => 'Suspected Serious Injury (A)',
                     ],
-                    9 => [
+                    11 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            151 => [
+            152 => [
                 'name' => 'med_facly',
                 'label' => 'Medical Facility',
                 'type' => 'text',
                 'placeholder' => 'Enter Medical Facility',
             ],
-            152 => [
+            153 => [
                 'name' => 'pers_addr_city',
                 'label' => 'Person Address City',
                 'type' => 'text',
                 'placeholder' => 'Enter Person Address City',
             ],
-            153 => [
+            154 => [
                 'name' => 'state_prvn_code',
                 'label' => 'Person Address State',
                 'type' => 'text',
                 'placeholder' => 'Enter Person Address State',
             ],
-            154 => [
+            155 => [
                 'name' => 'pers_type',
                 'label' => 'Person Type',
                 'type' => 'multiselect',
@@ -8421,7 +9356,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            155 => [
+            156 => [
                 'name' => 'prtc_sys_use_descr',
                 'label' => 'Protective System Used',
                 'type' => 'multiselect',
@@ -8465,7 +9400,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            156 => [
+            157 => [
                 'name' => 'sfty_equp_desc_1',
                 'label' => 'Safety Equipment 1',
                 'type' => 'multiselect',
@@ -8492,26 +9427,30 @@ Cambridge, MA 02139
                         'label' => 'Other',
                     ],
                     5 => [
+                        'value' => 'Protective pads used (elbows, knees, shins, etc.)',
+                        'label' => 'Protective pads used (elbows, knees, shins, etc.)',
+                    ],
+                    6 => [
                         'value' => 'Reflective clothing',
                         'label' => 'Reflective clothing',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Reported but invalid',
                         'label' => 'Reported but invalid',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            157 => [
+            158 => [
                 'name' => 'sfty_equp_desc_2',
                 'label' => 'Safety Equipment 2',
                 'type' => 'text',
                 'placeholder' => 'Enter Safety Equipment 2',
             ],
-            158 => [
+            159 => [
                 'name' => 'sex_descr',
                 'label' => 'Sex',
                 'type' => 'multiselect',
@@ -8530,16 +9469,24 @@ Cambridge, MA 02139
                         'label' => 'N/A',
                     ],
                     3 => [
+                        'value' => 'Not reported',
+                        'label' => 'Not reported',
+                    ],
+                    4 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    5 => [
                         'value' => 'U - Unknown',
                         'label' => 'U - Unknown',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'X - Non-Binary',
                         'label' => 'X - Non-Binary',
                     ],
                 ],
             ],
-            159 => [
+            160 => [
                 'name' => 'trnsd_by_descr',
                 'label' => 'Transported By',
                 'type' => 'multiselect',
@@ -8574,212 +9521,34 @@ Cambridge, MA 02139
                         'label' => 'Refused Transport',
                     ],
                     7 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            160 => [
+            161 => [
                 'name' => 'non_mtrst_type_cl',
                 'label' => 'Vulnerable User Type (All Persons)',
                 'type' => 'text',
                 'placeholder' => 'Enter Vulnerable User Type (All Persons)',
             ],
-            161 => [
+            162 => [
                 'name' => 'non_mtrst_actn_cl',
                 'label' => 'Vulnerable User Action (All Persons)',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Action (All Persons)',
-                'options' => [
-                    0 => [
-                        'value' => 'VU2: Approaching or leaving vehicle',
-                        'label' => 'VU2: Approaching or leaving vehicle',
-                    ],
-                    1 => [
-                        'value' => 'VU2: Approaching or leaving vehicle / VU3: Standing / VU4: Approaching or leaving vehicle',
-                        'label' => 'VU2: Approaching or leaving vehicle / VU3: Standing / VU4: Approaching or leaving vehicle',
-                    ],
-                    2 => [
-                        'value' => 'VU2: Entering or crossing location',
-                        'label' => 'VU2: Entering or crossing location',
-                    ],
-                    3 => [
-                        'value' => 'VU2: Entering or crossing location / VU3: Entering or crossing location',
-                        'label' => 'VU2: Entering or crossing location / VU3: Entering or crossing location',
-                    ],
-                    4 => [
-                        'value' => 'VU2: Entering or crossing location / VU3: Entering or crossing location / VU4: Entering or crossing location',
-                        'label' => 'VU2: Entering or crossing location / VU3: Entering or crossing location / VU4: Entering or crossing location',
-                    ],
-                    5 => [
-                        'value' => 'VU2: None',
-                        'label' => 'VU2: None',
-                    ],
-                    6 => [
-                        'value' => 'VU2: Other',
-                        'label' => 'VU2: Other',
-                    ],
-                    7 => [
-                        'value' => 'VU2: Other / VU3: Other',
-                        'label' => 'VU2: Other / VU3: Other',
-                    ],
-                    8 => [
-                        'value' => 'VU2: Pushing vehicle',
-                        'label' => 'VU2: Pushing vehicle',
-                    ],
-                    9 => [
-                        'value' => 'VU2: Standing',
-                        'label' => 'VU2: Standing',
-                    ],
-                    10 => [
-                        'value' => 'VU2: Standing / VU3: Other / VU4: Other',
-                        'label' => 'VU2: Standing / VU3: Other / VU4: Other',
-                    ],
-                    11 => [
-                        'value' => 'VU2: Standing / VU3: Standing',
-                        'label' => 'VU2: Standing / VU3: Standing',
-                    ],
-                    12 => [
-                        'value' => 'VU2: Walking, running or cycling',
-                        'label' => 'VU2: Walking, running or cycling',
-                    ],
-                    13 => [
-                        'value' => 'VU2: Walking, running or cycling / VU3: Other',
-                        'label' => 'VU2: Walking, running or cycling / VU3: Other',
-                    ],
-                    14 => [
-                        'value' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling',
-                        'label' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling',
-                    ],
-                    15 => [
-                        'value' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Walking, running or cycling / VU5: Walking, running or cycling',
-                        'label' => 'VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Walking, running or cycling / VU5: Walking, running or cycling',
-                    ],
-                    16 => [
-                        'value' => 'VU2: Working',
-                        'label' => 'VU2: Working',
-                    ],
-                    17 => [
-                        'value' => 'VU2: Working / VU4: Working / VU5: Working',
-                        'label' => 'VU2: Working / VU4: Working / VU5: Working',
-                    ],
-                    18 => [
-                        'value' => 'VU2: Working on vehicle',
-                        'label' => 'VU2: Working on vehicle',
-                    ],
-                    19 => [
-                        'value' => 'VU3: Approaching or leaving vehicle',
-                        'label' => 'VU3: Approaching or leaving vehicle',
-                    ],
-                    20 => [
-                        'value' => 'VU3: Entering or crossing location',
-                        'label' => 'VU3: Entering or crossing location',
-                    ],
-                    21 => [
-                        'value' => 'VU3: Entering or crossing location / VU4: Entering or crossing location',
-                        'label' => 'VU3: Entering or crossing location / VU4: Entering or crossing location',
-                    ],
-                    22 => [
-                        'value' => 'VU3: None',
-                        'label' => 'VU3: None',
-                    ],
-                    23 => [
-                        'value' => 'VU3: Other',
-                        'label' => 'VU3: Other',
-                    ],
-                    24 => [
-                        'value' => 'VU3: Other / VU4: Other / VU5: Other',
-                        'label' => 'VU3: Other / VU4: Other / VU5: Other',
-                    ],
-                    25 => [
-                        'value' => 'VU3: Standing',
-                        'label' => 'VU3: Standing',
-                    ],
-                    26 => [
-                        'value' => 'VU3: Walking, running or cycling',
-                        'label' => 'VU3: Walking, running or cycling',
-                    ],
-                    27 => [
-                        'value' => 'VU3: Walking, running or cycling / VU4: Walking, running or cycling',
-                        'label' => 'VU3: Walking, running or cycling / VU4: Walking, running or cycling',
-                    ],
-                    28 => [
-                        'value' => 'VU3: Working',
-                        'label' => 'VU3: Working',
-                    ],
-                    29 => [
-                        'value' => 'VU4: Approaching or leaving vehicle',
-                        'label' => 'VU4: Approaching or leaving vehicle',
-                    ],
-                    30 => [
-                        'value' => 'VU4: Entering or crossing location',
-                        'label' => 'VU4: Entering or crossing location',
-                    ],
-                    31 => [
-                        'value' => 'VU4: None',
-                        'label' => 'VU4: None',
-                    ],
-                    32 => [
-                        'value' => 'VU4: Other',
-                        'label' => 'VU4: Other',
-                    ],
-                    33 => [
-                        'value' => 'VU4: Standing',
-                        'label' => 'VU4: Standing',
-                    ],
-                    34 => [
-                        'value' => 'VU4: Walking, running or cycling',
-                        'label' => 'VU4: Walking, running or cycling',
-                    ],
-                    35 => [
-                        'value' => 'VU4: Working',
-                        'label' => 'VU4: Working',
-                    ],
-                    36 => [
-                        'value' => 'VU4: Working / VU5: Working / VU6: Working',
-                        'label' => 'VU4: Working / VU5: Working / VU6: Working',
-                    ],
-                    37 => [
-                        'value' => 'VU5: Entering or crossing location',
-                        'label' => 'VU5: Entering or crossing location',
-                    ],
-                    38 => [
-                        'value' => 'VU5: Entering or crossing location / VU6: Entering or crossing location',
-                        'label' => 'VU5: Entering or crossing location / VU6: Entering or crossing location',
-                    ],
-                    39 => [
-                        'value' => 'VU5: Standing',
-                        'label' => 'VU5: Standing',
-                    ],
-                    40 => [
-                        'value' => 'VU5: Walking, running or cycling',
-                        'label' => 'VU5: Walking, running or cycling',
-                    ],
-                    41 => [
-                        'value' => 'VU5: Walking, running or cycling / VU6: Walking, running or cycling',
-                        'label' => 'VU5: Walking, running or cycling / VU6: Walking, running or cycling',
-                    ],
-                    42 => [
-                        'value' => 'VU6: Approaching or leaving vehicle',
-                        'label' => 'VU6: Approaching or leaving vehicle',
-                    ],
-                    43 => [
-                        'value' => 'VU6: Standing',
-                        'label' => 'VU6: Standing',
-                    ],
-                    44 => [
-                        'value' => 'VU6: Working on vehicle',
-                        'label' => 'VU6: Working on vehicle',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Vulnerable User Action (All Persons)',
             ],
-            162 => [
+            163 => [
                 'name' => 'non_mtrst_loc_cl',
                 'label' => 'Vulnerable User Location (All Persons)',
                 'type' => 'text',
                 'placeholder' => 'Enter Vulnerable User Location (All Persons)',
             ],
-            163 => [
+            164 => [
                 'name' => 'non_mtrst_act_descr',
                 'label' => 'Vulnerable User Action',
                 'type' => 'multiselect',
@@ -8831,7 +9600,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            164 => [
+            165 => [
                 'name' => 'non_mtrst_cond_descr',
                 'label' => 'Vulnerable User Condition',
                 'type' => 'multiselect',
@@ -8842,16 +9611,40 @@ Cambridge, MA 02139
                         'label' => 'Apparently normal',
                     ],
                     1 => [
+                        'value' => 'Emotional (e.g., depression, angry, disturbed)',
+                        'label' => 'Emotional (e.g., depression, angry, disturbed)',
+                    ],
+                    2 => [
+                        'value' => 'Fell asleep, fainted, fatigue, etc.',
+                        'label' => 'Fell asleep, fainted, fatigue, etc.',
+                    ],
+                    3 => [
+                        'value' => 'Illness',
+                        'label' => 'Illness',
+                    ],
+                    4 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    2 => [
+                    5 => [
+                        'value' => 'Other',
+                        'label' => 'Other',
+                    ],
+                    6 => [
+                        'value' => 'Physical impairment',
+                        'label' => 'Physical impairment',
+                    ],
+                    7 => [
+                        'value' => 'Under the influence of medications/drugs/alcohol',
+                        'label' => 'Under the influence of medications/drugs/alcohol',
+                    ],
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            165 => [
+            166 => [
                 'name' => 'non_mtrst_loc_descr',
                 'label' => 'Vulnerable User Location',
                 'type' => 'multiselect',
@@ -8874,56 +9667,64 @@ Cambridge, MA 02139
                         'label' => 'Marked crosswalk at intersection (includes use of paint raised or other roadway material)',
                     ],
                     4 => [
+                        'value' => 'Median (but not on shoulder)',
+                        'label' => 'Median (but not on shoulder)',
+                    ],
+                    5 => [
                         'value' => 'Non-intersection crosswalk',
                         'label' => 'Non-intersection crosswalk',
                     ],
-                    5 => [
+                    6 => [
                         'value' => 'Not in roadway',
                         'label' => 'Not in roadway',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Not reported',
                         'label' => 'Not reported',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'On-Street Bike Lanes',
                         'label' => 'On-Street Bike Lanes',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'On-Street Buffered Bike Lanes',
                         'label' => 'On-Street Buffered Bike Lanes',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Other',
                         'label' => 'Other',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'Raised Crosswalk',
                         'label' => 'Raised Crosswalk',
                     ],
-                    11 => [
+                    12 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    13 => [
                         'value' => 'Separated Bike Lanes',
                         'label' => 'Separated Bike Lanes',
                     ],
-                    12 => [
+                    14 => [
                         'value' => 'Shared-use path or trails Crossing',
                         'label' => 'Shared-use path or trails Crossing',
                     ],
-                    13 => [
+                    15 => [
                         'value' => 'Shoulder',
                         'label' => 'Shoulder',
                     ],
-                    14 => [
+                    16 => [
                         'value' => 'Sidewalk',
                         'label' => 'Sidewalk',
                     ],
-                    15 => [
+                    17 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            166 => [
+            167 => [
                 'name' => 'non_mtrst_type_descr',
                 'label' => 'Vulnerable User Type',
                 'type' => 'multiselect',
@@ -8978,36 +9779,44 @@ Cambridge, MA 02139
                         'label' => 'Other',
                     ],
                     12 => [
+                        'value' => 'Other Micromobility Device User',
+                        'label' => 'Other Micromobility Device User',
+                    ],
+                    13 => [
                         'value' => 'Pedestrian',
                         'label' => 'Pedestrian',
                     ],
-                    13 => [
+                    14 => [
                         'value' => 'Roadway Worker - Outside of vehicle',
                         'label' => 'Roadway Worker - Outside of vehicle',
                     ],
-                    14 => [
+                    15 => [
+                        'value' => 'Roller Skater',
+                        'label' => 'Roller Skater',
+                    ],
+                    16 => [
                         'value' => 'Skateboarder',
                         'label' => 'Skateboarder',
                     ],
-                    15 => [
+                    17 => [
                         'value' => 'Train/Trolley passenger',
                         'label' => 'Train/Trolley passenger',
                     ],
-                    16 => [
+                    18 => [
                         'value' => 'Tricyclist',
                         'label' => 'Tricyclist',
                     ],
-                    17 => [
+                    19 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    18 => [
+                    20 => [
                         'value' => 'Utility Worker – Outside of vehicle',
                         'label' => 'Utility Worker – Outside of vehicle',
                     ],
                 ],
             ],
-            167 => [
+            168 => [
                 'name' => 'non_mtrst_origin_dest_cl',
                 'label' => 'Vulnerable Users Origin Destination (All Persons)',
                 'type' => 'multiselect',
@@ -9018,130 +9827,198 @@ Cambridge, MA 02139
                         'label' => 'VU10: Other',
                     ],
                     1 => [
+                        'value' => 'VU11: Other',
+                        'label' => 'VU11: Other',
+                    ],
+                    2 => [
+                        'value' => 'VU17: Other',
+                        'label' => 'VU17: Other',
+                    ],
+                    3 => [
                         'value' => 'VU2: Going to or from a Delivery Vehicle',
                         'label' => 'VU2: Going to or from a Delivery Vehicle',
                     ],
-                    2 => [
+                    4 => [
                         'value' => 'VU2: Going to or from a Delivery Vehicle / VU3: Going to or from a Delivery Vehicle / VU4: Going to or from a Delivery Vehicle',
                         'label' => 'VU2: Going to or from a Delivery Vehicle / VU3: Going to or from a Delivery Vehicle / VU4: Going to or from a Delivery Vehicle',
                     ],
-                    3 => [
+                    5 => [
                         'value' => 'VU2: Going to or from a Mailbox',
                         'label' => 'VU2: Going to or from a Mailbox',
                     ],
-                    4 => [
+                    6 => [
+                        'value' => 'VU2: Going to or from a Mailbox / VU3: Going to or from a Mailbox',
+                        'label' => 'VU2: Going to or from a Mailbox / VU3: Going to or from a Mailbox',
+                    ],
+                    7 => [
                         'value' => 'VU2: Going to or from a School Bus or a School Bus Stop',
                         'label' => 'VU2: Going to or from a School Bus or a School Bus Stop',
                     ],
-                    5 => [
+                    8 => [
                         'value' => 'VU2: Going to or from a School Bus or a School Bus Stop / VU3: Going to or from a School Bus or a School Bus Stop',
                         'label' => 'VU2: Going to or from a School Bus or a School Bus Stop / VU3: Going to or from a School Bus or a School Bus Stop',
                     ],
-                    6 => [
+                    9 => [
                         'value' => 'VU2: Going to or from an Ice Cream or Food Truck',
                         'label' => 'VU2: Going to or from an Ice Cream or Food Truck',
                     ],
-                    7 => [
+                    10 => [
                         'value' => 'VU2: Going to or from School (K-12)',
                         'label' => 'VU2: Going to or from School (K-12)',
                     ],
-                    8 => [
+                    11 => [
                         'value' => 'VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12)',
                         'label' => 'VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12)',
                     ],
-                    9 => [
+                    12 => [
                         'value' => 'VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12) / VU4: Going to or from School (K-12)',
                         'label' => 'VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12) / VU4: Going to or from School (K-12)',
                     ],
-                    10 => [
+                    13 => [
                         'value' => 'VU2: Going to or from Transit',
                         'label' => 'VU2: Going to or from Transit',
                     ],
-                    11 => [
+                    14 => [
+                        'value' => 'VU2: Going to or from Transit / VU3: Going to or from Transit',
+                        'label' => 'VU2: Going to or from Transit / VU3: Going to or from Transit',
+                    ],
+                    15 => [
                         'value' => 'VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit',
                         'label' => 'VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit',
                     ],
-                    12 => [
+                    16 => [
                         'value' => 'VU2: Other',
                         'label' => 'VU2: Other',
                     ],
-                    13 => [
+                    17 => [
                         'value' => 'VU2: Other / VU3: Other',
                         'label' => 'VU2: Other / VU3: Other',
                     ],
-                    14 => [
+                    18 => [
                         'value' => 'VU2: Other / VU3: Other / VU4: Other / VU5: Other',
                         'label' => 'VU2: Other / VU3: Other / VU4: Other / VU5: Other',
                     ],
-                    15 => [
+                    19 => [
+                        'value' => 'VU2: Other / VU4: Other',
+                        'label' => 'VU2: Other / VU4: Other',
+                    ],
+                    20 => [
                         'value' => 'VU2: Other / VU4: Other / VU5: Other',
                         'label' => 'VU2: Other / VU4: Other / VU5: Other',
                     ],
-                    16 => [
+                    21 => [
                         'value' => 'VU3: Going to or from a Delivery Vehicle',
                         'label' => 'VU3: Going to or from a Delivery Vehicle',
                     ],
-                    17 => [
+                    22 => [
+                        'value' => 'VU3: Going to or from a Mailbox',
+                        'label' => 'VU3: Going to or from a Mailbox',
+                    ],
+                    23 => [
                         'value' => 'VU3: Going to or from a School Bus or a School Bus Stop',
                         'label' => 'VU3: Going to or from a School Bus or a School Bus Stop',
                     ],
-                    18 => [
+                    24 => [
+                        'value' => 'VU3: Going to or from an Ice Cream or Food Truck',
+                        'label' => 'VU3: Going to or from an Ice Cream or Food Truck',
+                    ],
+                    25 => [
                         'value' => 'VU3: Going to or from School (K-12)',
                         'label' => 'VU3: Going to or from School (K-12)',
                     ],
-                    19 => [
+                    26 => [
                         'value' => 'VU3: Going to or from Transit',
                         'label' => 'VU3: Going to or from Transit',
                     ],
-                    20 => [
+                    27 => [
                         'value' => 'VU3: Other',
                         'label' => 'VU3: Other',
                     ],
-                    21 => [
+                    28 => [
                         'value' => 'VU3: Other / VU4: Other',
                         'label' => 'VU3: Other / VU4: Other',
                     ],
-                    22 => [
+                    29 => [
+                        'value' => 'VU3: Other / VU5: Other',
+                        'label' => 'VU3: Other / VU5: Other',
+                    ],
+                    30 => [
+                        'value' => 'VU4: Going to or from a Delivery Vehicle',
+                        'label' => 'VU4: Going to or from a Delivery Vehicle',
+                    ],
+                    31 => [
                         'value' => 'VU4: Going to or from School (K-12)',
                         'label' => 'VU4: Going to or from School (K-12)',
                     ],
-                    23 => [
+                    32 => [
+                        'value' => 'VU4: Going to or from School (K-12) / VU5: Going to or from School (K-12)',
+                        'label' => 'VU4: Going to or from School (K-12) / VU5: Going to or from School (K-12)',
+                    ],
+                    33 => [
                         'value' => 'VU4: Going to or from Transit',
                         'label' => 'VU4: Going to or from Transit',
                     ],
-                    24 => [
+                    34 => [
                         'value' => 'VU4: Other',
                         'label' => 'VU4: Other',
                     ],
-                    25 => [
+                    35 => [
+                        'value' => 'VU4: Other / VU5: Other',
+                        'label' => 'VU4: Other / VU5: Other',
+                    ],
+                    36 => [
                         'value' => 'VU4: Other / VU5: Other / VU6: Other',
                         'label' => 'VU4: Other / VU5: Other / VU6: Other',
                     ],
-                    26 => [
+                    37 => [
+                        'value' => 'VU5: Going to or from School (K-12)',
+                        'label' => 'VU5: Going to or from School (K-12)',
+                    ],
+                    38 => [
                         'value' => 'VU5: Going to or from Transit',
                         'label' => 'VU5: Going to or from Transit',
                     ],
-                    27 => [
+                    39 => [
                         'value' => 'VU5: Other',
                         'label' => 'VU5: Other',
                     ],
-                    28 => [
+                    40 => [
                         'value' => 'VU5: Other / VU6: Other',
                         'label' => 'VU5: Other / VU6: Other',
                     ],
-                    29 => [
+                    41 => [
+                        'value' => 'VU6: Going to or from School (K-12)',
+                        'label' => 'VU6: Going to or from School (K-12)',
+                    ],
+                    42 => [
+                        'value' => 'VU6: Going to or from Transit',
+                        'label' => 'VU6: Going to or from Transit',
+                    ],
+                    43 => [
                         'value' => 'VU6: Other',
                         'label' => 'VU6: Other',
                     ],
+                    44 => [
+                        'value' => 'VU7: Other',
+                        'label' => 'VU7: Other',
+                    ],
+                    45 => [
+                        'value' => 'VU8: Other',
+                        'label' => 'VU8: Other',
+                    ],
+                    46 => [
+                        'value' => 'VU8: Other / VU9: Other',
+                        'label' => 'VU8: Other / VU9: Other',
+                    ],
                 ],
             ],
-            168 => [
+            169 => [
                 'name' => 'non_mtrst_cntrb_circ_cl',
                 'label' => 'Vulnerable Users Contributing Circumstance (All Persons)',
                 'type' => 'text',
                 'placeholder' => 'Enter Vulnerable Users Contributing Circumstance (All Persons)',
             ],
-            169 => [
+            170 => [
                 'name' => 'non_mtrst_distracted_by_cl',
                 'label' => 'Vulnerable Users Distracted By (All Persons)',
                 'type' => 'multiselect',
@@ -9152,92 +10029,180 @@ Cambridge, MA 02139
                         'label' => 'VU10:(Not Distracted)',
                     ],
                     1 => [
+                        'value' => 'VU11:(Not Distracted)',
+                        'label' => 'VU11:(Not Distracted)',
+                    ],
+                    2 => [
+                        'value' => 'VU17:(Not Distracted)',
+                        'label' => 'VU17:(Not Distracted)',
+                    ],
+                    3 => [
                         'value' => 'VU2:(Manually operating an electronic device (texting, typing, dialing))',
                         'label' => 'VU2:(Manually operating an electronic device (texting, typing, dialing))',
                     ],
-                    2 => [
+                    4 => [
+                        'value' => 'VU2:(Manually operating an electronic device (texting, typing, dialing)),(Talking on hand-held electronic device)',
+                        'label' => 'VU2:(Manually operating an electronic device (texting, typing, dialing)),(Talking on hand-held electronic device)',
+                    ],
+                    5 => [
+                        'value' => 'VU2:(Manually operating an electronic device (texting, typing, dialing)),(Utilizing listening device)',
+                        'label' => 'VU2:(Manually operating an electronic device (texting, typing, dialing)),(Utilizing listening device)',
+                    ],
+                    6 => [
                         'value' => 'VU2:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted)',
                     ],
-                    3 => [
+                    7 => [
                         'value' => 'VU2:(Not Distracted) VU3:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted) VU3:(Not Distracted)',
                     ],
-                    4 => [
+                    8 => [
                         'value' => 'VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted)',
                     ],
-                    5 => [
+                    9 => [
+                        'value' => 'VU2:(Not Distracted) VU3:(Passenger)',
+                        'label' => 'VU2:(Not Distracted) VU3:(Passenger)',
+                    ],
+                    10 => [
+                        'value' => 'VU2:(Not Distracted) VU4:(Not Distracted)',
+                        'label' => 'VU2:(Not Distracted) VU4:(Not Distracted)',
+                    ],
+                    11 => [
                         'value' => 'VU2:(Not Distracted) VU4:(Not Distracted) VU5:(Not Distracted)',
                         'label' => 'VU2:(Not Distracted) VU4:(Not Distracted) VU5:(Not Distracted)',
                     ],
-                    6 => [
+                    12 => [
                         'value' => 'VU2:(Not Distracted),(Manually operating an electronic device (texting, typing, dialing))',
                         'label' => 'VU2:(Not Distracted),(Manually operating an electronic device (texting, typing, dialing))',
                     ],
-                    7 => [
+                    13 => [
+                        'value' => 'VU2:(Not Distracted),(Other activity (searching, eating, personal hygiene, etc.))',
+                        'label' => 'VU2:(Not Distracted),(Other activity (searching, eating, personal hygiene, etc.))',
+                    ],
+                    14 => [
                         'value' => 'VU2:(Other activity (searching, eating, personal hygiene, etc.))',
                         'label' => 'VU2:(Other activity (searching, eating, personal hygiene, etc.))',
                     ],
-                    8 => [
+                    15 => [
+                        'value' => 'VU2:(Other activity (searching, eating, personal hygiene, etc.)),(Not Distracted)',
+                        'label' => 'VU2:(Other activity (searching, eating, personal hygiene, etc.)),(Not Distracted)',
+                    ],
+                    16 => [
+                        'value' => 'VU2:(Reported but invalid)',
+                        'label' => 'VU2:(Reported but invalid)',
+                    ],
+                    17 => [
                         'value' => 'VU2:(Talking on hand-held electronic device)',
                         'label' => 'VU2:(Talking on hand-held electronic device)',
                     ],
-                    9 => [
+                    18 => [
                         'value' => 'VU2:(Talking on hands-free electronic device)',
                         'label' => 'VU2:(Talking on hands-free electronic device)',
                     ],
-                    10 => [
+                    19 => [
                         'value' => 'VU2:(Utilizing listening device)',
                         'label' => 'VU2:(Utilizing listening device)',
                     ],
-                    11 => [
+                    20 => [
+                        'value' => 'VU2:(Utilizing listening device),(Not Distracted)',
+                        'label' => 'VU2:(Utilizing listening device),(Not Distracted)',
+                    ],
+                    21 => [
                         'value' => 'VU3:(Manually operating an electronic device (texting, typing, dialing))',
                         'label' => 'VU3:(Manually operating an electronic device (texting, typing, dialing))',
                     ],
-                    12 => [
+                    22 => [
                         'value' => 'VU3:(Not Distracted)',
                         'label' => 'VU3:(Not Distracted)',
                     ],
-                    13 => [
+                    23 => [
+                        'value' => 'VU3:(Not Distracted) VU4:(Not Distracted)',
+                        'label' => 'VU3:(Not Distracted) VU4:(Not Distracted)',
+                    ],
+                    24 => [
+                        'value' => 'VU3:(Not Distracted) VU5:(Not Distracted)',
+                        'label' => 'VU3:(Not Distracted) VU5:(Not Distracted)',
+                    ],
+                    25 => [
                         'value' => 'VU3:(Other activity (searching, eating, personal hygiene, etc.))',
                         'label' => 'VU3:(Other activity (searching, eating, personal hygiene, etc.))',
                     ],
-                    14 => [
+                    26 => [
                         'value' => 'VU3:(Passenger)',
                         'label' => 'VU3:(Passenger)',
                     ],
-                    15 => [
+                    27 => [
+                        'value' => 'VU3:(Reported but invalid)',
+                        'label' => 'VU3:(Reported but invalid)',
+                    ],
+                    28 => [
+                        'value' => 'VU3:(Talking on hand-held electronic device)',
+                        'label' => 'VU3:(Talking on hand-held electronic device)',
+                    ],
+                    29 => [
                         'value' => 'VU3:(Utilizing listening device)',
                         'label' => 'VU3:(Utilizing listening device)',
                     ],
-                    16 => [
+                    30 => [
+                        'value' => 'VU4:(Manually operating an electronic device (texting, typing, dialing))',
+                        'label' => 'VU4:(Manually operating an electronic device (texting, typing, dialing))',
+                    ],
+                    31 => [
                         'value' => 'VU4:(Not Distracted)',
                         'label' => 'VU4:(Not Distracted)',
                     ],
-                    17 => [
+                    32 => [
+                        'value' => 'VU4:(Not Distracted) VU5:(Not Distracted)',
+                        'label' => 'VU4:(Not Distracted) VU5:(Not Distracted)',
+                    ],
+                    33 => [
                         'value' => 'VU4:(Not Distracted) VU5:(Not Distracted) VU6:(Not Distracted)',
                         'label' => 'VU4:(Not Distracted) VU5:(Not Distracted) VU6:(Not Distracted)',
                     ],
-                    18 => [
+                    34 => [
+                        'value' => 'VU4:(Other activity (searching, eating, personal hygiene, etc.))',
+                        'label' => 'VU4:(Other activity (searching, eating, personal hygiene, etc.))',
+                    ],
+                    35 => [
+                        'value' => 'VU4:(Talking on hands-free electronic device)',
+                        'label' => 'VU4:(Talking on hands-free electronic device)',
+                    ],
+                    36 => [
                         'value' => 'VU5:(Not Distracted)',
                         'label' => 'VU5:(Not Distracted)',
                     ],
-                    19 => [
+                    37 => [
                         'value' => 'VU5:(Not Distracted) VU6:(Not Distracted)',
                         'label' => 'VU5:(Not Distracted) VU6:(Not Distracted)',
                     ],
-                    20 => [
+                    38 => [
                         'value' => 'VU5:(Other activity (searching, eating, personal hygiene, etc.))',
                         'label' => 'VU5:(Other activity (searching, eating, personal hygiene, etc.))',
                     ],
-                    21 => [
+                    39 => [
                         'value' => 'VU6:(Not Distracted)',
                         'label' => 'VU6:(Not Distracted)',
                     ],
+                    40 => [
+                        'value' => 'VU7:(Not Distracted)',
+                        'label' => 'VU7:(Not Distracted)',
+                    ],
+                    41 => [
+                        'value' => 'VU7:(Not Distracted) VU8:(Not Distracted) VU9:(Not Distracted)',
+                        'label' => 'VU7:(Not Distracted) VU8:(Not Distracted) VU9:(Not Distracted)',
+                    ],
+                    42 => [
+                        'value' => 'VU7:(Other activity (searching, eating, personal hygiene, etc.))',
+                        'label' => 'VU7:(Other activity (searching, eating, personal hygiene, etc.))',
+                    ],
+                    43 => [
+                        'value' => 'VU8:(Not Distracted)',
+                        'label' => 'VU8:(Not Distracted)',
+                    ],
                 ],
             ],
-            170 => [
+            171 => [
                 'name' => 'non_mtrst_alc_suspd_type_cl',
                 'label' => 'Vulnerable Users Alcohol Suspected Type (All Persons)',
                 'type' => 'multiselect',
@@ -9248,68 +10213,112 @@ Cambridge, MA 02139
                         'label' => 'VU10: No',
                     ],
                     1 => [
+                        'value' => 'VU11: No',
+                        'label' => 'VU11: No',
+                    ],
+                    2 => [
+                        'value' => 'VU17: No',
+                        'label' => 'VU17: No',
+                    ],
+                    3 => [
                         'value' => 'VU2: No',
                         'label' => 'VU2: No',
                     ],
-                    2 => [
+                    4 => [
                         'value' => 'VU2: No / VU3: No',
                         'label' => 'VU2: No / VU3: No',
                     ],
-                    3 => [
+                    5 => [
                         'value' => 'VU2: No / VU3: No / VU4: No',
                         'label' => 'VU2: No / VU3: No / VU4: No',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'VU2: No / VU3: No / VU4: No / VU5: No',
                         'label' => 'VU2: No / VU3: No / VU4: No / VU5: No',
                     ],
-                    5 => [
+                    7 => [
+                        'value' => 'VU2: No / VU4: No',
+                        'label' => 'VU2: No / VU4: No',
+                    ],
+                    8 => [
                         'value' => 'VU2: No / VU4: No / VU5: No',
                         'label' => 'VU2: No / VU4: No / VU5: No',
                     ],
-                    6 => [
+                    9 => [
                         'value' => 'VU2: Yes',
                         'label' => 'VU2: Yes',
                     ],
-                    7 => [
+                    10 => [
+                        'value' => 'VU2: Yes / VU3: No',
+                        'label' => 'VU2: Yes / VU3: No',
+                    ],
+                    11 => [
+                        'value' => 'VU2: Yes / VU3: Yes',
+                        'label' => 'VU2: Yes / VU3: Yes',
+                    ],
+                    12 => [
                         'value' => 'VU3: No',
                         'label' => 'VU3: No',
                     ],
-                    8 => [
+                    13 => [
                         'value' => 'VU3: No / VU4: No',
                         'label' => 'VU3: No / VU4: No',
                     ],
-                    9 => [
+                    14 => [
+                        'value' => 'VU3: No / VU5: No',
+                        'label' => 'VU3: No / VU5: No',
+                    ],
+                    15 => [
                         'value' => 'VU3: Yes',
                         'label' => 'VU3: Yes',
                     ],
-                    10 => [
+                    16 => [
                         'value' => 'VU4: No',
                         'label' => 'VU4: No',
                     ],
-                    11 => [
+                    17 => [
+                        'value' => 'VU4: No / VU5: No',
+                        'label' => 'VU4: No / VU5: No',
+                    ],
+                    18 => [
                         'value' => 'VU4: No / VU5: No / VU6: No',
                         'label' => 'VU4: No / VU5: No / VU6: No',
                     ],
-                    12 => [
+                    19 => [
+                        'value' => 'VU4: No / VU5: Yes / VU6: No',
+                        'label' => 'VU4: No / VU5: Yes / VU6: No',
+                    ],
+                    20 => [
+                        'value' => 'VU4: Yes',
+                        'label' => 'VU4: Yes',
+                    ],
+                    21 => [
                         'value' => 'VU5: No',
                         'label' => 'VU5: No',
                     ],
-                    13 => [
+                    22 => [
                         'value' => 'VU5: No / VU6: No',
                         'label' => 'VU5: No / VU6: No',
                     ],
-                    14 => [
+                    23 => [
                         'value' => 'VU5: Yes',
                         'label' => 'VU5: Yes',
                     ],
-                    15 => [
+                    24 => [
                         'value' => 'VU6: No',
                         'label' => 'VU6: No',
                     ],
+                    25 => [
+                        'value' => 'VU7: No',
+                        'label' => 'VU7: No',
+                    ],
+                    26 => [
+                        'value' => 'VU7: No / VU8: No',
+                        'label' => 'VU7: No / VU8: No',
+                    ],
                 ],
             ],
-            171 => [
+            172 => [
                 'name' => 'non_mtrst_drug_suspd_type_cl',
                 'label' => 'Vulnerable Users Drug Suspected Type (All Persons)',
                 'type' => 'multiselect',
@@ -9320,222 +10329,204 @@ Cambridge, MA 02139
                         'label' => 'VU10: No',
                     ],
                     1 => [
+                        'value' => 'VU11: No',
+                        'label' => 'VU11: No',
+                    ],
+                    2 => [
+                        'value' => 'VU17: No',
+                        'label' => 'VU17: No',
+                    ],
+                    3 => [
                         'value' => 'VU2: No',
                         'label' => 'VU2: No',
                     ],
-                    2 => [
+                    4 => [
                         'value' => 'VU2: No / VU3: No',
                         'label' => 'VU2: No / VU3: No',
                     ],
-                    3 => [
+                    5 => [
                         'value' => 'VU2: No / VU3: No / VU4: No',
                         'label' => 'VU2: No / VU3: No / VU4: No',
                     ],
-                    4 => [
+                    6 => [
                         'value' => 'VU2: No / VU3: No / VU4: No / VU5: No',
                         'label' => 'VU2: No / VU3: No / VU4: No / VU5: No',
                     ],
-                    5 => [
+                    7 => [
+                        'value' => 'VU2: No / VU4: No',
+                        'label' => 'VU2: No / VU4: No',
+                    ],
+                    8 => [
                         'value' => 'VU2: No / VU4: No / VU5: No',
                         'label' => 'VU2: No / VU4: No / VU5: No',
                     ],
-                    6 => [
+                    9 => [
                         'value' => 'VU2: Yes',
                         'label' => 'VU2: Yes',
                     ],
-                    7 => [
+                    10 => [
                         'value' => 'VU3: No',
                         'label' => 'VU3: No',
                     ],
-                    8 => [
+                    11 => [
                         'value' => 'VU3: No / VU4: No',
                         'label' => 'VU3: No / VU4: No',
                     ],
-                    9 => [
+                    12 => [
+                        'value' => 'VU3: No / VU5: No',
+                        'label' => 'VU3: No / VU5: No',
+                    ],
+                    13 => [
+                        'value' => 'VU3: Yes',
+                        'label' => 'VU3: Yes',
+                    ],
+                    14 => [
                         'value' => 'VU4: No',
                         'label' => 'VU4: No',
                     ],
-                    10 => [
+                    15 => [
+                        'value' => 'VU4: No / VU5: No',
+                        'label' => 'VU4: No / VU5: No',
+                    ],
+                    16 => [
                         'value' => 'VU4: No / VU5: No / VU6: No',
                         'label' => 'VU4: No / VU5: No / VU6: No',
                     ],
-                    11 => [
+                    17 => [
+                        'value' => 'VU4: Yes',
+                        'label' => 'VU4: Yes',
+                    ],
+                    18 => [
                         'value' => 'VU5: No',
                         'label' => 'VU5: No',
                     ],
-                    12 => [
+                    19 => [
                         'value' => 'VU5: No / VU6: No',
                         'label' => 'VU5: No / VU6: No',
                     ],
-                    13 => [
+                    20 => [
+                        'value' => 'VU5: Yes',
+                        'label' => 'VU5: Yes',
+                    ],
+                    21 => [
                         'value' => 'VU6: No',
                         'label' => 'VU6: No',
                     ],
+                    22 => [
+                        'value' => 'VU7: No',
+                        'label' => 'VU7: No',
+                    ],
+                    23 => [
+                        'value' => 'VU7: No / VU8: No / VU9: No',
+                        'label' => 'VU7: No / VU8: No / VU9: No',
+                    ],
                 ],
             ],
-            172 => [
+            173 => [
                 'name' => 'non_mtrst_event_seq_cl',
                 'label' => 'Vulnerable Users Sequence of Events (All Persons)',
                 'type' => 'text',
                 'placeholder' => 'Enter Vulnerable Users Sequence of Events (All Persons)',
             ],
-            173 => [
+            174 => [
                 'name' => 'traffic_control_type_descr',
                 'label' => 'Vulnerable Users Traffic Control Device Type (All Persons)',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable Users Traffic Control Device Type (All Persons)',
-                'options' => [
-                    0 => [
-                        'value' => 'VU10: None',
-                        'label' => 'VU10: None',
-                    ],
-                    1 => [
-                        'value' => 'VU2: None',
-                        'label' => 'VU2: None',
-                    ],
-                    2 => [
-                        'value' => 'VU2: None / VU3: None',
-                        'label' => 'VU2: None / VU3: None',
-                    ],
-                    3 => [
-                        'value' => 'VU2: None / VU3: None / VU4: None',
-                        'label' => 'VU2: None / VU3: None / VU4: None',
-                    ],
-                    4 => [
-                        'value' => 'VU2: None / VU3: None / VU4: None / VU5: None',
-                        'label' => 'VU2: None / VU3: None / VU4: None / VU5: None',
-                    ],
-                    5 => [
-                        'value' => 'VU2: None / VU3: Person - Crossing guard',
-                        'label' => 'VU2: None / VU3: Person - Crossing guard',
-                    ],
-                    6 => [
-                        'value' => 'VU2: None / VU4: None / VU5: None',
-                        'label' => 'VU2: None / VU4: None / VU5: None',
-                    ],
-                    7 => [
-                        'value' => 'VU2: Other',
-                        'label' => 'VU2: Other',
-                    ],
-                    8 => [
-                        'value' => 'VU2: Other / VU3: Other',
-                        'label' => 'VU2: Other / VU3: Other',
-                    ],
-                    9 => [
-                        'value' => 'VU2: Person - Crossing guard',
-                        'label' => 'VU2: Person - Crossing guard',
-                    ],
-                    10 => [
-                        'value' => 'VU2: Person - Crossing guard / VU3: Person - Crossing guard',
-                        'label' => 'VU2: Person - Crossing guard / VU3: Person - Crossing guard',
-                    ],
-                    11 => [
-                        'value' => 'VU2: VU Crossing Sign',
-                        'label' => 'VU2: VU Crossing Sign',
-                    ],
-                    12 => [
-                        'value' => 'VU2: VU Crossing Sign / VU3: VU Crossing Sign',
-                        'label' => 'VU2: VU Crossing Sign / VU3: VU Crossing Sign',
-                    ],
-                    13 => [
-                        'value' => 'VU2: VU Crossing Signal',
-                        'label' => 'VU2: VU Crossing Signal',
-                    ],
-                    14 => [
-                        'value' => 'VU2: VU Crossing Signal / VU3: VU Crossing Signal',
-                        'label' => 'VU2: VU Crossing Signal / VU3: VU Crossing Signal',
-                    ],
-                    15 => [
-                        'value' => 'VU2: VU Crossing Signal / VU3: VU Crossing Signal / VU4: VU Crossing Signal',
-                        'label' => 'VU2: VU Crossing Signal / VU3: VU Crossing Signal / VU4: VU Crossing Signal',
-                    ],
-                    16 => [
-                        'value' => 'VU2: VU Prohibited Sign',
-                        'label' => 'VU2: VU Prohibited Sign',
-                    ],
-                    17 => [
-                        'value' => 'VU3: None',
-                        'label' => 'VU3: None',
-                    ],
-                    18 => [
-                        'value' => 'VU3: None / VU4: None',
-                        'label' => 'VU3: None / VU4: None',
-                    ],
-                    19 => [
-                        'value' => 'VU3: Other',
-                        'label' => 'VU3: Other',
-                    ],
-                    20 => [
-                        'value' => 'VU3: Other / VU4: Other',
-                        'label' => 'VU3: Other / VU4: Other',
-                    ],
-                    21 => [
-                        'value' => 'VU3: Person - Crossing guard',
-                        'label' => 'VU3: Person - Crossing guard',
-                    ],
-                    22 => [
-                        'value' => 'VU3: VU Crossing Sign',
-                        'label' => 'VU3: VU Crossing Sign',
-                    ],
-                    23 => [
-                        'value' => 'VU3: VU Crossing Signal',
-                        'label' => 'VU3: VU Crossing Signal',
-                    ],
-                    24 => [
-                        'value' => 'VU3: VU Prohibited Sign',
-                        'label' => 'VU3: VU Prohibited Sign',
-                    ],
-                    25 => [
-                        'value' => 'VU4: None',
-                        'label' => 'VU4: None',
-                    ],
-                    26 => [
-                        'value' => 'VU4: Other',
-                        'label' => 'VU4: Other',
-                    ],
-                    27 => [
-                        'value' => 'VU4: Other / VU5: Other / VU6: Other',
-                        'label' => 'VU4: Other / VU5: Other / VU6: Other',
-                    ],
-                    28 => [
-                        'value' => 'VU4: VU Crossing Sign',
-                        'label' => 'VU4: VU Crossing Sign',
-                    ],
-                    29 => [
-                        'value' => 'VU4: VU Crossing Signal',
-                        'label' => 'VU4: VU Crossing Signal',
-                    ],
-                    30 => [
-                        'value' => 'VU4: VU Prohibited Sign',
-                        'label' => 'VU4: VU Prohibited Sign',
-                    ],
-                    31 => [
-                        'value' => 'VU5: None',
-                        'label' => 'VU5: None',
-                    ],
-                    32 => [
-                        'value' => 'VU5: Other',
-                        'label' => 'VU5: Other',
-                    ],
-                    33 => [
-                        'value' => 'VU5: VU Crossing Signal',
-                        'label' => 'VU5: VU Crossing Signal',
-                    ],
-                    34 => [
-                        'value' => 'VU5: VU Crossing Signal / VU6: VU Crossing Signal',
-                        'label' => 'VU5: VU Crossing Signal / VU6: VU Crossing Signal',
-                    ],
-                    35 => [
-                        'value' => 'VU6: None',
-                        'label' => 'VU6: None',
-                    ],
-                ],
+                'type' => 'text',
+                'placeholder' => 'Enter Vulnerable Users Traffic Control Device Type (All Persons)',
             ],
-            174 => [
+            175 => [
                 'name' => 'non_motorist_cntrb_circ_1',
                 'label' => 'Vulnerable User Contribution 1',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Vulnerable User Contribution 1',
+                'options' => [
+                    0 => [
+                        'value' => 'Crossing of Roadway or Intersection',
+                        'label' => 'Crossing of Roadway or Intersection',
+                    ],
+                    1 => [
+                        'value' => 'Dart/Dash',
+                        'label' => 'Dart/Dash',
+                    ],
+                    2 => [
+                        'value' => 'Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching)',
+                        'label' => 'Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching)',
+                    ],
+                    3 => [
+                        'value' => 'Distracted',
+                        'label' => 'Distracted',
+                    ],
+                    4 => [
+                        'value' => 'Entering/Exiting Parked/Standing Vehicle',
+                        'label' => 'Entering/Exiting Parked/Standing Vehicle',
+                    ],
+                    5 => [
+                        'value' => 'Failure to Obey Traffic Sign(s), Signal(s), or Officer(s)',
+                        'label' => 'Failure to Obey Traffic Sign(s), Signal(s), or Officer(s)',
+                    ],
+                    6 => [
+                        'value' => 'Failure to use Proper Crosswalk',
+                        'label' => 'Failure to use Proper Crosswalk',
+                    ],
+                    7 => [
+                        'value' => 'Failure to Yield Right-Of-Way',
+                        'label' => 'Failure to Yield Right-Of-Way',
+                    ],
+                    8 => [
+                        'value' => 'Fleeing/Evading Law Enforcement',
+                        'label' => 'Fleeing/Evading Law Enforcement',
+                    ],
+                    9 => [
+                        'value' => 'In Roadway (Standing, Lying, Working, Playing, etc.)',
+                        'label' => 'In Roadway (Standing, Lying, Working, Playing, etc.)',
+                    ],
+                    10 => [
+                        'value' => 'Inattentive (Talking, Eating, etc.)',
+                        'label' => 'Inattentive (Talking, Eating, etc.)',
+                    ],
+                    11 => [
+                        'value' => 'None',
+                        'label' => 'None',
+                    ],
+                    12 => [
+                        'value' => 'Not reported',
+                        'label' => 'Not reported',
+                    ],
+                    13 => [
+                        'value' => 'Not Visible (Dark Clothing, No Lighting, etc.)',
+                        'label' => 'Not Visible (Dark Clothing, No Lighting, etc.)',
+                    ],
+                    14 => [
+                        'value' => 'Other (Explain in Narrative)',
+                        'label' => 'Other (Explain in Narrative)',
+                    ],
+                    15 => [
+                        'value' => 'Passing',
+                        'label' => 'Passing',
+                    ],
+                    16 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    17 => [
+                        'value' => 'Traveling Wrong Way',
+                        'label' => 'Traveling Wrong Way',
+                    ],
+                    18 => [
+                        'value' => 'Turn/Merge',
+                        'label' => 'Turn/Merge',
+                    ],
+                    19 => [
+                        'value' => 'Unknown',
+                        'label' => 'Unknown',
+                    ],
+                ],
+            ],
+            176 => [
+                'name' => 'non_motorist_cntrb_circ_2',
+                'label' => 'Vulnerable User Contribution 2',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Vulnerable User Contribution 2',
                 'options' => [
                     0 => [
                         'value' => 'Crossing of Roadway or Intersection',
@@ -9615,87 +10606,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            175 => [
-                'name' => 'non_motorist_cntrb_circ_2',
-                'label' => 'Vulnerable User Contribution 2',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Contribution 2',
-                'options' => [
-                    0 => [
-                        'value' => 'Crossing of Roadway or Intersection',
-                        'label' => 'Crossing of Roadway or Intersection',
-                    ],
-                    1 => [
-                        'value' => 'Dart/Dash',
-                        'label' => 'Dart/Dash',
-                    ],
-                    2 => [
-                        'value' => 'Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching)',
-                        'label' => 'Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching)',
-                    ],
-                    3 => [
-                        'value' => 'Distracted',
-                        'label' => 'Distracted',
-                    ],
-                    4 => [
-                        'value' => 'Entering/Exiting Parked/Standing Vehicle',
-                        'label' => 'Entering/Exiting Parked/Standing Vehicle',
-                    ],
-                    5 => [
-                        'value' => 'Failure to Obey Traffic Sign(s), Signal(s), or Officer(s)',
-                        'label' => 'Failure to Obey Traffic Sign(s), Signal(s), or Officer(s)',
-                    ],
-                    6 => [
-                        'value' => 'Failure to use Proper Crosswalk',
-                        'label' => 'Failure to use Proper Crosswalk',
-                    ],
-                    7 => [
-                        'value' => 'Failure to Yield Right-Of-Way',
-                        'label' => 'Failure to Yield Right-Of-Way',
-                    ],
-                    8 => [
-                        'value' => 'In Roadway (Standing, Lying, Working, Playing, etc.)',
-                        'label' => 'In Roadway (Standing, Lying, Working, Playing, etc.)',
-                    ],
-                    9 => [
-                        'value' => 'Inattentive (Talking, Eating, etc.)',
-                        'label' => 'Inattentive (Talking, Eating, etc.)',
-                    ],
-                    10 => [
-                        'value' => 'None',
-                        'label' => 'None',
-                    ],
-                    11 => [
-                        'value' => 'Not reported',
-                        'label' => 'Not reported',
-                    ],
-                    12 => [
-                        'value' => 'Not Visible (Dark Clothing, No Lighting, etc.)',
-                        'label' => 'Not Visible (Dark Clothing, No Lighting, etc.)',
-                    ],
-                    13 => [
-                        'value' => 'Other (Explain in Narrative)',
-                        'label' => 'Other (Explain in Narrative)',
-                    ],
-                    14 => [
-                        'value' => 'Passing',
-                        'label' => 'Passing',
-                    ],
-                    15 => [
-                        'value' => 'Traveling Wrong Way',
-                        'label' => 'Traveling Wrong Way',
-                    ],
-                    16 => [
-                        'value' => 'Turn/Merge',
-                        'label' => 'Turn/Merge',
-                    ],
-                    17 => [
-                        'value' => 'Unknown',
-                        'label' => 'Unknown',
-                    ],
-                ],
-            ],
-            176 => [
+            177 => [
                 'name' => 'non_motorist_contact_point',
                 'label' => 'Vulnerable User Contact Point',
                 'type' => 'multiselect',
@@ -9726,12 +10637,16 @@ Cambridge, MA 02139
                         'label' => 'Other',
                     ],
                     6 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    7 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            177 => [
+            178 => [
                 'name' => 'non_motorist_distracted_by_1',
                 'label' => 'Vulnerable User Distracted By 1',
                 'type' => 'multiselect',
@@ -9758,24 +10673,28 @@ Cambridge, MA 02139
                         'label' => 'Passenger',
                     ],
                     5 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    6 => [
                         'value' => 'Talking on hand-held electronic device',
                         'label' => 'Talking on hand-held electronic device',
                     ],
-                    6 => [
+                    7 => [
                         'value' => 'Talking on hands-free electronic device',
                         'label' => 'Talking on hands-free electronic device',
                     ],
-                    7 => [
+                    8 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    8 => [
+                    9 => [
                         'value' => 'Utilizing listening device',
                         'label' => 'Utilizing listening device',
                     ],
                 ],
             ],
-            178 => [
+            179 => [
                 'name' => 'non_motorist_distracted_by_2',
                 'label' => 'Vulnerable User Distracted By 2',
                 'type' => 'multiselect',
@@ -9794,12 +10713,24 @@ Cambridge, MA 02139
                         'label' => 'Not reported',
                     ],
                     3 => [
+                        'value' => 'Other activity (searching, eating, personal hygiene, etc.)',
+                        'label' => 'Other activity (searching, eating, personal hygiene, etc.)',
+                    ],
+                    4 => [
+                        'value' => 'Talking on hand-held electronic device',
+                        'label' => 'Talking on hand-held electronic device',
+                    ],
+                    5 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
+                    6 => [
+                        'value' => 'Utilizing listening device',
+                        'label' => 'Utilizing listening device',
+                    ],
                 ],
             ],
-            179 => [
+            180 => [
                 'name' => 'non_motorist_ejection_descr',
                 'label' => 'Vulnerable User Ejection',
                 'type' => 'multiselect',
@@ -9831,7 +10762,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            180 => [
+            181 => [
                 'name' => 'non_motorist_event_sequence_1',
                 'label' => 'Vulnerable User Event Sequence 1',
                 'type' => 'multiselect',
@@ -9947,11 +10878,231 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            181 => [
+            182 => [
                 'name' => 'non_motorist_event_sequence_2',
                 'label' => 'Vulnerable User Event Sequence 2',
                 'type' => 'multiselect',
                 'placeholder' => 'Select Vulnerable User Event Sequence 2',
+                'options' => [
+                    0 => [
+                        'value' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
+                        'label' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
+                    ],
+                    1 => [
+                        'value' => 'Approaching or leaving vehicle',
+                        'label' => 'Approaching or leaving vehicle',
+                    ],
+                    2 => [
+                        'value' => 'Changing lanes',
+                        'label' => 'Changing lanes',
+                    ],
+                    3 => [
+                        'value' => 'Collision with door opening of parked car - Back right',
+                        'label' => 'Collision with door opening of parked car - Back right',
+                    ],
+                    4 => [
+                        'value' => 'Collision with door opening of parked car - Front left',
+                        'label' => 'Collision with door opening of parked car - Front left',
+                    ],
+                    5 => [
+                        'value' => 'Collision with door opening of parked car - Front right',
+                        'label' => 'Collision with door opening of parked car - Front right',
+                    ],
+                    6 => [
+                        'value' => 'Collision with motor vehicle in transport',
+                        'label' => 'Collision with motor vehicle in transport',
+                    ],
+                    7 => [
+                        'value' => 'Collision with parked motor vehicle, stationary',
+                        'label' => 'Collision with parked motor vehicle, stationary',
+                    ],
+                    8 => [
+                        'value' => 'Crossing Roadway',
+                        'label' => 'Crossing Roadway',
+                    ],
+                    9 => [
+                        'value' => 'In Roadway – Other',
+                        'label' => 'In Roadway – Other',
+                    ],
+                    10 => [
+                        'value' => 'Not reported',
+                        'label' => 'Not reported',
+                    ],
+                    11 => [
+                        'value' => 'Other',
+                        'label' => 'Other',
+                    ],
+                    12 => [
+                        'value' => 'Overtaking/passing',
+                        'label' => 'Overtaking/passing',
+                    ],
+                    13 => [
+                        'value' => 'Pushing vehicle',
+                        'label' => 'Pushing vehicle',
+                    ],
+                    14 => [
+                        'value' => 'Slowed or stopped',
+                        'label' => 'Slowed or stopped',
+                    ],
+                    15 => [
+                        'value' => 'Traveling straight ahead',
+                        'label' => 'Traveling straight ahead',
+                    ],
+                    16 => [
+                        'value' => 'Turning left',
+                        'label' => 'Turning left',
+                    ],
+                    17 => [
+                        'value' => 'Turning right',
+                        'label' => 'Turning right',
+                    ],
+                    18 => [
+                        'value' => 'Unknown',
+                        'label' => 'Unknown',
+                    ],
+                    19 => [
+                        'value' => 'Waiting to Cross Roadway',
+                        'label' => 'Waiting to Cross Roadway',
+                    ],
+                    20 => [
+                        'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
+                        'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
+                    ],
+                    21 => [
+                        'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
+                        'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
+                    ],
+                    22 => [
+                        'value' => 'Walking/Cycling on Sidewalk',
+                        'label' => 'Walking/Cycling on Sidewalk',
+                    ],
+                    23 => [
+                        'value' => 'Working - other',
+                        'label' => 'Working - other',
+                    ],
+                    24 => [
+                        'value' => 'Working in Trafficway (Incident Response)',
+                        'label' => 'Working in Trafficway (Incident Response)',
+                    ],
+                    25 => [
+                        'value' => 'Working on vehicle',
+                        'label' => 'Working on vehicle',
+                    ],
+                ],
+            ],
+            183 => [
+                'name' => 'non_motorist_event_sequence_3',
+                'label' => 'Vulnerable User Event Sequence 3',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Vulnerable User Event Sequence 3',
+                'options' => [
+                    0 => [
+                        'value' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
+                        'label' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
+                    ],
+                    1 => [
+                        'value' => 'Approaching or leaving vehicle',
+                        'label' => 'Approaching or leaving vehicle',
+                    ],
+                    2 => [
+                        'value' => 'Changing lanes',
+                        'label' => 'Changing lanes',
+                    ],
+                    3 => [
+                        'value' => 'Collision with door opening of parked car - Back right',
+                        'label' => 'Collision with door opening of parked car - Back right',
+                    ],
+                    4 => [
+                        'value' => 'Collision with door opening of parked car - Front right',
+                        'label' => 'Collision with door opening of parked car - Front right',
+                    ],
+                    5 => [
+                        'value' => 'Collision with motor vehicle in transport',
+                        'label' => 'Collision with motor vehicle in transport',
+                    ],
+                    6 => [
+                        'value' => 'Collision with parked motor vehicle, stationary',
+                        'label' => 'Collision with parked motor vehicle, stationary',
+                    ],
+                    7 => [
+                        'value' => 'Crossing Roadway',
+                        'label' => 'Crossing Roadway',
+                    ],
+                    8 => [
+                        'value' => 'In Roadway – Other',
+                        'label' => 'In Roadway – Other',
+                    ],
+                    9 => [
+                        'value' => 'Not reported',
+                        'label' => 'Not reported',
+                    ],
+                    10 => [
+                        'value' => 'Other',
+                        'label' => 'Other',
+                    ],
+                    11 => [
+                        'value' => 'Overtaking/passing',
+                        'label' => 'Overtaking/passing',
+                    ],
+                    12 => [
+                        'value' => 'Reported but invalid',
+                        'label' => 'Reported but invalid',
+                    ],
+                    13 => [
+                        'value' => 'Slowed or stopped',
+                        'label' => 'Slowed or stopped',
+                    ],
+                    14 => [
+                        'value' => 'Traveling straight ahead',
+                        'label' => 'Traveling straight ahead',
+                    ],
+                    15 => [
+                        'value' => 'Turning left',
+                        'label' => 'Turning left',
+                    ],
+                    16 => [
+                        'value' => 'Turning right',
+                        'label' => 'Turning right',
+                    ],
+                    17 => [
+                        'value' => 'Unknown',
+                        'label' => 'Unknown',
+                    ],
+                    18 => [
+                        'value' => 'Waiting to Cross Roadway',
+                        'label' => 'Waiting to Cross Roadway',
+                    ],
+                    19 => [
+                        'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
+                        'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
+                    ],
+                    20 => [
+                        'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
+                        'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
+                    ],
+                    21 => [
+                        'value' => 'Walking/Cycling on Sidewalk',
+                        'label' => 'Walking/Cycling on Sidewalk',
+                    ],
+                    22 => [
+                        'value' => 'Working - other',
+                        'label' => 'Working - other',
+                    ],
+                    23 => [
+                        'value' => 'Working in Trafficway (Incident Response)',
+                        'label' => 'Working in Trafficway (Incident Response)',
+                    ],
+                    24 => [
+                        'value' => 'Working on vehicle',
+                        'label' => 'Working on vehicle',
+                    ],
+                ],
+            ],
+            184 => [
+                'name' => 'non_motorist_event_sequence_4',
+                'label' => 'Vulnerable User Event Sequence 4',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Vulnerable User Event Sequence 4',
                 'options' => [
                     0 => [
                         'value' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
@@ -10010,192 +11161,32 @@ Cambridge, MA 02139
                         'label' => 'Turning left',
                     ],
                     14 => [
-                        'value' => 'Turning right',
-                        'label' => 'Turning right',
-                    ],
-                    15 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                    16 => [
+                    15 => [
                         'value' => 'Waiting to Cross Roadway',
                         'label' => 'Waiting to Cross Roadway',
                     ],
-                    17 => [
+                    16 => [
                         'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
                         'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
                     ],
-                    18 => [
+                    17 => [
                         'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
                         'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
                     ],
-                    19 => [
+                    18 => [
                         'value' => 'Walking/Cycling on Sidewalk',
                         'label' => 'Walking/Cycling on Sidewalk',
                     ],
-                    20 => [
-                        'value' => 'Working - other',
-                        'label' => 'Working - other',
-                    ],
-                    21 => [
-                        'value' => 'Working in Trafficway (Incident Response)',
-                        'label' => 'Working in Trafficway (Incident Response)',
-                    ],
-                    22 => [
+                    19 => [
                         'value' => 'Working on vehicle',
                         'label' => 'Working on vehicle',
                     ],
                 ],
             ],
-            182 => [
-                'name' => 'non_motorist_event_sequence_3',
-                'label' => 'Vulnerable User Event Sequence 3',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Event Sequence 3',
-                'options' => [
-                    0 => [
-                        'value' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
-                        'label' => 'Adjacent to Roadway (e.g., Shoulder, Median)',
-                    ],
-                    1 => [
-                        'value' => 'Approaching or leaving vehicle',
-                        'label' => 'Approaching or leaving vehicle',
-                    ],
-                    2 => [
-                        'value' => 'Collision with door opening of parked car - Back right',
-                        'label' => 'Collision with door opening of parked car - Back right',
-                    ],
-                    3 => [
-                        'value' => 'Collision with door opening of parked car - Front right',
-                        'label' => 'Collision with door opening of parked car - Front right',
-                    ],
-                    4 => [
-                        'value' => 'Collision with motor vehicle in transport',
-                        'label' => 'Collision with motor vehicle in transport',
-                    ],
-                    5 => [
-                        'value' => 'Collision with parked motor vehicle, stationary',
-                        'label' => 'Collision with parked motor vehicle, stationary',
-                    ],
-                    6 => [
-                        'value' => 'Crossing Roadway',
-                        'label' => 'Crossing Roadway',
-                    ],
-                    7 => [
-                        'value' => 'In Roadway – Other',
-                        'label' => 'In Roadway – Other',
-                    ],
-                    8 => [
-                        'value' => 'Not reported',
-                        'label' => 'Not reported',
-                    ],
-                    9 => [
-                        'value' => 'Other',
-                        'label' => 'Other',
-                    ],
-                    10 => [
-                        'value' => 'Overtaking/passing',
-                        'label' => 'Overtaking/passing',
-                    ],
-                    11 => [
-                        'value' => 'Traveling straight ahead',
-                        'label' => 'Traveling straight ahead',
-                    ],
-                    12 => [
-                        'value' => 'Turning left',
-                        'label' => 'Turning left',
-                    ],
-                    13 => [
-                        'value' => 'Turning right',
-                        'label' => 'Turning right',
-                    ],
-                    14 => [
-                        'value' => 'Unknown',
-                        'label' => 'Unknown',
-                    ],
-                    15 => [
-                        'value' => 'Waiting to Cross Roadway',
-                        'label' => 'Waiting to Cross Roadway',
-                    ],
-                    16 => [
-                        'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
-                        'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
-                    ],
-                    17 => [
-                        'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
-                        'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
-                    ],
-                    18 => [
-                        'value' => 'Walking/Cycling on Sidewalk',
-                        'label' => 'Walking/Cycling on Sidewalk',
-                    ],
-                    19 => [
-                        'value' => 'Working - other',
-                        'label' => 'Working - other',
-                    ],
-                ],
-            ],
-            183 => [
-                'name' => 'non_motorist_event_sequence_4',
-                'label' => 'Vulnerable User Event Sequence 4',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Event Sequence 4',
-                'options' => [
-                    0 => [
-                        'value' => 'Approaching or leaving vehicle',
-                        'label' => 'Approaching or leaving vehicle',
-                    ],
-                    1 => [
-                        'value' => 'Collision with motor vehicle in transport',
-                        'label' => 'Collision with motor vehicle in transport',
-                    ],
-                    2 => [
-                        'value' => 'Crossing Roadway',
-                        'label' => 'Crossing Roadway',
-                    ],
-                    3 => [
-                        'value' => 'In Roadway – Other',
-                        'label' => 'In Roadway – Other',
-                    ],
-                    4 => [
-                        'value' => 'Not reported',
-                        'label' => 'Not reported',
-                    ],
-                    5 => [
-                        'value' => 'Other',
-                        'label' => 'Other',
-                    ],
-                    6 => [
-                        'value' => 'Overtaking/passing',
-                        'label' => 'Overtaking/passing',
-                    ],
-                    7 => [
-                        'value' => 'Traveling straight ahead',
-                        'label' => 'Traveling straight ahead',
-                    ],
-                    8 => [
-                        'value' => 'Unknown',
-                        'label' => 'Unknown',
-                    ],
-                    9 => [
-                        'value' => 'Waiting to Cross Roadway',
-                        'label' => 'Waiting to Cross Roadway',
-                    ],
-                    10 => [
-                        'value' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
-                        'label' => 'Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane)',
-                    ],
-                    11 => [
-                        'value' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
-                        'label' => 'Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane)',
-                    ],
-                    12 => [
-                        'value' => 'Walking/Cycling on Sidewalk',
-                        'label' => 'Walking/Cycling on Sidewalk',
-                    ],
-                ],
-            ],
-            184 => [
+            185 => [
                 'name' => 'non_motorist_driver_lic_state',
                 'label' => 'Vulnerable User Driver License State Province',
                 'type' => 'multiselect',
@@ -10214,64 +11205,132 @@ Cambridge, MA 02139
                         'label' => 'AZ',
                     ],
                     3 => [
+                        'value' => 'CA',
+                        'label' => 'CA',
+                    ],
+                    4 => [
+                        'value' => 'CO',
+                        'label' => 'CO',
+                    ],
+                    5 => [
+                        'value' => 'CT',
+                        'label' => 'CT',
+                    ],
+                    6 => [
+                        'value' => 'DC',
+                        'label' => 'DC',
+                    ],
+                    7 => [
                         'value' => 'FL',
                         'label' => 'FL',
                     ],
-                    4 => [
+                    8 => [
                         'value' => 'FR',
                         'label' => 'FR',
                     ],
-                    5 => [
+                    9 => [
                         'value' => 'GA',
                         'label' => 'GA',
                     ],
-                    6 => [
+                    10 => [
+                        'value' => 'IA',
+                        'label' => 'IA',
+                    ],
+                    11 => [
                         'value' => 'ID',
                         'label' => 'ID',
                     ],
-                    7 => [
+                    12 => [
+                        'value' => 'IL',
+                        'label' => 'IL',
+                    ],
+                    13 => [
+                        'value' => 'KS',
+                        'label' => 'KS',
+                    ],
+                    14 => [
                         'value' => 'LA',
                         'label' => 'LA',
                     ],
-                    8 => [
+                    15 => [
                         'value' => 'MA',
                         'label' => 'MA',
                     ],
-                    9 => [
+                    16 => [
+                        'value' => 'MD',
+                        'label' => 'MD',
+                    ],
+                    17 => [
                         'value' => 'ME',
                         'label' => 'ME',
                     ],
-                    10 => [
+                    18 => [
+                        'value' => 'MI',
+                        'label' => 'MI',
+                    ],
+                    19 => [
+                        'value' => 'MN',
+                        'label' => 'MN',
+                    ],
+                    20 => [
+                        'value' => 'NC',
+                        'label' => 'NC',
+                    ],
+                    21 => [
                         'value' => 'NH',
                         'label' => 'NH',
                     ],
-                    11 => [
+                    22 => [
                         'value' => 'NJ',
                         'label' => 'NJ',
                     ],
-                    12 => [
+                    23 => [
+                        'value' => 'NV',
+                        'label' => 'NV',
+                    ],
+                    24 => [
                         'value' => 'NY',
                         'label' => 'NY',
                     ],
-                    13 => [
+                    25 => [
                         'value' => 'OH',
                         'label' => 'OH',
                     ],
-                    14 => [
+                    26 => [
+                        'value' => 'ON',
+                        'label' => 'ON',
+                    ],
+                    27 => [
+                        'value' => 'OT',
+                        'label' => 'OT',
+                    ],
+                    28 => [
                         'value' => 'PA',
                         'label' => 'PA',
                     ],
-                    15 => [
+                    29 => [
                         'value' => 'RI',
                         'label' => 'RI',
                     ],
-                    16 => [
+                    30 => [
+                        'value' => 'SC',
+                        'label' => 'SC',
+                    ],
+                    31 => [
                         'value' => 'TX',
                         'label' => 'TX',
                     ],
+                    32 => [
+                        'value' => 'VA',
+                        'label' => 'VA',
+                    ],
+                    33 => [
+                        'value' => 'WA',
+                        'label' => 'WA',
+                    ],
                 ],
             ],
-            185 => [
+            186 => [
                 'name' => 'non_motorist_primary_injury',
                 'label' => 'Vulnerable User Primary Injury Area',
                 'type' => 'multiselect',
@@ -10315,7 +11374,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            186 => [
+            187 => [
                 'name' => 'non_motorist_seating_position',
                 'label' => 'Vulnerable User Seating Position',
                 'type' => 'multiselect',
@@ -10354,20 +11413,24 @@ Cambridge, MA 02139
                         'label' => 'Second seat - left side',
                     ],
                     8 => [
+                        'value' => 'Second seat - right side',
+                        'label' => 'Second seat - right side',
+                    ],
+                    9 => [
                         'value' => 'Trailing unit',
                         'label' => 'Trailing unit',
                     ],
-                    9 => [
+                    10 => [
                         'value' => 'Unenclosed passenger area',
                         'label' => 'Unenclosed passenger area',
                     ],
-                    10 => [
+                    11 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            187 => [
+            188 => [
                 'name' => 'non_motorist_traffic_control',
                 'label' => 'Vulnerable User Traffic Control Type',
                 'type' => 'multiselect',
@@ -10407,7 +11470,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            188 => [
+            189 => [
                 'name' => 'non_motorist_trapped_descr',
                 'label' => 'Vulnerable User Trapped',
                 'type' => 'multiselect',
@@ -10435,7 +11498,7 @@ Cambridge, MA 02139
                     ],
                 ],
             ],
-            189 => [
+            190 => [
                 'name' => 'non_motorist_origin_dest',
                 'label' => 'Vulnerable User Origin Destination',
                 'type' => 'multiselect',
@@ -10474,12 +11537,16 @@ Cambridge, MA 02139
                         'label' => 'Other',
                     ],
                     8 => [
+                        'value' => 'Reported but Invalid',
+                        'label' => 'Reported but Invalid',
+                    ],
+                    9 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            190 => [
+            191 => [
                 'name' => 'non_mtrst_test_type_descr',
                 'label' => 'Vulnerable User Test Type',
                 'type' => 'multiselect',
@@ -10498,16 +11565,20 @@ Cambridge, MA 02139
                         'label' => 'Not Reported',
                     ],
                     3 => [
+                        'value' => 'Other',
+                        'label' => 'Other',
+                    ],
+                    4 => [
                         'value' => 'Test Not Given',
                         'label' => 'Test Not Given',
                     ],
-                    4 => [
+                    5 => [
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
                 ],
             ],
-            191 => [
+            192 => [
                 'name' => 'non_mtrst_test_status_descr',
                 'label' => 'Vulnerable User Test Status',
                 'type' => 'multiselect',
@@ -10533,55 +11604,71 @@ Cambridge, MA 02139
                         'value' => 'Unknown',
                         'label' => 'Unknown',
                     ],
-                ],
-            ],
-            192 => [
-                'name' => 'non_mtrst_test_result_descr',
-                'label' => 'Vulnerable User Test Result',
-                'type' => 'multiselect',
-                'placeholder' => 'Select Vulnerable User Test Result',
-                'options' => [
-                    0 => [
-                        'value' => 'BAC Test Performed, Results Unknown',
-                        'label' => 'BAC Test Performed, Results Unknown',
-                    ],
-                    1 => [
-                        'value' => 'Not Reported',
-                        'label' => 'Not Reported',
-                    ],
-                    2 => [
-                        'value' => 'Test Not Given',
-                        'label' => 'Test Not Given',
-                    ],
-                    3 => [
-                        'value' => 'Unknown',
-                        'label' => 'Unknown',
-                    ],
-                    4 => [
+                    5 => [
                         'value' => 'Unknown, if tested',
                         'label' => 'Unknown, if tested',
                     ],
                 ],
             ],
             193 => [
+                'name' => 'non_mtrst_test_result_descr',
+                'label' => 'Vulnerable User Test Result',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Vulnerable User Test Result',
+                'options' => [
+                    0 => [
+                        'value' => '0.00 - 0.01',
+                        'label' => '0.00 - 0.01',
+                    ],
+                    1 => [
+                        'value' => '0.08 or greater',
+                        'label' => '0.08 or greater',
+                    ],
+                    2 => [
+                        'value' => 'BAC Test Performed, Results Unknown',
+                        'label' => 'BAC Test Performed, Results Unknown',
+                    ],
+                    3 => [
+                        'value' => 'Not Reported',
+                        'label' => 'Not Reported',
+                    ],
+                    4 => [
+                        'value' => 'Positive Reading with no Actual Value',
+                        'label' => 'Positive Reading with no Actual Value',
+                    ],
+                    5 => [
+                        'value' => 'Test Not Given',
+                        'label' => 'Test Not Given',
+                    ],
+                    6 => [
+                        'value' => 'Unknown',
+                        'label' => 'Unknown',
+                    ],
+                    7 => [
+                        'value' => 'Unknown, if tested',
+                        'label' => 'Unknown, if tested',
+                    ],
+                ],
+            ],
+            194 => [
                 'name' => 'crash_date_text_raw',
                 'label' => 'Crash Date (Raw Text)',
                 'type' => 'text',
                 'placeholder' => 'Enter Crash Date (Raw Text)',
             ],
-            194 => [
+            195 => [
                 'name' => 'crash_time_2_raw',
                 'label' => 'Crash Time (Raw Text)',
                 'type' => 'text',
                 'placeholder' => 'Enter Crash Time (Raw Text)',
             ],
-            195 => [
+            196 => [
                 'name' => 'objectid_source_min',
                 'label' => 'Source OBJECTID Min',
                 'type' => 'number',
                 'placeholder' => 'Min value for Source OBJECTID',
             ],
-            196 => [
+            197 => [
                 'name' => 'objectid_source_max',
                 'label' => 'Source OBJECTID Max',
                 'type' => 'number',
@@ -10828,28 +11915,28 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Crash Severity. Provide a comma-separated list or an array of values. Possible values: Fatal injury, Non-fatal injury, Property damage only (none injured), Unknown.',
+                'description' => 'Filter by Crash Severity. Provide a comma-separated list or an array of values. Possible values: Fatal injury, Non-fatal injury, Not Reported, Property damage only (none injured), Unknown.',
             ],
             'max_injr_svrty_cl' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Max Injury Severity Reported. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
+                'description' => 'Filter by Max Injury Severity Reported. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), No injury, Non-fatal injury - Possible, Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
             ],
             'numb_vehc' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Number of Vehicles. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 10, 13.',
+                'description' => 'Filter by Number of Vehicles. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14.',
             ],
             'numb_nonfatal_injr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Total NonFatal Injuries. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10.',
+                'description' => 'Filter by Total NonFatal Injuries. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12.',
             ],
             'numb_fatal_injr' => [
                 'type' => 'array',
@@ -10863,14 +11950,14 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Police Agency Type. Provide a comma-separated list or an array of values. Possible values: Local police, MBTA police, State police.',
+                'description' => 'Filter by Police Agency Type. Provide a comma-separated list or an array of values. Possible values: Campus police, Local police, MBTA police, State police.',
             ],
             'year' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Year. Provide a comma-separated list or an array of values. Possible values: 2024, 2025.',
+                'description' => 'Filter by Year. Provide a comma-separated list or an array of values. Possible values: 2023, 2024, 2025.',
             ],
             'crash_person_id' => [
                 'type' => 'string',
@@ -10911,14 +11998,14 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Road Surface Condition. Provide a comma-separated list or an array of values. Possible values: Dry, Ice, Not reported, Other, Sand, mud, dirt, oil, gravel, Slush, Snow, Unknown, Water (standing, moving), Wet.',
+                'description' => 'Filter by Road Surface Condition. Provide a comma-separated list or an array of values. Possible values: Dry, Ice, Not reported, Other, Reported but invalid, Sand, mud, dirt, oil, gravel, Slush, Snow, Unknown, Water (standing, moving), Wet.',
             ],
             'first_hrmf_event_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by First Harmful Event. Provide a comma-separated list or an array of values. Possible values: Collision with animal - deer, Collision with animal - other, Collision with bridge, Collision with bridge overhead structure, Collision with curb, Collision with cyclist, Collision with ditch, Collision with embankment, Collision with guardrail, Collision with median barrier, Collision with motor vehicle in traffic, Collision with other light pole or other post/support, Collision with other movable object, Collision with Other Vulnerable User, Collision with parked motor vehicle, Collision with pedestrian, Collision with railway vehicle (e.g., train, engine), Collision with tree, Collision with unknown fixed object, Collision with utility pole, Collision with work zone maintenance equipment, Collison with moped, Jackknife, Not reported, Other, Other non-collision, Overturn/rollover, Unknown, Unknown non-collision.',
+                'description' => 'Filter by First Harmful Event. Provide a comma-separated list or an array of values. Possible values: Collision with animal - deer, Collision with animal - other, Collision with bridge, Collision with bridge overhead structure, Collision with curb, Collision with cyclist, Collision with ditch, Collision with embankment, Collision with guardrail, Collision with median barrier, Collision with motor vehicle in traffic, Collision with other light pole or other post/support, Collision with other movable object, Collision with Other Vulnerable User, Collision with parked motor vehicle, Collision with pedestrian, Collision with railway vehicle (e.g., train, engine), Collision with tree, Collision with unknown fixed object, Collision with utility pole, Collision with work zone maintenance equipment, Collison with moped, Jackknife, Not reported, Other, Other non-collision, Overturn/rollover, Reported but invalid, Unknown, Unknown non-collision.',
             ],
             'most_hrmfl_evt_cl' => [
                 'type' => 'string',
@@ -10985,14 +12072,14 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Roadway Junction Type. Provide a comma-separated list or an array of values. Possible values: Driveway, Five-point or more, Four-way intersection, Not at junction, Not reported, Off-ramp, On-ramp, Railway grade crossing, T-intersection, Traffic circle, Unknown, Y-intersection.',
+                'description' => 'Filter by Roadway Junction Type. Provide a comma-separated list or an array of values. Possible values: Driveway, Five-point or more, Four-way intersection, Not at junction, Not reported, Off-ramp, On-ramp, Railway grade crossing, Reported but invalid, T-intersection, Traffic circle, Unknown, Y-intersection.',
             ],
             'traf_cntrl_devc_type_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Traffic Control Device Type. Provide a comma-separated list or an array of values. Possible values: Flashing traffic control signal, No controls, Not reported, Pedestrian Crossing signal/beacon, Railway crossing device, School zone signs, Stop signs, Traffic control signal, Unknown, Warning signs, Yield signs.',
+                'description' => 'Filter by Traffic Control Device Type. Provide a comma-separated list or an array of values. Possible values: Flashing traffic control signal, No controls, Not reported, Pedestrian Crossing signal/beacon, Railway crossing device, Reported but invalid, School zone signs, Stop signs, Traffic control signal, Unknown, Warning signs, Yield signs.',
             ],
             'trafy_descr_descr' => [
                 'type' => 'array',
@@ -11006,14 +12093,14 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Jurisdiction-linked RD. Provide a comma-separated list or an array of values. Possible values: City or Town accepted road, County Institutional, Department of Conservation and Recreation, Federal Park or Forest, Massachusetts Department of Transportation, Massachusetts Port Authority, Private, State Institutional, State Park or Forest, Unaccepted by city or town, US Air Force, US Army, US Army Corps of Engineers.',
+                'description' => 'Filter by Jurisdiction-linked RD. Provide a comma-separated list or an array of values. Possible values: City or Town accepted road, County Institutional, Department of Conservation and Recreation, Federal Institutional, Federal Park or Forest, Massachusetts Department of Transportation, Massachusetts Port Authority, Other Federal, Private, State college or university, State Institutional, State Park or Forest, Unaccepted by city or town, US Air Force, US Army, US Army Corps of Engineers, US Navy.',
             ],
             'first_hrmf_event_loc_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by First Harmful Event Location. Provide a comma-separated list or an array of values. Possible values: Median, Not reported, Outside roadway, Roadside, Roadway, Shoulder - paved, Shoulder - travel lane, Shoulder - unpaved, Unknown.',
+                'description' => 'Filter by First Harmful Event Location. Provide a comma-separated list or an array of values. Possible values: Median, Not reported, Outside roadway, Reported but invalid, Roadside, Roadway, Shoulder - paved, Shoulder - travel lane, Shoulder - unpaved, Unknown.',
             ],
             'is_geocoded_status' => [
                 'type' => 'array',
@@ -11123,11 +12210,8 @@ Cambridge, MA 02139
                 'description' => 'Filter by County Name. Provide a comma-separated list or an array of values. Possible values: BARNSTABLE, BERKSHIRE, BRISTOL, DUKES, ESSEX, FRANKLIN, HAMPDEN, HAMPSHIRE, MIDDLESEX, NANTUCKET, NORFOLK, PLYMOUTH, SUFFOLK, WORCESTER.',
             ],
             'fmsca_rptbl_cl' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by FMCSA Reportable (All Vehicles). Provide a comma-separated list or an array of values. Possible values: V1:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally re, V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable), V1:(No, not federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor, V1:(No, not federally reportable) / V2:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor, V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(Yes, federally reportable) / V5:(No, not federally reportable), V1:(No, not federally reportable) / V2:(Yes, federally reportable) / V3:(Yes, federally reportable), V1:(Yes, federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable) / V5:(No, not federally reportable) / V6:(No, not federally reportable) / V7:(No, not federally repor, V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable), V1:(Yes, federally reportable) / V2:(No, not federally reportable) / V3:(Yes, federally reportable) / V4:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(Yes, federally reportable), V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable), V1:(Yes, federally reportable) / V2:(Yes, federally reportable) / V3:(No, not federally reportable) / V4:(No, not federally reportable), V2:(No, not federally reportable), V2:(No, not federally reportable) / V3:(No, not federally reportable).',
+                'type' => 'string',
+                'description' => 'Filter by FMCSA Reportable (All Vehicles).',
             ],
             'fmsca_rptbl' => [
                 'type' => 'boolean',
@@ -11142,7 +12226,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Locality. Provide a comma-separated list or an array of values. Possible values: HYDE PARK, MATTAPAN, THORNDIKE.',
+                'description' => 'Filter by Locality. Provide a comma-separated list or an array of values. Possible values: CHARLESTOWN, FLORENCE, HYANNIS, HYDE PARK, LEEDS, MATTAPAN, MONTAGUE CENTER, ROSLINDALE, ROXBURY, THORNDIKE.',
             ],
             'road_cntrb_descr' => [
                 'type' => 'array',
@@ -11155,19 +12239,20 @@ Cambridge, MA 02139
                 'type' => 'boolean',
                 'description' => 'Filter by School Bus Related.',
             ],
-            'speed_limit' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Speed Limit. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 5, 8, 9, 10, 14, 15, 20, 22, 23, 24, 25, 26, 28, 29, 30, 35, 36, 40, 43, 45, 50, 55, 60, 65, 85, 88.',
+            'speed_limit_min' => [
+                'type' => 'integer',
+                'description' => 'Minimum value for Speed Limit.',
+            ],
+            'speed_limit_max' => [
+                'type' => 'integer',
+                'description' => 'Maximum value for Speed Limit.',
             ],
             'traf_cntrl_devc_func_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Traffic Control Device Functioning. Provide a comma-separated list or an array of values. Possible values: No, device not functioning, Not reported, Unknown, Yes, device functioning.',
+                'description' => 'Filter by Traffic Control Device Functioning. Provide a comma-separated list or an array of values. Possible values: No, device not functioning, Not reported, Reported but invalid, Unknown, Yes, device functioning.',
             ],
             'work_zone_reld_descr' => [
                 'type' => 'boolean',
@@ -11186,7 +12271,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by AADT Year-linked RD. Provide a comma-separated list or an array of values. Possible values: 2009, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020.',
+                'description' => 'Filter by AADT Year-linked RD. Provide a comma-separated list or an array of values. Possible values: 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020.',
             ],
             'pk_pct_sut' => [
                 'type' => 'string',
@@ -11216,28 +12301,28 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Truck Route-linked RD. Provide a comma-separated list or an array of values. Possible values: Designated truck route ONLY under State Authority.  Fully available to both types of STAA vehicles described above, Not a parkway - not on a designated truck route.',
+                'description' => 'Filter by Truck Route-linked RD. Provide a comma-separated list or an array of values. Possible values: DCR Parkway - Recreational Vehicles Only, Designated truck route ONLY under State Authority.  Fully available to both types of STAA vehicles described above, Not a parkway - not on a designated truck route.',
             ],
             'lt_sidewlk' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Left Sidewalk Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 26.0, 27.0, 30.0.',
+                'description' => 'Filter by Left Sidewalk Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 23.0, 26.0, 27.0, 28.0, 30.0.',
             ],
             'rt_sidewlk' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Right Sidewalk Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 22.0, 26.0.',
+                'description' => 'Filter by Right Sidewalk Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 22.0, 24.0, 26.0, 50.0.',
             ],
             'shldr_lt_w' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Left Shoulder Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 13.0, 17.0, 20.0, 22.0.',
+                'description' => 'Filter by Left Shoulder Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 13.0, 14.0, 15.0, 17.0, 20.0, 22.0, 24.0, 28.0.',
             ],
             'shldr_lt_t' => [
                 'type' => 'array',
@@ -11262,7 +12347,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Right Shoulder Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 22.0, 23.0, 30.0.',
+                'description' => 'Filter by Right Shoulder Width-linked RD. Provide a comma-separated list or an array of values. Possible values: 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 22.0, 23.0, 24.0, 26.0, 30.0, 36.0.',
             ],
             'shldr_rt_t' => [
                 'type' => 'array',
@@ -11276,7 +12361,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Number of Travel Lanes-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5.',
+                'description' => 'Filter by Number of Travel Lanes-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6.',
             ],
             'opp_lanes' => [
                 'type' => 'array',
@@ -11315,7 +12400,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Urbanized Area-linked RD. Provide a comma-separated list or an array of values. Possible values: Athol, Barnstable Town, Boston (MA-NH-RI), Greenfield, Lee, Leominster-Fitchburg, Nantucket, Nashua (NH-MA), New Bedford, North Adams (MA-VT), North Brookfield, Pittsfield, Providence (RI-MA), Provincetown, RURAL, South Deerfield, Springfield (MA-CT), Vineyard Haven, Ware, Worcester (MA-CT).',
+                'description' => 'Filter by Urbanized Area-linked RD. Provide a comma-separated list or an array of values. Possible values: Athol, Barnstable Town, Boston (MA-NH-RI), Great Barrington, Greenfield, Lee, Leominster-Fitchburg, Nantucket, Nashua (NH-MA), New Bedford, North Adams (MA-VT), North Brookfield, Pittsfield, Providence (RI-MA), Provincetown, RURAL, South Deerfield, Springfield (MA-CT), Vineyard Haven, Ware, Worcester (MA-CT).',
             ],
             'fd_aid_rte' => [
                 'type' => 'string',
@@ -11326,7 +12411,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Facility Type-linked RD. Provide a comma-separated list or an array of values. Possible values: Collector - Distributor, Doubledeck, Mainline roadway, Ramp - NB/EB, Ramp - SB/WB, Rotary, Roundabout, Simple Ramp - Tunnel, Simple Ramp/ Channelized Turning Lane, Tunnel.',
+                'description' => 'Filter by Facility Type-linked RD. Provide a comma-separated list or an array of values. Possible values: Collector - Distributor, Doubledeck, Mainline roadway, Private Way, Ramp - NB/EB, Ramp - SB/WB, Rotary, Roundabout, Simple Ramp - Tunnel, Simple Ramp/ Channelized Turning Lane, Tunnel.',
             ],
             'operation' => [
                 'type' => 'array',
@@ -11354,7 +12439,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Speed Limit-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 10, 15, 20, 24, 25, 30, 35, 40, 45, 50, 55, 60, 65, 99.',
+                'description' => 'Filter by Speed Limit-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 5, 10, 15, 20, 24, 25, 30, 35, 40, 45, 50, 55, 60, 65, 99.',
             ],
             'streetname' => [
                 'type' => 'string',
@@ -11395,7 +12480,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by AADT Derivation-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, AADT synchronized with other stations on the segment, Actual, Calculated from Partial Counts, Combined from child AADT\'s, Doubled from single direction, Estimate, Grown, Grown from Prior Year HPMS Network, Modified by Ramp Balancing, Pulled back from HPMS network estimation routine.',
+                'description' => 'Filter by AADT Derivation-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, AADT synchronized with other stations on the segment, Actual, Calculated from Partial Counts, Combined from child AADT\'s, Doubled from single direction, Estimate, Grown, Grown from Prior Year HPMS Network, Modified by Ramp Balancing, Pulled back from HPMS network estimation routine, Unknown Source.',
             ],
             'statn_num_min' => [
                 'type' => 'integer',
@@ -11410,7 +12495,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Opposing Direction Speed Limit-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 15, 20, 25, 30, 35, 40, 45, 50, 55, 99.',
+                'description' => 'Filter by Opposing Direction Speed Limit-linked RD. Provide a comma-separated list or an array of values. Possible values: 0, 15, 20, 25, 30, 35, 40, 45, 50, 55, 65, 99.',
             ],
             'shldr_ul_t' => [
                 'type' => 'array',
@@ -11431,14 +12516,14 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Truck Exclusion Type-linked RD. Provide a comma-separated list or an array of values. Possible values: All vehicles over 10 tons excluded, All vehicles over 2.5 tons excluded, All vehicles over 2000 pounds excluded, All vehicles over 28 feet in length excluded, All vehicles over 3 tons excluded, All vehicles over 5 tons excluded, Cambridge Overnight Exclusions, Commercial vehicles over 5 tons carry capacity excluded, Hazardous Truck Route.',
+                'description' => 'Filter by Truck Exclusion Type-linked RD. Provide a comma-separated list or an array of values. Possible values: All vehicles over 10 tons excluded, All vehicles over 2.5 tons excluded, All vehicles over 20 tons excluded, All vehicles over 2000 pounds excluded, All vehicles over 28 feet in length excluded, All vehicles over 3 tons excluded, All vehicles over 5 tons excluded, Cambridge Overnight Exclusions, Commercial vehicles over 5 tons carry capacity excluded, Hazardous Truck Route.',
             ],
             't_exc_time' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Truck Exclusion Time-linked RD. Provide a comma-separated list or an array of values. Possible values: 10PM to 6AM, 7 Days, 11PM to 6AM, 7 Days, 11PM to 7AM, 7 Days, 24 Hours, 7 Days, 4PM to 6PM, 5AM to 8PM, 7 Days, 6AM to 10PM, 7 Days, 6AM to 6PM, 7 Days, 6AM to 7PM, 7 Days, 6PM to 6AM, 7 Days, 7AM to 6PM, 7 Days, 7PM to 7AM, 7 Days, 8AM to 930AM and 2PM to 330PM, School Days Only, 8PM to 6AM, 7 Days, 8PM to 7AM, 7 Days, 9PM to 6AM, 7 Days, 9PM to 7AM, 7 Days, None.',
+                'description' => 'Filter by Truck Exclusion Time-linked RD. Provide a comma-separated list or an array of values. Possible values: 10PM to 6AM, 7 Days, 11PM to 6AM, 7 Days, 11PM to 6AM, NB Only, 7 Days, 11PM to 7AM, 7 Days, 24 Hours, 7 Days, 4PM to 6PM, 5AM to 8PM, 7 Days, 6AM to 10PM, 7 Days, 6AM to 6PM, 7 Days, 6AM to 7PM, 7 Days, 6PM to 6AM, 7 Days, 7AM to 11PM, 7 Days, 7AM to 6PM, 7 Days, 7PM to 7AM, 7 Days, 8AM to 930AM and 2PM to 330PM, School Days Only, 8PM to 6AM, 7 Days, 8PM to 7AM, 7 Days, 9PM to 6AM, 7 Days, 9PM to 7AM, 7 Days, None.',
             ],
             'f_f_class' => [
                 'type' => 'array',
@@ -11452,7 +12537,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vehicle Unit Number. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13.',
+                'description' => 'Filter by Vehicle Unit Number. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14.',
             ],
             'alc_suspd_type_descr' => [
                 'type' => 'boolean',
@@ -11502,7 +12587,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Maximum Injury Severity in Vehicle. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
+                'description' => 'Filter by Maximum Injury Severity in Vehicle. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), No injury, Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
             ],
             'most_hrmf_event' => [
                 'type' => 'array',
@@ -11516,7 +12601,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Total Occupants in Vehicle. Provide a comma-separated list or an array of values. Possible values: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 24, 26, 28, 32, 33, 34, 35, 38, 40, 46, 49, 56.',
+                'description' => 'Filter by Total Occupants in Vehicle. Provide a comma-separated list or an array of values. Possible values: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 45, 46, 47, 49, 50, 54.',
             ],
             'vehc_manr_act_descr' => [
                 'type' => 'array',
@@ -11561,7 +12646,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vehicle Towed From Scene. Provide a comma-separated list or an array of values. Possible values: No, Not reported, Unknown, Yes, other reason not disabled, Yes, vehicle or trailer disabled.',
+                'description' => 'Filter by Vehicle Towed From Scene. Provide a comma-separated list or an array of values. Possible values: Invalid, No, Not reported, Reported but invalid, Unknown, Yes, other reason not disabled, Yes, vehicle or trailer disabled.',
             ],
             'trvl_dirc_descr' => [
                 'type' => 'array',
@@ -11607,14 +12692,14 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Ejection Description. Provide a comma-separated list or an array of values. Possible values: Not applicable, Not ejected, Not reported, Partially ejected, Totally ejected, Unknown.',
+                'description' => 'Filter by Ejection Description. Provide a comma-separated list or an array of values. Possible values: Not applicable, Not ejected, Not reported, Partially ejected, Reported but invalid, Totally ejected, Unknown.',
             ],
             'injy_stat_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Injury Type. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
+                'description' => 'Filter by Injury Type. Provide a comma-separated list or an array of values. Possible values: Deceased not caused by crash, Fatal injury (K), No Apparent Injury (O), No injury, Non-fatal injury - Possible, Not Applicable, Not reported, Possible Injury (C), Reported but invalid, Suspected Minor Injury (B), Suspected Serious Injury (A), Unknown.',
             ],
             'med_facly' => [
                 'type' => 'string',
@@ -11647,7 +12732,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Safety Equipment 1. Provide a comma-separated list or an array of values. Possible values: Helmet used, Lighting, None used, Not reported, Other, Reflective clothing, Reported but invalid, Unknown.',
+                'description' => 'Filter by Safety Equipment 1. Provide a comma-separated list or an array of values. Possible values: Helmet used, Lighting, None used, Not reported, Other, Protective pads used (elbows, knees, shins, etc.), Reflective clothing, Reported but invalid, Unknown.',
             ],
             'sfty_equp_desc_2' => [
                 'type' => 'string',
@@ -11658,25 +12743,22 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Sex. Provide a comma-separated list or an array of values. Possible values: F - Female, M - Male, N/A, U - Unknown, X - Non-Binary.',
+                'description' => 'Filter by Sex. Provide a comma-separated list or an array of values. Possible values: F - Female, M - Male, N/A, Not reported, Reported but invalid, U - Unknown, X - Non-Binary.',
             ],
             'trnsd_by_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Transported By. Provide a comma-separated list or an array of values. Possible values: EMS Ground, EMS(Emergency Medical Service), Not reported, Not transported, Other, Police, Refused Transport, Unknown.',
+                'description' => 'Filter by Transported By. Provide a comma-separated list or an array of values. Possible values: EMS Ground, EMS(Emergency Medical Service), Not reported, Not transported, Other, Police, Refused Transport, Reported but invalid, Unknown.',
             ],
             'non_mtrst_type_cl' => [
                 'type' => 'string',
                 'description' => 'Filter by Vulnerable User Type (All Persons).',
             ],
             'non_mtrst_actn_cl' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Vulnerable User Action (All Persons). Provide a comma-separated list or an array of values. Possible values: VU2: Approaching or leaving vehicle, VU2: Approaching or leaving vehicle / VU3: Standing / VU4: Approaching or leaving vehicle, VU2: Entering or crossing location, VU2: Entering or crossing location / VU3: Entering or crossing location, VU2: Entering or crossing location / VU3: Entering or crossing location / VU4: Entering or crossing location, VU2: None, VU2: Other, VU2: Other / VU3: Other, VU2: Pushing vehicle, VU2: Standing, VU2: Standing / VU3: Other / VU4: Other, VU2: Standing / VU3: Standing, VU2: Walking, running or cycling, VU2: Walking, running or cycling / VU3: Other, VU2: Walking, running or cycling / VU3: Walking, running or cycling, VU2: Walking, running or cycling / VU3: Walking, running or cycling / VU4: Walking, running or cycling / VU5: Walking, running or cycling, VU2: Working, VU2: Working / VU4: Working / VU5: Working, VU2: Working on vehicle, VU3: Approaching or leaving vehicle, VU3: Entering or crossing location, VU3: Entering or crossing location / VU4: Entering or crossing location, VU3: None, VU3: Other, VU3: Other / VU4: Other / VU5: Other, VU3: Standing, VU3: Walking, running or cycling, VU3: Walking, running or cycling / VU4: Walking, running or cycling, VU3: Working, VU4: Approaching or leaving vehicle, VU4: Entering or crossing location, VU4: None, VU4: Other, VU4: Standing, VU4: Walking, running or cycling, VU4: Working, VU4: Working / VU5: Working / VU6: Working, VU5: Entering or crossing location, VU5: Entering or crossing location / VU6: Entering or crossing location, VU5: Standing, VU5: Walking, running or cycling, VU5: Walking, running or cycling / VU6: Walking, running or cycling, VU6: Approaching or leaving vehicle, VU6: Standing, VU6: Working on vehicle.',
+                'type' => 'string',
+                'description' => 'Filter by Vulnerable User Action (All Persons).',
             ],
             'non_mtrst_loc_cl' => [
                 'type' => 'string',
@@ -11694,28 +12776,28 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Condition. Provide a comma-separated list or an array of values. Possible values: Apparently normal, Not reported, Unknown.',
+                'description' => 'Filter by Vulnerable User Condition. Provide a comma-separated list or an array of values. Possible values: Apparently normal, Emotional (e.g., depression, angry, disturbed), Fell asleep, fainted, fatigue, etc., Illness, Not reported, Other, Physical impairment, Under the influence of medications/drugs/alcohol, Unknown.',
             ],
             'non_mtrst_loc_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Location. Provide a comma-separated list or an array of values. Possible values: At intersection but no crosswalk, In roadway, Island, Marked crosswalk at intersection (includes use of paint raised or other roadway material), Non-intersection crosswalk, Not in roadway, Not reported, On-Street Bike Lanes, On-Street Buffered Bike Lanes, Other, Raised Crosswalk, Separated Bike Lanes, Shared-use path or trails Crossing, Shoulder, Sidewalk, Unknown.',
+                'description' => 'Filter by Vulnerable User Location. Provide a comma-separated list or an array of values. Possible values: At intersection but no crosswalk, In roadway, Island, Marked crosswalk at intersection (includes use of paint raised or other roadway material), Median (but not on shoulder), Non-intersection crosswalk, Not in roadway, Not reported, On-Street Bike Lanes, On-Street Buffered Bike Lanes, Other, Raised Crosswalk, Reported but invalid, Separated Bike Lanes, Shared-use path or trails Crossing, Shoulder, Sidewalk, Unknown.',
             ],
             'non_mtrst_type_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Type. Provide a comma-separated list or an array of values. Possible values: Bicyclist, Electric Personal Assistive Mobility Device User, Emergency Responder - Outside of vehicle, Farm Equipment Operator, Hand Cyclist, In-Line Skater, Motorized Bicyclist, Motorized Scooter Rider, Non-Motorized Scooter Rider, Non-Motorized Wheelchair User, Not reported, Other, Pedestrian, Roadway Worker - Outside of vehicle, Skateboarder, Train/Trolley passenger, Tricyclist, Unknown, Utility Worker – Outside of vehicle.',
+                'description' => 'Filter by Vulnerable User Type. Provide a comma-separated list or an array of values. Possible values: Bicyclist, Electric Personal Assistive Mobility Device User, Emergency Responder - Outside of vehicle, Farm Equipment Operator, Hand Cyclist, In-Line Skater, Motorized Bicyclist, Motorized Scooter Rider, Non-Motorized Scooter Rider, Non-Motorized Wheelchair User, Not reported, Other, Other Micromobility Device User, Pedestrian, Roadway Worker - Outside of vehicle, Roller Skater, Skateboarder, Train/Trolley passenger, Tricyclist, Unknown, Utility Worker – Outside of vehicle.',
             ],
             'non_mtrst_origin_dest_cl' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable Users Origin Destination (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: Other, VU2: Going to or from a Delivery Vehicle, VU2: Going to or from a Delivery Vehicle / VU3: Going to or from a Delivery Vehicle / VU4: Going to or from a Delivery Vehicle, VU2: Going to or from a Mailbox, VU2: Going to or from a School Bus or a School Bus Stop, VU2: Going to or from a School Bus or a School Bus Stop / VU3: Going to or from a School Bus or a School Bus Stop, VU2: Going to or from an Ice Cream or Food Truck, VU2: Going to or from School (K-12), VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12), VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12) / VU4: Going to or from School (K-12), VU2: Going to or from Transit, VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit, VU2: Other, VU2: Other / VU3: Other, VU2: Other / VU3: Other / VU4: Other / VU5: Other, VU2: Other / VU4: Other / VU5: Other, VU3: Going to or from a Delivery Vehicle, VU3: Going to or from a School Bus or a School Bus Stop, VU3: Going to or from School (K-12), VU3: Going to or from Transit, VU3: Other, VU3: Other / VU4: Other, VU4: Going to or from School (K-12), VU4: Going to or from Transit, VU4: Other, VU4: Other / VU5: Other / VU6: Other, VU5: Going to or from Transit, VU5: Other, VU5: Other / VU6: Other, VU6: Other.',
+                'description' => 'Filter by Vulnerable Users Origin Destination (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: Other, VU11: Other, VU17: Other, VU2: Going to or from a Delivery Vehicle, VU2: Going to or from a Delivery Vehicle / VU3: Going to or from a Delivery Vehicle / VU4: Going to or from a Delivery Vehicle, VU2: Going to or from a Mailbox, VU2: Going to or from a Mailbox / VU3: Going to or from a Mailbox, VU2: Going to or from a School Bus or a School Bus Stop, VU2: Going to or from a School Bus or a School Bus Stop / VU3: Going to or from a School Bus or a School Bus Stop, VU2: Going to or from an Ice Cream or Food Truck, VU2: Going to or from School (K-12), VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12), VU2: Going to or from School (K-12) / VU3: Going to or from School (K-12) / VU4: Going to or from School (K-12), VU2: Going to or from Transit, VU2: Going to or from Transit / VU3: Going to or from Transit, VU2: Going to or from Transit / VU3: Going to or from Transit / VU4: Going to or from Transit, VU2: Other, VU2: Other / VU3: Other, VU2: Other / VU3: Other / VU4: Other / VU5: Other, VU2: Other / VU4: Other, VU2: Other / VU4: Other / VU5: Other, VU3: Going to or from a Delivery Vehicle, VU3: Going to or from a Mailbox, VU3: Going to or from a School Bus or a School Bus Stop, VU3: Going to or from an Ice Cream or Food Truck, VU3: Going to or from School (K-12), VU3: Going to or from Transit, VU3: Other, VU3: Other / VU4: Other, VU3: Other / VU5: Other, VU4: Going to or from a Delivery Vehicle, VU4: Going to or from School (K-12), VU4: Going to or from School (K-12) / VU5: Going to or from School (K-12), VU4: Going to or from Transit, VU4: Other, VU4: Other / VU5: Other, VU4: Other / VU5: Other / VU6: Other, VU5: Going to or from School (K-12), VU5: Going to or from Transit, VU5: Other, VU5: Other / VU6: Other, VU6: Going to or from School (K-12), VU6: Going to or from Transit, VU6: Other, VU7: Other, VU8: Other, VU8: Other / VU9: Other.',
             ],
             'non_mtrst_cntrb_circ_cl' => [
                 'type' => 'string',
@@ -11726,67 +12808,64 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable Users Distracted By (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10:(Not Distracted), VU2:(Manually operating an electronic device (texting, typing, dialing)), VU2:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted), VU2:(Not Distracted) VU4:(Not Distracted) VU5:(Not Distracted), VU2:(Not Distracted),(Manually operating an electronic device (texting, typing, dialing)), VU2:(Other activity (searching, eating, personal hygiene, etc.)), VU2:(Talking on hand-held electronic device), VU2:(Talking on hands-free electronic device), VU2:(Utilizing listening device), VU3:(Manually operating an electronic device (texting, typing, dialing)), VU3:(Not Distracted), VU3:(Other activity (searching, eating, personal hygiene, etc.)), VU3:(Passenger), VU3:(Utilizing listening device), VU4:(Not Distracted), VU4:(Not Distracted) VU5:(Not Distracted) VU6:(Not Distracted), VU5:(Not Distracted), VU5:(Not Distracted) VU6:(Not Distracted), VU5:(Other activity (searching, eating, personal hygiene, etc.)), VU6:(Not Distracted).',
+                'description' => 'Filter by Vulnerable Users Distracted By (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10:(Not Distracted), VU11:(Not Distracted), VU17:(Not Distracted), VU2:(Manually operating an electronic device (texting, typing, dialing)), VU2:(Manually operating an electronic device (texting, typing, dialing)),(Talking on hand-held electronic device), VU2:(Manually operating an electronic device (texting, typing, dialing)),(Utilizing listening device), VU2:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted), VU2:(Not Distracted) VU3:(Not Distracted) VU4:(Not Distracted), VU2:(Not Distracted) VU3:(Passenger), VU2:(Not Distracted) VU4:(Not Distracted), VU2:(Not Distracted) VU4:(Not Distracted) VU5:(Not Distracted), VU2:(Not Distracted),(Manually operating an electronic device (texting, typing, dialing)), VU2:(Not Distracted),(Other activity (searching, eating, personal hygiene, etc.)), VU2:(Other activity (searching, eating, personal hygiene, etc.)), VU2:(Other activity (searching, eating, personal hygiene, etc.)),(Not Distracted), VU2:(Reported but invalid), VU2:(Talking on hand-held electronic device), VU2:(Talking on hands-free electronic device), VU2:(Utilizing listening device), VU2:(Utilizing listening device),(Not Distracted), VU3:(Manually operating an electronic device (texting, typing, dialing)), VU3:(Not Distracted), VU3:(Not Distracted) VU4:(Not Distracted), VU3:(Not Distracted) VU5:(Not Distracted), VU3:(Other activity (searching, eating, personal hygiene, etc.)), VU3:(Passenger), VU3:(Reported but invalid), VU3:(Talking on hand-held electronic device), VU3:(Utilizing listening device), VU4:(Manually operating an electronic device (texting, typing, dialing)), VU4:(Not Distracted), VU4:(Not Distracted) VU5:(Not Distracted), VU4:(Not Distracted) VU5:(Not Distracted) VU6:(Not Distracted), VU4:(Other activity (searching, eating, personal hygiene, etc.)), VU4:(Talking on hands-free electronic device), VU5:(Not Distracted), VU5:(Not Distracted) VU6:(Not Distracted), VU5:(Other activity (searching, eating, personal hygiene, etc.)), VU6:(Not Distracted), VU7:(Not Distracted), VU7:(Not Distracted) VU8:(Not Distracted) VU9:(Not Distracted), VU7:(Other activity (searching, eating, personal hygiene, etc.)), VU8:(Not Distracted).',
             ],
             'non_mtrst_alc_suspd_type_cl' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable Users Alcohol Suspected Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: No, VU2: No, VU2: No / VU3: No, VU2: No / VU3: No / VU4: No, VU2: No / VU3: No / VU4: No / VU5: No, VU2: No / VU4: No / VU5: No, VU2: Yes, VU3: No, VU3: No / VU4: No, VU3: Yes, VU4: No, VU4: No / VU5: No / VU6: No, VU5: No, VU5: No / VU6: No, VU5: Yes, VU6: No.',
+                'description' => 'Filter by Vulnerable Users Alcohol Suspected Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: No, VU11: No, VU17: No, VU2: No, VU2: No / VU3: No, VU2: No / VU3: No / VU4: No, VU2: No / VU3: No / VU4: No / VU5: No, VU2: No / VU4: No, VU2: No / VU4: No / VU5: No, VU2: Yes, VU2: Yes / VU3: No, VU2: Yes / VU3: Yes, VU3: No, VU3: No / VU4: No, VU3: No / VU5: No, VU3: Yes, VU4: No, VU4: No / VU5: No, VU4: No / VU5: No / VU6: No, VU4: No / VU5: Yes / VU6: No, VU4: Yes, VU5: No, VU5: No / VU6: No, VU5: Yes, VU6: No, VU7: No, VU7: No / VU8: No.',
             ],
             'non_mtrst_drug_suspd_type_cl' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable Users Drug Suspected Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: No, VU2: No, VU2: No / VU3: No, VU2: No / VU3: No / VU4: No, VU2: No / VU3: No / VU4: No / VU5: No, VU2: No / VU4: No / VU5: No, VU2: Yes, VU3: No, VU3: No / VU4: No, VU4: No, VU4: No / VU5: No / VU6: No, VU5: No, VU5: No / VU6: No, VU6: No.',
+                'description' => 'Filter by Vulnerable Users Drug Suspected Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: No, VU11: No, VU17: No, VU2: No, VU2: No / VU3: No, VU2: No / VU3: No / VU4: No, VU2: No / VU3: No / VU4: No / VU5: No, VU2: No / VU4: No, VU2: No / VU4: No / VU5: No, VU2: Yes, VU3: No, VU3: No / VU4: No, VU3: No / VU5: No, VU3: Yes, VU4: No, VU4: No / VU5: No, VU4: No / VU5: No / VU6: No, VU4: Yes, VU5: No, VU5: No / VU6: No, VU5: Yes, VU6: No, VU7: No, VU7: No / VU8: No / VU9: No.',
             ],
             'non_mtrst_event_seq_cl' => [
                 'type' => 'string',
                 'description' => 'Filter by Vulnerable Users Sequence of Events (All Persons).',
             ],
             'traffic_control_type_descr' => [
-                'type' => 'array',
-                'items' => [
-                    'type' => 'string',
-                ],
-                'description' => 'Filter by Vulnerable Users Traffic Control Device Type (All Persons). Provide a comma-separated list or an array of values. Possible values: VU10: None, VU2: None, VU2: None / VU3: None, VU2: None / VU3: None / VU4: None, VU2: None / VU3: None / VU4: None / VU5: None, VU2: None / VU3: Person - Crossing guard, VU2: None / VU4: None / VU5: None, VU2: Other, VU2: Other / VU3: Other, VU2: Person - Crossing guard, VU2: Person - Crossing guard / VU3: Person - Crossing guard, VU2: VU Crossing Sign, VU2: VU Crossing Sign / VU3: VU Crossing Sign, VU2: VU Crossing Signal, VU2: VU Crossing Signal / VU3: VU Crossing Signal, VU2: VU Crossing Signal / VU3: VU Crossing Signal / VU4: VU Crossing Signal, VU2: VU Prohibited Sign, VU3: None, VU3: None / VU4: None, VU3: Other, VU3: Other / VU4: Other, VU3: Person - Crossing guard, VU3: VU Crossing Sign, VU3: VU Crossing Signal, VU3: VU Prohibited Sign, VU4: None, VU4: Other, VU4: Other / VU5: Other / VU6: Other, VU4: VU Crossing Sign, VU4: VU Crossing Signal, VU4: VU Prohibited Sign, VU5: None, VU5: Other, VU5: VU Crossing Signal, VU5: VU Crossing Signal / VU6: VU Crossing Signal, VU6: None.',
+                'type' => 'string',
+                'description' => 'Filter by Vulnerable Users Traffic Control Device Type (All Persons).',
             ],
             'non_motorist_cntrb_circ_1' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Contribution 1. Provide a comma-separated list or an array of values. Possible values: Crossing of Roadway or Intersection, Dart/Dash, Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching), Distracted, Entering/Exiting Parked/Standing Vehicle, Failure to Obey Traffic Sign(s), Signal(s), or Officer(s), Failure to use Proper Crosswalk, Failure to Yield Right-Of-Way, Fleeing/Evading Law Enforcement, In Roadway (Standing, Lying, Working, Playing, etc.), Inattentive (Talking, Eating, etc.), None, Not reported, Not Visible (Dark Clothing, No Lighting, etc.), Other (Explain in Narrative), Passing, Traveling Wrong Way, Turn/Merge, Unknown.',
+                'description' => 'Filter by Vulnerable User Contribution 1. Provide a comma-separated list or an array of values. Possible values: Crossing of Roadway or Intersection, Dart/Dash, Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching), Distracted, Entering/Exiting Parked/Standing Vehicle, Failure to Obey Traffic Sign(s), Signal(s), or Officer(s), Failure to use Proper Crosswalk, Failure to Yield Right-Of-Way, Fleeing/Evading Law Enforcement, In Roadway (Standing, Lying, Working, Playing, etc.), Inattentive (Talking, Eating, etc.), None, Not reported, Not Visible (Dark Clothing, No Lighting, etc.), Other (Explain in Narrative), Passing, Reported but invalid, Traveling Wrong Way, Turn/Merge, Unknown.',
             ],
             'non_motorist_cntrb_circ_2' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Contribution 2. Provide a comma-separated list or an array of values. Possible values: Crossing of Roadway or Intersection, Dart/Dash, Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching), Distracted, Entering/Exiting Parked/Standing Vehicle, Failure to Obey Traffic Sign(s), Signal(s), or Officer(s), Failure to use Proper Crosswalk, Failure to Yield Right-Of-Way, In Roadway (Standing, Lying, Working, Playing, etc.), Inattentive (Talking, Eating, etc.), None, Not reported, Not Visible (Dark Clothing, No Lighting, etc.), Other (Explain in Narrative), Passing, Traveling Wrong Way, Turn/Merge, Unknown.',
+                'description' => 'Filter by Vulnerable User Contribution 2. Provide a comma-separated list or an array of values. Possible values: Crossing of Roadway or Intersection, Dart/Dash, Disabled Vehicle-Related (Working on, Pushing, Leaving/Approaching), Distracted, Entering/Exiting Parked/Standing Vehicle, Failure to Obey Traffic Sign(s), Signal(s), or Officer(s), Failure to use Proper Crosswalk, Failure to Yield Right-Of-Way, Fleeing/Evading Law Enforcement, In Roadway (Standing, Lying, Working, Playing, etc.), Inattentive (Talking, Eating, etc.), None, Not reported, Not Visible (Dark Clothing, No Lighting, etc.), Other (Explain in Narrative), Passing, Traveling Wrong Way, Turn/Merge, Unknown.',
             ],
             'non_motorist_contact_point' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Contact Point. Provide a comma-separated list or an array of values. Possible values: 03 - Right, 06 - Rear, 09 - Left, Front, Not reported, Other, Unknown.',
+                'description' => 'Filter by Vulnerable User Contact Point. Provide a comma-separated list or an array of values. Possible values: 03 - Right, 06 - Rear, 09 - Left, Front, Not reported, Other, Reported but invalid, Unknown.',
             ],
             'non_motorist_distracted_by_1' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Distracted By 1. Provide a comma-separated list or an array of values. Possible values: Manually operating an electronic device (texting, typing, dialing), Not Distracted, Not reported, Other activity (searching, eating, personal hygiene, etc.), Passenger, Talking on hand-held electronic device, Talking on hands-free electronic device, Unknown, Utilizing listening device.',
+                'description' => 'Filter by Vulnerable User Distracted By 1. Provide a comma-separated list or an array of values. Possible values: Manually operating an electronic device (texting, typing, dialing), Not Distracted, Not reported, Other activity (searching, eating, personal hygiene, etc.), Passenger, Reported but invalid, Talking on hand-held electronic device, Talking on hands-free electronic device, Unknown, Utilizing listening device.',
             ],
             'non_motorist_distracted_by_2' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Distracted By 2. Provide a comma-separated list or an array of values. Possible values: Manually operating an electronic device (texting, typing, dialing), Not Distracted, Not reported, Unknown.',
+                'description' => 'Filter by Vulnerable User Distracted By 2. Provide a comma-separated list or an array of values. Possible values: Manually operating an electronic device (texting, typing, dialing), Not Distracted, Not reported, Other activity (searching, eating, personal hygiene, etc.), Talking on hand-held electronic device, Unknown, Utilizing listening device.',
             ],
             'non_motorist_ejection_descr' => [
                 'type' => 'array',
@@ -11807,28 +12886,28 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Event Sequence 2. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Front left, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Slowed or stopped, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other, Working in Trafficway (Incident Response), Working on vehicle.',
+                'description' => 'Filter by Vulnerable User Event Sequence 2. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Back right, Collision with door opening of parked car - Front left, Collision with door opening of parked car - Front right, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Pushing vehicle, Slowed or stopped, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other, Working in Trafficway (Incident Response), Working on vehicle.',
             ],
             'non_motorist_event_sequence_3' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Event Sequence 3. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Collision with door opening of parked car - Back right, Collision with door opening of parked car - Front right, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other.',
+                'description' => 'Filter by Vulnerable User Event Sequence 3. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Back right, Collision with door opening of parked car - Front right, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Reported but invalid, Slowed or stopped, Traveling straight ahead, Turning left, Turning right, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working - other, Working in Trafficway (Incident Response), Working on vehicle.',
             ],
             'non_motorist_event_sequence_4' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Event Sequence 4. Provide a comma-separated list or an array of values. Possible values: Approaching or leaving vehicle, Collision with motor vehicle in transport, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Traveling straight ahead, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk.',
+                'description' => 'Filter by Vulnerable User Event Sequence 4. Provide a comma-separated list or an array of values. Possible values: Adjacent to Roadway (e.g., Shoulder, Median), Approaching or leaving vehicle, Changing lanes, Collision with door opening of parked car - Front left, Collision with motor vehicle in transport, Collision with parked motor vehicle, stationary, Crossing Roadway, In Roadway – Other, Not reported, Other, Overtaking/passing, Slowed or stopped, Traveling straight ahead, Turning left, Unknown, Waiting to Cross Roadway, Walking/Cycling Along Roadway Against Traffic (In or Adjacent to Travel Lane), Walking/Cycling Along Roadway with Traffic (In or Adjacent to Travel Lane), Walking/Cycling on Sidewalk, Working on vehicle.',
             ],
             'non_motorist_driver_lic_state' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Driver License State Province. Provide a comma-separated list or an array of values. Possible values: 96, AK, AZ, FL, FR, GA, ID, LA, MA, ME, NH, NJ, NY, OH, PA, RI, TX.',
+                'description' => 'Filter by Vulnerable User Driver License State Province. Provide a comma-separated list or an array of values. Possible values: 96, AK, AZ, CA, CO, CT, DC, FL, FR, GA, IA, ID, IL, KS, LA, MA, MD, ME, MI, MN, NC, NH, NJ, NV, NY, OH, ON, OT, PA, RI, SC, TX, VA, WA.',
             ],
             'non_motorist_primary_injury' => [
                 'type' => 'array',
@@ -11842,7 +12921,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Seating Position. Provide a comma-separated list or an array of values. Possible values: Enclosed passenger area, Front seat - left side, Front seat – right side, Not reported, Other, Reported but invalid, Riding on exterior, Second seat - left side, Trailing unit, Unenclosed passenger area, Unknown.',
+                'description' => 'Filter by Vulnerable User Seating Position. Provide a comma-separated list or an array of values. Possible values: Enclosed passenger area, Front seat - left side, Front seat – right side, Not reported, Other, Reported but invalid, Riding on exterior, Second seat - left side, Second seat - right side, Trailing unit, Unenclosed passenger area, Unknown.',
             ],
             'non_motorist_traffic_control' => [
                 'type' => 'array',
@@ -11863,28 +12942,28 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Origin Destination. Provide a comma-separated list or an array of values. Possible values: Going to or from a Delivery Vehicle, Going to or from a Mailbox, Going to or from a School Bus or a School Bus Stop, Going to or from an Ice Cream or Food Truck, Going to or from School (K-12), Going to or from Transit, Not Reported, Other, Unknown.',
+                'description' => 'Filter by Vulnerable User Origin Destination. Provide a comma-separated list or an array of values. Possible values: Going to or from a Delivery Vehicle, Going to or from a Mailbox, Going to or from a School Bus or a School Bus Stop, Going to or from an Ice Cream or Food Truck, Going to or from School (K-12), Going to or from Transit, Not Reported, Other, Reported but Invalid, Unknown.',
             ],
             'non_mtrst_test_type_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Test Type. Provide a comma-separated list or an array of values. Possible values: Blood, Breath, Not Reported, Test Not Given, Unknown.',
+                'description' => 'Filter by Vulnerable User Test Type. Provide a comma-separated list or an array of values. Possible values: Blood, Breath, Not Reported, Other, Test Not Given, Unknown.',
             ],
             'non_mtrst_test_status_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Test Status. Provide a comma-separated list or an array of values. Possible values: Not reported, Test Given, Test Not Given, Test Refused, Unknown.',
+                'description' => 'Filter by Vulnerable User Test Status. Provide a comma-separated list or an array of values. Possible values: Not reported, Test Given, Test Not Given, Test Refused, Unknown, Unknown, if tested.',
             ],
             'non_mtrst_test_result_descr' => [
                 'type' => 'array',
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Vulnerable User Test Result. Provide a comma-separated list or an array of values. Possible values: BAC Test Performed, Results Unknown, Not Reported, Test Not Given, Unknown, Unknown, if tested.',
+                'description' => 'Filter by Vulnerable User Test Result. Provide a comma-separated list or an array of values. Possible values: 0.00 - 0.01, 0.08 or greater, BAC Test Performed, Results Unknown, Not Reported, Positive Reading with no Actual Value, Test Not Given, Unknown, Unknown, if tested.',
             ],
             'crash_date_text_raw' => [
                 'type' => 'string',
@@ -12407,8 +13486,82 @@ Cambridge, MA 02139
             5 => [
                 'name' => 'offense_code_group',
                 'label' => 'Offense Code Group',
-                'type' => 'text',
-                'placeholder' => 'Enter Offense Code Group',
+                'type' => 'multiselect',
+                'placeholder' => 'Select Offense Code Group',
+                'options' => [
+                    0 => [
+                        'value' => 'Arson & Property Damage',
+                        'label' => 'Arson & Property Damage',
+                    ],
+                    1 => [
+                        'value' => 'Assault',
+                        'label' => 'Assault',
+                    ],
+                    2 => [
+                        'value' => 'Burglary',
+                        'label' => 'Burglary',
+                    ],
+                    3 => [
+                        'value' => 'Drug Offenses',
+                        'label' => 'Drug Offenses',
+                    ],
+                    4 => [
+                        'value' => 'Fraud & Financial Crime',
+                        'label' => 'Fraud & Financial Crime',
+                    ],
+                    5 => [
+                        'value' => 'Homicide',
+                        'label' => 'Homicide',
+                    ],
+                    6 => [
+                        'value' => 'Kidnapping & Abduction',
+                        'label' => 'Kidnapping & Abduction',
+                    ],
+                    7 => [
+                        'value' => 'Larceny & Theft',
+                        'label' => 'Larceny & Theft',
+                    ],
+                    8 => [
+                        'value' => 'Miscellaneous Criminal Offenses',
+                        'label' => 'Miscellaneous Criminal Offenses',
+                    ],
+                    9 => [
+                        'value' => 'Motor Vehicle Incidents & Violations',
+                        'label' => 'Motor Vehicle Incidents & Violations',
+                    ],
+                    10 => [
+                        'value' => 'Motor Vehicle Theft',
+                        'label' => 'Motor Vehicle Theft',
+                    ],
+                    11 => [
+                        'value' => 'Non-Criminal & Service Calls',
+                        'label' => 'Non-Criminal & Service Calls',
+                    ],
+                    12 => [
+                        'value' => 'Obstruction of Justice',
+                        'label' => 'Obstruction of Justice',
+                    ],
+                    13 => [
+                        'value' => 'Offenses Against Family & Children',
+                        'label' => 'Offenses Against Family & Children',
+                    ],
+                    14 => [
+                        'value' => 'Prostitution & Human Trafficking',
+                        'label' => 'Prostitution & Human Trafficking',
+                    ],
+                    15 => [
+                        'value' => 'Public Order Offenses',
+                        'label' => 'Public Order Offenses',
+                    ],
+                    16 => [
+                        'value' => 'Robbery',
+                        'label' => 'Robbery',
+                    ],
+                    17 => [
+                        'value' => 'Weapon Offenses',
+                        'label' => 'Weapon Offenses',
+                    ],
+                ],
             ],
             6 => [
                 'name' => 'offense_description',
@@ -12844,8 +13997,11 @@ Cambridge, MA 02139
                 'description' => 'Filter by Language Code.',
             ],
             'offense_code_group' => [
-                'type' => 'string',
-                'description' => 'Filter by Offense Code Group.',
+                'type' => 'array',
+                'items' => [
+                    'type' => 'string',
+                ],
+                'description' => 'Filter by Offense Code Group. Provide a comma-separated list or an array of values. Possible values: Arson & Property Damage, Assault, Burglary, Drug Offenses, Fraud & Financial Crime, Homicide, Kidnapping & Abduction, Larceny & Theft, Miscellaneous Criminal Offenses, Motor Vehicle Incidents & Violations, Motor Vehicle Theft, Non-Criminal & Service Calls, Obstruction of Justice, Offenses Against Family & Children, Prostitution & Human Trafficking, Public Order Offenses, Robbery, Weapon Offenses.',
             ],
             'offense_description' => [
                 'type' => 'string',
@@ -13957,10 +15113,14 @@ Cambridge, MA 02139
                         'label' => '2215',
                     ],
                     32 => [
+                        'value' => '2222',
+                        'label' => '2222',
+                    ],
+                    33 => [
                         'value' => '2446',
                         'label' => '2446',
                     ],
-                    33 => [
+                    34 => [
                         'value' => '2467',
                         'label' => '2467',
                     ],
@@ -14253,7 +15413,7 @@ Cambridge, MA 02139
                 'items' => [
                     'type' => 'string',
                 ],
-                'description' => 'Filter by Location Zipcode. Provide a comma-separated list or an array of values. Possible values: 2108, 2109, 2110, 2111, 2113, 2114, 2115, 2116, 2118, 2119, 2120, 2121, 2122, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 2132, 2133, 2134, 2135, 2136, 2163, 2199, 2201, 2203, 2210, 2215, 2446, 2467.',
+                'description' => 'Filter by Location Zipcode. Provide a comma-separated list or an array of values. Possible values: 2108, 2109, 2110, 2111, 2113, 2114, 2115, 2116, 2118, 2119, 2120, 2121, 2122, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 2132, 2133, 2134, 2135, 2136, 2163, 2199, 2201, 2203, 2210, 2215, 2222, 2446, 2467.',
             ],
             'latitude_min' => [
                 'type' => 'number',

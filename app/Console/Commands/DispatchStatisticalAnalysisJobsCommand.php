@@ -84,6 +84,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
             $modelMetadata = $allModelMetadata[$modelClass];
 
             $modelInstance = new $modelClass();
+            $connectionName = $modelInstance->getConnectionName();
             $tableName = $modelInstance->getTable();
             $dateField = $modelInstance::getDateField();
             $latField = $modelInstance::getLatitudeField();
@@ -121,7 +122,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                 $this->line("    Using existing data export for all fields: <fg=gray>{$exportFilename}</fg=gray>");
             } else {
                 $this->line('    No existing export found for all fields. Generating new CSV...');
-                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $dbExportColumns, $exportFilename, $modelClass);
+                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $dbExportColumns, $exportFilename, $modelClass, $connectionName);
                 $this->info("    Successfully generated new data export for all fields.");
             }
             $publicUrl = Storage::url($exportFilename);
@@ -207,14 +208,14 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         return 0;
     }
 
-    private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename, string $modelClass)
+    private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename, string $modelClass, string $connectionName)
     {
         $filePath = Storage::disk('public')->path($filename);
 
         $this->line("      DB columns to export: <fg=yellow>" . (empty($fieldsToAnalyze) ? 'None' : implode(', ', $fieldsToAnalyze)) . "</fg=yellow>");
 
         $this->line("      Counting rows to export for {$tableName}...");
-        $query = DB::table($tableName)->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
+        $query = DB::connection($connectionName)->table($tableName)->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
         $totalRows = $query->count();
 
         if ($totalRows === 0) {
@@ -234,19 +235,19 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         $header = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze, ['source_dataset']);
         fputcsv($fileHandle, $header);
 
-        $primaryKey = DB::getSchemaBuilder()->getIndexes($tableName)[0]['columns'][0] ?? 'id';
+        $primaryKey = DB::connection($connectionName)->getSchemaBuilder()->getIndexes($tableName)[0]['columns'][0] ?? 'id';
 
         $progressBar = $this->output->createProgressBar($totalRows);
         $progressBar->start();
 
         // Select only the columns that exist in the database.
         $selectColumns = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze);
-        $query = DB::table($tableName)->select($selectColumns)
+        $query = DB::connection($connectionName)->table($tableName)->select($selectColumns)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
 
         $unifiedValue = $modelClass::getHumanName();
 
-        $query->orderBy($primaryKey)->lazy()
+        $query->orderBy($primaryKey)->lazy(50000)
             ->each(function ($row) use ($fileHandle, $selectColumns, $progressBar, $unifiedValue) {
                 $rowData = [];
                 foreach ($selectColumns as $col) {

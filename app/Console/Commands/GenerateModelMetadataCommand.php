@@ -47,8 +47,9 @@ class GenerateModelMetadataCommand extends Command
             $this->line("[MODEL] Processing model: {$modelClass}");
             try {
                 $modelInstance = new $modelClass();
+                $connectionName = $modelInstance->getConnectionName();
                 $tableName = $modelInstance->getTable();
-                $this->line("[MODEL] Table name: {$tableName}");
+                $this->line("[MODEL] Table name: {$tableName} on connection '{$connectionName}'");
                 $modelCasts = $modelInstance->getCasts();
                 $this->line("[MODEL] Model casts: " . json_encode($modelCasts));
                 $dateField = $modelClass::getDateField();
@@ -78,13 +79,13 @@ class GenerateModelMetadataCommand extends Command
                 $this->line("[MODEL] Excluded filter fields for this model: " . json_encode($currentModelExcludedFilterFields));
 
 
-                $columns = Schema::getColumnListing($tableName);
+                $columns = Schema::connection($connectionName)->getColumnListing($tableName);
                 $this->line("[SCHEMA] Columns found: " . json_encode($columns));
 
                 $fieldsInfo = [];
                 foreach ($columns as $column) {
                     $this->line("  [COLUMN] Processing column: {$tableName}.{$column}");
-                    $dbType = Schema::getColumnType($tableName, $column);
+                    $dbType = Schema::connection($connectionName)->getColumnType($tableName, $column);
                     $this->line("    [DB_INFO] DB Type: {$dbType}");
                     $appType = $this->determineAppType($column, $dbType, $modelCasts);
                     $this->line("    [APP_INFO] Determined App Type: {$appType}");
@@ -99,7 +100,7 @@ class GenerateModelMetadataCommand extends Command
                             $this->line("      [QUERY_LOG] Distinct count query (raw): {$rawCountQueryForLog}");
                             
                             // Using DB facade to get a query builder instance for logging actual SQL for the specific driver
-                            $countQueryBuilder = DB::table($tableName)->selectRaw("COUNT(DISTINCT {$column}) as distinct_count_val");
+                            $countQueryBuilder = DB::connection($connectionName)->table($tableName)->selectRaw("COUNT(DISTINCT {$column}) as distinct_count_val");
                             $this->line("      [QUERY_LOG] Distinct count query (Builder SQL): " . $countQueryBuilder->toSql());
                             $this->line("      [QUERY_LOG] Distinct count query (Builder Bindings): " . json_encode($countQueryBuilder->getBindings()));
 
@@ -109,7 +110,7 @@ class GenerateModelMetadataCommand extends Command
 
                             if ($distinctCount > 0 && $distinctCount <= $nThreshold) {
                                 $this->line("      [DISTINCT_VALUES] Count {$distinctCount} is > 0 and <= N ({$nThreshold}). Fetching distinct values.");
-                                $fetchQueryBuilder = DB::table($tableName)->select($column)->distinct()->orderBy($column)->limit($nThreshold);
+                                $fetchQueryBuilder = DB::connection($connectionName)->table($tableName)->select($column)->distinct()->orderBy($column)->limit($nThreshold);
                                 $this->line("        [QUERY_LOG] Fetch distinct values SQL: " . $fetchQueryBuilder->toSql());
                                 $this->line("        [QUERY_LOG] Fetch distinct values Bindings: " . json_encode($fetchQueryBuilder->getBindings()));
                                 

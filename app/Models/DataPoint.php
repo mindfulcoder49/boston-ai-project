@@ -20,6 +20,7 @@ class DataPoint extends Model
         'construction_off_hour_id',
         'building_permit_id',
         'food_establishment_violation_id',
+        'person_crash_data_id', // Add person_crash_data_id
         'generic_foreign_id', // Add generic_foreign_id here
     ];
 
@@ -69,6 +70,14 @@ class DataPoint extends Model
     public function foodEstablishmentViolation()
     {
         return $this->belongsTo(FoodEstablishmentViolation::class, 'food_establishment_violation_id');
+    }
+
+    /**
+     * Relationship to PersonCrashData model.
+     */
+    public function personCrashData()
+    {
+        return $this->belongsTo(PersonCrashData::class, 'person_crash_data_id');
     }
 
     /**

@@ -107,6 +107,34 @@ return [
             'engine' => null,
         ],
 
+        'chicago_db' => [
+            'driver' => 'mysql',
+            'host' => env('CHICAGO_DB_HOST', 'mysql'),
+            'port' => env('CHICAGO_DB_PORT', '3306'),
+            'database' => env('CHICAGO_DB_DATABASE', 'chicago_db'),
+            'username' => env('CHICAGO_DB_USERNAME', 'root'),
+            'password' => env('CHICAGO_DB_PASSWORD', 'password'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
+        'chicago_crime_db' => [
+            'driver' => 'mysql',
+            'host' => env('CHICAGO_CRIME_DB_HOST', 'mysql'),
+            'port' => env('CHICAGO_CRIME_DB_PORT', '3306'),
+            'database' => env('CHICAGO_CRIME_DB_DATABASE', 'chicago_crime_db'),
+            'username' => env('CHICAGO_CRIME_DB_USERNAME', 'root'),
+            'password' => env('CHICAGO_CRIME_DB_PASSWORD', 'password'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
     ],
 
     /*

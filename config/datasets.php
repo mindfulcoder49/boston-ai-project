@@ -6,6 +6,7 @@ return [
     // Boston datasets are now in config/boston_datasets.php
     'datasets' => [
         // Add the Cambridge dataset (or other non-Boston datasets) 
+        /*
         [
             'name' => 'cambridge-311-service-requests',
             'city' => 'cambridge',
@@ -82,6 +83,24 @@ return [
             'pagination_type' => 'socrata_offset',
             'page_size' => 10000,
             'order_by_field' => ':id',
+        ], */
+        [
+            'name' => 'chicago-crimes-2001-to-present',
+            'city' => 'chicago',
+            'base_url' => 'https://data.cityofchicago.org/resource',
+            'resource_id' => 'ijzp-q8t2',
+            'format' => 'csv',
+            'url_pattern_type' => 'extension',
+            'pagination_type' => 'socrata_by_year', // Use the new year-by-year strategy
+            'page_size' => 50000,
+            'order_by_field' => 'date', // Order by date within each year's query
+            'order_by_direction' => 'DESC',
+            'year_field' => 'year', // The field name for the year in the dataset
+            'start_year' => 2001, // The first year of data to fetch
+            // 'end_year' will default to the current year if not specified
+            'download_type' => 'incremental', // 'full' or 'incremental'
+            'model' => 'App\Models\ChicagoCrime', // Corresponding Eloquent model
+            'date_field' => 'date', // The date field in the dataset for incremental checks
         ],
         // Add more datasets from Cambridge or other cities (not Boston) as needed
     ],

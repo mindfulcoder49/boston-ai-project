@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-// Import all necessary models.
-// It's better to have these explicitly listed or managed via a config/registry.
 use App\Models\CrimeData;
 use App\Models\ThreeOneOneCase;
 use App\Models\BuildingPermit;
@@ -16,8 +14,8 @@ use App\Models\CambridgeBuildingPermitData;
 use App\Models\CambridgeCrimeReportData;
 use App\Models\CambridgeHousingViolationData;
 use App\Models\CambridgeSanitaryInspectionData;
-// DataPoint model is not directly joined but is the base table.
-// use App\Models\DataPoint; 
+use App\Models\PersonCrashData;
+use App\Models\ChicagoCrime;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -25,41 +23,33 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str; // Added for string manipulation
+use Illuminate\Support\Str;
 
 class GenericMapController extends Controller
 {
-    /**
-     * Define the Mappable models that data_points can link to.
-     * This should ideally be consistent with DataPointSeeder::MODELS_TO_PROCESS.
-     * Key: Fully qualified model class name. Value: simple key or alias if needed, otherwise class name itself.
-     */
-    private const LINKABLE_MODELS = [
-        // Boston Models
+    private const BOSTON_LINKABLE_MODELS = [
         \App\Models\CrimeData::class,
         \App\Models\ThreeOneOneCase::class,
         \App\Models\PropertyViolation::class,
         \App\Models\ConstructionOffHour::class,
         \App\Models\BuildingPermit::class,
         \App\Models\FoodInspection::class,
-
-        // Everett Models
         \App\Models\EverettCrimeData::class,
-
-        // Cambridge Models
         \App\Models\CambridgeThreeOneOneCase::class,
         \App\Models\CambridgeBuildingPermitData::class,
         \App\Models\CambridgeCrimeReportData::class,
         \App\Models\CambridgeHousingViolationData::class,
         \App\Models\CambridgeSanitaryInspectionData::class,
-
-        \App\Models\PersonCrashData::class, // Assuming this is a Mappable model as well
+        \App\Models\PersonCrashData::class,
     ];
 
-    // Helper to get model class from table name (data_points.type)
-    protected function getModelClassFromTableName(string $tableName): ?string
+    private const CHICAGO_LINKABLE_MODELS = [
+        \App\Models\ChicagoCrime::class,
+    ];
+
+    protected function getModelClassFromTableName(string $tableName, array $cityModels): ?string
     {
-        foreach (self::LINKABLE_MODELS as $modelClass) {
+        foreach ($cityModels as $modelClass) {
             if (app($modelClass)->getTable() === $tableName) {
                 return $modelClass;
             }
@@ -67,6 +57,49 @@ class GenericMapController extends Controller
         return null;
     }
 
+    protected function getCityContext(float $latitude, float $longitude): array
+    {
+        $bostonLat = 42.3601;
+        $bostonLon = -71.0589;
+        $chicagoLat = 41.8781;
+        $chicagoLon = -87.6298;
+
+        $earthRadius = 6371;
+        $latFrom = deg2rad($latitude);
+        $lonFrom = deg2rad($longitude);
+
+        $latToBoston = deg2rad($bostonLat);
+        $lonToBoston = deg2rad($bostonLon);
+        $latToChicago = deg2rad($chicagoLat);
+        $lonToChicago = deg2rad($chicagoLon);
+
+        $latDeltaBoston = $latToBoston - $latFrom;
+        $lonDeltaBoston = $lonToBoston - $lonFrom;
+        $latDeltaChicago = $latToChicago - $latFrom;
+        $lonDeltaChicago = $lonToChicago - $lonFrom;
+
+        $angleBoston = 2 * asin(sqrt(pow(sin($latDeltaBoston / 2), 2) + cos($latFrom) * cos($latToBoston) * pow(sin($lonDeltaBoston / 2), 2)));
+        $distBoston = $angleBoston * $earthRadius;
+
+        $angleChicago = 2 * asin(sqrt(pow(sin($latDeltaChicago / 2), 2) + cos($latFrom) * cos($latToChicago) * pow(sin($lonDeltaChicago / 2), 2)));
+        $distChicago = $angleChicago * $earthRadius;
+
+        if ($distChicago < $distBoston) {
+            return [
+                'city' => 'chicago',
+                'data_points_table' => 'chicago_data_points',
+                'linkable_models' => self::CHICAGO_LINKABLE_MODELS,
+                'db_connection' => 'chicago_db',
+            ];
+        }
+
+        return [
+            'city' => 'boston',
+            'data_points_table' => 'data_points',
+            'linkable_models' => self::BOSTON_LINKABLE_MODELS,
+            'db_connection' => 'mysql',
+        ];
+    }
 
     protected function getJsonSelectForModel($modelClass, $jsonAlias)
     {
@@ -74,9 +107,8 @@ class GenericMapController extends Controller
         $table = $model->getTable();
         
         $fields = $model->getFillable();
-        $fields[] = $model->getKeyName(); // Add primary key
+        $fields[] = $model->getKeyName();
         
-        // Add date field(s) used in logic if not already in fillable
         if (method_exists($modelClass, 'getDateField')) {
             $dateField = $modelClass::getDateField();
             if (!in_array($dateField, $fields)) {
@@ -84,7 +116,6 @@ class GenericMapController extends Controller
             }
         }
 
-        // Ensure specific fields needed for display logic are included
         if ($modelClass === \App\Models\FoodInspection::class) {
             if(!in_array('violdttm', $fields)) $fields[] = 'violdttm';
             if(!in_array('resultdttm', $fields)) $fields[] = 'resultdttm';
@@ -93,13 +124,11 @@ class GenericMapController extends Controller
             if(!in_array('violdesc', $fields)) $fields[] = 'violdesc';
             if(!in_array('result', $fields)) $fields[] = 'result';
         }
-        // Add similar checks for other models if they have specific fields
-        // used in the frontend popup logic that might not be in $fillable.
 
-        $fields = array_unique(array_filter($fields)); // Remove duplicates and empty values
+        $fields = array_unique(array_filter($fields));
 
         if (empty($fields)) {
-            return "JSON_OBJECT() as $jsonAlias"; // Return empty JSON object if no fields
+            return "JSON_OBJECT() as $jsonAlias";
         }
 
         $jsonObjectParts = [];
@@ -114,28 +143,37 @@ class GenericMapController extends Controller
     public function getRadialMapData(Request $request)
     {
         $user = Auth::user();
-        $currentPlanTier = 'free'; // Default for unauthenticated or free users
-        $daysToFilter = 14; // Default for unauthenticated users
-        $targetTable = 'data_points'; // Default table
+        $currentPlanTier = 'free';
+        $daysToFilter = 14;
+
+        $centralLocation = $request->input('centralLocation');
+
+        if (!$centralLocation) {
+            $centralLocation = [
+                'latitude' => 42.3601,
+                'longitude' => -71.0589,
+                'address' => 'Boston, MA',
+            ];
+        }
+        
+        $latitude = $centralLocation['latitude'];
+        $longitude = $centralLocation['longitude'];
+
+        $cityContext = $this->getCityContext($latitude, $longitude);
+        $targetTable = $cityContext['data_points_table'];
+        $linkableModels = $cityContext['linkable_models'];
+        $dbConnection = $cityContext['db_connection'];
 
         if ($user) {
             $effectiveTierDetails = $user->getEffectiveTierDetails();
             $currentPlanTier = $effectiveTierDetails['tier'];
 
             if ($currentPlanTier === 'free') {
-                $daysToFilter = 14; // Authenticated free user
-                $targetTable = 'data_points';
+                $daysToFilter = 14;
             } elseif ($currentPlanTier === 'basic') {
-                $daysToFilter = 14; // Basic plan
-                $targetTable = 'data_points';
+                $daysToFilter = 14;
             } elseif ($currentPlanTier === 'pro') {
-                $targetTable = 'data_points'; // Pro plan uses data_points (or could be all_time_data_points if that exists)
-                // For Pro, effectively all time from data_points, or a very long period.
-                // If using data_points, $daysToFilter could be set very large or logic adapted.
-                // For simplicity, let's set a larger number of days for pro on data_points.
-                $daysToFilter = 31; // Pro plan gets more days from data_points
-                                     // Or, if 'all_time_data_points' table is used for Pro, set $daysToFilter = null
-                                     // and adjust the query logic. Assuming data_points for now.
+                $daysToFilter = 31;
             }
         }
 
@@ -147,52 +185,31 @@ class GenericMapController extends Controller
             'targetTable' => $targetTable,
             'daysToFilter' => $daysToFilter,
             'cutoffDateTime' => $cutoffDateTime ? $cutoffDateTime->toDateTimeString() : 'N/A (all time)',
+            'cityContext' => $cityContext['city'],
         ]);
 
-        $centralLocation = $request->input('centralLocation');
-
-        // Fallback if frontend doesn't provide location, which it should.
-        if (!$centralLocation) {
-            $centralLocation = [
-                'latitude' => 42.3601,
-                'longitude' => -71.0589,
-                'address' => 'Boston, MA',
-            ];
-        }
-
         $language_codes = $request->input('language_codes', ['es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR', 'en-US']);
-        //remove any invalid language codes
         $language_codes = array_intersect($language_codes, ['es-MX', 'zh-CN', 'ht-HT', 'vi-VN', 'pt-BR', 'en-US']);
-
 
         Log::info('Language codes to include.', ['language_codes' => $language_codes]);
 
         $radius = $request->input('radius', .25);
-        //clamp radius to a maximum of 1
-        $radius = min(max($radius, 0.01), .50); // Clamp between 0.01 and 1 mile
+        $radius = min(max($radius, 0.01), .50);
         Log::info('Radius for radial search.', ['radius' => $radius]);
-        // The individual $crimeDays, $caseDays etc. are no longer primary drivers for date filtering,
-        // $cutoffDateTime based on subscription will be used.
-        // These can be removed or kept if there's a different specific use case for them later.
-        // For now, we'll rely on the global $cutoffDateTime.
 
-    
-        $latitude = $centralLocation['latitude'];
-        $longitude = $centralLocation['longitude'];
-        $radiusInMeters = $radius * 1609.34; // Convert miles to meters
+        $radiusInMeters = $radius * 1609.34;
 
         $wktPoint = "POINT($longitude $latitude)";
 
-        $query = DB::table($targetTable) // Use dynamic targetTable
+        $query = DB::connection($dbConnection)->table($targetTable)
             ->select(
                 $targetTable.'.id as data_point_id', 
                 DB::raw("ST_AsText({$targetTable}.location) as location_wkt"),
-                $targetTable.'.type as alcivartech_type_raw', // This is the source table name
-                $targetTable.'.alcivartech_date as data_point_alcivartech_date_from_dp_table' // Date from data_points table itself
+                $targetTable.'.type as alcivartech_type_raw',
+                $targetTable.'.alcivartech_date as data_point_alcivartech_date_from_dp_table'
             );
 
-        // Dynamically add JSON selects and LEFT JOINs
-        foreach (self::LINKABLE_MODELS as $modelClass) {
+        foreach ($linkableModels as $modelClass) {
             if (!class_exists($modelClass) || !in_array(\App\Models\Concerns\Mappable::class, class_uses_recursive($modelClass))) {
                 Log::warning("GenericMapController: Model {$modelClass} is not Mappable or does not exist. Skipping for JOIN/SELECT.");
                 continue;
@@ -214,14 +231,13 @@ class GenericMapController extends Controller
         
         $dataPoints = $query->get();    
 
-        $dataPoints = $dataPoints->map(function ($point) {
-            // Dynamically decode JSON and set properties
-            $sourceTableName = $point->alcivartech_type_raw; // e.g., 'crime_data', 'cambridge_311_service_requests'
-            $modelClass = $this->getModelClassFromTableName($sourceTableName);
+        $dataPoints = $dataPoints->map(function ($point) use ($linkableModels) {
+            $sourceTableName = $point->alcivartech_type_raw;
+            $modelClass = $this->getModelClassFromTableName($sourceTableName, $linkableModels);
 
             if ($modelClass) {
                 $jsonAlias = Str::snake(class_basename($modelClass)) . '_json';
-                $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data'; // e.g., crime_data_data
+                $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data';
 
                 if (property_exists($point, $jsonAlias) && $point->{$jsonAlias}) {
                     $point->{$dataObjectKey} = json_decode($point->{$jsonAlias});
@@ -230,22 +246,18 @@ class GenericMapController extends Controller
                 }
                 unset($point->{$jsonAlias});
 
-                $point->alcivartech_type = $modelClass::getAlcivartechTypeForStyling(); // Human-readable type for styling/display
+                $point->alcivartech_type = $modelClass::getAlcivartechTypeForStyling();
                 
-                // Set alcivartech_date from the source model's data object
                 $dateFieldInSource = $modelClass::getDateField();
                 if ($point->{$dataObjectKey} && property_exists($point->{$dataObjectKey}, $dateFieldInSource)) {
                     $point->alcivartech_date = $point->{$dataObjectKey}->{$dateFieldInSource};
                 } else {
-                    // Fallback to the date stored in data_points table if source model's date is not available
                     $point->alcivartech_date = $point->data_point_alcivartech_date_from_dp_table;
                 }
             } else {
-                // Fallback if modelClass couldn't be determined
                 $point->alcivartech_type = 'Unknown';
                 $point->alcivartech_date = $point->data_point_alcivartech_date_from_dp_table;
-                // Try to clean up any potential _json fields if model is unknown
-                foreach (self::LINKABLE_MODELS as $mc) {
+                foreach ($linkableModels as $mc) {
                     $jsonAliasFallback = Str::snake(class_basename($mc)) . '_json';
                     if (property_exists($point, $jsonAliasFallback)) {
                         unset($point->{$jsonAliasFallback});
@@ -254,81 +266,38 @@ class GenericMapController extends Controller
             }
             unset($point->data_point_alcivartech_date_from_dp_table);
 
-
             preg_match('/POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)/', $point->location_wkt, $matches);
             $point->longitude = isset($matches[1]) ? floatval($matches[1]) : null;
             $point->latitude = isset($matches[2]) ? floatval($matches[2]) : null;
             unset($point->location_wkt); 
 
-            $point->alcivartech_model = $point->alcivartech_type_raw; // Keep original table name as model identifier
+            $point->alcivartech_model = $point->alcivartech_type_raw;
             unset($point->alcivartech_type_raw);
 
-
-            // Specific handling for FoodInspection if user is not authenticated
-            /*
-            if (!Auth::check() && $modelClass === \App\Models\FoodInspection::class) {
-                $restrictedMessage = "Log In to See Food Inspection Information";
-                $foodDataKey = Str::snake(class_basename(\App\Models\FoodInspection::class)) . '_data';
-
-                if ($point->{$foodDataKey}) {
-                    $foodData = (array)$point->{$foodDataKey};
-                    $newFoodData = new \stdClass();
-                    foreach ($foodData as $key => $value) {
-                        if (in_array($key, ['latitude', 'longitude', 'location', 'lat', 'lng', 'gpsy', 'gpsx', 'y_latitude', 'x_longitude'])) {
-                            continue; 
-                        }
-                        if ($key === 'licenseno') {
-                            $newFoodData->$key = md5((string)$value);
-                        } elseif (!empty($value) && !in_array($key, ['violdesc', 'viol_level', 'comments'])) {
-                            $newFoodData->$key = $restrictedMessage;
-                        } else {
-                            $newFoodData->$key = $value;
-                        }
-                    }
-                    $point->{$foodDataKey} = $newFoodData;
-                }
-                unset($point->latitude);
-                unset($point->longitude);
-            }
-                */
             return $point;
         })->filter(function ($point) use ($cutoffDateTime) {
-            // If there's no cutoff date (e.g., for an "all time" scenario, though not fully implemented for pro plan yet),
-            // or if the point has no date, include it.
-            // However, if a cutoffDateTime is set, points without a date should likely be excluded.
             if (!$cutoffDateTime) {
                 return true; 
             }
             if (empty($point->alcivartech_date)) {
-                // If a date filter is active, points without a date are excluded.
                 return false; 
             }
-            // Ensure the point's final alcivartech_date is on or after the cutoff.
-            // Carbon::parse can handle various date string formats.
             return Carbon::parse($point->alcivartech_date)->startOfDay()->gte($cutoffDateTime);
-        })->values(); // Reset keys after filtering
-        
+        })->values();
         
         Log::info('Data points fetched and filtered.', ['totalDataPointsCount' => $dataPoints->count()]);
 
-        //log some of the data points
-        $dataPoints->take(5)->each(function ($dataPoint) {
-            Log::info('Data point', [$dataPoint]);
-        });
-
-        // The dataPointModelConfig needs to be generated dynamically or its keys must match data_points.type
         $dataPointModelConfig = [];
-        $modelToSubObjectKeyMap = []; // Initialize the new map
+        $modelToSubObjectKeyMap = [];
 
-        foreach (self::LINKABLE_MODELS as $modelClass) {
+        foreach ($linkableModels as $modelClass) {
              if (!class_exists($modelClass) || !in_array(\App\Models\Concerns\Mappable::class, class_uses_recursive($modelClass))) {
                 continue;
             }
             $modelInstance = new $modelClass();
-            $tableName = $modelInstance->getTable(); // This will be the key, e.g., 'crime_data'
+            $tableName = $modelInstance->getTable();
             $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data';
 
-            // Populate the modelToSubObjectKeyMap
             $modelToSubObjectKeyMap[$tableName] = $dataObjectKey;
 
             $filterDesc = $modelClass::getFilterableFieldsDescription();
@@ -347,24 +316,21 @@ class GenericMapController extends Controller
                 'filterFieldsDescription' => $filterDesc,
             ];
 
-            // Get specific popup config from the model
-            // This method is now expected to be implemented due to the Mappable trait contract.
             $popupConfig = $modelClass::getPopupConfig();
             $configEntry = array_merge($baseConfigEntry, $popupConfig);
 
             $dataPointModelConfig[$tableName] = $configEntry;
         }
 
-
         $mapConfiguration = [
             'dataPointModelConfig' => $dataPointModelConfig,
-            'modelToSubObjectKeyMap' => $modelToSubObjectKeyMap, // Add the new map here
+            'modelToSubObjectKeyMap' => $modelToSubObjectKeyMap,
         ];
 
         return response()->json([
             'dataPoints' => $dataPoints,
             'centralLocation' => $centralLocation,
-            'mapConfiguration' => $mapConfiguration, // Add mapConfiguration to the response
+            'mapConfiguration' => $mapConfiguration,
         ]);
     }
 }
