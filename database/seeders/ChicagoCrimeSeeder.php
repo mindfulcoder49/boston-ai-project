@@ -125,12 +125,41 @@ class ChicagoCrimeSeeder extends Seeder
 
     private function upsertData($connection, $tableName, &$data, &$totalUpserted)
     {
+        if (empty($data)) {
+            return;
+        }
+
         try {
-            DB::connection($connection)->table($tableName)->upsert(
-                $data,
-                ['id'],
-                array_diff(array_keys($data[0]), ['id'])
-            );
+            $columns = array_keys($data[0]);
+            $columnsSql = '`' . implode('`,`', $columns) . '`';
+
+            $updateColumns = array_diff($columns, ['id']);
+            $updateSql = implode(', ', array_map(function ($col) {
+                return "`{$col}` = VALUES(`{$col}`)";
+            }, $updateColumns));
+
+            $valuesPlaceholders = [];
+            $bindings = [];
+            foreach ($data as $row) {
+                $rowPlaceholders = [];
+                foreach ($columns as $column) {
+                    $value = $row[$column];
+                    if ($value instanceof \Illuminate\Database\Query\Expression) {
+                        $rowPlaceholders[] = $value->getValue(DB::connection($connection)->getQueryGrammar());
+                    } else {
+                        $rowPlaceholders[] = '?';
+                        $bindings[] = $value;
+                    }
+                }
+                $valuesPlaceholders[] = '(' . implode(',', $rowPlaceholders) . ')';
+            }
+
+            $valuesSql = implode(',', $valuesPlaceholders);
+
+            $sql = "INSERT INTO `{$tableName}` ({$columnsSql}) VALUES {$valuesSql} ON DUPLICATE KEY UPDATE {$updateSql}";
+
+            DB::connection($connection)->insert($sql, $bindings);
+
             $totalUpserted += count($data);
         } catch (\Exception $e) {
             Log::error("Error upserting data to {$connection}.{$tableName}: " . $e->getMessage());
