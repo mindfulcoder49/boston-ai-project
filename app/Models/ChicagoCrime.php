@@ -29,11 +29,10 @@ class ChicagoCrime extends Model
     ];
 
     const SEARCHABLE_COLUMNS = [
-        'case_number',
-        'block',
-        'primary_type',
-        'description',
-        'location_description',
+        'id', 'case_number', 'date', 'block', 'iucr', 'primary_type', 'description',
+        'location_description', 'arrest', 'domestic', 'beat', 'district', 'ward',
+        'community_area', 'fbi_code', 'x_coordinate', 'y_coordinate', 'year',
+        'updated_on', 'latitude', 'longitude', 'location'
     ];
 
     protected $fillable = [
