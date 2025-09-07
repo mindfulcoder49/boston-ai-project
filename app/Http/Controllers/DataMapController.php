@@ -413,8 +413,11 @@ class DataMapController extends Controller
             }
             
             if (!in_array($key, $processedKeys)) {
-                if (!Schema::hasColumn($modelClass::make()->getTable(), $key)) {
-                    Log::warning("Invalid filter key '{$key}' (not a column) for model {$modelClass}. Skipping.");
+                $modelInstance = app($modelClass);
+                $connection = $modelInstance->getConnectionName();
+                $table = $modelInstance->getTable();
+                if (!Schema::connection($connection)->hasColumn($table, $key)) {
+                    Log::warning("Invalid filter key '{$key}' (not a column) for model {$modelClass} on connection '{$connection}'. Skipping.");
                     continue;
                 }
                 if (is_array($value)) {

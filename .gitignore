@@ -14,6 +14,7 @@ yarn-error.log
 public/storage
 
 sync_environments.sh
+config/model_metadata_suggestions.php
 
 # Vue.js files
 /dist/
