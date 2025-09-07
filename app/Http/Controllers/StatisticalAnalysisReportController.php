@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Models\Trend;
@@ -37,21 +38,30 @@ class StatisticalAnalysisReportController extends Controller
 
         $apiBaseUrl = config('services.analysis_api.url');
         $reportData = null;
-        $apiUrl = "{$apiBaseUrl}/api/v1/jobs/{$jobId}/results/stage4_h3_anomaly.json";
+        $cachePath = "analysis-reports/{$jobId}.json";
 
-        Log::info("Fetching report data from analysis API.", ['job_id' => $jobId, 'url' => $apiUrl]);
-
-        $response = Http::get($apiUrl);
-
-        if ($response->successful()) {
-            $reportData = $response->json();
-            Log::info("Successfully fetched report data.", ['job_id' => $jobId]);
+        if (Storage::exists($cachePath)) {
+            Log::info("Found cached report data.", ['job_id' => $jobId, 'path' => $cachePath]);
+            $reportData = json_decode(Storage::get($cachePath), true);
         } else {
-            Log::error("Failed to fetch report data from analysis API.", [
-                'job_id' => $jobId,
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
+            $apiUrl = "{$apiBaseUrl}/api/v1/jobs/{$jobId}/results/stage4_h3_anomaly/summary";
+
+            Log::info("Fetching report summary data from analysis API.", ['job_id' => $jobId, 'url' => $apiUrl]);
+
+            $response = Http::get($apiUrl);
+
+            if ($response->successful()) {
+                $reportData = $response->json();
+                Log::info("Successfully fetched report summary data.", ['job_id' => $jobId]);
+                Storage::put($cachePath, $response->body());
+                Log::info("Cached report data.", ['job_id' => $jobId, 'path' => $cachePath]);
+            } else {
+                Log::error("Failed to fetch report summary data from analysis API.", [
+                    'job_id' => $jobId,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+            }
         }
 
         $reportTitle = $modelClass::getHumanName();
