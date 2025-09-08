@@ -85,6 +85,10 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
 
             $modelInstance = new $modelClass();
             $connectionName = $modelInstance->getConnectionName();
+            //use the connection name or default to 'mysql'
+            if (!$connectionName) {
+                $connectionName = config('database.default');
+            }
             $tableName = $modelInstance->getTable();
             $dateField = $modelInstance::getDateField();
             $latField = $modelInstance::getLatitudeField();
