@@ -31,4 +31,13 @@ class Trend extends Model
         'analysis_weeks_trend',
         'analysis_weeks_anomaly',
     ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'analysis_weeks_trend' => 'array',
+    ];
 }

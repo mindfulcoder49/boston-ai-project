@@ -153,7 +153,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                         'h3_resolution' => $resolution,
                         'p_value_anomaly' => 0.05,
                         'p_value_trend' => 0.05,
-                        'analysis_weeks_trend' => 4,
+                        'analysis_weeks_trend' => [4, 26, 52],
                         'analysis_weeks_anomaly' => 4,
                         'generate_plots' => false,
                         'plot_generation' => 'none',
@@ -191,13 +191,15 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                             'h3_resolution' => $analysisParameters['h3_resolution'],
                             'p_value_anomaly' => $analysisParameters['p_value_anomaly'],
                             'p_value_trend' => $analysisParameters['p_value_trend'],
-                            'analysis_weeks_trend' => $analysisParameters['analysis_weeks_trend'],
                             'analysis_weeks_anomaly' => $analysisParameters['analysis_weeks_anomaly'],
                         ];
 
                         Trend::updateOrCreate(
                             $searchCriteria,
-                            ['job_id' => $jobId]
+                            [
+                                'job_id' => $jobId,
+                                'analysis_weeks_trend' => $analysisParameters['analysis_weeks_trend'],
+                            ]
                         );
                         $this->info("    Trends database updated successfully.");
                     } else {

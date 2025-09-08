@@ -31,6 +31,7 @@ class TrendsController extends Controller
                     'column_name' => $analysis->column_name,
                     'column_label' => Str::of($analysis->column_name)->replace('_', ' ')->title(),
                     'h3_resolution' => $analysis->h3_resolution,
+                    'analysis_weeks_trend' => $analysis->analysis_weeks_trend,
                 ];
             }
 

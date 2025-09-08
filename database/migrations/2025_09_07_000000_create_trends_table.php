@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('h3_resolution');
             $table->float('p_value_anomaly');
             $table->float('p_value_trend');
-            $table->integer('analysis_weeks_trend');
+            $table->json('analysis_weeks_trend');
             $table->integer('analysis_weeks_anomaly');
             $table->timestamps();
 
@@ -29,7 +29,7 @@ return new class extends Migration
                 'h3_resolution',
                 'p_value_anomaly',
                 'p_value_trend',
-                'analysis_weeks_trend',
+                // 'analysis_weeks_trend' is now a JSON field and cannot be in a unique index on most DBs.
                 'analysis_weeks_anomaly',
             ], 'trends_unique_parameters');
         });
