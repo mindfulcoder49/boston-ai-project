@@ -18,7 +18,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:dispatch-statistical-analysis-jobs {model? : The model class to process (e.g., Crime)} {--fresh : Force regeneration of all data exports}';
+    protected $signature = 'app:dispatch-statistical-analysis-jobs {model? : The model class to process (e.g., Crime)} {--fresh : Force regeneration of all data exports} {--plots : Generate plots for the analysis}';
 
     /**
      * The console command description.
@@ -149,14 +149,16 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                     $this->line('    Dispatching job to analysis API...');
                     $jobId = "laravel-{$modelKey}-{$jobSuffix}-res{$resolution}-" . time();
 
+                    $generatePlots = $this->option('plots');
+
                     $analysisParameters = [
                         'h3_resolution' => $resolution,
                         'p_value_anomaly' => 0.05,
                         'p_value_trend' => 0.05,
                         'analysis_weeks_trend' => [4, 26, 52],
                         'analysis_weeks_anomaly' => 4,
-                        'generate_plots' => false,
-                        'plot_generation' => 'none',
+                        'generate_plots' => $generatePlots,
+                        'plot_generation' => $generatePlots ? 'both' : 'none',
                     ];
 
                     $payload = [
