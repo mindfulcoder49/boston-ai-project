@@ -442,7 +442,7 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                     </ul>
                                     <img :src="`${apiBaseUrl}/api/v1/jobs/${jobId}/results/plot_${h3Index}_${sanitizeForFilename(secGroup)}.png`" 
                                          :alt="`Time series plot for ${secGroup} in ${h3Index}`" 
-                                         class="mt-4 max-w-full md:max-w-xl rounded"
+                                         class="mt-4 rounded"
                                          @error="($event) => $event.target.style.display='none'"/>
                                 </div>
                             </div>
