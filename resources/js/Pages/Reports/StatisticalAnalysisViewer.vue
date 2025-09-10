@@ -32,6 +32,7 @@ const props = defineProps({
 
 const isLoading = ref(false);
 const error = ref(null);
+const activeSecondaryGroup = ref(null);
 
 let mapAnomaliesInstances = {};
 let mapTrendsInstances = {};
@@ -49,53 +50,58 @@ onMounted(async () => {
 
     try {
         processAndDisplayData();
-
-        // Wait for Vue's DOM update to complete, which now includes the new map containers.
-        await nextTick();
-
-        // Now that the DOM is updated, initialize all maps.
-        initializeAllMaps();
-
     } catch (e) {
         console.error('Failed to process report data:', e);
         error.value = `Failed to process report data. (${e.message})`;
     }
 });
 
-const initializeAllMaps = () => {
-    if (Object.keys(findingsBySecondaryGroup.value).length === 0) return;
+const initializeMapsForGroup = (secGroup) => {
+    if (!secGroup || !findingsBySecondaryGroup.value[secGroup]) return;
 
-    for (const secGroup in findingsBySecondaryGroup.value) {
-        const sanitizedSecGroup = sanitizeForFilename(secGroup);
+    const sanitizedSecGroup = sanitizeForFilename(secGroup);
+    if (!h3Layers[secGroup]) {
         h3Layers[secGroup] = { anomalies: {}, trends: {} };
+    }
+    if (!mapTrendsInstances[secGroup]) {
         mapTrendsInstances[secGroup] = {};
+    }
 
-        // Initialize Anomaly Map for the group
-        const anomalyContainerId = `map-anomalies-${sanitizedSecGroup}`;
-        const anomalyContainer = document.getElementById(anomalyContainerId);
-        if (anomalyContainer && !mapAnomaliesInstances[secGroup]) {
-            const map = L.map(anomalyContainer).setView([42.3601, -71.0589], 12);
+    // Initialize Anomaly Map for the group
+    const anomalyContainerId = `map-anomalies-${sanitizedSecGroup}`;
+    const anomalyContainer = document.getElementById(anomalyContainerId);
+    if (anomalyContainer && !mapAnomaliesInstances[secGroup]) {
+        const map = L.map(anomalyContainer).setView([42.3601, -71.0589], 12);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        }).addTo(map);
+        mapAnomaliesInstances[secGroup] = map;
+        updateAnomaliesMap(secGroup);
+    }
+
+    // Initialize Trend Maps for the group for each window
+    TREND_WINDOWS.value.forEach(window => {
+        const trendWindowKey = `${window}_weeks`;
+        const trendContainerId = `map-trends-${sanitizedSecGroup}-${trendWindowKey}`;
+        const trendContainer = document.getElementById(trendContainerId);
+        if (trendContainer && !mapTrendsInstances[secGroup][trendWindowKey]) {
+            const map = L.map(trendContainer).setView([42.3601, -71.0589], 12);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             }).addTo(map);
-            mapAnomaliesInstances[secGroup] = map;
-            updateAnomaliesMap(secGroup);
+            mapTrendsInstances[secGroup][trendWindowKey] = map;
+            updateTrendsMap(secGroup, trendWindowKey);
         }
+    });
+};
 
-        // Initialize Trend Maps for the group for each window
-        TREND_WINDOWS.value.forEach(window => {
-            const trendWindowKey = `${window}_weeks`;
-            const trendContainerId = `map-trends-${sanitizedSecGroup}-${trendWindowKey}`;
-            const trendContainer = document.getElementById(trendContainerId);
-            if (trendContainer && !mapTrendsInstances[secGroup][trendWindowKey]) {
-                const map = L.map(trendContainer).setView([42.3601, -71.0589], 12);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                }).addTo(map);
-                mapTrendsInstances[secGroup][trendWindowKey] = map;
-                updateTrendsMap(secGroup, trendWindowKey);
-            }
-        });
+const toggleSecondaryGroup = async (secGroup) => {
+    const newActiveGroup = activeSecondaryGroup.value === secGroup ? null : secGroup;
+    activeSecondaryGroup.value = newActiveGroup;
+
+    if (newActiveGroup) {
+        await nextTick();
+        initializeMapsForGroup(newActiveGroup);
     }
 };
 
@@ -123,6 +129,31 @@ const findingsBySecondaryGroup = computed(() => {
         }
     });
     return grouped;
+});
+
+const filteredFindings = computed(() => {
+    if (!activeSecondaryGroup.value) {
+        return [];
+    }
+    return allFindings.value.filter(finding => finding.details.secondary_group === activeSecondaryGroup.value);
+});
+
+const filteredFindingsByH3 = computed(() => {
+    if (!activeSecondaryGroup.value) {
+        return {};
+    }
+    const filtered = {};
+    for (const h3Index in findingsByH3.value) {
+        const h3Data = findingsByH3.value[h3Index];
+        if (h3Data.findingsBySecGroup[activeSecondaryGroup.value]) {
+            filtered[h3Index] = {
+                findingsBySecGroup: {
+                    [activeSecondaryGroup.value]: h3Data.findingsBySecGroup[activeSecondaryGroup.value]
+                }
+            };
+        }
+    }
+    return filtered;
 });
 
 const processAndDisplayData = () => {
@@ -191,8 +222,6 @@ const processAndDisplayData = () => {
     anomalyFindings.value = localAnomalyFindings;
     trendFindings.value = localTrendFindings;
     findingsByH3.value = localFindingsByH3;
-
-    // Map updates are now triggered from initializeAllMaps after DOM is ready
 };
 
 const getAnomalyColor = (count) => {
@@ -333,9 +362,12 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                 <section v-if="allFindings.length > 0" class="p-6 border rounded-lg bg-gray-50/50">
                     <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Summary by Category</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div v-for="(groupData, secGroup) in findingsBySecondaryGroup" :key="`summary-${secGroup}`" class="p-4 border rounded-lg bg-white shadow hover:shadow-md transition-shadow">
+                        <div v-for="(groupData, secGroup) in findingsBySecondaryGroup" :key="`summary-${secGroup}`" 
+                             class="p-4 border rounded-lg bg-white shadow hover:shadow-md transition-shadow cursor-pointer"
+                             :class="{ 'ring-2 ring-indigo-500': activeSecondaryGroup === secGroup }"
+                             @click="toggleSecondaryGroup(secGroup)">
                             <h3 class="font-bold text-lg text-indigo-700">
-                                <a :href="`#analysis-${sanitizeForFilename(secGroup)}`" class="hover:underline">{{ secGroup }}</a>
+                                {{ secGroup }}
                             </h3>
                             <p class="text-sm text-gray-600 mt-2">
                                 Found <strong>{{ groupData.anomalies.length }}</strong> significant anomalies and <strong>{{ groupData.trends.length }}</strong> significant trends.
@@ -344,16 +376,16 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                     </div>
                 </section>
 
-                <div v-if="allFindings.length > 0" class="space-y-12">
-                    <section v-for="(groupData, secGroup) in findingsBySecondaryGroup" :key="secGroup" :id="`analysis-${sanitizeForFilename(secGroup)}`" class="p-6 border rounded-lg bg-gray-50/50 scroll-mt-4">
-                        <h2 class="text-3xl font-bold mb-4 text-gray-700">Analysis for: <span class="text-indigo-600">{{ secGroup }}</span></h2>
+                <div v-if="allFindings.length > 0 && activeSecondaryGroup" class="space-y-12">
+                    <section :id="`analysis-${sanitizeForFilename(activeSecondaryGroup)}`" class="p-6 border rounded-lg bg-gray-50/50 scroll-mt-4">
+                        <h2 class="text-3xl font-bold mb-4 text-gray-700">Detailed Analysis for: <span class="text-indigo-600">{{ activeSecondaryGroup }}</span></h2>
                         
                         <div class="space-y-8">
                             <div>
                                 <h3 class="text-2xl font-semibold border-b pb-2 mb-4">Spatial Overview of Anomalies</h3>
-                                <div v-if="groupData.anomalies.length > 0">
+                                <div v-if="findingsBySecondaryGroup[activeSecondaryGroup].anomalies.length > 0">
                                     <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant anomalies. Color indicates the number of distinct anomaly types in a cell.</p>
-                                    <div :id="`map-anomalies-${sanitizeForFilename(secGroup)}`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
+                                    <div :id="`map-anomalies-${sanitizeForFilename(activeSecondaryGroup)}`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
                                 </div>
                                 <div v-else class="flex items-center justify-center h-[500px] border rounded-lg bg-gray-100 text-gray-500">
                                     No significant anomalies found for this category.
@@ -362,11 +394,11 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
 
                             <div>
                                 <h3 class="text-2xl font-semibold border-b pb-2 mb-4">Spatial Overview of Trends</h3>
-                                <div v-if="groupData.trends.length > 0" class="space-y-8">
+                                <div v-if="findingsBySecondaryGroup[activeSecondaryGroup].trends.length > 0" class="space-y-8">
                                     <div v-for="window in TREND_WINDOWS" :key="`trend-map-${window}`">
                                         <h4 class="text-xl font-medium mb-2">{{ window }}-Week Trend Analysis</h4>
                                         <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant trends for the {{ window }}-week period. Red indicates an upward trend; blue indicates a downward trend.</p>
-                                        <div :id="`map-trends-${sanitizeForFilename(secGroup)}-${window}_weeks`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
+                                        <div :id="`map-trends-${sanitizeForFilename(activeSecondaryGroup)}-${window}_weeks`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
                                     </div>
                                 </div>
                                 <div v-else class="flex items-center justify-center h-[500px] border rounded-lg bg-gray-100 text-gray-500">
@@ -375,80 +407,81 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                             </div>
                         </div>
                     </section>
-                </div>
 
-                <section>
-                    <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Summary of All Significant Findings</h2>
-                    <div class="overflow-x-auto" v-if="allFindings.length > 0">
-                        <table class="min-w-full bg-white border rounded-lg">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="py-2 px-4 border-b">H3 Cell</th>
-                                    <th class="py-2 px-4 border-b">{{ reportData.parameters.secondary_group_col || 'Secondary Group' }}</th>
-                                    <th class="py-2 px-4 border-b">Finding Type</th>
-                                    <th class="py-2 px-4 border-b">Date/Period</th>
-                                    <th class="py-2 px-4 border-b">Details</th>
-                                    <th class="py-2 px-4 border-b">P-Value</th>
-                                    <th class="py-2 px-4 border-b">Z-Score / Slope</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(finding, index) in allFindings" :key="index" class="hover:bg-gray-50">
-                                    <td class="py-2 px-4 border-b">
-                                        <div class="flex items-center space-x-2">
-                                            <a :href="`#${finding.details[`h3_index_${reportData.parameters.h3_resolution}`]}`" class="text-blue-600 hover:underline">{{ finding.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</a>
-                                            <button @click="viewHexagonOnMap(finding.details[`h3_index_${reportData.parameters.h3_resolution}`], finding.type, finding.details.secondary_group, finding.trend_window)" class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-2 rounded">
-                                                View on Map
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td class="py-2 px-4 border-b">{{ finding.details.secondary_group }}</td>
-                                    <td class="py-2 px-4 border-b"><span :class="{'bg-yellow-200 text-yellow-800': finding.type === 'Anomaly', 'bg-blue-200 text-blue-800': finding.type === 'Trend'}" class="px-2 py-1 rounded-full text-xs font-medium">{{ finding.type }}</span></td>
-                                    <td v-if="finding.type === 'Trend'" class="py-2 px-4 border-b">{{ finding.trend_window.replace('_', ' ') }}</td>
-                                    <td v-else class="py-2 px-4 border-b">{{ finding.week_details.week }}</td>
-                                    <td v-if="finding.type === 'Trend'" class="py-2 px-4 border-b">{{ finding.trend_details.description }}</td>
-                                    <td v-else class="py-2 px-4 border-b">Count: {{ finding.week_details.count }} (vs avg {{ finding.details.historical_weekly_avg.toFixed(2) }})</td>
-                                    <td v-if="finding.type === 'Trend' && finding.trend_details.p_value" class="py-2 px-4 border-b">{{ finding.trend_details.p_value.toPrecision(4) }}</td>
-                                    <td v-else-if="finding.type === 'Anomaly'" class="py-2 px-4 border-b">{{ finding.week_details.anomaly_p_value.toPrecision(4) }}</td>
-                                    <td v-else class="py-2 px-4 border-b">N/A</td>
-                                    <td v-if="finding.type === 'Trend' && finding.trend_details.slope !== null" class="py-2 px-4 border-b">{{ finding.trend_details.slope.toFixed(2) }}</td>
-                                    <td v-else-if="finding.type === 'Anomaly'" class="py-2 px-4 border-b">{{ finding.week_details.z_score.toFixed(2) }}</td>
-                                    <td v-else class="py-2 px-4 border-b">N/A</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                     <div v-else class="text-center py-6 text-gray-500">
-                        <p>No statistically significant trends or anomalies were detected based on the current parameters.</p>
-                    </div>
-                </section>
+                    <section>
+                        <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Summary of Significant Findings</h2>
+                        <div class="overflow-x-auto" v-if="filteredFindings.length > 0">
+                            <table class="min-w-full bg-white border rounded-lg">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="py-2 px-4 border-b">H3 Cell</th>
+                                        <th class="py-2 px-4 border-b">{{ reportData.parameters.secondary_group_col || 'Secondary Group' }}</th>
+                                        <th class="py-2 px-4 border-b">Finding Type</th>
+                                        <th class="py-2 px-4 border-b">Date/Period</th>
+                                        <th class="py-2 px-4 border-b">Details</th>
+                                        <th class="py-2 px-4 border-b">P-Value</th>
+                                        <th class="py-2 px-4 border-b">Z-Score / Slope</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(finding, index) in filteredFindings" :key="index" class="hover:bg-gray-50">
+                                        <td class="py-2 px-4 border-b">
+                                            <div class="flex items-center space-x-2">
+                                                <a :href="`#${finding.details[`h3_index_${reportData.parameters.h3_resolution}`]}`" class="text-blue-600 hover:underline">{{ finding.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</a>
+                                                <button @click="viewHexagonOnMap(finding.details[`h3_index_${reportData.parameters.h3_resolution}`], finding.type, finding.details.secondary_group, finding.trend_window)" class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-2 rounded">
+                                                    View on Map
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="py-2 px-4 border-b">{{ finding.details.secondary_group }}</td>
+                                        <td class="py-2 px-4 border-b"><span :class="{'bg-yellow-200 text-yellow-800': finding.type === 'Anomaly', 'bg-blue-200 text-blue-800': finding.type === 'Trend'}" class="px-2 py-1 rounded-full text-xs font-medium">{{ finding.type }}</span></td>
+                                        <td v-if="finding.type === 'Trend'" class="py-2 px-4 border-b">{{ finding.trend_window.replace('_', ' ') }}</td>
+                                        <td v-else class="py-2 px-4 border-b">{{ finding.week_details.week }}</td>
+                                        <td v-if="finding.type === 'Trend'" class="py-2 px-4 border-b">{{ finding.trend_details.description }}</td>
+                                        <td v-else class="py-2 px-4 border-b">Count: {{ finding.week_details.count }} (vs avg {{ finding.details.historical_weekly_avg.toFixed(2) }})</td>
+                                        <td v-if="finding.type === 'Trend' && finding.trend_details.p_value" class="py-2 px-4 border-b">{{ finding.trend_details.p_value.toPrecision(4) }}</td>
+                                        <td v-else-if="finding.type === 'Anomaly'" class="py-2 px-4 border-b">{{ finding.week_details.anomaly_p_value.toPrecision(4) }}</td>
+                                        <td v-else class="py-2 px-4 border-b">N/A</td>
+                                        <td v-if="finding.type === 'Trend' && finding.trend_details.slope !== null" class="py-2 px-4 border-b">{{ finding.trend_details.slope.toFixed(2) }}</td>
+                                        <td v-else-if="finding.type === 'Anomaly'" class="py-2 px-4 border-b">{{ finding.week_details.z_score.toFixed(2) }}</td>
+                                        <td v-else class="py-2 px-4 border-b">N/A</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
 
-                <section v-if="allFindings.length > 0">
-                    <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Detailed Analysis by H3 Cell</h2>
-                     <div class="space-y-6">
-                        <div v-for="(h3Data, h3Index) in findingsByH3" :key="h3Index" :id="h3Index" class="p-4 border rounded-lg bg-gray-50 scroll-mt-4">
-                            <h4 class="text-xl font-bold mb-3">Hexagon: {{ h3Index }}</h4>
-                            <div class="space-y-4">
-                               <div v-for="(findingsInGroup, secGroup) in h3Data.findingsBySecGroup" :key="secGroup" class="p-3 bg-white border rounded shadow-sm">
-                                    <h5 class="font-semibold">Findings for '{{ secGroup }}'</h5>
-                                    <ul>
-                                        <li v-for="(finding, fIndex) in findingsInGroup" :key="fIndex">
-                                            <template v-if="finding.type === 'Trend'"><strong>Trend ({{ finding.trend_window.replace('_', ' ') }})</strong>: {{ finding.trend_details.description }} (Slope: {{ (finding.trend_details.slope || 0).toFixed(2) }}, p-value: {{ (finding.trend_details.p_value || 0).toPrecision(4) }})</template>
-                                            <template v-if="finding.type === 'Anomaly'"><strong>Anomaly on {{ finding.week_details.week }}</strong>: Count {{ finding.week_details.count }} (vs avg {{ (finding.details.historical_weekly_avg || 0).toFixed(2) }}), Z-Score: {{ (finding.week_details.z_score || 0).toFixed(2) }}, p-value: {{ (finding.week_details.anomaly_p_value || 0).toPrecision(4) }})</template>
-                                            <button @click="viewHexagonOnMap(h3Index, finding.type, secGroup, finding.trend_window)" class="ml-2 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-2 rounded">
-                                                View on Map
-                                            </button>
-                                        </li>
-                                    </ul>
-                                    <img :src="`${apiBaseUrl}/api/v1/jobs/${jobId}/results/plot_${h3Index}_${sanitizeForFilename(secGroup)}.png`" 
-                                         :alt="`Time series plot for ${secGroup} in ${h3Index}`" 
-                                         class="mt-4 rounded"
-                                         @error="($event) => $event.target.style.display='none'"/>
+                    <section>
+                        <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Detailed Analysis by H3 Cell</h2>
+                         <div class="space-y-6">
+                            <div v-for="(h3Data, h3Index) in filteredFindingsByH3" :key="h3Index" :id="h3Index" class="p-4 border rounded-lg bg-gray-50 scroll-mt-4">
+                                <h4 class="text-xl font-bold mb-3">Hexagon: {{ h3Index }}</h4>
+                                <div class="space-y-4">
+                                   <div v-for="(findingsInGroup, secGroup) in h3Data.findingsBySecGroup" :key="secGroup" class="p-3 bg-white border rounded shadow-sm">
+                                        <h5 class="font-semibold">Findings for '{{ secGroup }}'</h5>
+                                        <ul>
+                                            <li v-for="(finding, fIndex) in findingsInGroup" :key="fIndex">
+                                                <template v-if="finding.type === 'Trend'"><strong>Trend ({{ finding.trend_window.replace('_', ' ') }})</strong>: {{ finding.trend_details.description }} (Slope: {{ (finding.trend_details.slope || 0).toFixed(2) }}, p-value: {{ (finding.trend_details.p_value || 0).toPrecision(4) }})</template>
+                                                <template v-if="finding.type === 'Anomaly'"><strong>Anomaly on {{ finding.week_details.week }}</strong>: Count {{ finding.week_details.count }} (vs avg {{ (finding.details.historical_weekly_avg || 0).toFixed(2) }}), Z-Score: {{ (finding.week_details.z_score || 0).toFixed(2) }}, p-value: {{ (finding.week_details.anomaly_p_value || 0).toPrecision(4) }})</template>
+                                                <button @click="viewHexagonOnMap(h3Index, finding.type, secGroup, finding.trend_window)" class="ml-2 text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-2 rounded">
+                                                    View on Map
+                                                </button>
+                                            </li>
+                                        </ul>
+                                        <img :src="`${apiBaseUrl}/api/v1/jobs/${jobId}/results/plot_${h3Index}_${sanitizeForFilename(secGroup)}.png`" 
+                                             :alt="`Time series plot for ${secGroup} in ${h3Index}`" 
+                                             class="mt-4 rounded"
+                                             @error="($event) => $event.target.style.display='none'"/>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                     </div>
-                </section>
+                         </div>
+                    </section>
+                </div>
+
+                <div v-else-if="allFindings.length === 0" class="text-center py-6 text-gray-500">
+                    <p>No statistically significant trends or anomalies were detected based on the current parameters.</p>
+                </div>
             </div>
         </div>
     </PageTemplate>
