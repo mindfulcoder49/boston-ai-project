@@ -46,6 +46,9 @@ class StatisticalAnalysisReportController extends Controller
         if ($response->successful()) {
             $reportData = $response->json();
             Log::info("Successfully fetched report data.", ['job_id' => $jobId]);
+            //log the reportData
+            Log::info("Report data content.", ['job_id' => $jobId, 'reportData' => $reportData]);
+
         } else {
             Log::error("Failed to fetch report data from analysis API.", [
                 'job_id' => $jobId,
