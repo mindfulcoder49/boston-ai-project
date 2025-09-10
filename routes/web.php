@@ -32,9 +32,13 @@ use App\Http\Controllers\AdminLocationController; // Added
 
 use App\Http\Controllers\TrendsController;
 use App\Http\Controllers\StatisticalAnalysisReportController;
+use App\Http\Controllers\YearlyCountComparisonController;
 
 Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
 Route::get('/reports/statistical-analysis/{trendId}', [StatisticalAnalysisReportController::class, 'show'])->name('reports.statistical-analysis.show');
+
+Route::get('/yearly-comparisons', [YearlyCountComparisonController::class, 'index'])->name('yearly-comparisons.index');
+Route::get('/reports/yearly-comparison/{reportId}', [YearlyCountComparisonController::class, 'show'])->name('reports.yearly-comparison.show');
 
 
 Route::middleware(['auth'])->group(function () {
