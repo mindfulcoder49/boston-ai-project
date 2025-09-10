@@ -44,7 +44,20 @@ class StatisticalAnalysisReportController extends Controller
         $response = Http::get($apiUrl);
 
         if ($response->successful()) {
-            $reportData = $response->json();
+            $body = $response->body();
+            $reportData = json_decode($body, true);
+            $jsonError = json_last_error();
+
+            if ($jsonError !== JSON_ERROR_NONE) {
+                Log::error("Failed to decode JSON from analysis API.", [
+                    'job_id' => $jobId,
+                    'json_error_code' => $jsonError,
+                    'json_error_message' => json_last_error_msg(),
+                    'response_body_start' => Str::substr($body, 0, 500)
+                ]);
+                $reportData = null;
+            }
+
             Log::info("Successfully fetched report data.", ['job_id' => $jobId]);
             //log the reportData
             Log::info("Report data content.", ['job_id' => $jobId, 'reportData' => $reportData]);
