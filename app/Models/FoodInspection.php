@@ -67,7 +67,7 @@ class FoodInspection extends Model
     // Mappable Trait Implementations
     public static function getHumanName(): string
     {
-        return 'Food Inspections';
+        return 'Boston Food Inspections';
     }
 
     public static function getIconClass(): string

@@ -48,7 +48,7 @@ class PropertyViolation extends Model
     // Mappable Trait Implementations
     public static function getHumanName(): string
     {
-        return 'Property Violations';
+        return 'Boston Property Violations';
     }
 
     public static function getIconClass(): string

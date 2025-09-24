@@ -86,22 +86,22 @@ const dataTypeMapByLanguageCode = {
 
   const LabelsByLanguageCode = {
     'en-US': {
-      pageTitle: 'BostonScope',
+      pageTitle: 'Public Data Watch',
     },
     'es-MX': {
-      pageTitle: 'BostonScope',
+      pageTitle: 'Vigilancia de Datos Públicos',
     },
     'zh-CN': {
-      pageTitle: '波士顿市政府活动地图', //translation literal: 'Boston City Government Activity Map',
+      pageTitle: '公共数据监控',
     },
     'ht-HT': {
-      pageTitle: 'BostonScope',
+      pageTitle: 'Gade Done Piblik',
     },
     'vi-VN': {
-      pageTitle: 'Bản đồ hoạt động của Chính phủ Thành phố Boston',
+      pageTitle: 'Giám sát Dữ liệu Công cộng',
     },
     'pt-BR': {
-      pageTitle: 'BostonScope',
+      pageTitle: 'Monitoramento de Dados Públicos',
     },
   };
 

@@ -100,7 +100,7 @@ class ThreeOneOneCase extends Model
     // Mappable Trait Implementations
     public static function getHumanName(): string
     {
-        return '311 Cases';
+        return 'Boston 311 Cases';
     }
 
     public static function getIconClass(): string
