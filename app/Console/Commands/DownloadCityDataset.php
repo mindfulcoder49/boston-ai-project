@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class DownloadCityDataset extends Command
 {
-    protected $signature = 'app:download-city-dataset {--resume-from= : The path to a partial CSV file to resume downloading.}';
+    protected $signature = 'app:download-city-dataset {dataset? : The name of a specific dataset to download.} {--resume-from= : The path to a partial CSV file to resume downloading.}';
     protected $description = 'Downloads datasets from configured cities (e.g., Boston, Cambridge), with resume support.';
 
     public function handle()
@@ -24,15 +24,29 @@ class DownloadCityDataset extends Command
 
     protected function handleNewDownload()
     {
+        $datasetName = $this->argument('dataset');
         $config = config('datasets');
-        $datasets = $config['datasets'];
+        $allDatasets = $config['datasets'];
 
-        if (empty($datasets)) {
+        if (empty($allDatasets)) {
             $this->info('No datasets configured. Please check config/datasets.php');
             return 0;
         }
 
-        foreach ($datasets as $dataset) {
+        $datasetsToDownload = $allDatasets;
+        if ($datasetName) {
+            $this->info("Looking for dataset '{$datasetName}' to download.");
+            $datasetsToDownload = array_filter($allDatasets, function ($dataset) use ($datasetName) {
+                return $dataset['name'] === $datasetName;
+            });
+
+            if (empty($datasetsToDownload)) {
+                $this->error("Dataset '{$datasetName}' not found in configuration.");
+                return 1;
+            }
+        }
+
+        foreach ($datasetsToDownload as $dataset) {
             $whereClause = null;
 
             // Handle incremental downloads

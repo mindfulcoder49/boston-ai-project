@@ -103,5 +103,18 @@ return [
             'date_field' => 'date', // The date field in the dataset for incremental checks
         ],
         // Add more datasets from Cambridge or other cities (not Boston) as needed
+        /* Add somerville crime reports https://data.somervillema.gov/api/v3/views/aghs-hqvg/query.json
+        [
+            'name' => 'somerville-crime-reports',
+            'city' => 'somerville',
+            'base_url' => 'https://data.somervillema.gov/resource',
+            'resource_id' => 'aghs-hqvg',
+            'format' => 'csv',
+            'url_pattern_type' => 'extension',
+            'pagination_type' => 'socrata_offset',
+            'page_size' => 10000,
+            'order_by_field' => ':id',
+        ],    */
+            
     ],
 ];
