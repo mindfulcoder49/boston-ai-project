@@ -27,4 +27,14 @@ class YearlyCountComparison extends Model
         'baseline_year',
         'job_id',
     ];
+
+    /**
+     * Get the human-readable name for the model.
+     *
+     * @return string
+     */
+    public static function getHumanName(): string
+    {
+        return 'Yearly Count Comparison';
+    }
 }

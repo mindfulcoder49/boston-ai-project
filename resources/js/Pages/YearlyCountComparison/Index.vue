@@ -16,6 +16,12 @@ const props = defineProps({
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
           <div class="p-6 text-gray-900">
             <h1 class="text-3xl font-bold mb-6 border-b pb-4">Yearly Count Comparison Reports</h1>
+
+            <div class="mb-6 text-right">
+              <Link :href="route('news.index')" class="inline-block bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors">
+                View News Articles
+              </Link>
+            </div>
             
             <div v-if="reportsByModel.length > 0" class="space-y-8">
               <div v-for="model in reportsByModel" :key="model.model_key" class="p-6 border rounded-lg shadow-md bg-gray-50">

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Models\NewsArticle;
 
 class YearlyCountComparisonController extends Controller
 {
@@ -71,11 +72,21 @@ class YearlyCountComparisonController extends Controller
             $report->baseline_year
         );
 
+        // Check for a related news article
+        $newsArticle = NewsArticle::where('source_model_class', YearlyCountComparison::class)
+            ->where('source_report_id', $report->id)
+            ->where('status', 'published')
+            ->first();
+
         return Inertia::render('Reports/YearlyCountComparisonViewer', [
             'jobId' => $jobId,
             'apiBaseUrl' => $apiBaseUrl,
             'reportData' => $reportData,
             'reportTitle' => $reportTitle,
+            'newsArticle' => $newsArticle ? [
+                'slug' => $newsArticle->slug,
+                'headline' => $newsArticle->headline,
+            ] : null,
         ]);
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\CrimeReportsController;
 use App\Http\Controllers\CrimeMapController;
 use App\Http\Controllers\DataMapController; // Added
 use App\Http\Controllers\MetricsController; // Added
+use App\Http\Controllers\NewsArticleController; // Added
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,9 @@ Route::get('/reports/statistical-analysis/{trendId}', [StatisticalAnalysisReport
 Route::get('/yearly-comparisons', [YearlyCountComparisonController::class, 'index'])->name('yearly-comparisons.index');
 Route::get('/reports/yearly-comparison/{reportId}', [YearlyCountComparisonController::class, 'show'])->name('reports.yearly-comparison.show');
 
+// News Article Routes
+Route::get('/news', [NewsArticleController::class, 'index'])->name('news.index');
+Route::get('/news/{newsArticle:slug}', [NewsArticleController::class, 'show'])->name('news.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('locations', LocationController::class);

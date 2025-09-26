@@ -40,4 +40,14 @@ class Trend extends Model
     protected $casts = [
         'analysis_weeks_trend' => 'array',
     ];
+
+    /**
+     * Get the human-readable name for the model.
+     *
+     * @return string
+     */
+    public static function getHumanName(): string
+    {
+        return 'Statistical Trend Analysis';
+    }
 }

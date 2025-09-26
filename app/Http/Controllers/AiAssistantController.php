@@ -13,6 +13,7 @@ use App\Http\Controllers\GenericMapController; // Added for streamLocationReport
 use App\Http\Controllers\ThreeOneOneCaseController; // Added for streamLocationReport
 use Illuminate\Support\Facades\Auth; // Added for Auth
 use App\Models\Report; // Added for Report model
+use Illuminate\Support\Str;
 
 class AiAssistantController extends Controller
 {
@@ -262,6 +263,7 @@ class AiAssistantController extends Controller
             $response = $client->post($url, [
                 'headers' => ['Content-Type' => 'application/json'],
                 'json' => $requestBody,
+                'timeout' => 120, // Increase timeout to 120 seconds
             ]);
 
             $responseBody = json_decode($response->getBody()->getContents(), true);
@@ -289,6 +291,134 @@ class AiAssistantController extends Controller
         } catch (\Exception $e) {
             Log::error("Error generating report section for $typeContext: " . $e->getMessage(), ['language' => $language]);
             return "Error generating report section for $typeContext.";
+        }
+    }
+
+    /**
+     * Generates a news article from report data using Gemini.
+     *
+     * @param string $reportTitle The title of the source report.
+     * @param array|object $reportData The raw data from the report.
+     * @param array $reportParameters Additional context about the report parameters.
+     * @return array|null An array containing 'headline', 'summary', and 'content', or null on failure.
+     */
+    public static function generateNewsArticle(string $reportTitle, $reportData, array $reportParameters = []): ?array
+    {
+        $apiKey = config('services.gemini.api_key');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey";
+        $client = new Client();
+
+        $systemPrompt = <<<EOT
+You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article based on the provided JSON data.
+
+The article should be structured in a standard news format. It must include:
+1. A compelling, SEO-friendly `headline`.
+2. A brief, engaging `summary` of the key findings (1-2 sentences).
+3. The main `content` of the article in Markdown format.
+
+The tone should be objective, informative, and accessible to a general audience. Analyze the data, identify the most significant trends, comparisons, or anomalies, and present them clearly. Do not just list the data; interpret it and explain its significance.
+
+The JSON response MUST be a single, valid JSON object with three keys: "headline", "summary", and "content". Do not include any other text or formatting outside of this JSON object.
+EOT;
+
+        $contextPrompt = "The analysis was generated with the following parameters. Use them to provide context in the article:\n" . json_encode($reportParameters, JSON_PRETTY_PRINT);
+        $userPrompt = "Write a news article about the following report titled '{$reportTitle}'.\n\n{$contextPrompt}\n\nHere is the data: " . json_encode($reportData);
+
+        $requestBody = [
+            'contents' => [
+                ['role' => 'user', 'parts' => [['text' => $systemPrompt]]],
+                ['role' => 'model', 'parts' => [['text' => 'Understood. I will act as a journalist and provide a news article in the specified JSON format.']]],
+                ['role' => 'user', 'parts' => [['text' => $userPrompt]]],
+            ],
+            "generationConfig" => [
+                "temperature" => 0.7,
+                "maxOutputTokens" => 65536,
+                "response_mime_type" => "application/json",
+            ]
+        ];
+
+        try {
+            $response = $client->post($url, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            $articleData = null;
+            $jsonString = null;
+
+            if (isset($responseBody['candidates'][0]['content']['parts'][0]['text'])) {
+                $jsonString = $responseBody['candidates'][0]['content']['parts'][0]['text'];
+                $articleData = json_decode($jsonString, true);
+
+                if (json_last_error() === JSON_ERROR_NONE && isset($articleData['headline'], $articleData['summary'], $articleData['content'])) {
+                    $articleData['title'] = Str::limit($articleData['headline'], 250);
+                    $articleData['slug'] = Str::slug($articleData['title']);
+                    return $articleData;
+                }
+            }
+
+            // Handle cases where JSON is invalid or generation was stopped
+            if (isset($responseBody['candidates'][0]['finishReason'])) {
+                $finishReason = $responseBody['candidates'][0]['finishReason'];
+                Log::warning("Gemini generation for news article finished with reason: {$finishReason}", [
+                    'finishReason' => $finishReason,
+                    'reportTitle' => $reportTitle,
+                    'usageMetadata' => $responseBody['usageMetadata'] ?? 'N/A',
+                ]);
+
+                if ($finishReason === 'MAX_TOKENS' && $jsonString) {
+                    Log::warning("AI response was truncated. Attempting to salvage partial content.", [
+                        'reportTitle' => $reportTitle,
+                        'maxOutputTokens' => $requestBody['generationConfig']['maxOutputTokens'],
+                        'promptTokenCount' => $responseBody['usageMetadata']['promptTokenCount'] ?? 'N/A',
+                    ]);
+
+                    // Attempt to salvage what we can from the truncated JSON
+                    $salvagedData = [
+                        'headline' => 'Headline Missing (Truncated)',
+                        'summary' => 'Summary Missing (Truncated)',
+                        'content' => $jsonString, // Store the raw truncated string
+                    ];
+
+                    // Try to extract headline and summary with regex
+                    if (preg_match('/"headline":\s*"(.*?)"/s', $jsonString, $matches)) {
+                        $salvagedData['headline'] = $matches[1];
+                    }
+                    if (preg_match('/"summary":\s*"(.*?)"/s', $jsonString, $matches)) {
+                        $salvagedData['summary'] = $matches[1];
+                    }
+
+                    $salvagedData['title'] = Str::limit($salvagedData['headline'], 250);
+                    $salvagedData['slug'] = Str::slug($salvagedData['title']);
+                    return $salvagedData;
+                }
+
+                // For other finish reasons, we fail.
+                return null;
+
+            } elseif (isset($responseBody['promptFeedback']['blockReason'])) {
+                Log::warning("Gemini content generation blocked for news article.", [
+                    'reason' => $responseBody['promptFeedback']['blockReason'],
+                    'reportTitle' => $reportTitle,
+                ]);
+                return null;
+            }
+
+            // If we are here, JSON was invalid for a reason other than MAX_TOKENS, or text was missing.
+            Log::error('Failed to decode JSON from Gemini or JSON is missing required keys.', ['response' => $jsonString]);
+            return null;
+
+        } catch (RequestException | ClientException $e) {
+            Log::error("Guzzle Exception during Gemini call for news article: " . $e->getMessage(), ['reportTitle' => $reportTitle]);
+            if ($e->hasResponse()) {
+                Log::error("Gemini Response Body for news article: " . $e->getResponse()->getBody()->getContents());
+            }
+            return null;
+        } catch (\Exception $e) {
+            Log::error("Error generating news article: " . $e->getMessage(), ['reportTitle' => $reportTitle]);
+            return null;
         }
     }
 
