@@ -30,9 +30,8 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
             $this->warn('The --fresh option was used. Existing articles will be regenerated.');
         }
 
-        $configSet = $this->option('run-config');
-
-        if ($configSet !== null) {
+        if ($this->hasOption('run-config')) {
+            $configSet = $this->option('run-config');
             $this->runFromConfig($configSet);
         } else {
             $this->runFromCliOptions();
