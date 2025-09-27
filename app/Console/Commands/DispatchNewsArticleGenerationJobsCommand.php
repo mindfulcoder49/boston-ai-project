@@ -185,12 +185,18 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
                     $p_value_a = 1.0;
                     if (!empty($a['trend_analysis'])) {
                         $p_values_a = array_column(array_values($a['trend_analysis']), 'p_value');
-                        $p_value_a = min(array_filter($p_values_a, 'is_numeric'));
+                        $numeric_p_values_a = array_filter($p_values_a, 'is_numeric');
+                        if (!empty($numeric_p_values_a)) {
+                            $p_value_a = min($numeric_p_values_a);
+                        }
                     }
                     $p_value_b = 1.0;
                     if (!empty($b['trend_analysis'])) {
                         $p_values_b = array_column(array_values($b['trend_analysis']), 'p_value');
-                        $p_value_b = min(array_filter($p_values_b, 'is_numeric'));
+                        $numeric_p_values_b = array_filter($p_values_b, 'is_numeric');
+                        if (!empty($numeric_p_values_b)) {
+                            $p_value_b = min($numeric_p_values_b);
+                        }
                     }
                     return $p_value_a <=> $p_value_b;
                 });
