@@ -359,7 +359,8 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
         $parameters = [];
 
         if ($report instanceof Trend) {
-            $modelName = class_exists($report->model_class) ? $report->model_class::getHumanName() : 'Data';
+            $sourceModel = $report->sourceModel();
+            $modelName = $sourceModel ? $sourceModel->getHumanName() : 'Data';
             $columnLabel = Str::of($report->column_name)->replace('_', ' ')->title();
             $title = "Trend Analysis for {$modelName} by {$columnLabel}";
             $parameters = [

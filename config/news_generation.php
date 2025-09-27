@@ -5,11 +5,11 @@ use App\Models\YearlyCountComparison;
 
 // Import the specific data models for Trend analysis
 use App\Models\BuildingPermit;
-use App\Models\CambridgeCrime;
-use App\Models\Cambridge311;
+use App\Models\CambridgeCrimeReportData;
+use App\Models\CambridgeThreeOneOneCase;
 use App\Models\ChicagoCrime;
-use App\Models\BostonCrime;
-use App\Models\EverettCrime;
+use App\Models\CrimeData;
+use App\Models\EverettCrimeData;
 use App\Models\FoodInspection;
 use App\Models\ThreeOneOneCase;
 
@@ -50,14 +50,14 @@ return [
             // Cambridge Crime by Crime Type
             [
                 'model_class' => Trend::class,
-                'source_model_class' => CambridgeCrime::class,
+                'source_model_class' => CambridgeCrimeReportData::class,
                 'column_name' => 'crime',
                 'h3_resolution' => 7,
             ],
             // Cambridge 311 by Issue Type
             [
                 'model_class' => Trend::class,
-                'source_model_class' => Cambridge311::class,
+                'source_model_class' => CambridgeThreeOneOneCase::class,
                 'column_name' => 'issue_type',
                 'h3_resolution' => 7,
             ],
@@ -71,14 +71,14 @@ return [
             // Boston Crime by Offense Group
             [
                 'model_class' => Trend::class,
-                'source_model_class' => BostonCrime::class,
+                'source_model_class' => CrimeData::class,
                 'column_name' => 'offense_code_group',
                 'h3_resolution' => 7,
             ],
             // Everett Crime by Incident Type
             [
                 'model_class' => Trend::class,
-                'source_model_class' => EverettCrime::class,
+                'source_model_class' => EverettCrimeData::class,
                 'column_name' => 'incident_type',
                 'h3_resolution' => 7,
             ],
@@ -93,7 +93,7 @@ return [
             [
                 'model_class' => Trend::class,
                 'source_model_class' => ThreeOneOneCase::class,
-                'column_name' => 'reason',
+                'column_name' => 'type',
                 'h3_resolution' => 7,
             ],
         ],
