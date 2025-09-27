@@ -27,9 +27,7 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
         $this->info('Starting news article generation process...');
 
         if ($this->option('fresh')) {
-            $this->warn('The --fresh option was used. Deleting all existing news articles.');
-            NewsArticle::truncate();
-            $this->info('All news articles have been deleted.');
+            $this->warn('The --fresh option was used. Existing articles will be regenerated.');
         }
 
         $modelOption = $this->option('model');
@@ -67,8 +65,8 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
                 ->where('source_report_id', $report->id)
                 ->first();
 
-            if ($existingArticle && $existingArticle->status === 'published') {
-                continue; // Skip if already published
+            if (!$this->option('fresh') && $existingArticle && $existingArticle->status === 'published') {
+                continue; // Skip if already published, unless --fresh is used
             }
 
             try {

@@ -345,34 +345,25 @@ EOT;
 
             $responseBody = json_decode($response->getBody()->getContents(), true);
 
-            $articleData = null;
-            $jsonString = null;
-
+            // Check for any content first
             if (isset($responseBody['candidates'][0]['content']['parts'][0]['text'])) {
                 $jsonString = $responseBody['candidates'][0]['content']['parts'][0]['text'];
                 $articleData = json_decode($jsonString, true);
 
+                // Case 1: Perfect response, valid JSON
                 if (json_last_error() === JSON_ERROR_NONE && isset($articleData['headline'], $articleData['summary'], $articleData['content'])) {
                     $articleData['title'] = Str::limit($articleData['headline'], 250);
                     $articleData['slug'] = Str::slug($articleData['title']);
                     return $articleData;
                 }
-            }
 
-            // Handle cases where JSON is invalid or generation was stopped
-            if (isset($responseBody['candidates'][0]['finishReason'])) {
-                $finishReason = $responseBody['candidates'][0]['finishReason'];
-                Log::warning("Gemini generation for news article finished with reason: {$finishReason}", [
-                    'finishReason' => $finishReason,
-                    'reportTitle' => $reportTitle,
-                    'usageMetadata' => $responseBody['usageMetadata'] ?? 'N/A',
-                ]);
-
-                if ($finishReason === 'MAX_TOKENS' && $jsonString) {
-                    Log::warning("AI response was truncated. Attempting to salvage partial content.", [
+                // Case 2: Invalid JSON, but it might be because of truncation.
+                $finishReason = $responseBody['candidates'][0]['finishReason'] ?? null;
+                if ($finishReason === 'MAX_TOKENS') {
+                    Log::warning("AI response was truncated due to MAX_TOKENS. Attempting to salvage partial content.", [
                         'reportTitle' => $reportTitle,
                         'maxOutputTokens' => $requestBody['generationConfig']['maxOutputTokens'],
-                        'promptTokenCount' => $responseBody['usageMetadata']['promptTokenCount'] ?? 'N/A',
+                        'usageMetadata' => $responseBody['usageMetadata'] ?? 'N/A',
                     ]);
 
                     // Attempt to salvage what we can from the truncated JSON
@@ -384,10 +375,10 @@ EOT;
 
                     // Try to extract headline and summary with regex
                     if (preg_match('/"headline":\s*"(.*?)"/s', $jsonString, $matches)) {
-                        $salvagedData['headline'] = $matches[1];
+                        $salvagedData['headline'] = json_decode('"' . $matches[1] . '"'); // Use json_decode to handle escaped chars
                     }
                     if (preg_match('/"summary":\s*"(.*?)"/s', $jsonString, $matches)) {
-                        $salvagedData['summary'] = $matches[1];
+                        $salvagedData['summary'] = json_decode('"' . $matches[1] . '"');
                     }
 
                     $salvagedData['title'] = Str::limit($salvagedData['headline'], 250);
@@ -395,19 +386,28 @@ EOT;
                     return $salvagedData;
                 }
 
-                // For other finish reasons, we fail.
+                // If JSON is invalid for another reason, log it as an error.
+                Log::error('Failed to decode JSON from Gemini or JSON is missing required keys.', ['response' => $jsonString, 'finishReason' => $finishReason]);
                 return null;
+            }
 
+            // Handle cases where generation was stopped for other reasons (e.g., safety)
+            if (isset($responseBody['candidates'][0]['finishReason'])) {
+                $finishReason = $responseBody['candidates'][0]['finishReason'];
+                Log::warning("Gemini generation for news article finished with reason: {$finishReason}", [
+                    'finishReason' => $finishReason,
+                    'reportTitle' => $reportTitle,
+                    'usageMetadata' => $responseBody['usageMetadata'] ?? 'N/A',
+                ]);
             } elseif (isset($responseBody['promptFeedback']['blockReason'])) {
                 Log::warning("Gemini content generation blocked for news article.", [
                     'reason' => $responseBody['promptFeedback']['blockReason'],
                     'reportTitle' => $reportTitle,
                 ]);
-                return null;
+            } else {
+                Log::warning("No text content found in Gemini response for news article.", ['responseBody' => $responseBody]);
             }
 
-            // If we are here, JSON was invalid for a reason other than MAX_TOKENS, or text was missing.
-            Log::error('Failed to decode JSON from Gemini or JSON is missing required keys.', ['response' => $jsonString]);
             return null;
 
         } catch (RequestException | ClientException $e) {
