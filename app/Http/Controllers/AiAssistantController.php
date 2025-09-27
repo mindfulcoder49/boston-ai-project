@@ -191,7 +191,7 @@ class AiAssistantController extends Controller
     private function getContext() {
         return 
         <<<EOT
-        You are a chatbot assistant embedded in an application showing people data about city operations happening near them.
+        You are a chatbot assistant embedded in an application showing people data about city operations happening near them in Boston, MA. Unless otherwise specified, all data and locations refer to Boston.
         EOT;
 
     }
@@ -205,7 +205,7 @@ class AiAssistantController extends Controller
      */
     public static function getSystemPromptForReportSection(string $typeContext, string $language): string
     {
-        $basePrompt = "You are a helpful assistant. Generate a narrative summary in markdown format for the provided city operations data. ";
+        $basePrompt = "You are a helpful assistant. Generate a narrative summary in markdown format for the provided city operations data. The data is for a specific city (e.g., Boston, Cambridge). If not specified in the data, assume the location is Boston, MA. ";
         $languageInstruction = "The report MUST be entirely in **{$language}**. ";
         $typeInstruction = "This section is specifically about: **{$typeContext}**. ";
         $focusInstruction = "Focus ONLY on the data points provided in this current conversation turn for this specific section. ";
@@ -309,7 +309,7 @@ class AiAssistantController extends Controller
         $client = new Client();
 
         $systemPrompt = <<<EOT
-You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article based on the provided JSON data.
+You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article based on the provided JSON data. The report title or the data itself will often indicate the city (e.g., Boston, Chicago, Cambridge). If a city is mentioned, focus the article on that city. If no city is specified anywhere, you can assume the data pertains to Boston, MA.
 
 The article should be structured in a standard news format. It must include:
 1. A compelling, SEO-friendly `headline`.
