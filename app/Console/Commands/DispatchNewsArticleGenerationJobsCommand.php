@@ -71,64 +71,73 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
                 continue; // Skip if already published
             }
 
-            $reportData = $this->fetchReportData($report);
+            try {
+                $reportData = $this->fetchReportData($report);
 
-            if (!$reportData) {
-                $this->warn("\n<fg=yellow>Warning:</> Could not fetch or process report data for {$modelClass} #{$report->id}. Skipping.");
-                if ($existingArticle) {
-                    $existingArticle->update(['status' => 'error', 'content' => 'Failed to fetch source report data.']);
+                if (!$reportData) {
+                    $this->warn("\n<fg=yellow>Warning:</> Could not fetch or process report data for {$modelClass} #{$report->id}. Skipping.");
+                    if ($existingArticle) {
+                        $existingArticle->update(['status' => 'error', 'content' => 'Failed to fetch source report data.']);
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            $reportContext = $this->getReportContext($report);
-            $jobId = Str::uuid()->toString();
+                $reportContext = $this->getReportContext($report);
+                $jobId = Str::uuid()->toString();
 
-            $article = NewsArticle::updateOrCreate(
-                [
-                    'source_model_class' => $modelClass,
-                    'source_report_id' => $report->id,
-                ],
-                [
-                    'title' => "Generating article for: {$reportContext['title']}",
-                    'slug' => "temp-{$jobId}",
-                    'headline' => 'Generating...',
-                    'summary' => 'Generating...',
-                    'content' => 'Generating...',
-                    'status' => 'draft',
-                    'job_id' => $jobId,
-                ]
-            );
+                $article = NewsArticle::updateOrCreate(
+                    [
+                        'source_model_class' => $modelClass,
+                        'source_report_id' => $report->id,
+                    ],
+                    [
+                        'title' => "Generating article for: {$reportContext['title']}",
+                        'slug' => "temp-{$jobId}",
+                        'headline' => 'Generating...',
+                        'summary' => 'Generating...',
+                        'content' => 'Generating...',
+                        'status' => 'draft',
+                        'job_id' => $jobId,
+                    ]
+                );
 
-            $articleData = AiAssistantController::generateNewsArticle($reportContext['title'], $reportData, $reportContext['parameters']);
+                $articleData = AiAssistantController::generateNewsArticle($reportContext['title'], $reportData, $reportContext['parameters']);
 
-            if ($articleData) {
-                // Check for slug uniqueness
-                $baseSlug = Str::slug($articleData['headline']);
-                $slug = $baseSlug;
-                $counter = 1;
-                while (NewsArticle::where('slug', $slug)->where('id', '!=', $article->id)->exists()) {
-                    $slug = $baseSlug . '-' . $counter++;
+                if ($articleData) {
+                    // Check for slug uniqueness
+                    $baseSlug = Str::slug($articleData['headline']);
+                    $slug = $baseSlug;
+                    $counter = 1;
+                    while (NewsArticle::where('slug', $slug)->where('id', '!=', $article->id)->exists()) {
+                        $slug = $baseSlug . '-' . $counter++;
+                    }
+                    $articleData['slug'] = $slug;
+
+                    $article->update([
+                        'title' => $articleData['headline'],
+                        'slug' => $articleData['slug'],
+                        'headline' => $articleData['headline'],
+                        'summary' => $articleData['summary'],
+                        'content' => $articleData['content'],
+                        'status' => 'published',
+                        'published_at' => Carbon::now(),
+                    ]);
+                } else {
+                    $article->update(['status' => 'error', 'content' => 'AI generation failed. Check logs for details.']);
+                    $this->error("\n<fg=red>Error:</> Failed to generate article for {$modelClass} #{$report->id}. Check laravel.log for details from AiAssistantController.");
                 }
-                $articleData['slug'] = $slug;
-
-                $article->update([
-                    'title' => $articleData['headline'],
-                    'slug' => $articleData['slug'],
-                    'headline' => $articleData['headline'],
-                    'summary' => $articleData['summary'],
-                    'content' => $articleData['content'],
-                    'status' => 'published',
-                    'published_at' => Carbon::now(),
+            } catch (\Exception $e) {
+                $this->error("\n<fg=red>An unexpected error occurred while processing report {$modelClass} #{$report->id}:</> " . $e->getMessage());
+                Log::error("Unexpected error in DispatchNewsArticleGenerationJobsCommand", [
+                    'exception' => $e,
+                    'model' => $modelClass,
+                    'report_id' => $report->id,
                 ]);
-            } else {
-                $article->update(['status' => 'error', 'content' => 'AI generation failed. Check logs for details.']);
-                $this->error("\n<fg=red>Error:</> Failed to generate article for {$modelClass} #{$report->id}. Check laravel.log for details from AiAssistantController.");
+            } finally {
+                // Add a delay to avoid hitting API rate limits
+                $this->info("\nWaiting for 61 seconds to respect API rate limits...");
+                sleep(61);
             }
-
-            // Add a delay to avoid hitting API rate limits (TPM: 1,000,000 for Tier 1)
-            $this->info("\nWaiting for 61 seconds to respect API rate limits...");
-            sleep(61);
         }
         $progressBar->finish();
         $this->newLine(2);
@@ -160,55 +169,73 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
             }
 
             // If it's a Trend report, extract only the necessary summary data to avoid MAX_TOKENS error.
-            if ($report instanceof Trend && isset($data['summary_statistics'], $data['anomalous_hexes'])) {
+            if ($report instanceof Trend && isset($data['city_wide_results'])) {
+                // Filter city-wide results for significant trends only
+                $significant_trends = array_filter($data['city_wide_results'], function ($item) use ($report) {
+                    if (!isset($item['trend_analysis'])) return false;
+                    foreach ($item['trend_analysis'] as $trend_period) {
+                        if (isset($trend_period['p_value']) && $trend_period['p_value'] < $report->p_value_trend) {
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+
                 // Sort anomalous hexes by the lowest p-value to get the most significant ones.
-                $anomalous_hexes = $data['anomalous_hexes'];
+                $anomalous_hexes = $data['results'] ?? [];
                 usort($anomalous_hexes, function ($a, $b) {
                     $p_value_a = 1.0;
-                    if (!empty($a['trend_analysis_results'])) {
-                        $p_values_a = array_column($a['trend_analysis_results'], 'p_value_mann_kendall');
-                        $p_value_a = min($p_values_a);
+                    if (!empty($a['trend_analysis'])) {
+                        $p_values_a = array_column(array_values($a['trend_analysis']), 'p_value');
+                        $p_value_a = min(array_filter($p_values_a, 'is_numeric'));
                     }
                     $p_value_b = 1.0;
-                    if (!empty($b['trend_analysis_results'])) {
-                        $p_values_b = array_column($b['trend_analysis_results'], 'p_value_mann_kendall');
-                        $p_value_b = min($p_values_b);
+                    if (!empty($b['trend_analysis'])) {
+                        $p_values_b = array_column(array_values($b['trend_analysis']), 'p_value');
+                        $p_value_b = min(array_filter($p_values_b, 'is_numeric'));
                     }
                     return $p_value_a <=> $p_value_b;
                 });
 
-                // Limit to the top 25 most significant hexes.
-                $top_anomalous_hexes = array_slice($anomalous_hexes, 0, 25);
-
-                // Further simplify the data for each hex to send only the most significant trend.
-                $simplified_hexes = [];
-                foreach ($top_anomalous_hexes as $hex) {
-                    $most_significant_trend = null;
-                    $lowest_p_value = 1.0;
-
-                    if (!empty($hex['trend_analysis_results'])) {
-                        foreach ($hex['trend_analysis_results'] as $result) {
-                            if (isset($result['p_value_mann_kendall']) && $result['p_value_mann_kendall'] < $lowest_p_value) {
-                                $lowest_p_value = $result['p_value_mann_kendall'];
-                                $most_significant_trend = $result;
-                            }
-                        }
-                    }
-
-                    if ($most_significant_trend) {
-                        $simplified_hexes[] = [
-                            'h3_index' => $hex['h3_index'],
-                            'historical_average' => $hex['historical_average'],
-                            'most_significant_trend' => $most_significant_trend,
-                        ];
-                    }
-                }
+                // Limit to the top 5 most significant hexes.
+                $top_anomalous_hexes = array_slice($anomalous_hexes, 0, 5);
 
                 return [
-                    'summary_statistics' => $data['summary_statistics'],
-                    'anomalous_hexes' => $simplified_hexes, // Send the simplified data
+                    'city_wide_significant_trends' => array_values($significant_trends),
+                    'top_5_most_significant_anomalous_hexes' => $top_anomalous_hexes,
                     'parameters' => $data['parameters'] ?? null,
                 ];
+            }
+
+            // For YearlyCountComparison, select top/bottom 5 changes
+            if ($report instanceof YearlyCountComparison && isset($data['results'])) {
+                $results = $data['results'];
+                $current_year = $data['parameters']['analysis_current_year'] ?? null;
+
+                if ($current_year && !empty($results)) {
+                    // Filter out groups with no change or insufficient data
+                    $filtered_results = array_filter($results, function ($item) use ($current_year) {
+                        return isset($item['to_date'][$current_year]['change_pct']);
+                    });
+
+                    // Sort by year-to-date percentage change
+                    usort($filtered_results, function ($a, $b) use ($current_year) {
+                        $change_a = $a['to_date'][$current_year]['change_pct'] ?? 0;
+                        $change_b = $b['to_date'][$current_year]['change_pct'] ?? 0;
+                        return $change_b <=> $change_a; // Sort descending
+                    });
+
+                    $top_increases = array_slice($filtered_results, 0, 5);
+                    $top_decreases = array_slice(array_reverse($filtered_results), 0, 5);
+
+                    return [
+                        'summary_of_changes' => [
+                            'top_5_increases_ytd' => $top_increases,
+                            'top_5_decreases_ytd' => $top_decreases,
+                        ],
+                        'parameters' => $data['parameters'] ?? null,
+                    ];
+                }
             }
 
             return $data;
