@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 
 class DispatchNewsArticleGenerationJobsCommand extends Command
 {
-    protected $signature = 'app:dispatch-news-article-generation-jobs {--model=all} {--fresh} {--yearly-only} {--unified-res=}';
+    protected $signature = 'app:dispatch-news-article-generation-jobs {--model=all} {--fresh} {--yearly-only} {--unified-res=} {--run-config= : Run a pre-defined set of reports from the news_generation config file}';
     protected $description = 'Generates news articles for statistical reports using AI.';
 
     protected $supportedModels = [
@@ -30,12 +30,26 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
             $this->warn('The --fresh option was used. Existing articles will be regenerated.');
         }
 
+        $configSet = $this->option('run-config');
+
+        if ($configSet !== null) {
+            $this->runFromConfig($configSet);
+        } else {
+            $this->runFromCliOptions();
+        }
+
+        $this->info('News article generation process completed.');
+        return 0;
+    }
+
+    private function runFromCliOptions()
+    {
         $yearlyOnly = $this->option('yearly-only');
         $unifiedRes = $this->option('unified-res');
 
         if ($yearlyOnly && $unifiedRes) {
             $this->error('The --yearly-only and --unified-res options cannot be used together.');
-            return 1;
+            return;
         }
 
         $modelOption = $this->option('model');
@@ -55,16 +69,66 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
             $modelsToProcess = [$modelOption => $this->supportedModels[$modelOption]];
         } else {
             $this->error("Invalid model specified. Available models: " . implode(', ', array_keys($this->supportedModels)));
-            return 1;
+            return;
         }
 
         foreach ($modelsToProcess as $modelName => $modelClass) {
             $this->line("Processing reports from: <fg=cyan>{$modelName}</fg=cyan>");
             $this->processReports($modelClass);
         }
+    }
 
-        $this->info('News article generation process completed.');
-        return 0;
+    private function runFromConfig($configSet)
+    {
+        $setName = $configSet ?: 'default';
+        $this->info("Running pre-defined report set '{$setName}' from config...");
+
+        $reportSet = config("news_generation.report_sets.{$setName}");
+
+        if (!$reportSet) {
+            $this->error("Report set '{$setName}' not found in config/news_generation.php.");
+            return;
+        }
+
+        $allReports = collect();
+
+        foreach ($reportSet as $criteria) {
+            if (!isset($criteria['model_class']) || !class_exists($criteria['model_class'])) {
+                $this->warn("Skipping invalid criteria in config: model_class is missing or invalid.");
+                continue;
+            }
+
+            $modelClass = $criteria['model_class'];
+            $query = $modelClass::query();
+
+            // Special handling for source_model_class which is a property on the report model
+            if (isset($criteria['source_model_class'])) {
+                $query->where('model_class', $criteria['source_model_class']);
+            }
+
+            foreach ($criteria as $key => $value) {
+                if (!in_array($key, ['model_class', 'source_model_class'])) {
+                    $query->where($key, $value);
+                }
+            }
+            $allReports = $allReports->merge($query->get());
+        }
+
+        if ($allReports->isEmpty()) {
+            $this->info("\nNo reports found matching the criteria in the '{$setName}' config set.");
+            return;
+        }
+
+        $progressBar = $this->output->createProgressBar($allReports->count());
+        $progressBar->start();
+
+        foreach ($allReports as $report) {
+            $progressBar->advance();
+            $this->processSingleReport($report);
+        }
+
+        $progressBar->finish();
+        $this->newLine(2);
     }
 
     private function processReports(string $modelClass)
@@ -88,86 +152,92 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
 
         foreach ($reports as $report) {
             $progressBar->advance();
-
-            // Check if an article already exists and is published
-            $existingArticle = NewsArticle::where('source_model_class', $modelClass)
-                ->where('source_report_id', $report->id)
-                ->first();
-
-            if (!$this->option('fresh') && $existingArticle && $existingArticle->status === 'published') {
-                continue; // Skip if already published, unless --fresh is used
-            }
-
-            try {
-                $reportData = $this->fetchReportData($report);
-
-                if (!$reportData) {
-                    $this->warn("\n<fg=yellow>Warning:</> Could not fetch or process report data for {$modelClass} #{$report->id}. Skipping.");
-                    if ($existingArticle) {
-                        $existingArticle->update(['status' => 'error', 'content' => 'Failed to fetch source report data.']);
-                    }
-                    continue;
-                }
-
-                $reportContext = $this->getReportContext($report);
-                $jobId = Str::uuid()->toString();
-
-                $article = NewsArticle::updateOrCreate(
-                    [
-                        'source_model_class' => $modelClass,
-                        'source_report_id' => $report->id,
-                    ],
-                    [
-                        'title' => "Generating article for: {$reportContext['title']}",
-                        'slug' => "temp-{$jobId}",
-                        'headline' => 'Generating...',
-                        'summary' => 'Generating...',
-                        'content' => 'Generating...',
-                        'status' => 'draft',
-                        'job_id' => $jobId,
-                    ]
-                );
-
-                $articleData = AiAssistantController::generateNewsArticle($reportContext['title'], $reportData, $reportContext['parameters']);
-
-                if ($articleData) {
-                    // Check for slug uniqueness
-                    $baseSlug = Str::slug($articleData['headline']);
-                    $slug = $baseSlug;
-                    $counter = 1;
-                    while (NewsArticle::where('slug', $slug)->where('id', '!=', $article->id)->exists()) {
-                        $slug = $baseSlug . '-' . $counter++;
-                    }
-                    $articleData['slug'] = $slug;
-
-                    $article->update([
-                        'title' => $articleData['headline'],
-                        'slug' => $articleData['slug'],
-                        'headline' => $articleData['headline'],
-                        'summary' => $articleData['summary'],
-                        'content' => $articleData['content'],
-                        'status' => 'published',
-                        'published_at' => Carbon::now(),
-                    ]);
-                } else {
-                    $article->update(['status' => 'error', 'content' => 'AI generation failed. Check logs for details.']);
-                    $this->error("\n<fg=red>Error:</> Failed to generate article for {$modelClass} #{$report->id}. Check laravel.log for details from AiAssistantController.");
-                }
-            } catch (\Exception $e) {
-                $this->error("\n<fg=red>An unexpected error occurred while processing report {$modelClass} #{$report->id}:</> " . $e->getMessage());
-                Log::error("Unexpected error in DispatchNewsArticleGenerationJobsCommand", [
-                    'exception' => $e,
-                    'model' => $modelClass,
-                    'report_id' => $report->id,
-                ]);
-            } finally {
-                // Add a delay to avoid hitting API rate limits
-                $this->info("\nWaiting for 61 seconds to respect API rate limits...");
-                sleep(61);
-            }
+            $this->processSingleReport($report);
         }
+
         $progressBar->finish();
         $this->newLine(2);
+    }
+
+    private function processSingleReport($report)
+    {
+        $modelClass = get_class($report);
+        // Check if an article already exists and is published
+        $existingArticle = NewsArticle::where('source_model_class', $modelClass)
+            ->where('source_report_id', $report->id)
+            ->first();
+
+        if (!$this->option('fresh') && $existingArticle && $existingArticle->status === 'published') {
+            return; // Skip if already published, unless --fresh is used
+        }
+
+        try {
+            $reportData = $this->fetchReportData($report);
+
+            if (!$reportData) {
+                $this->warn("\n<fg=yellow>Warning:</> Could not fetch or process report data for {$modelClass} #{$report->id}. Skipping.");
+                if ($existingArticle) {
+                    $existingArticle->update(['status' => 'error', 'content' => 'Failed to fetch source report data.']);
+                }
+                return;
+            }
+
+            $reportContext = $this->getReportContext($report);
+            $jobId = Str::uuid()->toString();
+
+            $article = NewsArticle::updateOrCreate(
+                [
+                    'source_model_class' => $modelClass,
+                    'source_report_id' => $report->id,
+                ],
+                [
+                    'title' => "Generating article for: {$reportContext['title']}",
+                    'slug' => "temp-{$jobId}",
+                    'headline' => 'Generating...',
+                    'summary' => 'Generating...',
+                    'content' => 'Generating...',
+                    'status' => 'draft',
+                    'job_id' => $jobId,
+                ]
+            );
+
+            $articleData = AiAssistantController::generateNewsArticle($reportContext['title'], $reportData, $reportContext['parameters']);
+
+            if ($articleData) {
+                // Check for slug uniqueness
+                $baseSlug = Str::slug($articleData['headline']);
+                $slug = $baseSlug;
+                $counter = 1;
+                while (NewsArticle::where('slug', $slug)->where('id', '!=', $article->id)->exists()) {
+                    $slug = $baseSlug . '-' . $counter++;
+                }
+                $articleData['slug'] = $slug;
+
+                $article->update([
+                    'title' => $articleData['headline'],
+                    'slug' => $articleData['slug'],
+                    'headline' => $articleData['headline'],
+                    'summary' => $articleData['summary'],
+                    'content' => $articleData['content'],
+                    'status' => 'published',
+                    'published_at' => Carbon::now(),
+                ]);
+            } else {
+                $article->update(['status' => 'error', 'content' => 'AI generation failed. Check logs for details.']);
+                $this->error("\n<fg=red>Error:</> Failed to generate article for {$modelClass} #{$report->id}. Check laravel.log for details from AiAssistantController.");
+            }
+        } catch (\Exception $e) {
+            $this->error("\n<fg=red>An unexpected error occurred while processing report {$modelClass} #{$report->id}:</> " . $e->getMessage());
+            Log::error("Unexpected error in DispatchNewsArticleGenerationJobsCommand", [
+                'exception' => $e,
+                'model' => $modelClass,
+                'report_id' => $report->id,
+            ]);
+        } finally {
+            // Add a delay to avoid hitting API rate limits
+            $this->info("\nWaiting for 61 seconds to respect API rate limits...");
+            sleep(61);
+        }
     }
 
     private function fetchReportData($report)
