@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 
 class DispatchNewsArticleGenerationJobsCommand extends Command
 {
-    protected $signature = 'app:dispatch-news-article-generation-jobs {--model=all} {--fresh}';
+    protected $signature = 'app:dispatch-news-article-generation-jobs {--model=all} {--fresh} {--yearly-only} {--unified-res=}';
     protected $description = 'Generates news articles for statistical reports using AI.';
 
     protected $supportedModels = [
@@ -30,8 +30,24 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
             $this->warn('The --fresh option was used. Existing articles will be regenerated.');
         }
 
+        $yearlyOnly = $this->option('yearly-only');
+        $unifiedRes = $this->option('unified-res');
+
+        if ($yearlyOnly && $unifiedRes) {
+            $this->error('The --yearly-only and --unified-res options cannot be used together.');
+            return 1;
+        }
+
         $modelOption = $this->option('model');
         $modelsToProcess = [];
+
+        if ($yearlyOnly) {
+            $modelOption = 'YearlyCountComparison';
+            $this->info('Processing only YearlyCountComparison reports due to --yearly-only flag.');
+        } elseif ($unifiedRes) {
+            $modelOption = 'Trend';
+            $this->info("Processing only Trend reports with column 'unified' and resolution {$unifiedRes} due to --unified-res flag.");
+        }
 
         if ($modelOption === 'all') {
             $modelsToProcess = $this->supportedModels;
@@ -53,7 +69,20 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
 
     private function processReports(string $modelClass)
     {
-        $reports = $modelClass::all();
+        $query = $modelClass::query();
+        $unifiedRes = $this->option('unified-res');
+
+        if ($unifiedRes && $modelClass === Trend::class) {
+            $query->where('column_name', 'unified')
+                  ->where('h3_resolution', $unifiedRes);
+        }
+
+        $reports = $query->get();
+        if ($reports->isEmpty()) {
+            $this->info("\nNo reports found matching the specified criteria for {$modelClass}.");
+            return;
+        }
+
         $progressBar = $this->output->createProgressBar(count($reports));
         $progressBar->start();
 
