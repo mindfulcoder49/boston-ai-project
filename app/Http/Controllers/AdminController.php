@@ -14,6 +14,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator; // For conditional password validation
+use App\Models\JobRun;
 
 class AdminController extends Controller
 {
@@ -40,6 +41,40 @@ class AdminController extends Controller
         // Map listing is moved to AdminMapController@index and ManageMaps.vue
         return Inertia::render('Admin/Index', [
             // No longer passing mapsForApproval here
+        ]);
+    }
+
+    // --- JOB RUNS ---
+    public function jobRunsIndex()
+    {
+        $jobRuns = JobRun::with('relatedModel')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50)
+            ->through(function ($job) {
+                $related = null;
+                if ($job->relatedModel) {
+                    $related = [
+                        'type' => class_basename($job->related_model_type),
+                        'id' => $job->related_model_id,
+                        'name' => $job->relatedModel->title ?? $job->relatedModel->name ?? 'N/A',
+                    ];
+                }
+                return [
+                    'id' => $job->id,
+                    'job_id' => $job->job_id,
+                    'job_class_name' => $job->job_class_name,
+                    'status' => $job->status,
+                    'related' => $related,
+                    'output' => Str::limit($job->output, 150),
+                    'created_at' => $job->created_at->diffForHumans(),
+                    'started_at' => $job->started_at?->diffForHumans(),
+                    'completed_at' => $job->completed_at?->diffForHumans(),
+                    'duration' => $job->started_at && $job->completed_at ? $job->completed_at->diffInSeconds($job->started_at) . 's' : null,
+                ];
+            });
+
+        return Inertia::render('Admin/JobRuns', [
+            'jobRuns' => $jobRuns,
         ]);
     }
 

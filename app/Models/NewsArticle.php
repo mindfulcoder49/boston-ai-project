@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class NewsArticle extends Model
 {
@@ -43,5 +45,15 @@ class NewsArticle extends Model
     public function getRouteKeyName()
     {
         return 'slug';
+    }
+
+    public function sourceReport(): BelongsTo
+    {
+        return $this->belongsTo($this->source_model_class, 'source_report_id');
+    }
+
+    public function jobRun(): MorphOne
+    {
+        return $this->morphOne(JobRun::class, 'related_model');
     }
 }

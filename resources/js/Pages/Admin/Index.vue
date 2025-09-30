@@ -28,6 +28,10 @@
           <h2 class="text-lg font-semibold text-indigo-600">Pipeline Log Viewer</h2>
           <p class="text-sm text-gray-500 mt-1">View data pipeline execution logs.</p>
         </Link>
+        <Link :href="route('admin.job-runs.index')" class="block p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+          <h2 class="text-lg font-semibold text-indigo-600">Job Run History</h2>
+          <p class="text-sm text-gray-500 mt-1">View status of background jobs.</p>
+        </Link>
       </div>
     </div>
   </AdminLayout>

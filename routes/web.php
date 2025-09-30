@@ -109,15 +109,13 @@ Route::get('/csvreports/map/{filename}', [ReportMapController::class, 'show'])->
 
 Route::get('/saved-maps', [SavedMapController::class, 'index'])->name('saved-maps.index');
 Route::get('/saved-maps/{savedMap}/view', [SavedMapController::class, 'view'])->name('saved-maps.view'); // Publicly viewable link
-    
-Route::middleware(['auth', 'admin'])->group(function () {
-    // This group is currently empty, we'll put admin routes outside if using controller-based auth check
-    // Or, define an 'admin' middleware and apply it here if preferred over constructor check
-});
 
 // Admin Routes (using controller-based auth check for now)
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('index');
+
+    // Job Runs
+    Route::get('/job-runs', [AdminController::class, 'jobRunsIndex'])->name('job-runs.index');
 
     // Map Management (moved to AdminMapController)
     Route::prefix('maps')->name('maps.')->group(function () {
