@@ -134,7 +134,7 @@ class RunAllDataPipelineCommand extends Command
             ],
             'Everett Data Acquisition & Processing' => [
                 ['command' => 'app:download-everett-pdf-markdown', 'params' => []],
-                ['command' => 'app:process-everett-data', 'params' => []],
+                ['command' => 'everett:process-data', 'params' => ['api' => 'places']],
                 ['command' => 'app:generate-everett-csv', 'params' => []],
             ],
             'Everett Data Seeding' => [

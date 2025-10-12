@@ -14,6 +14,7 @@ class EverettCrimeData extends Model
 
     public static $statisticalAnalysisColumns = [
         'incident_type',
+        'incident_type_group',
     ];
 
     protected $fillable = [
@@ -27,6 +28,7 @@ class EverettCrimeData extends Model
         'day_of_week',
         'hour',
         'incident_type',
+        'incident_type_group',
         'incident_address',
         'incident_latitude',
         'incident_longitude',
@@ -59,6 +61,7 @@ class EverettCrimeData extends Model
     public const SEARCHABLE_COLUMNS = [
         'case_number',
         'incident_type',
+        'incident_type_group',
         'incident_address',
         'incident_description',
         'arrest_name',

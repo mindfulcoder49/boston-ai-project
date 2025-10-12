@@ -45,7 +45,7 @@ class AiAssistantController extends Controller
 
         return new StreamedResponse(function () use ($history, $model) {
             if (strpos($model, 'gemini') !== false) {
-                $this->streamGeminiResponse($history, 'gemini-1.5-flash');
+                $this->streamGeminiResponse($history, 'gemini-2.0-flash-lite');
             } else {
                 $this->streamAiResponse($history); // Assume OpenAI if not Gemini
             }
@@ -230,8 +230,8 @@ class AiAssistantController extends Controller
         }
 
         $apiKey = config('services.gemini.api_key');
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"; // Consider making model configurable
-        // $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=$apiKey";
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=$apiKey"; // Consider making model configurable
+        // $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-04-17:generateContent?key=$apiKey";
         $client = new Client();
 
         $contents = [];
@@ -672,5 +672,77 @@ EOT;
             'Cache-Control' => 'no-cache',
             'X-Accel-Buffering' => 'no', // For Nginx
         ]);
+    }
+
+    /**
+     * Generates a JSON dictionary for a given model field by categorizing its unique values.
+     *
+     * @param string $modelName The name of the model (e.g., 'EverettCrimeData').
+     * @param string $fieldName The name of the field to categorize (e.g., 'incident_type').
+     * @param array $values The unique values from the field.
+     * @return string|null The JSON string of the dictionary, or null on failure.
+     */
+    public static function generateDictionary(string $modelName, string $fieldName, array $values): ?string
+    {
+        $apiKey = config('services.gemini.api_key');
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=$apiKey";
+        $client = new Client();
+
+        $systemPrompt = <<<EOT
+You are a data analyst assistant. Your task is to categorize a list of values from a database field into broader, more general groups.
+The user will provide a model name, a field name, and a list of unique values from that field.
+You must return a single, valid JSON object. The keys of this JSON object should be the original unique values provided, and the values should be the category you assign to each.
+Keep the category names concise and consistent. Do not include any text or formatting outside of this JSON object.
+For example, if given values like "LARCENY, THEFT FROM MV", "LARCENY, SHOPLIFTING", your categories might be "Larceny/Theft".
+EOT;
+
+        $userPrompt = "Please categorize the following values from the '{$fieldName}' field of the '{$modelName}' model:\n\n" . json_encode($values, JSON_PRETTY_PRINT);
+
+        $requestBody = [
+            'contents' => [
+                ['role' => 'user', 'parts' => [['text' => $systemPrompt]]],
+                ['role' => 'model', 'parts' => [['text' => 'Understood. I will analyze the provided values and return a single JSON object mapping each value to a category.']]],
+                ['role' => 'user', 'parts' => [['text' => $userPrompt]]],
+            ],
+            "generationConfig" => [
+                "temperature" => 1,
+                "maxOutputTokens" => 65536,
+                "response_mime_type" => "application/json",
+            ]
+        ];
+
+        try {
+            $response = $client->post($url, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'json' => $requestBody,
+                'timeout' => 300,
+            ]);
+
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+
+            if (isset($responseBody['candidates'][0]['content']['parts'][0]['text'])) {
+                $jsonString = $responseBody['candidates'][0]['content']['parts'][0]['text'];
+                // Basic validation before returning
+                json_decode($jsonString);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    return $jsonString;
+                }
+                Log::error('Gemini returned invalid JSON for dictionary generation.', ['response' => $jsonString]);
+                return null;
+            }
+
+            Log::warning('No text content found in Gemini response for dictionary generation.', ['responseBody' => $responseBody]);
+            return null;
+
+        } catch (RequestException | ClientException $e) {
+            Log::error("Guzzle Exception during Gemini call for dictionary generation: " . $e->getMessage());
+            if ($e->hasResponse()) {
+                Log::error("Gemini Response Body: " . $e->getResponse()->getBody()->getContents());
+            }
+            return null;
+        } catch (\Exception $e) {
+            Log::error("Error generating dictionary: " . $e->getMessage());
+            return null;
+        }
     }
 }

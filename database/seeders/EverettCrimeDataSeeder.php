@@ -9,13 +9,28 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use DateTime;
 use Exception; // Added for explicit exception handling
+use Illuminate\Support\Facades\File;
 
 class EverettCrimeDataSeeder extends Seeder
 {
     private const BATCH_SIZE = 500;
+    private array $incidentTypeGroups = [];
+
+    private function loadIncidentTypeGroups(): void
+    {
+        $path = database_path('seeders/incident_types.json');
+        if (File::exists($path)) {
+            $json = File::get($path);
+            $this->incidentTypeGroups = json_decode($json, true);
+            echo "Loaded " . count($this->incidentTypeGroups) . " incident type groups.\n";
+        } else {
+            echo "incident_type_groups.json not found. Seeding without incident type groups.\n";
+        }
+    }
 
     public function run()
     {
+        $this->loadIncidentTypeGroups();
         $name = 'everett_police_data_combined';
         // Get all files from the datasets/everett folder in Storage
         $files = Storage::disk('local')->files('datasets/everett');
@@ -173,6 +188,9 @@ class EverettCrimeDataSeeder extends Seeder
             }
             $crime_details_concatenated = !empty($extraDetailsText) ? implode("\n", $extraDetailsText) : null;
 
+            $incidentType = trim($crime['incident_type'] ?? '');
+            $incidentTypeGroup = $this->incidentTypeGroups[$incidentType] ?? 'Miscellaneous';
+
             $dataBatch[] = [
                 'case_number' => $crime['case_number'],
                 'incident_log_file_date' => $incident_log_file_date_parsed,
@@ -183,7 +201,8 @@ class EverettCrimeDataSeeder extends Seeder
                 'month' => $month,
                 'day_of_week' => $day_of_week,
                 'hour' => $hour,
-                'incident_type' => trim($crime['incident_type'] ?? ''),
+                'incident_type' => $incidentType,
+                'incident_type_group' => $incidentTypeGroup,
                 'incident_address' => trim($crime['incident_address'] ?? ''),
                 'incident_latitude' => $latitude,
                 'incident_longitude' => $longitude,
@@ -228,6 +247,7 @@ class EverettCrimeDataSeeder extends Seeder
             'day_of_week',
             'hour',
             'incident_type',
+            'incident_type_group',
             'incident_address',
             'incident_latitude',
             'incident_longitude',

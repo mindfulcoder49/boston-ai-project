@@ -12,14 +12,21 @@ use Illuminate\Support\Facades\Config; // For accessing config values
 
 class ProcessEverettDataCommand extends Command
 {
-    protected $signature = 'app:process-everett-data';
-    protected $description = 'Parses Everett Markdown logs, combines data, and geocodes incident addresses.';
+    protected $signature = 'everett:process-data {api : The Google API to use for geocoding (places|geolocation)}';
+    protected $description = 'Process Everett trash data and geocode addresses using a specified Google API.';
 
     private const API_CALL_DELAY_MICROSECONDS = 100000; // 0.1 seconds
 
     public function handle()
     {
-        $this->info("Starting Everett data processing...");
+        $api = $this->argument('api');
+
+        if (!in_array($api, ['places', 'geolocation'])) {
+            $this->error("Invalid API specified. Please use 'places' or 'geolocation'.");
+            return Command::FAILURE;
+        }
+
+        $this->info("Starting data processing for Everett using the '{$api}' API.");
 
         $everettConfig = config('everett_datasets');
         if (!$everettConfig || !isset($everettConfig['markdown_output_directory'])) {
@@ -120,7 +127,7 @@ class ProcessEverettDataCommand extends Command
             $this->output->write("\rProcessing address " . $processedAddressesCount . "/" . count($addressesToProcessMap) . " (API Call " . $currentQueryCount . "/" . $totalAddressesToQuery . "): Querying for \"" . Str::limit($addrToGeocode, 40) . "\"");
 
 
-            $coordinates = $this->geocodeAddress($addrToGeocode, $apiKey);
+            $coordinates = $api === 'places' ? $this->geocodeWithPlaces($addrToGeocode) : $this->geocodeWithGeolocation($addrToGeocode);
             $geocodedCache[$originalAddrKey] = $coordinates;
             $newlyGeocodedCount++;
 
@@ -345,16 +352,96 @@ class ProcessEverettDataCommand extends Command
         return $addressMap;
     }
 
-    private function geocodeAddress(string $address, string $apiKey): ?array
+    private function cleanAddressForGeocoding(string $address): string
     {
+        // Rule 1: Remove leading zeroes from address numbers.
+        // e.g., "0 BROADWAY ST" -> "BROADWAY ST", "007 BOND ST" -> "7 BOND ST"
+        $cleanedAddress = preg_replace('/^\s*0+\s+/', '', $address);
+
+        // Rule 2: Turn all instances of "BROADWAY ST" into "BROADWAY".
+        // This is case-insensitive.
+        $cleanedAddress = preg_replace('/BROADWAY ST/i', 'BROADWAY', $cleanedAddress);
+
+        return $cleanedAddress;
+    }
+
+    private function geocodeWithPlaces(string $address): ?array
+    {
+        $address = $this->cleanAddressForGeocoding($address);
+
+        $apiKey = Config::get('services.google_places.api_key');
+        if (!$apiKey) {
+            Log::error('Google Places API key is not configured.');
+            $this->error('Service configuration error: Google Places API key missing.');
+            return null;
+        }
+
+        $locationBias = [
+            'circle' => [
+                'center' => ['latitude' => 42.408978, 'longitude' => -71.053868],
+                'radius' => 5000.0 // 5km radius around Everett center
+            ]
+        ];
+
         try {
-            $response = Http::get('https://maps.googleapis.com/maps/api/geocode/json', [
-                'address' => $address,
-                'key' => $apiKey
+            $response = Http::withHeaders([
+                'X-Goog-Api-Key' => $apiKey,
+                'Content-Type' => 'application/json',
+            ])->post('https://places.googleapis.com/v1/places:autocomplete', [
+                'input' => $address,
+                'locationRestriction' => $locationBias,
+                'languageCode' => 'en',
+                'regionCode' => 'US',
             ]);
 
             if (!$response->successful()) {
-                Log::error("Geocoding API request failed for '{$address}'. Status: " . $response->status() . " Body: " . $response->body());
+                Log::error('Google Places Autocomplete API request failed.', ['status' => $response->status(), 'body' => $response->body()]);
+                return null;
+            }
+
+            $suggestions = $response->json()['suggestions'] ?? [];
+            if (empty($suggestions)) {
+                return null;
+            }
+
+            // Take the top suggestion and geocode it to get lat/lng
+            $topSuggestionAddress = $suggestions[0]['placePrediction']['text']['text'] ?? null;
+            if (!$topSuggestionAddress) {
+                return null;
+            }
+            
+            $this->line("  > Top suggestion from Places API: '{$topSuggestionAddress}'");
+            return $this->geocodeWithGeolocation($topSuggestionAddress);
+
+        } catch (\Exception $e) {
+            Log::error('Exception calling Google Places Autocomplete API: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    private function geocodeWithGeolocation(string $address): ?array
+    {
+        $address = $this->cleanAddressForGeocoding($address);
+        
+        $apiKey = Config::get('services.google_places.api_key');
+        if (!$apiKey) {
+            Log::error('Google Geocoding API key is not configured.');
+            $this->error('Service configuration error: Google Geocoding API key missing.');
+            return null;
+        }
+
+        // Bounding box for Everett, MA. SW: (42.39, -71.07), NE: (42.42, -71.03)
+        $bounds = '42.39,-71.07|42.42,-71.03';
+
+        try {
+            $response = Http::get('https://maps.googleapis.com/maps/api/geocode/json', [
+                'address' => $address,
+                'key' => $apiKey,
+                'bounds' => $bounds,
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Google Geocoding API request failed.', ['status' => $response->status(), 'body' => $response->body()]);
                 return null;
             }
 
@@ -364,11 +451,11 @@ class ProcessEverettDataCommand extends Command
                 $location = $data['results'][0]['geometry']['location'];
                 return ['lat' => $location['lat'], 'lng' => $location['lng']];
             } else {
-                 Log::warning("Geocoding API Error for '{$address}': " . ($data['status'] ?? 'UNKNOWN_STATUS') . " - " . ($data['error_message'] ?? 'No error message.'));
+                Log::warning('Google Geocoding API Error for address.', ['address' => $address, 'status' => $data['status'] ?? 'UNKNOWN']);
                 return null;
             }
         } catch (\Exception $e) {
-            Log::error("Exception during geocoding for '{$address}': " . $e->getMessage());
+            Log::error('Exception during Google geocoding: ' . $e->getMessage(), ['address' => $address]);
             return null;
         }
     }

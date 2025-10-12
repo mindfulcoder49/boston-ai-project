@@ -24,15 +24,21 @@ class DownloadEverettPDFMarkdown extends Command
     public function handle()
     {
         $config = config('everett_datasets');
-        if (!$config || !isset($config['arrest_log_page_url']) || !isset($config['daily_log_page_url'])) {
-            $this->error("Everett page URLs not configured properly in config/everett_datasets.php.");
+        if (!$config || !isset($config['arrest_log_page_url_template']) || !isset($config['daily_log_page_url_template']) || !isset($config['years_to_process'])) {
+            $this->error("Everett page URL templates or years_to_process not configured properly in config/everett_datasets.php.");
             return 1;
         }
         
-        $pages = [
-            $config['arrest_log_page_url'],
-            $config['daily_log_page_url'],
-        ];
+        $pages = [];
+        $arrestLogTemplate = $config['arrest_log_page_url_template'];
+        $dailyLogTemplate = $config['daily_log_page_url_template'];
+        $years = $config['years_to_process'];
+
+        foreach ($years as $year) {
+            $pages[] = str_replace('{year}', $year, $arrestLogTemplate);
+            $pages[] = str_replace('{year}', $year, $dailyLogTemplate);
+        }
+
         $pages = array_filter($pages);
 
         if (empty($pages)) {
