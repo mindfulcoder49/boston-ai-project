@@ -32,6 +32,10 @@
           <h2 class="text-lg font-semibold text-indigo-600">Job Run History</h2>
           <p class="text-sm text-gray-500 mt-1">View status of background jobs.</p>
         </Link>
+        <Link :href="route('admin.job-dispatcher.index')" class="block p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+          <h2 class="text-lg font-semibold text-indigo-600">Job Dispatcher</h2>
+          <p class="text-sm text-gray-500 mt-1">Manually trigger analysis and report generation jobs.</p>
+        </Link>
       </div>
     </div>
   </AdminLayout>

@@ -45,6 +45,8 @@
         <NavLink :href="route('admin.users.index')" :active="route().current('admin.users.index')">Manage Users</NavLink>
         <NavLink :href="route('admin.locations.index')" :active="route().current('admin.locations.index')">Manage Locations</NavLink>
         <NavLink :href="route('admin.pipeline.fileLogs.index')" :active="route().current('admin.pipeline.fileLogs.index') || route().current('admin.pipeline.fileLogs.show')">Pipeline Logs</NavLink>
+        <NavLink :href="route('admin.job-runs.index')" :active="route().current('admin.job-runs.index')">Job Run History</NavLink>
+        <NavLink :href="route('admin.job-dispatcher.index')" :active="route().current('admin.job-dispatcher.index')">Job Dispatcher</NavLink>
       </aside>
 
       <!-- Main Content -->

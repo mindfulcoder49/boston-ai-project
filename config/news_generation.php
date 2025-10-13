@@ -79,8 +79,8 @@ return [
             [
                 'model_class' => Trend::class,
                 'source_model_class' => EverettCrimeData::class,
-                'column_name' => 'incident_type',
-                'h3_resolution' => 7,
+                'column_name' => 'incident_type_group',
+                'h3_resolution' => 9,
             ],
             // Boston Food Inspections by Violation Level
             [
@@ -95,6 +95,57 @@ return [
                 'source_model_class' => ThreeOneOneCase::class,
                 'column_name' => 'type',
                 'h3_resolution' => 7,
+            ],
+
+            //yearly count comparisons for the same datasets
+            // Building Permits by Work Type
+            [
+                'model_class' => YearlyCountComparison::class,
+                'source_model_class' => BuildingPermit::class,
+                'group_by_col' => 'worktype',
+            ],
+            // Cambridge Crime by Crime Type
+            [
+                'model_class' => YearlyCountComparison::class,
+                'source_model_class' => CambridgeCrimeReportData::class,
+                'group_by_col' => 'crime',
+            ],
+            //complete the rest
+            // Cambridge 311 by Issue Type
+            [
+                'model_class' => YearlyCountComparison::class,
+                'source_model_class' => CambridgeThreeOneOneCase::class,
+                'group_by_col' => 'issue_type',
+            ],
+            // Chicago Crime by Primary Type
+            [
+                'model_class' => YearlyCountComparison::class,
+                'source_model_class' => ChicagoCrime::class,
+                'group_by_col' => 'primary_type',
+            ],
+            // Boston Crime by Offense Group
+            [
+                'model_class' => YearlyCountComparison::class,
+                'source_model_class' => CrimeData::class,
+                'group_by_col' => 'offense_code_group',
+            ],
+            // Everett Crime by Incident Type
+            [
+                'model_class' => YearlyCountComparison::class,
+                'source_model_class' => EverettCrimeData::class,
+                'group_by_col' => 'incident_type_group',
+            ],
+            // Boston Food Inspections by Violation Level
+            [
+                'model_class' => YearlyCountComparison::class,
+                'source_model_class' => FoodInspection::class,
+                'group_by_col' => 'viol_level',
+            ],
+            // Boston 311 Cases by Reason
+            [
+                'model_class' => YearlyCountComparison::class,
+                'source_model_class' => ThreeOneOneCase::class,
+                'group_by_col' => 'type',
             ],
         ],
 

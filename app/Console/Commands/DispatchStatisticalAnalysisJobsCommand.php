@@ -18,7 +18,16 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:dispatch-statistical-analysis-jobs {model? : The model class to process (e.g., Crime)} {--fresh : Force regeneration of all data exports} {--plots : Generate plots for the analysis}';
+    protected $signature = 'app:dispatch-statistical-analysis-jobs 
+                            {model? : The model class to process (e.g., Crime)} 
+                            {--columns= : Comma-separated list of specific columns to analyze}
+                            {--fresh : Force regeneration of all data exports} 
+                            {--plots : Generate plots for the analysis}
+                            {--resolutions=9,8,7,6,5 : Comma-separated list of H3 resolutions to run}
+                            {--p-anomaly=0.05 : P-value for anomaly detection}
+                            {--p-trend=0.05 : P-value for trend detection}
+                            {--trend-weeks=4,26,52 : Comma-separated list of week windows for trend analysis}
+                            {--anomaly-weeks=4 : Week window for anomaly detection}';
 
     /**
      * The console command description.
@@ -99,19 +108,24 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                 continue;
             }
 
-            // Always include a unified analysis.
-            $fieldsForAnalysis = ['__unified__'];
+            // Determine which columns to analyze for this run.
+            $fieldsForAnalysis = [];
             $dbExportColumns = [];
+            $availableColumns = $modelClass::$statisticalAnalysisColumns ?? [];
 
-            if (property_exists($modelClass, 'statisticalAnalysisColumns') && !empty($modelClass::$statisticalAnalysisColumns)) {
-                $specificColumns = $modelClass::$statisticalAnalysisColumns;
-                $this->line("    Found explicit analysis columns: <fg=yellow>" . implode(', ', $specificColumns) . "</fg=yellow>");
-                // Add specific columns to the list of jobs to run and columns to export.
-                $fieldsForAnalysis = array_merge($fieldsForAnalysis, $specificColumns);
-                $dbExportColumns = $specificColumns;
+            if ($this->option('columns')) {
+                $requestedColumns = explode(',', $this->option('columns'));
+                // Filter to ensure only valid columns are used
+                $fieldsForAnalysis = array_intersect($requestedColumns, $availableColumns);
+                $this->line("    Running analysis for specified columns: <fg=yellow>" . implode(', ', $fieldsForAnalysis) . "</fg=yellow>");
             } else {
-                $this->line("    No explicit analysis columns found. Will perform a single unified analysis for the model.");
+                // Default behavior: unified analysis + all available specific columns.
+                $fieldsForAnalysis = array_merge(['__unified__'], $availableColumns);
+                $this->line("    Running unified analysis and all available columns: <fg=yellow>" . implode(', ', $availableColumns) . "</fg=yellow>");
             }
+            // All available columns need to be in the export, regardless of what's being analyzed this run.
+            $dbExportColumns = $availableColumns;
+
 
             $modelKey = Str::kebab(class_basename($modelClass));
 
@@ -140,7 +154,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
 
                 $this->info("--> Preparing jobs for analysis field: <fg=yellow>{$analysisField}</fg=yellow>");
 
-                $resolutions = [9, 8, 7, 6, 5]; // Run analysis for multiple resolutions
+                $resolutions = array_filter(explode(',', $this->option('resolutions')), 'strlen');
 
                 foreach ($resolutions as $resolution) {
                     $this->info("  --> Preparing job for resolution: <fg=cyan>{$resolution}</fg=cyan>");
@@ -150,13 +164,15 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                     $jobId = "laravel-{$modelKey}-{$jobSuffix}-res{$resolution}-" . time();
 
                     $generatePlots = $this->option('plots');
+                    $trendWeeks = array_filter(explode(',', $this->option('trend-weeks')), 'strlen');
+                    $trendWeeks = array_map('intval', $trendWeeks);
 
                     $analysisParameters = [
-                        'h3_resolution' => $resolution,
-                        'p_value_anomaly' => 0.05,
-                        'p_value_trend' => 0.05,
-                        'analysis_weeks_trend' => [4, 26, 52],
-                        'analysis_weeks_anomaly' => 4,
+                        'h3_resolution' => (int) $resolution,
+                        'p_value_anomaly' => (float) $this->option('p-anomaly'),
+                        'p_value_trend' => (float) $this->option('p-trend'),
+                        'analysis_weeks_trend' => $trendWeeks,
+                        'analysis_weeks_anomaly' => (int) $this->option('anomaly-weeks'),
                         'generate_plots' => $generatePlots,
                         'plot_generation' => $generatePlots ? 'both' : 'none',
                     ];

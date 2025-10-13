@@ -17,7 +17,11 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:dispatch-yearly-count-comparison-jobs {model? : The model class to process} {--fresh : Force regeneration of all data exports} {--baseline-year=2019 : The baseline year for comparison}';
+    protected $signature = 'app:dispatch-yearly-count-comparison-jobs 
+                            {model? : The model class to process} 
+                            {--columns= : Comma-separated list of specific columns to analyze}
+                            {--fresh : Force regeneration of all data exports} 
+                            {--baseline-year=2019 : The baseline year for comparison}';
 
     /**
      * The console command description.
@@ -79,10 +83,20 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
                 continue;
             }
 
-            $fieldsForAnalysis = $modelClass::$statisticalAnalysisColumns ?? [];
-            if (empty($fieldsForAnalysis)) {
+            $availableColumns = $modelClass::$statisticalAnalysisColumns ?? [];
+            if (empty($availableColumns)) {
                 $this->line("    No explicit 'statisticalAnalysisColumns' found for this model. Skipping.");
                 continue;
+            }
+
+            $fieldsForAnalysis = [];
+            if ($this->option('columns')) {
+                $requestedColumns = explode(',', $this->option('columns'));
+                $fieldsForAnalysis = array_intersect($requestedColumns, $availableColumns);
+                $this->line("    Running analysis for specified columns: <fg=yellow>" . implode(', ', $fieldsForAnalysis) . "</fg=yellow>");
+            } else {
+                $fieldsForAnalysis = $availableColumns;
+                $this->line("    Running analysis for all available columns: <fg=yellow>" . implode(', ', $fieldsForAnalysis) . "</fg=yellow>");
             }
 
             $modelKey = Str::kebab(class_basename($modelClass));
@@ -90,7 +104,7 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
 
             if (!Storage::disk('public')->exists($exportFilename)) {
                 $this->line('    No existing export found. Generating new CSV...');
-                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $fieldsForAnalysis, $exportFilename, $modelClass);
+                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $availableColumns, $exportFilename, $modelClass);
                 $this->info("    Successfully generated new data export.");
             } else {
                 $this->line("    Using existing data export: <fg=gray>{$exportFilename}</fg=gray>");

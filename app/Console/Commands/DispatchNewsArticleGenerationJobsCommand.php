@@ -16,7 +16,14 @@ use App\Models\JobRun;
 
 class DispatchNewsArticleGenerationJobsCommand extends Command
 {
-    protected $signature = 'app:dispatch-news-article-generation-jobs {--model=all} {--fresh} {--yearly-only} {--unified-res=} {--run-config= : Run a pre-defined set of reports from the news_generation config file}';
+    protected $signature = 'app:dispatch-news-article-generation-jobs 
+                            {--model=all : The report model to process (Trend, YearlyCountComparison, all)} 
+                            {--fresh : Regenerate articles even if they exist and are published} 
+                            {--yearly-only : DEPRECATED: Use --model=YearlyCountComparison instead} 
+                            {--unified-res= : Process only Trend reports with column "unified" and a specific resolution}
+                            {--run-config= : Run a pre-defined set of reports from the news_generation config file}
+                            {--report-class= : The specific report model class to generate for (e.g., App\Models\Trend)}
+                            {--report-id= : The ID of the specific report to generate for (requires --report-class)}';
     protected $description = 'Dispatches jobs to generate news articles for statistical reports using AI.';
 
     protected $supportedModels = [
@@ -45,6 +52,28 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
 
     private function runFromCliOptions()
     {
+        // Handle specific report generation
+        $reportClass = $this->option('report-class');
+        $reportId = $this->option('report-id');
+
+        if ($reportClass && $reportId) {
+            if (!class_exists($reportClass)) {
+                $this->error("The specified report class '{$reportClass}' does not exist.");
+                return;
+            }
+            $report = $reportClass::find($reportId);
+            if (!$report) {
+                $this->error("No report found for class '{$reportClass}' with ID '{$reportId}'.");
+                return;
+            }
+            $this->info("Dispatching job for a single specified report: {$reportClass} #{$reportId}");
+            $this->dispatchJobForReport($report);
+            return;
+        } elseif ($reportClass || $reportId) {
+            $this->error('Both --report-class and --report-id must be provided together.');
+            return;
+        }
+
         $yearlyOnly = $this->option('yearly-only');
         $unifiedRes = $this->option('unified-res');
 

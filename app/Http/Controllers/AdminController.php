@@ -15,6 +15,10 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator; // For conditional password validation
 use App\Models\JobRun;
+use Illuminate\Support\Facades\Artisan;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use App\Models\ThreeOneOneCase;
 
 class AdminController extends Controller
 {
@@ -42,6 +46,70 @@ class AdminController extends Controller
         return Inertia::render('Admin/Index', [
             // No longer passing mapsForApproval here
         ]);
+    }
+
+    // --- JOB DISPATCHER ---
+    public function jobDispatcherIndex()
+    {
+        $modelDetails = [];
+        $modelsPath = app_path('Models');
+        if (File::isDirectory($modelsPath)) {
+            foreach (File::files($modelsPath) as $file) {
+                $className = 'App\\Models\\' . $file->getBasename('.php');
+                if (
+                    class_exists($className) &&
+                    method_exists($className, 'getMappableTraitUsageCheck') && // Check for Mappable trait
+                    property_exists($className, 'statisticalAnalysisColumns') &&
+                    !empty($className::$statisticalAnalysisColumns)
+                ) {
+                    $modelName = class_basename($className);
+                    $modelDetails[$modelName] = [
+                        'class' => $className,
+                        'columns' => $className::$statisticalAnalysisColumns ?? [],
+                    ];
+                }
+            }
+        }
+
+        $newsReportModels = ['Trend', 'YearlyCountComparison'];
+        $newsConfigSets = array_keys(config('news_generation.report_sets', []));
+
+
+        return Inertia::render('Admin/JobDispatcher', [
+            'modelDetails' => $modelDetails,
+            'newsReportModels' => $newsReportModels,
+            'newsConfigSets' => $newsConfigSets,
+        ]);
+    }
+
+    public function dispatchJob(Request $request)
+    {
+        $validated = $request->validate([
+            'command' => ['required', 'string', Rule::in([
+                'app:dispatch-statistical-analysis-jobs',
+                'app:dispatch-yearly-count-comparison-jobs',
+                'app:dispatch-news-article-generation-jobs',
+                'reports:send',
+            ])],
+            'parameters' => ['nullable', 'array'],
+        ]);
+
+        $command = $validated['command'];
+        $parameters = $validated['parameters'] ?? [];
+
+        try {
+            // Using Artisan::call so output can be captured.
+            Artisan::call($command, $parameters);
+            $output = Artisan::output();
+
+            return redirect()->back()->with('success', "Job '{$command}' dispatched successfully.")->with('command_output', $output);
+        } catch (\Exception $e) {
+            Log::error("Failed to dispatch job '{$command}' from admin panel.", [
+                'error' => $e->getMessage(),
+                'parameters' => $parameters,
+            ]);
+            return redirect()->back()->with('error', "Failed to dispatch job: " . $e->getMessage());
+        }
     }
 
     // --- JOB RUNS ---
