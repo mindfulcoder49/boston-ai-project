@@ -3,7 +3,7 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-semibold text-white mb-3">BostonScope</h3>
+                    <h3 class="text-lg font-semibold text-white mb-3">PublicDataWatch</h3>
                     <p class="text-sm">
                         Providing insights into your urban environment.
                         <!-- Short tagline or description -->
@@ -17,12 +17,6 @@
                         </li>
                         <li>
                             <Link :href="route('subscription.index')" class="hover:text-white transition-colors duration-200">Subscription</Link>
-                        </li>
-                         <li>
-                            <Link :href="route('crime-map')" class="hover:text-white transition-colors duration-200">Boston Crime Map</Link>
-                        </li>
-                        <li>
-                            <Link :href="route('cases.indexnofilter')" class="hover:text-white transition-colors duration-200">Boston 311 Case Map</Link>
                         </li>
                     </ul>
                 </div>
@@ -46,7 +40,7 @@
             </div>
             <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm">
                 <p>&copy; {{ new Date().getFullYear() }} AlcivarTech LLC. All rights reserved.</p>
-                <p class="mt-1">BostonScope - Know Your City.</p>
+                <p class="mt-1">PublicDataWatch - Know Your City.</p>
             </div>
         </div>
     </footer>
