@@ -305,18 +305,20 @@ class AiAssistantController extends Controller
     public static function generateNewsArticle(string $reportTitle, $reportData, array $reportParameters = []): ?array
     {
         $apiKey = config('services.gemini.api_key');
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=$apiKey";
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=$apiKey";
         $client = new Client();
 
         $systemPrompt = <<<EOT
 You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article based on the provided JSON data. The report title or the data itself will often indicate the city (e.g., Boston, Chicago, Cambridge). If a city is mentioned, focus the article on that city. If no city is specified anywhere, you can assume the data pertains to Boston, MA.
 
-The article should be structured in a standard news format. It must include:
-1. A compelling, SEO-friendly `headline`.
-2. A brief, engaging `summary` of the key findings (1-2 sentences).
-3. The main `content` of the article in Markdown format.
+Your goal is to identify and tell one compelling story that is the most salient and interesting from the data. Analyze the report to find the most significant trend, anomaly, or event that stands out as the "jewel" of the story. Focus on this specific aspect and craft a narrative around it, creating a vivid and engaging article.
 
-The tone should be objective, informative, and accessible to a general audience. Analyze the data, identify the most significant trends, comparisons, or anomalies, and present them clearly. Do not just list the data; interpret it and explain its significance.
+The article should be structured in a standard news format. It must include:
+1. A compelling, SEO-friendly `headline` that captures the essence of the story.
+2. A brief, engaging `summary` of the key story (1-2 sentences).
+3. The main `content` of the article in Markdown format, presenting the story in detail.
+
+The tone should be objective, informative, and accessible to a general audience. Avoid listing all the data; instead, interpret the most interesting aspect and explain its significance in a way that captivates the reader.
 
 The JSON response MUST be a single, valid JSON object with three keys: "headline", "summary", and "content". Do not include any other text or formatting outside of this JSON object.
 EOT;
