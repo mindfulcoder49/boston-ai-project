@@ -19,7 +19,7 @@ class ProcessEverettDataCommand extends Command
 
     public function handle()
     {
-        $api = trim($this->argument('api'));
+        $api = $this->argument('api');
 
         if (!in_array($api, ['places', 'geolocation'])) {
             $this->error("Invalid API specified. Please use 'places' or 'geolocation'.");

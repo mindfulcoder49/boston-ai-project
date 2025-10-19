@@ -308,11 +308,12 @@ class RunAllDataPipelineCommand extends Command
                     // If $key is numeric, it's like ['--force'], if string, it's ['--option' => true]
                     $processParams[] = is_string($key) ? $key : $value;
                 }
-            } elseif (is_string($key)) {
+            } elseif (is_string($key) && Str::startsWith($key, '--')) {
                  // For options like --class=SeederName
                 $processParams[] = "{$key}={$value}";
             } else {
-                // For arguments
+                // For arguments, which might have a string key in our config array (like 'api' => 'places')
+                // or be numeric for simple arguments.
                 $processParams[] = $value;
             }
         }
