@@ -32,11 +32,13 @@ class GenerateEverettCsvCommand extends Command
             return 1;
         }
 
+        $this->info("Loading police data from {$inputPoliceDataPath}...");
         $policeData = json_decode(File::get($inputPoliceDataPath), true);
         if (json_last_error() !== JSON_ERROR_NONE || empty($policeData)) {
             $this->error("Could not load or decode police data from {$inputPoliceDataPath}.");
             return 1;
         }
+        $this->info("Loaded " . count($policeData) . " records from JSON.");
 
         $geocodeData = [];
         if (File::exists($inputGeocodeDataPath)) {
@@ -50,11 +52,13 @@ class GenerateEverettCsvCommand extends Command
         }
 
         // Determine field names from ALL potential records first
+        $this->info("Determining all possible field names from data...");
         $allPotentialFieldnames = collect();
         foreach ($policeData as $record) {
             $allPotentialFieldnames = $allPotentialFieldnames->merge(array_keys($this->flattenRecord($record, $geocodeData)));
         }
         $allPotentialFieldnames = $allPotentialFieldnames->unique()->sort()->values()->all();
+        $this->info("Field name determination complete. Building final header...");
 
         $preferredFieldOrder = [
             'case_number',
@@ -75,13 +79,14 @@ class GenerateEverettCsvCommand extends Command
         $isAppending = false;
 
         if (File::exists($outputCsvPath) && File::size($outputCsvPath) > 0) {
+            $this->info("Checking existing CSV file at {$outputCsvPath}...");
             try {
                 $csvReader = Reader::createFromPath($outputCsvPath, 'r');
                 $csvReader->setHeaderOffset(0);
                 $existingHeader = $csvReader->getHeader();
 
                 if ($existingHeader === $finalFieldnames) {
-                    $this->info("Existing CSV found with a matching header. Will append new records.");
+                    $this->info("Existing CSV has a matching header. Reading existing case numbers to prevent duplicates...");
                     $isAppending = true;
                     foreach ($csvReader->fetchColumn('case_number') as $caseNumber) {
                         $existingCaseNumbers->add($caseNumber);
@@ -97,6 +102,7 @@ class GenerateEverettCsvCommand extends Command
 
         $recordsToProcess = collect($policeData);
         if ($isAppending) {
+            $this->info("Filtering for new records to append...");
             $recordsToProcess = $recordsToProcess->filter(function ($record) use ($existingCaseNumbers) {
                 return !$existingCaseNumbers->contains($record['case_number'] ?? null);
             });
@@ -107,7 +113,7 @@ class GenerateEverettCsvCommand extends Command
             return 0;
         }
         
-        $this->info("Processing {$recordsToProcess->count()} records for the CSV.");
+        $this->info("Preparing to process {$recordsToProcess->count()} records for the CSV...");
 
         $flattenedRecords = [];
         foreach ($recordsToProcess as $record) {
@@ -119,15 +125,18 @@ class GenerateEverettCsvCommand extends Command
             }
             $flattenedRecords[] = $orderedRec;
         }
+        $this->info("Record processing complete.");
 
         try {
             $mode = $isAppending ? 'a+' : 'w+';
             $csv = Writer::createFromPath($outputCsvPath, $mode);
             
             if (!$isAppending) {
+                $this->info("Writing new CSV header...");
                 $csv->insertOne($finalFieldnames); // Write header only for new files
             }
             
+            $this->info("Writing " . count($flattenedRecords) . " records to the CSV file...");
             $csv->insertAll($flattenedRecords); // Write data
 
             if ($isAppending) {
