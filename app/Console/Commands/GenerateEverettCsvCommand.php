@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use League\Csv\Writer; // Using league/csv for robust CSV writing
+use League\Csv\Reader;
 
 class GenerateEverettCsvCommand extends Command
 {
@@ -48,16 +49,12 @@ class GenerateEverettCsvCommand extends Command
             $this->warn("Geocode data file not found: {$inputGeocodeDataPath}. Proceeding without geocodes.");
         }
 
-        $flattenedRecords = [];
-        $allFieldnames = collect(); // Use Laravel Collection for easier unique/sorting
-
+        // Determine field names from ALL potential records first
+        $allPotentialFieldnames = collect();
         foreach ($policeData as $record) {
-            $flatRec = $this->flattenRecord($record, $geocodeData);
-            $flattenedRecords[] = $flatRec;
-            $allFieldnames = $allFieldnames->merge(array_keys($flatRec));
+            $allPotentialFieldnames = $allPotentialFieldnames->merge(array_keys($this->flattenRecord($record, $geocodeData)));
         }
-        
-        $allFieldnames = $allFieldnames->unique()->sort()->values()->all();
+        $allPotentialFieldnames = $allPotentialFieldnames->unique()->sort()->values()->all();
 
         $preferredFieldOrder = [
             'case_number',
@@ -67,25 +64,77 @@ class GenerateEverettCsvCommand extends Command
             'arrest_name', 'arrest_address', 'arrest_age', 'arrest_date', 'arrest_charges'
         ];
 
-        // Create the final fieldnames list
         $finalFieldnames = collect($preferredFieldOrder)
-            ->filter(fn($field) => in_array($field, $allFieldnames)) // Keep preferred fields that exist
-            ->merge(collect($allFieldnames)->diff($preferredFieldOrder)->sort()->values()) // Add remaining fields, sorted
+            ->filter(fn($field) => in_array($field, $allPotentialFieldnames))
+            ->merge(collect($allPotentialFieldnames)->diff($preferredFieldOrder)->sort()->values())
             ->unique()
             ->values()
             ->all();
-            
-        if (empty($flattenedRecords)) {
-            $this->info("No records to write to CSV.");
+
+        $existingCaseNumbers = collect();
+        $isAppending = false;
+
+        if (File::exists($outputCsvPath) && File::size($outputCsvPath) > 0) {
+            try {
+                $csvReader = Reader::createFromPath($outputCsvPath, 'r');
+                $csvReader->setHeaderOffset(0);
+                $existingHeader = $csvReader->getHeader();
+
+                if ($existingHeader === $finalFieldnames) {
+                    $this->info("Existing CSV found with a matching header. Will append new records.");
+                    $isAppending = true;
+                    foreach ($csvReader->fetchColumn('case_number') as $caseNumber) {
+                        $existingCaseNumbers->add($caseNumber);
+                    }
+                    $this->info("Found {$existingCaseNumbers->count()} existing records in the CSV.");
+                } else {
+                    $this->warn("Existing CSV header does not match the expected header. Regenerating the entire file.");
+                }
+            } catch (\Exception $e) {
+                $this->error("Could not read existing CSV file: " . $e->getMessage() . ". Regenerating the entire file.");
+            }
+        }
+
+        $recordsToProcess = collect($policeData);
+        if ($isAppending) {
+            $recordsToProcess = $recordsToProcess->filter(function ($record) use ($existingCaseNumbers) {
+                return !$existingCaseNumbers->contains($record['case_number'] ?? null);
+            });
+        }
+
+        if ($recordsToProcess->isEmpty()) {
+            $this->info("No new records to add to the CSV.");
             return 0;
+        }
+        
+        $this->info("Processing {$recordsToProcess->count()} records for the CSV.");
+
+        $flattenedRecords = [];
+        foreach ($recordsToProcess as $record) {
+            $flatRec = $this->flattenRecord($record, $geocodeData);
+            // Ensure all fields are present and in the correct order
+            $orderedRec = [];
+            foreach ($finalFieldnames as $field) {
+                $orderedRec[$field] = $flatRec[$field] ?? '';
+            }
+            $flattenedRecords[] = $orderedRec;
         }
 
         try {
-            $csv = Writer::createFromPath($outputCsvPath, 'w+');
-            $csv->insertOne($finalFieldnames); // Write header
+            $mode = $isAppending ? 'a+' : 'w+';
+            $csv = Writer::createFromPath($outputCsvPath, $mode);
+            
+            if (!$isAppending) {
+                $csv->insertOne($finalFieldnames); // Write header only for new files
+            }
+            
             $csv->insertAll($flattenedRecords); // Write data
 
-            $this->info("Successfully created combined CSV: {$outputCsvPath}");
+            if ($isAppending) {
+                $this->info("Successfully appended " . count($flattenedRecords) . " new records to {$outputCsvPath}");
+            } else {
+                $this->info("Successfully created combined CSV: {$outputCsvPath}");
+            }
         } catch (\Exception $e) {
             $this->error("Error writing CSV file: " . $e->getMessage());
             return 1;
@@ -108,7 +157,6 @@ class GenerateEverettCsvCommand extends Command
         $flatRec['incident_type'] = $incidentDetails['type'] ?? '';
         $originalIncidentAddress = $incidentDetails['address'] ?? '';
         $flatRec['incident_address'] = $originalIncidentAddress;
-        // $flatRec['incident_description'] = $incidentDetails['description'] ?? ''; // Moved from here
 
         $geoInfo = ($originalIncidentAddress && isset($geocodeData[$originalIncidentAddress])) ? $geocodeData[$originalIncidentAddress] : null;
         if (is_array($geoInfo)) {
@@ -119,7 +167,7 @@ class GenerateEverettCsvCommand extends Command
             $flatRec['incident_longitude'] = '';
         }
         
-        $flatRec['incident_description'] = $incidentDetails['description'] ?? ''; // Moved to here
+        $flatRec['incident_description'] = $incidentDetails['description'] ?? '';
         
         // Arrest details
         $arrestDetails = $record['arrest_details'] ?? null;
