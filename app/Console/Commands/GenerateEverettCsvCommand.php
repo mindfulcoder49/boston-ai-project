@@ -51,29 +51,25 @@ class GenerateEverettCsvCommand extends Command
             $this->warn("Geocode data file not found: {$inputGeocodeDataPath}. Proceeding without geocodes.");
         }
 
-        // Determine field names from ALL potential records first
-        $this->info("Determining all possible field names from data...");
-        $allPotentialFieldnames = collect();
-        foreach ($policeData as $record) {
-            $allPotentialFieldnames = $allPotentialFieldnames->merge(array_keys($this->flattenRecord($record, $geocodeData)));
-        }
-        $allPotentialFieldnames = $allPotentialFieldnames->unique()->sort()->values()->all();
-        $this->info("Field name determination complete. Building final header...");
-
-        $preferredFieldOrder = [
+        // The field names are predictable from flattenRecord(). We can define them statically
+        // to avoid iterating through all records, which is very slow.
+        $this->info("Using predefined CSV header structure.");
+        $finalFieldnames = [
             'case_number',
-            'incident_log_file_date', 'incident_entry_date', 'incident_time',
-            'incident_type', 'incident_address', 'incident_latitude', 'incident_longitude',
+            'incident_log_file_date',
+            'incident_entry_date',
+            'incident_time',
+            'incident_type',
+            'incident_address',
+            'incident_latitude',
+            'incident_longitude',
             'incident_description',
-            'arrest_name', 'arrest_address', 'arrest_age', 'arrest_date', 'arrest_charges'
+            'arrest_name',
+            'arrest_address',
+            'arrest_age',
+            'arrest_date',
+            'arrest_charges',
         ];
-
-        $finalFieldnames = collect($preferredFieldOrder)
-            ->filter(fn($field) => in_array($field, $allPotentialFieldnames))
-            ->merge(collect($allPotentialFieldnames)->diff($preferredFieldOrder)->sort()->values())
-            ->unique()
-            ->values()
-            ->all();
 
         $existingCaseNumbers = collect();
         $isAppending = false;
