@@ -148,7 +148,9 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Pipeline Monitoring (File-based)
     Route::get('/pipeline-file-logs', [AdminController::class, 'pipelineFileLogsIndex'])->name('pipeline.fileLogs.index');
     Route::get('/pipeline-file-logs/{runId}', [AdminController::class, 'showPipelineFileLogRun'])->name('pipeline.fileLogs.show');
-    Route::get('/pipeline-file-logs/{runId}/command-log/{logFileName}', [AdminController::class, 'getPipelineCommandFileLogContent'])->name('pipeline.fileLogs.commandLogContent');
+    Route::get('/pipeline-file-logs/{runId}/command-log/{logFileName}', [AdminController::class, 'getPipelineCommandFileLogContent'])
+        ->where('logFileName', 'cmd_[a-z0-9-]+_\\d{14}(_\\d+)?.log') // More flexible regex
+        ->name('pipeline.fileLogs.commandLogContent');
     Route::delete('/pipeline-file-logs/{runId}', [AdminController::class, 'deletePipelineFileRun'])->name('pipeline.fileLogs.delete');
 
     // Remove or comment out old DB-based pipeline routes if they exist

@@ -192,7 +192,7 @@ class AdminController extends Controller
     {
         // Validate runId and logFileName format to prevent directory traversal
         if (!preg_match('/^\d{14}_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $runId) ||
-            !preg_match('/^cmd_[a-z0-9-]+_\d{14}\.log$/', $logFileName)) {
+            !preg_match('/^cmd_[a-z0-9-]+_\d{14}(_\d+)?\.log$/', $logFileName)) { // Updated regex
             Log::warning("Invalid runId or logFileName format attempt: {$runId}, {$logFileName}");
             abort(400, 'Invalid parameters.');
         }
