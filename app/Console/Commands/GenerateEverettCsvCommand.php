@@ -99,9 +99,29 @@ class GenerateEverettCsvCommand extends Command
         $recordsToProcess = collect($policeData);
         if ($isAppending) {
             $this->info("Filtering for new records to append...");
-            $recordsToProcess = $recordsToProcess->filter(function ($record) use ($existingCaseNumbers) {
-                return !$existingCaseNumbers->contains($record['case_number'] ?? null);
-            });
+
+            // Optimize lookup by flipping the collection to use keys for O(1) checks
+            $existingCaseNumbersMap = $existingCaseNumbers->flip();
+            $newRecords = [];
+            $totalRecords = count($policeData);
+            $processedCount = 0;
+            $reportIncrement = 5000;
+
+            foreach ($policeData as $record) {
+                $processedCount++;
+                if ($processedCount % $reportIncrement === 0) {
+                    $this->output->write("\rFiltering progress: {$processedCount}/{$totalRecords} records checked...");
+                }
+
+                $caseNumber = $record['case_number'] ?? null;
+                if ($caseNumber === null || !isset($existingCaseNumbersMap[$caseNumber])) {
+                    $newRecords[] = $record;
+                }
+            }
+            $this->output->write("\n"); // New line after progress
+            $this->info("Filtering complete.");
+
+            $recordsToProcess = collect($newRecords);
         }
 
         if ($recordsToProcess->isEmpty()) {
