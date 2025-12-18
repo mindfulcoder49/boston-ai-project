@@ -1,12 +1,12 @@
 <template>
     <PageTemplate>
-        <Head title="Terms of Use - BostonScope" />
+        <Head title="Terms of Use - PubliDataWatch" />
 
         <div class="bg-gray-50 py-12 sm:py-16">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl mx-auto">
                     <h1 class="text-4xl font-bold tracking-tight text-center text-gray-900 mb-4">
-                        BostonScope Terms of Use
+                        PubliDataWatch Terms of Use
                     </h1>
                     <p class="text-center text-gray-600 mb-10">
                         Effective Date: {{ effectiveDate }}
@@ -14,7 +14,7 @@
 
                     <div class="prose prose-lg lg:prose-xl max-w-none bg-white p-6 sm:p-8 rounded-lg shadow-lg">
                         <p class="lead">
-                            Welcome to BostonScope! These Terms of Use ("Terms") govern your access to and use of the BostonScope website, services, applications, and content (collectively, the "Service") provided by AlcivarTech LLC ("AlcivarTech," "we," "us," or "our").
+                            Welcome to PubliDataWatch! These Terms of Use ("Terms") govern your access to and use of the PubliDataWatch website, services, applications, and content (collectively, the "Service") provided by AlcivarTech LLC ("AlcivarTech," "we," "us," or "our").
                         </p>
                         <p>
                             Please read these Terms carefully before using the Service.
@@ -30,7 +30,7 @@
 
                         <h2>2. Description of Service</h2>
                         <p>
-                            BostonScope provides users with access to aggregated public data related to city operations, including but not limited to crime reports, 311 service cases, building permits, and property violations, presented through an interactive map interface primarily focused on the Boston area. The Service may also include AI-generated summaries and insights based on this data, as well as features for registered users such as saving locations and receiving periodic email reports. Features and data availability may vary depending on your subscription plan.
+                            PubliDataWatch provides users with access to aggregated public data related to city operations, including but not limited to crime reports, 311 service cases, building permits, and property violations, presented through an interactive map interface. The Service may also include AI-generated summaries and insights based on this data, as well as features for registered users such as saving locations and receiving periodic email reports. Features and data availability may vary depending on your subscription plan.
                         </p>
 
                         <h2>3. User Accounts</h2>
@@ -55,7 +55,7 @@
                             c.  <strong>Automatic Renewal:</strong> Unless you cancel your subscription before the end of the current subscription period, your subscription will automatically renew for an additional period of the same duration as your initial term, and you authorize us (through our Payment Processor) to charge your payment method for the renewal term at the then-current non-promotional subscription rate.
                         </p>
                         <p>
-                            d.  <strong>Cancellation:</strong> You may cancel your subscription at any time through your account settings (typically accessible via a "Billing Portal" link) or by contacting us at help@bostonscope.com. Cancellations will take effect at the end of your current billing period. <strong>No refunds or credits will be provided for partial subscription periods or unused services, except as may be required by applicable law.</strong>
+                            d.  <strong>Cancellation:</strong> You may cancel your subscription at any time through your account settings (typically accessible via a "Billing Portal" link) or by contacting us at help@publidatawatch.com. Cancellations will take effect at the end of your current billing period. <strong>No refunds or credits will be provided for partial subscription periods or unused services, except as may be required by applicable law.</strong>
                         </p>
                         <p>
                             e.  <strong>Fee Changes:</strong> We reserve the right to change our subscription fees upon reasonable prior notice to you. Any fee changes will become effective at the end of the then-current billing cycle. Your continued use of the Service after the fee change comes into effect constitutes your agreement to pay the modified subscription fee amount.
@@ -87,7 +87,7 @@
 
                         <h2>6. Intellectual Property Rights</h2>
                         <p>
-                            The Service and its entire contents, features, and functionality (including but not limited to all information, software, text, displays, images, video, and audio, and the design, selection, and arrangement thereof, AI-generated summaries and analyses created by our systems, and all underlying data compilations and arrangements) are owned by AlcivarTech LLC, its licensors, or other providers of such material and are protected by United States and international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws. These Terms grant you a limited license to use the Service as described herein and do not transfer any ownership rights. "BostonScope" and all related names, logos, product and service names, designs, and slogans are trademarks of AlcivarTech LLC or its affiliates or licensors. You must not use such marks without the prior written permission of AlcivarTech LLC.
+                            The Service and its entire contents, features, and functionality (including but not limited to all information, software, text, displays, images, video, and audio, and the design, selection, and arrangement thereof, AI-generated summaries and analyses created by our systems, and all underlying data compilations and arrangements) are owned by AlcivarTech LLC, its licensors, or other providers of such material and are protected by United States and international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws. These Terms grant you a limited license to use the Service as described herein and do not transfer any ownership rights. "PubliDataWatch" and all related names, logos, product and service names, designs, and slogans are trademarks of AlcivarTech LLC or its affiliates or licensors. You must not use such marks without the prior written permission of AlcivarTech LLC.
                         </p>
 
                         <h2>7. Third-Party Data and Services</h2>
@@ -187,7 +187,7 @@
                             <br>
                             AlcivarTech LLC
                             <br>
-                            Email: <a href="mailto:help@bostonscope.com" class="text-blue-600 hover:text-blue-800 underline">help@bostonscope.com</a>
+                            Email: <a href="mailto:help@publidatawatch.com" class="text-blue-600 hover:text-blue-800 underline">help@publidatawatch.com</a>
                         </p>
                     </div>
                 </div>

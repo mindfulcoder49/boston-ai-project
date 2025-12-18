@@ -1,49 +1,49 @@
 <template>
     <PageTemplate>
-        <Head title="About BostonScope - Understanding Your City" />
+        <Head title="About PubliDataWatch - Understanding Your City" />
 
         <div class="bg-gray-50 py-12 sm:py-16">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl mx-auto text-center mb-12">
                     <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-                        About BostonScope
+                        About PubliDataWatch
                     </h1>
                     <p class="mt-6 text-xl text-gray-600">
-                        Empowering Bostonians with data-driven insights into their city.
+                        Empowering communities with data-driven insights into their cities.
                     </p>
                 </div>
 
                 <div class="bg-white p-6 sm:p-10 rounded-lg shadow-xl prose prose-lg lg:prose-xl max-w-none">
                     <section class="mb-10">
-                        <h2>Our Mission with BostonScope</h2>
+                        <h2>Our Mission with PubliDataWatch</h2>
                         <p>
-                            At BostonScope, we believe that access to clear, timely, and comprehensive city data is essential for an engaged and informed community. Our mission is to empower Boston residents, businesses, community organizations, and researchers by transforming complex public data into easily understandable and actionable insights.
+                            At PubliDataWatch, we believe that access to clear, timely, and comprehensive city data is essential for an engaged and informed community. Our mission is to empower residents, businesses, community organizations, and researchers by transforming complex public data into easily understandable and actionable insights.
                         </p>
                         <p>
-                            We aim to provide a transparent window into the daily operations and evolving landscape of Boston, fostering a greater understanding of neighborhood dynamics, civic engagement, and urban development. Whether you're looking to stay informed about safety in your area, track local development, or understand service requests, BostonScope is designed to be your go-to resource.
+                            We aim to provide a transparent window into the daily operations and evolving landscape of cities, fostering a greater understanding of neighborhood dynamics, civic engagement, and urban development. Whether you're looking to stay informed about safety in your area, track local development, or understand service requests, PubliDataWatch is designed to be your go-to resource.
                         </p>
                     </section>
 
                     <section class="mb-10">
-                        <h2>What is BostonScope?</h2>
+                        <h2>What is PubliDataWatch?</h2>
                         <p>
-                            BostonScope is an innovative web platform that aggregates, visualizes, and analyzes publicly available data from the City of Boston. Key features include:
+                            PubliDataWatch is an innovative web platform that aggregates, visualizes, and analyzes publicly available data from cities. Key features include:
                         </p>
                         <ul class="list-disc pl-5 space-y-1">
                             <li><strong>Interactive Mapping:</strong> Explore crime incidents, 311 service requests, building permits, and property violations on a user-friendly map centered on your location of interest.</li>
-                            <li><strong>AI-Powered Summaries:</strong> Leveraging advanced AI (like Google's Gemini), BostonScope provides concise summaries of events and trends, making complex data more accessible.</li>
+                            <li><strong>AI-Powered Summaries:</strong> Leveraging advanced AI (like Google's Gemini), PubliDataWatch provides concise summaries of events and trends, making complex data more accessible.</li>
                             <li><strong>Personalized Reports:</strong> Subscribers can receive automated email reports tailored to their saved locations and preferences, delivered in multiple languages.</li>
                             <li><strong>Advanced Data Tools:</strong> For power users, we offer specialized maps with natural language querying for crime data and detailed search capabilities for 311 cases.</li>
                         </ul>
                         <p>
-                            We are continuously working to expand our data sources and enhance the features of BostonScope to provide even greater value to our users.
+                            We are continuously working to expand our data sources and enhance the features of PubliDataWatch to provide even greater value to our users.
                         </p>
                     </section>
 
                     <section class="mb-10">
                         <h2>About AlcivarTech LLC</h2>
                         <p>
-                            AlcivarTech LLC is the technology company proudly behind BostonScope. Founded with a passion for urban innovation and data transparency, our core mission is to develop intelligent solutions that address modern urban challenges and enhance the quality of city life.
+                            AlcivarTech LLC is the technology company proudly behind PubliDataWatch. Founded with a passion for urban innovation and data transparency, our core mission is to develop intelligent solutions that address modern urban challenges and enhance the quality of city life.
                         </p>
                         <p>
                             We specialize in data aggregation, geospatial analysis, and the application of artificial intelligence to create meaningful tools for communities. At AlcivarTech, we believe in the power of technology to foster understanding, drive positive change, and build smarter, more responsive, and more livable cities for everyone.
@@ -54,7 +54,7 @@
                     <section class="mb-10">
                         <h2>Our Values</h2>
                         <p>
-                            Our work at AlcivarTech and on BostonScope is guided by a commitment to:
+                            Our work at AlcivarTech and on PubliDataWatch is guided by a commitment to:
                         </p>
                         <ul class="list-disc pl-5 space-y-1">
                             <li><strong>Transparency:</strong> Making public data truly public and understandable.</li>
@@ -68,10 +68,10 @@
                     <section>
                         <h2>Get in Touch</h2>
                         <p>
-                            We're always eager to hear from our users, potential partners, or anyone interested in learning more about BostonScope and AlcivarTech LLC.
+                            We're always eager to hear from our users, potential partners, or anyone interested in learning more about PubliDataWatch and AlcivarTech LLC.
                         </p>
                         <p>
-                            For support, feedback, or general inquiries, please visit our <Link :href="route('help.contact')" class="text-blue-600 hover:text-blue-800 underline">Help & Contact Page</Link> or email us directly at <a href="mailto:help@bostonscope.com" class="text-blue-600 hover:text-blue-800 underline">help@bostonscope.com</a>.
+                            For support, feedback, or general inquiries, please visit our <Link :href="route('help.contact')" class="text-blue-600 hover:text-blue-800 underline">Help & Contact Page</Link> or email us directly at <a href="mailto:help@publidatawatch.com" class="text-blue-600 hover:text-blue-800 underline">help@publidatawatch.com</a>.
                         </p>
                     </section>
                 </div>

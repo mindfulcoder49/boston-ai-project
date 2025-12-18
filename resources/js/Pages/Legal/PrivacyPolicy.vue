@@ -1,12 +1,12 @@
 <template>
     <PageTemplate>
-        <Head title="Privacy Policy - BostonScope" />
+        <Head title="Privacy Policy - PubliDataWatch" />
 
         <div class="bg-gray-50 py-12 sm:py-16">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl mx-auto">
                     <h1 class="text-4xl font-bold tracking-tight text-center text-gray-900 mb-4">
-                        BostonScope Privacy Policy
+                        PubliDataWatch Privacy Policy
                     </h1>
                     <p class="text-center text-gray-600 mb-10">
                         Effective Date: {{ effectiveDate }}
@@ -15,7 +15,7 @@
                     <div class="prose prose-lg lg:prose-xl max-w-none bg-white p-6 sm:p-8 rounded-lg shadow-lg">
                         <h2>1. Introduction</h2>
                         <p>
-                            Welcome to BostonScope ("Service," "we," "us," "our"), a service provided by AlcivarTech LLC. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you visit our website bostonscope.app (and any other subdomains or related services), use our mobile application (if applicable), or otherwise interact with our Service.
+                            Welcome to PubliDataWatch ("Service," "we," "us," "our"), a service provided by AlcivarTech LLC. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you visit our website publidatawatch.app (and any other subdomains or related services), use our mobile application (if applicable), or otherwise interact with our Service.
                         </p>
                         <p>
                             Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the service.
@@ -128,12 +128,12 @@
                             <li>Withdraw consent, if processing is based on consent.</li>
                         </ul>
                         <p>
-                            To exercise these rights, please contact us at help@bostonscope.com. We will respond to your request in accordance with applicable law. You may also be able to manage some of your information directly through your account settings on the Service.
+                            To exercise these rights, please contact us at help@publidatawatch.com. We will respond to your request in accordance with applicable law. You may also be able to manage some of your information directly through your account settings on the Service.
                         </p>
 
                         <h2>9. Children's Privacy</h2>
                         <p>
-                            Our Service is not directed to individuals under the age of 13 (or a higher age threshold if required by applicable law). We do not knowingly collect personal information from children under 13. If we become aware that a child under 13 has provided us with personal information, we will take steps to delete such information. If you become aware that a child has provided us with personal information, please contact us at help@bostonscope.com.
+                            Our Service is not directed to individuals under the age of 13 (or a higher age threshold if required by applicable law). We do not knowingly collect personal information from children under 13. If we become aware that a child under 13 has provided us with personal information, we will take steps to delete such information. If you become aware that a child has provided us with personal information, please contact us at help@publidatawatch.com.
                         </p>
 
                         <h2>10. International Data Transfers</h2>
@@ -150,9 +150,9 @@
                         <p>
                             If you have any questions about this Privacy Policy, or wish to exercise any of your rights, please contact us at:
                             <br>
-                            AlcivarTech LLC / BostonScope
+                            AlcivarTech LLC / PubliDataWatch
                             <br>
-                            Email: <a href="mailto:help@bostonscope.com" class="text-blue-600 hover:text-blue-800 underline">help@bostonscope.com</a>
+                            Email: <a href="mailto:help@publidatawatch.com" class="text-blue-600 hover:text-blue-800 underline">help@publidatawatch.com</a>
                         </p>
                     </div>
                 </div>
