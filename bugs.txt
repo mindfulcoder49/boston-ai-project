@@ -1,0 +1,6 @@
+List of open issues:
+
+Metrics page shows incorrect dates, especially for most recent record
+
+List of closed issues:
+
