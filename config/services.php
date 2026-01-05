@@ -73,4 +73,11 @@ return [
     'analysis_api' => [
         'url' => env('ANALYSIS_API_URL'),
     ],
+
+    's3' => [
+        'key' => env('AWS_ACCESS_KEY_ID'),
+        'secret' => env('AWS_SECRET_ACCESS_KEY'),
+        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+        'bucket' => env('S3_BUCKET_NAME'),
+    ],
 ];
