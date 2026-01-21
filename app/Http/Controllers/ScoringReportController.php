@@ -34,7 +34,19 @@ class ScoringReportController extends Controller
                                 'generated_at' => $s3->lastModified($file),
                                 'parameters' => $fileContent['parameters'] ?? [],
                             ];
-                        }
+                        } 
+                        // also for stage6_historical_scores.json files
+                        elseif (basename($file) === 'stage6_historical_score.json') {
+                            $fileContent = json_decode($s3->get($file), true);
+                            $reportList[] = [
+                                'job_id' => $jobDir,
+                                'artifact_name' => basename($file),
+                                'title' => 'Historical Scoring Report',
+                                'generated_at' => $s3->lastModified($file),
+                                'parameters' => $fileContent['parameters'] ?? [],
+                            ];
+                        }    
+                        
                     }
                 }
 
@@ -88,6 +100,32 @@ class ScoringReportController extends Controller
     }
 
     /**
+     * API endpoint to get the full source analysis data file for a job.
+     */
+    public function getSourceAnalysisData($jobId)
+    {
+        $s3 = Storage::disk('s3');
+        $analysisPath = "{$jobId}/stage4_h3_anomaly.json";
+        $cacheKey = "analysis_data_{$jobId}";
+
+        // Use the same caching logic as getScoreForLocation to serve the file.
+        $analysisData = Cache::rememberForever($cacheKey, function () use ($s3, $analysisPath, $jobId) {
+            if ($s3->exists($analysisPath)) {
+                Log::info("Caching analysis data for source job ID: {$jobId}");
+                return json_decode($s3->get($analysisPath), true);
+            }
+            Log::warning("Analysis data file not found in S3 for caching.", ['path' => $analysisPath]);
+            return null;
+        });
+
+        if ($analysisData) {
+            return response()->json($analysisData);
+        }
+
+        return response()->json(['error' => 'Source analysis data not found.'], 404);
+    }
+
+    /**
      * API endpoint to get score and analysis for a given H3 index.
      * This now includes server-side caching for the analysis data.
      */
@@ -113,6 +151,7 @@ class ScoringReportController extends Controller
 
         $analysisResult = null;
         $analysisParameters = null;
+        // Check if this is an anomaly-based report by looking for source_job_id
         $sourceJobId = $scoringData['source_job_id'] ?? null;
 
         if ($sourceJobId) {

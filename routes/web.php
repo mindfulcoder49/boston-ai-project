@@ -49,6 +49,7 @@ Route::get('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::
     ->where('artifactName', '.*') // Allow dots in filename
     ->name('scoring-reports.show');
 Route::post('/api/scoring-reports/score-for-location', [ScoringReportController::class, 'getScoreForLocation'])->name('scoring-reports.score-for-location');
+Route::get('/api/scoring-reports/source-analysis/{jobId}', [ScoringReportController::class, 'getSourceAnalysisData'])->name('scoring-reports.source-analysis');
 
 // News Article Routes
 Route::get('/news', [NewsArticleController::class, 'index'])->name('news.index');
