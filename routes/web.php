@@ -34,12 +34,21 @@ use App\Http\Controllers\AdminLocationController; // Added
 use App\Http\Controllers\TrendsController;
 use App\Http\Controllers\StatisticalAnalysisReportController;
 use App\Http\Controllers\YearlyCountComparisonController;
+use App\Http\Controllers\ScoringReportController;
 
 Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
 Route::get('/reports/statistical-analysis/{trendId}', [StatisticalAnalysisReportController::class, 'show'])->name('reports.statistical-analysis.show');
 
 Route::get('/yearly-comparisons', [YearlyCountComparisonController::class, 'index'])->name('yearly-comparisons.index');
 Route::get('/reports/yearly-comparison/{reportId}', [YearlyCountComparisonController::class, 'show'])->name('reports.yearly-comparison.show');
+
+// Scoring Report Routes (New)
+Route::get('/scoring-reports', [ScoringReportController::class, 'index'])->name('scoring-reports.index');
+Route::post('/scoring-reports/refresh', [ScoringReportController::class, 'refreshIndex'])->name('scoring-reports.refresh');
+Route::get('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::class, 'show'])
+    ->where('artifactName', '.*') // Allow dots in filename
+    ->name('scoring-reports.show');
+Route::post('/api/scoring-reports/score-for-location', [ScoringReportController::class, 'getScoreForLocation'])->name('scoring-reports.score-for-location');
 
 // News Article Routes
 Route::get('/news', [NewsArticleController::class, 'index'])->name('news.index');

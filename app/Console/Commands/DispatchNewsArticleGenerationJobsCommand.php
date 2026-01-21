@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use App\Jobs\GenerateNewsArticleJob;
 use App\Models\JobRun;
+use App\Console\Commands\DispatchLocalNewsArticle;
 
 class DispatchNewsArticleGenerationJobsCommand extends Command
 {
@@ -23,7 +24,8 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
                             {--unified-res= : Process only Trend reports with column "unified" and a specific resolution}
                             {--run-config= : Run a pre-defined set of reports from the news_generation config file}
                             {--report-class= : The specific report model class to generate for (e.g., App\Models\Trend)}
-                            {--report-id= : The ID of the specific report to generate for (requires --report-class)}';
+                            {--report-id= : The ID of the specific report to generate for (requires --report-class)}
+                            {--local : Use the local AI service for generation instead of the cloud service}';
     protected $description = 'Dispatches jobs to generate news articles for statistical reports using AI.';
 
     protected $supportedModels = [
@@ -219,8 +221,15 @@ class DispatchNewsArticleGenerationJobsCommand extends Command
                 'content' => 'The generation process for this article has been queued and will start shortly.',
                 'status' => 'draft',
                 'published_at' => null,
+                'completion_job_id' => null,
             ]
         );
+
+        if ($this->option('local')) {
+            $this->info("\nDispatching local generation for {$modelClass} #{$report->id}.");
+            $this->call(DispatchLocalNewsArticle::class, ['articleId' => $article->id]);
+            return;
+        }
 
         $job = new GenerateNewsArticleJob($article, $this->option('fresh'));
         $jobId = app(\Illuminate\Contracts\Bus\Dispatcher::class)->dispatch($job);

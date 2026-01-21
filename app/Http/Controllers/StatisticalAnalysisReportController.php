@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Models\Trend;
+use App\Models\NewsArticle;
+use App\Jobs\GenerateNewsArticleJob;
 
 class StatisticalAnalysisReportController extends Controller
 {

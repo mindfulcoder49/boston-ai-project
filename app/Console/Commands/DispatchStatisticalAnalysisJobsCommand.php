@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\Trend;
+use App\Models\NewsArticle;
 
 class DispatchStatisticalAnalysisJobsCommand extends Command
 {

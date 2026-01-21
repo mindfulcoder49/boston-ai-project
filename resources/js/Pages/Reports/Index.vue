@@ -53,13 +53,16 @@
         <div v-if="reports.links && reports.data.length > 0" class="px-3 py-3 sm:px-5 sm:py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between">
             <div class="flex items-center flex-wrap justify-center xs:justify-start">
                 <template v-for="(link, key) in reports.links" :key="key">
-                    <div v-if="link.url === null" class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-sm leading-4 text-gray-400 border rounded" v-html="link.label" />
+                    <div v-if="link.url === null" class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-sm leading-4 text-gray-400 border rounded">
+                        <div v-html="link.label" />
+                    </div>
                     <Link v-else
                           class="mr-1 mb-1 px-3 py-2 sm:px-4 sm:py-3 text-sm leading-4 border rounded hover:bg-blue-500 hover:text-white focus:border-indigo-500 focus:text-indigo-500"
                           :class="{ 'bg-blue-500 text-white': link.active }"
                           :href="link.url"
-                          v-html="link.label"
-                          preserve-scroll />
+                          preserve-scroll>
+                          <div v-html="link.label" />
+                    </Link>
                 </template>
             </div>
              <div class="text-sm text-gray-500 mt-2 xs:mt-0">

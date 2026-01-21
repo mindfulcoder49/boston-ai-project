@@ -29,9 +29,12 @@
                         <NavLink :href="route('yearly-comparisons.index')" :active="route().current('yearly-comparisons.index') || route().current('reports.yearly-comparison.show')">
                             Yearly Comparison
                         </NavLink>
-                        <NavLink :href="route('news.index')" :active="route().current('news.index') || route().current('news.show')">
-                            News
+                        <NavLink :href="route('scoring-reports.index')" :active="route().current('scoring-reports.index') || route().current('scoring-reports.show')">
+                            Neighborhood Scores
                         </NavLink>
+                        <!-- <NavLink :href="route('news.index')" :active="route().current('news.index') || route().current('news.show')">
+                            News
+                        </NavLink> -->
                         <NavLink v-if="isAuthenticated" :href="route('reports.index')" :active="route().current('reports.index') || route().current('reports.show')">
                             Report History
                         </NavLink>
@@ -137,7 +140,8 @@
                 <ResponsiveNavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')"> Full Data Map </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('trends.index')" :active="route().current('trends.index')"> Trends </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('yearly-comparisons.index')" :active="route().current('yearly-comparisons.index') || route().current('reports.yearly-comparison.show')"> Yearly Comparison </ResponsiveNavLink>
-                <ResponsiveNavLink :href="route('news.index')" :active="route().current('news.index') || route().current('news.show')"> News </ResponsiveNavLink>
+                <ResponsiveNavLink :href="route('scoring-reports.index')" :active="route().current('scoring-reports.index') || route().current('scoring-reports.show')"> Neighborhood Scores </ResponsiveNavLink>
+                <!-- <ResponsiveNavLink :href="route('news.index')" :active="route().current('news.index') || route().current('news.show')"> News </ResponsiveNavLink> -->
                 <ResponsiveNavLink v-if="isAuthenticated" :href="route('reports.index')" :active="route().current('reports.index') || route().current('reports.show')"> Report History </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('subscription.index')" :active="route().current('subscription.index')"> Subscription </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('data.metrics')" :active="route().current('data.metrics')"> Data Metrics </ResponsiveNavLink>

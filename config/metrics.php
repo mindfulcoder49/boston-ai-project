@@ -11,9 +11,9 @@ return array (
       'totalRecords' => 235850,
       'minDate' => '2023-01-01',
       'maxDate' => '2025-12-31',
-      'recordsLast30Days' => 5198,
-      'recordsLast90Days' => 18750,
-      'recordsLast1Year' => 79491,
+      'recordsLast30Days' => 3668,
+      'recordsLast90Days' => 16987,
+      'recordsLast1Year' => 78101,
       'offenseGroupDistribution' => 
       array (
         0 => 
@@ -76,9 +76,9 @@ return array (
       'totalRecords' => 274000,
       'minDate' => '2025-01-01',
       'maxDate' => '2025-12-26',
-      'recordsLast30Days' => 11969,
-      'recordsLast90Days' => 51616,
-      'recordsLast1Year' => 272888,
+      'recordsLast30Days' => 7757,
+      'recordsLast90Days' => 46195,
+      'recordsLast1Year' => 268254,
       'caseStatusDistribution' => 
       array (
         0 => 
@@ -101,9 +101,9 @@ return array (
       'totalRecords' => 865703,
       'minDate' => '2006-04-04',
       'maxDate' => '2025-12-31',
-      'recordsLast30Days' => 3645,
-      'recordsLast90Days' => 12713,
-      'recordsLast1Year' => 43902,
+      'recordsLast30Days' => 2423,
+      'recordsLast90Days' => 11541,
+      'recordsLast1Year' => 43108,
       'resultDistribution' => 
       array (
         0 => 
@@ -163,9 +163,9 @@ return array (
       'totalRecords' => 16786,
       'minDate' => '2009-12-01',
       'maxDate' => '2025-12-31',
-      'recordsLast30Days' => 50,
-      'recordsLast90Days' => 162,
-      'recordsLast1Year' => 732,
+      'recordsLast30Days' => 33,
+      'recordsLast90Days' => 156,
+      'recordsLast1Year' => 719,
       'statusDistribution' => 
       array (
         0 => 
@@ -255,9 +255,9 @@ return array (
       'totalRecords' => 638423,
       'minDate' => '2006-09-26',
       'maxDate' => '2026-01-01',
-      'recordsLast30Days' => 2381,
-      'recordsLast90Days' => 8978,
-      'recordsLast1Year' => 36945,
+      'recordsLast30Days' => 1610,
+      'recordsLast90Days' => 7951,
+      'recordsLast1Year' => 36215,
       'workTypeDistribution' => 
       array (
         0 => 
@@ -343,7 +343,7 @@ return array (
       'totalRecords' => 437,
       'minDate' => '2022-06-20',
       'maxDate' => '2033-04-08',
-      'recordsLast30Days' => 69,
+      'recordsLast30Days' => 49,
       'recordsLast90Days' => 94,
       'recordsLast1Year' => 436,
     ),
@@ -354,9 +354,9 @@ return array (
       'totalRecords' => 129090,
       'minDate' => '2021-04-04',
       'maxDate' => '2025-12-31',
-      'recordsLast30Days' => 1675,
-      'recordsLast90Days' => 5463,
-      'recordsLast1Year' => 26052,
+      'recordsLast30Days' => 1227,
+      'recordsLast90Days' => 4953,
+      'recordsLast1Year' => 25593,
     ),
     7 => 
     array (
@@ -367,7 +367,7 @@ return array (
       'maxDate' => '2025-09-02',
       'recordsLast30Days' => 0,
       'recordsLast90Days' => 0,
-      'recordsLast1Year' => 11186,
+      'recordsLast1Year' => 10930,
     ),
     8 => 
     array (
@@ -378,7 +378,7 @@ return array (
       'maxDate' => '2025-08-29',
       'recordsLast30Days' => 0,
       'recordsLast90Days' => 0,
-      'recordsLast1Year' => 1152,
+      'recordsLast1Year' => 1126,
     ),
     9 => 
     array (
@@ -387,9 +387,9 @@ return array (
       'totalRecords' => 111809,
       'minDate' => '1924-08-07',
       'maxDate' => '2025-12-29',
-      'recordsLast30Days' => 443,
-      'recordsLast90Days' => 2202,
-      'recordsLast1Year' => 10982,
+      'recordsLast30Days' => 315,
+      'recordsLast90Days' => 2020,
+      'recordsLast1Year' => 10873,
     ),
     10 => 
     array (
@@ -400,7 +400,7 @@ return array (
       'maxDate' => '2025-08-29',
       'recordsLast30Days' => 0,
       'recordsLast90Days' => 0,
-      'recordsLast1Year' => 874,
+      'recordsLast1Year' => 846,
     ),
     11 => 
     array (
@@ -411,7 +411,7 @@ return array (
       'maxDate' => '2025-06-06',
       'recordsLast30Days' => 0,
       'recordsLast90Days' => 0,
-      'recordsLast1Year' => 931,
+      'recordsLast1Year' => 864,
     ),
   ),
 );

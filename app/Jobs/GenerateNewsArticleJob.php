@@ -74,6 +74,7 @@ class GenerateNewsArticleJob implements ShouldQueue
                     'content' => $articleData['content'],
                     'status' => 'published',
                     'published_at' => now(),
+                    'completion_job_id' => null, // Explicitly set to null
                 ]);
 
                 if ($jobRun) {
