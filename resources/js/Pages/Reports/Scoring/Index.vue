@@ -34,6 +34,9 @@
                   Generated At
                 </th>
                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Parameters
+                </th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -46,6 +49,9 @@
                 </td>
                 <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
                   <p class="text-gray-900 whitespace-no-wrap">{{ new Date(report.generated_at * 1000).toLocaleString() }}</p>
+                </td>
+                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                  <JsonTree :data="report.parameters" />
                 </td>
                 <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
                   <Link :href="route('scoring-reports.show', { jobId: report.job_id, artifactName: report.artifact_name })" class="text-indigo-600 hover:text-indigo-900">
@@ -68,6 +74,7 @@
 
 <script setup>
 import PageTemplate from '@/Components/PageTemplate.vue';
+import JsonTree from '@/Components/JsonTree.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 

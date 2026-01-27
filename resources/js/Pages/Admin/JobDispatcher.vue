@@ -46,6 +46,11 @@
               <label for="stat-anomaly-weeks" class="block text-sm font-medium text-gray-700">Anomaly Weeks</label>
               <input type="number" v-model="statForm.parameters.anomalyWeeks" id="stat-anomaly-weeks" class="mt-1 block w-full input" placeholder="4">
             </div>
+            <div>
+              <label for="stat-export-timespan" class="block text-sm font-medium text-gray-700">Export Timespan (Weeks)</label>
+              <input type="number" v-model="statForm.parameters.exportTimespan" id="stat-export-timespan" class="mt-1 block w-full input" placeholder="108">
+              <p class="mt-1 text-xs text-gray-500">Total weeks of data to export, ending on the most recent record. Must be greater than the longest trend/anomaly window to provide historical data for comparison (e.g., 52-week trend needs >52 weeks of data).</p>
+            </div>
             <div class="flex items-end gap-x-4">
               <label class="flex items-center"><input type="checkbox" v-model="statForm.parameters.fresh" class="checkbox" /><span class="ml-2 text-sm">--fresh</span></label>
               <label class="flex items-center"><input type="checkbox" v-model="statForm.parameters.plots" class="checkbox" /><span class="ml-2 text-sm">--plots</span></label>
@@ -146,7 +151,7 @@ const props = defineProps({
   newsConfigSets: Array,
 });
 
-const statForm = useForm({ command: 'app:dispatch-statistical-analysis-jobs', parameters: { model: '', columns: [], fresh: false, plots: false, resolutions: '9,8,7,6,5', trendWeeks: '4,26,52', anomalyWeeks: 4 } });
+const statForm = useForm({ command: 'app:dispatch-statistical-analysis-jobs', parameters: { model: '', columns: [], fresh: false, plots: false, resolutions: '9,8,7,6,5', trendWeeks: '4,26,52', anomalyWeeks: 4, exportTimespan: 108 } });
 const yearlyForm = useForm({ command: 'app:dispatch-yearly-count-comparison-jobs', parameters: { model: '', columns: [], baselineYear: 2019, fresh: false } });
 const newsForm = useForm({ command: 'app:dispatch-news-article-generation-jobs', parameters: { model: 'all', fresh: false, runConfig: '', reportClass: '', reportId: '' } });
 const locationForm = useForm({ command: 'reports:send', parameters: { userId: '', locationId: '', force: false } });

@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\Trend;
 use App\Models\NewsArticle;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class DispatchStatisticalAnalysisJobsCommand extends Command
 {
@@ -28,7 +30,8 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                             {--p-anomaly=0.05 : P-value for anomaly detection}
                             {--p-trend=0.05 : P-value for trend detection}
                             {--trend-weeks=4,26,52 : Comma-separated list of week windows for trend analysis}
-                            {--anomaly-weeks=4 : Week window for anomaly detection}';
+                            {--anomaly-weeks=4 : Week window for anomaly detection}
+                            {--export-timespan=108 : The total number of weeks of data to export for analysis}';
 
     /**
      * The console command description.
@@ -74,7 +77,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                 $modelClasses = [$resolvedModelClass];
             } else {
                 $this->error("The specified model '{$specificModel}' is not a valid or analyzable model.");
-                $this->line('Available models: ' . implode(', ', array_map('class_basename', $allModelClasses)));
+                Log::info('Available models: ' . implode(', ', array_map('class_basename', $allModelClasses)));
                 return 1;
             }
         } else {
@@ -84,8 +87,12 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
 
         $allModelMetadata = config('model_metadata_suggestions', []);
 
+        // Use the export timespan from the command option.
+        $exportWeeks = (int) $this->option('export-timespan');
+        $this->info("Data export timespan is set to {$exportWeeks} weeks. Exporting data accordingly.");
+
         foreach ($modelClasses as $modelClass) {
-            $this->line("Processing model: <fg=cyan>{$modelClass}</fg=cyan>");
+            Log::info("Processing model: {$modelClass}");
 
             if (!isset($allModelMetadata[$modelClass])) {
                 $this->warn("No metadata found for model {$modelClass} in config/model_metadata_suggestions.php. Skipping.");
@@ -118,11 +125,11 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                 $requestedColumns = explode(',', $this->option('columns'));
                 // Filter to ensure only valid columns are used
                 $fieldsForAnalysis = array_intersect($requestedColumns, $availableColumns);
-                $this->line("    Running analysis for specified columns: <fg=yellow>" . implode(', ', $fieldsForAnalysis) . "</fg=yellow>");
+                Log::info("    Running analysis for specified columns: " . implode(', ', $fieldsForAnalysis));
             } else {
                 // Default behavior: unified analysis + all available specific columns.
                 $fieldsForAnalysis = array_merge(['__unified__'], $availableColumns);
-                $this->line("    Running unified analysis and all available columns: <fg=yellow>" . implode(', ', $availableColumns) . "</fg=yellow>");
+                Log::info("    Running unified analysis and all available columns: " . implode(', ', $availableColumns));
             }
             // All available columns need to be in the export, regardless of what's being analyzed this run.
             $dbExportColumns = $availableColumns;
@@ -138,14 +145,14 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
             $exportFilename = "{$this->exportDirectory}/{$modelKey}_all_fields.csv";
 
             if (Storage::disk('public')->exists($exportFilename)) {
-                $this->line("    Using existing data export for all fields: <fg=gray>{$exportFilename}</fg=gray>");
+                Log::info("    Using existing data export for all fields: {$exportFilename}");
             } else {
-                $this->line('    No existing export found for all fields. Generating new CSV...');
-                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $dbExportColumns, $exportFilename, $modelClass, $connectionName);
+                Log::info('    No existing export found for all fields. Generating new CSV...');
+                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $dbExportColumns, $exportFilename, $modelClass, $connectionName, $exportWeeks);
                 $this->info("    Successfully generated new data export for all fields.");
             }
             $publicUrl = Storage::url($exportFilename);
-            $this->line("    Public URL for all jobs for this model: <fg=blue>" . url($publicUrl) . "</fg=blue>");
+            Log::info("    Public URL for all jobs for this model: " . url($publicUrl));
 
 
             foreach ($fieldsForAnalysis as $field) {
@@ -161,7 +168,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                     $this->info("  --> Preparing job for resolution: <fg=cyan>{$resolution}</fg=cyan>");
 
                     // 2. Prepare and Dispatch API Job for each field
-                    $this->line('    Dispatching job to analysis API...');
+                    Log::info('    Dispatching job to analysis API...');
                     $jobId = "laravel-{$modelKey}-{$jobSuffix}-res{$resolution}-" . time();
 
                     $generatePlots = $this->option('plots');
@@ -196,6 +203,9 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                             ],
                         ],
                     ];
+                    //log payload for debugging
+                    Log::info('Dispatching statistical analysis job with payload.', ['payload' => $payload]);
+
 
                     $response = Http::timeout(30)->post("{$apiBaseUrl}/api/v1/jobs", $payload);
 
@@ -233,18 +243,35 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         return 0;
     }
 
-    private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename, string $modelClass, string $connectionName)
+    private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename, string $modelClass, string $connectionName, int $exportWeeks)
     {
         $filePath = Storage::disk('public')->path($filename);
 
-        $this->line("      DB columns to export: <fg=yellow>" . (empty($fieldsToAnalyze) ? 'None' : implode(', ', $fieldsToAnalyze)) . "</fg=yellow>");
+        Log::info("      DB columns to export: " . (empty($fieldsToAnalyze) ? 'None' : implode(', ', $fieldsToAnalyze)));
 
-        $this->line("      Counting rows to export for {$tableName}...");
-        $query = DB::connection($connectionName)->table($tableName)->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
+        // Determine the date range for export
+        $latestRecordDateStr = DB::connection($connectionName)->table($tableName)->max($dateField);
+        if (!$latestRecordDateStr) {
+            $this->warn("      No records found in {$tableName}. Creating an empty file with a header.");
+            $fileHandle = fopen($filePath, 'w');
+            $header = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze, ['source_dataset']);
+            fputcsv($fileHandle, $header);
+            fclose($fileHandle);
+            return;
+        }
+
+        $latestRecordDate = Carbon::parse($latestRecordDateStr);
+        $startDate = $latestRecordDate->copy()->subWeeks($exportWeeks)->startOfDay();
+        $this->info("      Exporting data from {$startDate->toDateString()} based on a {$exportWeeks}-week export window.");
+
+        Log::info("      Counting rows to export for {$tableName}...");
+        $query = DB::connection($connectionName)->table($tableName)
+            ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField)
+            ->where($dateField, '>=', $startDate);
         $totalRows = $query->count();
 
         if ($totalRows === 0) {
-            $this->warn("      No rows to export. Creating an empty file with a header.");
+            $this->warn("      No rows to export in the calculated date range. Creating an empty file with a header.");
             $fileHandle = fopen($filePath, 'w');
             // Header includes core fields, specific analysis fields, and the unified field
             $header = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze, ['source_dataset']);
@@ -268,7 +295,8 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         // Select only the columns that exist in the database.
         $selectColumns = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze);
         $query = DB::connection($connectionName)->table($tableName)->select($selectColumns)
-            ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
+            ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField)
+            ->where($dateField, '>=', $startDate);
 
         $unifiedValue = $modelClass::getHumanName();
 

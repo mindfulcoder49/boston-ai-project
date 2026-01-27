@@ -45,10 +45,11 @@ class EverettCrimeDataSeeder extends Seeder
             // Sort files to get the most recent one if multiple versions exist (e.g., by name or modification time)
             // For simplicity, assuming `end()` is sufficient or only one file matches.
             $file = end($files);
-            echo "Processing Everett file: " . $file . "\n";
+            $fullPath = Storage::disk('local')->path($file);
+            print_r("Processing Everett file: " . $fullPath . "\n");
 
             // Process the most recent file
-            $this->processFile(Storage::path($file));
+            $this->processFile($fullPath);
         } else {
             echo "No files found to process for name: " . $name . " in datasets/everett\n";
         }
@@ -56,6 +57,11 @@ class EverettCrimeDataSeeder extends Seeder
 
     private function processFile($file)
     {
+        if (!File::exists($file) || !is_readable($file)) {
+            print_r("Error: File does not exist or is not readable: " . $file . "\n");
+            return;
+        }
+
         print_r("Processing Everett file: " . $file . "\n");
         $csv = Reader::createFromPath($file);
         $csv->setHeaderOffset(0); // The header is on the first row

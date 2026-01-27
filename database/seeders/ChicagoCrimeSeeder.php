@@ -32,7 +32,7 @@ class ChicagoCrimeSeeder extends Seeder
         // Sort files to be sure, then get the last one.
         sort($crimeFiles);
         $latestFile = end($crimeFiles);
-        $csvPath = Storage::path($latestFile);
+        $csvPath = Storage::disk('local')->path($latestFile);
 
         $this->command->info("Processing latest file: {$csvPath}");
 

@@ -32,7 +32,7 @@ class ScoringReportController extends Controller
                                 'artifact_name' => basename($file),
                                 'title' => 'Neighborhood Scoring Report',
                                 'generated_at' => $s3->lastModified($file),
-                                'parameters' => $fileContent['parameters'] ?? [],
+                                'parameters' => $fileContent['parameters'] ?? ($fileContent['config'] ?? []),
                             ];
                         } 
                         // also for stage6_historical_scores.json files
@@ -43,7 +43,7 @@ class ScoringReportController extends Controller
                                 'artifact_name' => basename($file),
                                 'title' => 'Historical Scoring Report',
                                 'generated_at' => $s3->lastModified($file),
-                                'parameters' => $fileContent['parameters'] ?? [],
+                                'parameters' => $fileContent['parameters'] ?? ($fileContent['config'] ?? []),
                             ];
                         }    
                         

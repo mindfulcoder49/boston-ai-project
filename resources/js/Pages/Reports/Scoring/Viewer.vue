@@ -25,7 +25,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Map and Controls Column -->
                 <div class="lg:col-span-2 space-y-4">
-                    <div id="map" class="h-[600px] w-full border rounded-lg shadow-md"></div>
+                    <div id="map" class="h-[600px] min-h-[300px] w-full border rounded-lg shadow-md resize-y overflow-auto"></div>
                     <div class="map-controls bg-white p-4 rounded-lg shadow">
                         <label for="color-steps" class="font-weight-bold mr-2">Color Steps:</label>
                         <input type="range" id="color-steps" min="5" max="20" v-model="colorSteps" @input="drawMap">
@@ -202,10 +202,29 @@ const PALETTE = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#ffffbf
 
 onMounted(() => {
     console.log("Viewer.vue: Component mounted.");
-    map = L.map('map').setView([42.3601, -71.0589], 12);
+
+    let initialCenter = [42.3601, -71.0589]; // Default to Boston
+    if (props.scoringData?.results?.length > 0) {
+        try {
+            const firstHexIndex = props.scoringData.results[0].h3_index;
+            initialCenter = h3.cellToLatLng(firstHexIndex);
+            console.log(`Viewer.vue: Centering map on first hexagon: ${firstHexIndex} at ${initialCenter}`);
+        } catch (e) {
+            console.error("Viewer.vue: Could not determine center from H3 index, defaulting to Boston.", e);
+        }
+    }
+
+    const mapElement = document.getElementById('map');
+    map = L.map(mapElement).setView(initialCenter, 12);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     }).addTo(map);
+
+    // Invalidate map size on resize
+    const resizeObserver = new ResizeObserver(() => {
+        map.invalidateSize();
+    });
+    resizeObserver.observe(mapElement);
 
     if (props.scoringData) {
         console.log("Viewer.vue: scoringData prop is present. Calling drawMap().", props.scoringData);
