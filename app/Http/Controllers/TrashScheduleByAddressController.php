@@ -87,7 +87,7 @@ class TrashScheduleByAddressController extends Controller
                 'Content-Type' => 'application/json',
             ])->post('https://places.googleapis.com/v1/places:autocomplete', [
                 'input' => $validated['input'],
-                'locationRestriction' => $locationBias,
+                // 'locationRestriction' => $locationBias,
                 // 'includedPrimaryTypes' => ['address'], // Removed: 'address' is not a valid primary type for this parameter.
                                                         // The API returns addresses by default.
                 'languageCode' => 'en', 
@@ -141,7 +141,7 @@ class TrashScheduleByAddressController extends Controller
             $response = Http::get('https://maps.googleapis.com/maps/api/geocode/json', [
                 'address' => $validated['address'],
                 'key' => $apiKey,
-                'bounds' => $bounds, // Bias results to this bounding box
+                // 'bounds' => $bounds, // Bias results to this bounding box
                 // 'components' => 'country:US', // Further restrict if needed
             ]);
 
