@@ -55,3 +55,6 @@ transferdata.sh
 
 output.txt
 latest.diff
+
+# City Generator Python framework (separate repo)
+city-generator/

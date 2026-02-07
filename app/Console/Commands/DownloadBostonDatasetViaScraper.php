@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\File; // For directory operations
 
 class DownloadBostonDatasetViaScraper extends Command
 {
-    protected $signature = 'app:download-boston-dataset-via-scraper';
-    protected $description = 'Downloads datasets from Boston Open Data using an intermediary scraper service.';
+    protected $signature = 'app:download-boston-dataset-via-scraper {--names= : Comma-separated list of dataset names to download (e.g., "crime-incident-reports,building-permits")}';
+    protected $description = 'Downloads specific or all datasets from Boston Open Data using an intermediary scraper service.';
 
     public function handle()
     {
@@ -20,14 +20,32 @@ class DownloadBostonDatasetViaScraper extends Command
         }
         
         $baseUrl = $config['base_url'];
-        $datasets = $config['datasets'];
+        $allDatasets = $config['datasets'];
+        $selectedNames = $this->option('names');
 
-        if (empty($datasets)) {
-            $this->info('No Boston datasets configured in config/boston_datasets.php');
+        $datasetsToDownload = $allDatasets;
+
+        if (!empty($selectedNames)) {
+            $namesArray = array_map('trim', explode(',', $selectedNames));
+            $datasetsToDownload = array_filter($allDatasets, function ($dataset) use ($namesArray) {
+                return isset($dataset['name']) && in_array($dataset['name'], $namesArray);
+            });
+
+            if (count($datasetsToDownload) !== count($namesArray)) {
+                $foundNames = array_column($datasetsToDownload, 'name');
+                $notFoundNames = array_diff($namesArray, $foundNames);
+                $this->warn('Could not find the following specified datasets in config: ' . implode(', ', $notFoundNames));
+            }
+        }
+
+        if (empty($datasetsToDownload)) {
+            $this->info('No Boston datasets to download based on the provided names or configuration.');
             return 0;
         }
 
-        foreach ($datasets as $dataset) {
+        $this->info('Found ' . count($datasetsToDownload) . ' dataset(s) to download.');
+
+        foreach ($datasetsToDownload as $dataset) {
             if (!isset($dataset['resource_id']) || !isset($dataset['format']) || !isset($dataset['name'])) {
                 $this->warn("Skipping invalid dataset entry: " . json_encode($dataset));
                 continue;
@@ -35,7 +53,7 @@ class DownloadBostonDatasetViaScraper extends Command
             $this->downloadDataset($baseUrl, $dataset['resource_id'], $dataset['format'], $dataset['name']);
         }
 
-        $this->info('Boston datasets download via scraper attempted.');
+        $this->info('Boston datasets download via scraper attempted for selected datasets.');
         return 0;
     }
 

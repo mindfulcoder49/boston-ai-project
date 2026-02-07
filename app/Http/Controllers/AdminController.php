@@ -74,11 +74,38 @@ class AdminController extends Controller
         $newsReportModels = ['Trend', 'YearlyCountComparison'];
         $newsConfigSets = array_keys(config('news_generation.report_sets', []));
 
+        // From RunAllDataPipelineCommand.php
+        $pipelineStages = [
+            'Boston Data Acquisition',
+            'Boston Data Seeding',
+            'Cambridge Data Acquisition',
+            'Cambridge Data Seeding',
+            'Everett Data Acquisition & Processing',
+            'Everett Data Seeding',
+            'Post-Seeding Aggregation & Caching',
+            'Reporting',
+        ];
+
+        $bostonDatasets = config('boston_datasets.datasets', []);
+
+        // Define granular steps for the pipeline runner UI
+        $pipelineSteps = [
+            'bostonSeeders' => ['TrashSchedulesByAddressSeeder', 'CrimeDataSeeder', 'ThreeOneOneSeeder', 'BuildingPermitsSeeder', 'PropertyViolationsSeeder', 'ConstructionOffHoursSeeder', 'FoodInspectionsSeeder'],
+            'cambridgeDatasets' => ['app:download-city-dataset', 'app:download-cambridge-logs'],
+            'cambridgeSeeders' => ['NativeCambridgeBuildingPermitsSeeder', 'NativeCambridgeThreeOneOneSeeder', 'NativeCambridgeSanitaryInspectionsSeeder', 'NativeCambridgeHousingViolationsSeeder', 'CambridgeAddressesSeeder', 'CambridgeIntersectionsSeeder', 'CambridgeCrimeDataSeederMerge', 'CambridgePoliceLogSeeder'],
+            'everettSteps' => ['app:download-everett-pdf-markdown', 'everett:process-data', 'app:generate-everett-csv'],
+            'everettSeeders' => ['EverettCrimeDataSeeder'],
+            'postSeedingSteps' => ['DataPointSeeder', 'app:cache-metrics-data'],
+            'reportingSteps' => ['reports:send'],
+        ];
 
         return Inertia::render('Admin/JobDispatcher', [
             'modelDetails' => $modelDetails,
             'newsReportModels' => $newsReportModels,
             'newsConfigSets' => $newsConfigSets,
+            'pipelineStages' => $pipelineStages,
+            'bostonDatasets' => $bostonDatasets,
+            'pipelineSteps' => $pipelineSteps,
         ]);
     }
 
@@ -90,6 +117,7 @@ class AdminController extends Controller
                 'app:dispatch-yearly-count-comparison-jobs',
                 'app:dispatch-news-article-generation-jobs',
                 'reports:send',
+                'app:run-all-data-pipeline',
             ])],
             'parameters' => ['nullable', 'array'],
         ]);
@@ -98,11 +126,44 @@ class AdminController extends Controller
         $parameters = $validated['parameters'] ?? [];
 
         try {
-            // Using Artisan::call so output can be captured.
+            // For long-running pipeline jobs, run them in the background.
+            if ($command === 'app:run-all-data-pipeline') {
+                $processCommand = [PHP_BINARY, base_path('artisan'), $command];
+                foreach ($parameters as $key => $value) {
+                    // Ensure boolean flags are handled correctly
+                    if (is_bool($value) && $value) {
+                        $processCommand[] = $key;
+                    } elseif (!is_bool($value)) {
+                        $processCommand[] = "{$key}={$value}";
+                    }
+                }
+
+                // Start the process but don't wait for it to finish.
+                $process = new Process($processCommand);
+                $process->disableOutput(); // We don't need output in the controller
+                $process->start();
+
+                // Give a moment for the process to potentially fail on startup
+                sleep(2);
+                if (!$process->isRunning() && !$process->isSuccessful()) {
+                    throw new ProcessFailedException($process);
+                }
+
+                return redirect()->back()->with('success', "Pipeline job '{$command}' dispatched to run in the background. Check the Pipeline Logs page for progress.");
+            }
+
+            // For other (presumably shorter) jobs, run synchronously to get output.
             Artisan::call($command, $parameters);
             $output = Artisan::output();
 
             return redirect()->back()->with('success', "Job '{$command}' dispatched successfully.")->with('command_output', $output);
+        } catch (ProcessFailedException $e) {
+            Log::error("Failed to dispatch background job '{$command}' from admin panel.", [
+                'error' => $e->getMessage(),
+                'parameters' => $parameters,
+                'output' => $e->getProcess()->getErrorOutput(),
+            ]);
+            return redirect()->back()->with('error', "Failed to start background job: " . $e->getProcess()->getErrorOutput());
         } catch (\Exception $e) {
             Log::error("Failed to dispatch job '{$command}' from admin panel.", [
                 'error' => $e->getMessage(),

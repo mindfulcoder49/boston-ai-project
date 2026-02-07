@@ -177,12 +177,45 @@ class GenerateModelMetadataCommand extends Command
         }
 
         $this->line("[OUTPUT] Preparing output content...");
-        $outputContent = "<?php\n\nreturn " . $this->varExport($allMetadata) . ";\n";
+
+        // Read existing metadata and merge with new metadata
+        $existingMetadata = [];
+        if (File::exists($outputFilePath)) {
+            $this->line("[OUTPUT] Reading existing metadata from: {$outputFilePath}");
+            try {
+                $existingMetadata = include $outputFilePath;
+                if (!is_array($existingMetadata)) {
+                    $this->warn("[OUTPUT] Existing file did not return an array. Starting fresh.");
+                    $existingMetadata = [];
+                } else {
+                    $this->line("[OUTPUT] Found " . count($existingMetadata) . " existing model(s) in config.");
+                }
+            } catch (\Exception $e) {
+                $this->warn("[OUTPUT] Could not read existing config file: " . $e->getMessage());
+                $existingMetadata = [];
+            }
+        }
+
+        // Merge: new metadata overwrites existing for the same models
+        $mergedMetadata = array_merge($existingMetadata, $allMetadata);
+        $this->line("[OUTPUT] Merged metadata contains " . count($mergedMetadata) . " model(s).");
+
+        $outputContent = "<?php\n\nreturn " . $this->varExport($mergedMetadata) . ";\n";
 
         File::ensureDirectoryExists(dirname($outputFilePath));
         File::put($outputFilePath, $outputContent);
 
         $this->info("[SUCCESS] Model metadata suggestions generated successfully at: {$outputFilePath}");
+        if (count($existingMetadata) > 0) {
+            $newModels = array_diff(array_keys($allMetadata), array_keys($existingMetadata));
+            $updatedModels = array_intersect(array_keys($allMetadata), array_keys($existingMetadata));
+            if (!empty($newModels)) {
+                $this->info("[SUCCESS] Added new models: " . implode(', ', array_map(fn($c) => class_basename($c), $newModels)));
+            }
+            if (!empty($updatedModels)) {
+                $this->info("[SUCCESS] Updated existing models: " . implode(', ', array_map(fn($c) => class_basename($c), $updatedModels)));
+            }
+        }
         return 0;
     }
 

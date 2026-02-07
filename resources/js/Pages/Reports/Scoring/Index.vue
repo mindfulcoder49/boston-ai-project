@@ -54,9 +54,14 @@
                   <JsonTree :data="report.parameters" />
                 </td>
                 <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <Link :href="route('scoring-reports.show', { jobId: report.job_id, artifactName: report.artifact_name })" class="text-indigo-600 hover:text-indigo-900">
-                    View Report
-                  </Link>
+                  <div class="flex items-center space-x-4">
+                    <Link :href="route('scoring-reports.show', { jobId: report.job_id, artifactName: report.artifact_name })" class="text-indigo-600 hover:text-indigo-900">
+                      View Report
+                    </Link>
+                    <button @click="deleteReport(report)" class="text-red-600 hover:text-red-900">
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -93,5 +98,13 @@ const refreshReports = () => {
     },
     preserveState: false, // Force a full reload of page props
   });
+};
+
+const deleteReport = (report) => {
+  if (confirm(`Are you sure you want to delete the report for Job ID: ${report.job_id}? This action cannot be undone.`)) {
+    router.delete(route('scoring-reports.destroy', { jobId: report.job_id, artifactName: report.artifact_name }), {
+      preserveState: false, // Reload props to update the list
+    });
+  }
 };
 </script>

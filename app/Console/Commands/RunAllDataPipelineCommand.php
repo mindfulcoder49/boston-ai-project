@@ -14,7 +14,16 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class RunAllDataPipelineCommand extends Command
 {
-    protected $signature = 'app:run-all-data-pipeline {--stages= : Comma-separated list of stage names to run (e.g., "Stage Name 1,Stage Name 2")}';
+    protected $signature = 'app:run-all-data-pipeline 
+                            {--stages= : Comma-separated list of stage names to run (e.g., "Stage Name 1,Stage Name 2")}
+                            {--boston-datasets= : Comma-separated list of Boston dataset names to download}
+                            {--boston-seeders= : Comma-separated list of Boston seeder classes to run}
+                            {--cambridge-datasets= : Comma-separated list of Cambridge dataset commands to run}
+                            {--cambridge-seeders= : Comma-separated list of Cambridge seeder classes to run}
+                            {--everett-steps= : Comma-separated list of Everett processing commands to run}
+                            {--everett-seeders= : Comma-separated list of Everett seeder classes to run}
+                            {--post-seeding-steps= : Comma-separated list of post-seeding commands to run}
+                            {--reporting-steps= : Comma-separated list of reporting commands to run}';
     protected $description = 'Runs all or specified download, processing, and seeding commands for the data pipeline with file-based logging.';
 
     private string $runId;
@@ -104,49 +113,49 @@ class RunAllDataPipelineCommand extends Command
         $this->logPipelineInfo('Starting the data pipeline with file logging...');
         $overallSuccess = true;
 
-        // Define stages and their commands
+        // Define stages and their commands with keys for filtering
         $allStages = [
-            'Boston Data Acquisition' => [
-                ['command' => 'app:download-boston-dataset-via-scraper', 'params' => []],
-            ],
-            'Boston Data Seeding' => [
-                ['command' => 'db:seed', 'params' => ['--class' => 'TrashSchedulesByAddressSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'CrimeDataSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'ThreeOneOneSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'BuildingPermitsSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'PropertyViolationsSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'ConstructionOffHoursSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'FoodInspectionsSeeder', '--force' => true]],
-            ],
-            'Cambridge Data Acquisition' => [
-                ['command' => 'app:download-city-dataset', 'params' => []], 
-                ['command' => 'app:download-cambridge-logs', 'params' => []],
-            ],
-            'Cambridge Data Seeding' => [
-                ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeBuildingPermitsSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeThreeOneOneSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeSanitaryInspectionsSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeHousingViolationsSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'CambridgeAddressesSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'CambridgeIntersectionsSeeder', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'CambridgeCrimeDataSeederMerge', '--force' => true]],
-                ['command' => 'db:seed', 'params' => ['--class' => 'CambridgePoliceLogSeeder', '--force' => true]],
-            ],
-            'Everett Data Acquisition & Processing' => [
-                ['command' => 'app:download-everett-pdf-markdown', 'params' => []],
-                ['command' => 'everett:process-data', 'params' => ['api' => 'places']],
-                ['command' => 'app:generate-everett-csv', 'params' => []],
-            ],
-            'Everett Data Seeding' => [
-                ['command' => 'db:seed', 'params' => ['--class' => 'EverettCrimeDataSeeder', '--force' => true]],
-            ],
-            'Post-Seeding Aggregation & Caching' => [
-                ['command' => 'db:seed', 'params' => ['--class' => 'DataPointSeeder', '--force' => true]],
-                ['command' => 'app:cache-metrics-data', 'params' => []],
-            ],
-            'Reporting' => [
-                ['command' => 'reports:send', 'params' => []],
-            ],
+            'Boston Data Acquisition' => $this->getFilteredCommands('boston-datasets', [
+                'app:download-boston-dataset-via-scraper' => ['command' => 'app:download-boston-dataset-via-scraper', 'params' => ['--names' => $this->option('boston-datasets')]],
+            ]),
+            'Boston Data Seeding' => $this->getFilteredCommands('boston-seeders', [
+                'TrashSchedulesByAddressSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'TrashSchedulesByAddressSeeder', '--force' => true]],
+                'CrimeDataSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'CrimeDataSeeder', '--force' => true]],
+                'ThreeOneOneSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'ThreeOneOneSeeder', '--force' => true]],
+                'BuildingPermitsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'BuildingPermitsSeeder', '--force' => true]],
+                'PropertyViolationsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'PropertyViolationsSeeder', '--force' => true]],
+                'ConstructionOffHoursSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'ConstructionOffHoursSeeder', '--force' => true]],
+                'FoodInspectionsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'FoodInspectionsSeeder', '--force' => true]],
+            ]),
+            'Cambridge Data Acquisition' => $this->getFilteredCommands('cambridge-datasets', [
+                'app:download-city-dataset' => ['command' => 'app:download-city-dataset', 'params' => []], 
+                'app:download-cambridge-logs' => ['command' => 'app:download-cambridge-logs', 'params' => []],
+            ]),
+            'Cambridge Data Seeding' => $this->getFilteredCommands('cambridge-seeders', [
+                'NativeCambridgeBuildingPermitsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeBuildingPermitsSeeder', '--force' => true]],
+                'NativeCambridgeThreeOneOneSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeThreeOneOneSeeder', '--force' => true]],
+                'NativeCambridgeSanitaryInspectionsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeSanitaryInspectionsSeeder', '--force' => true]],
+                'NativeCambridgeHousingViolationsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeHousingViolationsSeeder', '--force' => true]],
+                'CambridgeAddressesSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'CambridgeAddressesSeeder', '--force' => true]],
+                'CambridgeIntersectionsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'CambridgeIntersectionsSeeder', '--force' => true]],
+                'CambridgeCrimeDataSeederMerge' => ['command' => 'db:seed', 'params' => ['--class' => 'CambridgeCrimeDataSeederMerge', '--force' => true]],
+                'CambridgePoliceLogSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'CambridgePoliceLogSeeder', '--force' => true]],
+            ]),
+            'Everett Data Acquisition & Processing' => $this->getFilteredCommands('everett-steps', [
+                'app:download-everett-pdf-markdown' => ['command' => 'app:download-everett-pdf-markdown', 'params' => []],
+                'everett:process-data' => ['command' => 'everett:process-data', 'params' => ['api' => 'places']],
+                'app:generate-everett-csv' => ['command' => 'app:generate-everett-csv', 'params' => []],
+            ]),
+            'Everett Data Seeding' => $this->getFilteredCommands('everett-seeders', [
+                'EverettCrimeDataSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'EverettCrimeDataSeeder', '--force' => true]],
+            ]),
+            'Post-Seeding Aggregation & Caching' => $this->getFilteredCommands('post-seeding-steps', [
+                'DataPointSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'DataPointSeeder', '--force' => true]],
+                'app:cache-metrics-data' => ['command' => 'app:cache-metrics-data', 'params' => []],
+            ]),
+            'Reporting' => $this->getFilteredCommands('reporting-steps', [
+                'reports:send' => ['command' => 'reports:send', 'params' => []],
+            ]),
         ];
 
         $stagesToRun = $allStages;
@@ -187,14 +196,14 @@ class RunAllDataPipelineCommand extends Command
             $this->logPipelineInfo("No specific stages selected via --stages option. Running all " . count($allStages) . " stages.");
         }
 
-
         foreach ($stagesToRun as $stageName => $commands) {
+            if (empty($commands)) {
+                $this->logPipelineInfo("--- Skipping Stage: {$stageName} (no commands selected) ---");
+                continue;
+            }
             if (!$this->executePipelineStage($commands, $stageName)) {
                 $overallSuccess = false; // Mark that at least one stage had issues
                 $this->logPipelineWarn("Pipeline processing will continue, but stage '{$stageName}' encountered errors.");
-                // Optionally, you could decide to stop the entire pipeline if a stage fails:
-                // $this->logPipelineError("Pipeline halted due to failure in stage: {$stageName}");
-                // break; 
             }
         }
 
@@ -215,9 +224,71 @@ class RunAllDataPipelineCommand extends Command
     }
 
     /**
-     * Execute a list of commands for a given pipeline stage.
+     * Helper to filter commands based on a command-line option.
      *
-     * @param array $commands
+     * @param string $optionName The name of the option (e.g., 'boston-seeders').
+     * @param array $availableCommands The list of all available commands for the stage.
+     * @return array The filtered list of commands to run.
+     */
+    private function getFilteredCommands(string $optionName, array $availableCommands): array
+    {
+        $selectedOption = $this->option($optionName);
+
+        // Special handling for boston-datasets which is a parameter, not a command name
+        if ($optionName === 'boston-datasets') {
+            return empty($selectedOption) ? $availableCommands : array_values($availableCommands);
+        }
+
+        if (empty($selectedOption)) {
+            return $availableCommands; // If no option is provided, run all commands for the stage
+        }
+
+        $selectedItems = array_map('trim', explode(',', $selectedOption));
+        
+        return array_filter($availableCommands, function ($key) use ($selectedItems) {
+            return in_array($key, $selectedItems);
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    private function prepareProcessParams(array $params): array
+    {
+        $processParams = [];
+        foreach ($params as $key => $value) {
+            if (is_bool($value)) {
+                if ($value) {
+                    $processParams[] = is_string($key) ? $key : $value;
+                }
+            } elseif (is_string($key) && Str::startsWith($key, '--')) {
+                $processParams[] = "{$key}={$value}";
+            } else {
+                $processParams[] = $value;
+            }
+        }
+        return $processParams;
+    }
+
+    private function logPipelineInfo(string $message, array $context = [])
+    {
+        $this->info($message);
+        Log::channel('stack')->info("[PipelineRun:{$this->runId}] " . $message, $context);
+    }
+
+    private function logPipelineWarn(string $message, array $context = [])
+    {
+        $this->warn($message);
+        Log::channel('stack')->warning("[PipelineRun:{$this->runId}] " . $message, $context);
+    }
+
+    private function logPipelineError(string $message, array $context = [])
+    {
+        $this->error($message);
+        Log::channel('stack')->error("[PipelineRun:{$this->runId}] " . $message, $context);
+    }
+
+    /**
+     * Executes a pipeline stage by running its commands.
+     *
+     * @param array $commands The list of commands to run in the stage.
      * @param string $stageName
      * @return bool True if all commands in the stage succeeded, false otherwise.
      */
@@ -296,45 +367,5 @@ class RunAllDataPipelineCommand extends Command
         // If the loop completes without returning false, the stage was successful
         $this->logPipelineInfo("--- Stage '{$stageName}' completed successfully. ---");
         return true;
-    }
-    
-    private function prepareProcessParams(array $params): array
-    {
-        $processParams = [];
-        foreach ($params as $key => $value) {
-            if (is_bool($value)) {
-                if ($value) {
-                    // For boolean flags like --force, Artisan expects them to be present or not
-                    // If $key is numeric, it's like ['--force'], if string, it's ['--option' => true]
-                    $processParams[] = is_string($key) ? $key : $value;
-                }
-            } elseif (is_string($key) && Str::startsWith($key, '--')) {
-                 // For options like --class=SeederName
-                $processParams[] = "{$key}={$value}";
-            } else {
-                // For arguments, which might have a string key in our config array (like 'api' => 'places')
-                // or be numeric for simple arguments.
-                $processParams[] = $value;
-            }
-        }
-        return $processParams;
-    }
-
-    private function logPipelineInfo(string $message, array $context = [])
-    {
-        $this->info($message);
-        Log::channel('stack')->info("[PipelineRun:{$this->runId}] " . $message, $context);
-    }
-
-    private function logPipelineWarn(string $message, array $context = [])
-    {
-        $this->warn($message);
-        Log::channel('stack')->warning("[PipelineRun:{$this->runId}] " . $message, $context);
-    }
-
-    private function logPipelineError(string $message, array $context = [])
-    {
-        $this->error($message);
-        Log::channel('stack')->error("[PipelineRun:{$this->runId}] " . $message, $context);
     }
 }

@@ -17,6 +17,93 @@
       </div>
 
       <div class="space-y-8">
+        <!-- Data Pipeline -->
+        <JobCard command="app:run-all-data-pipeline" title="Run Full Data Pipeline" description="Run all or specified download, processing, and seeding commands for the data pipeline." @dispatch="submitPipelineJob">
+          <template #button-text><span v-if="pipelineForm.processing">Dispatching...</span><span v-else>Dispatch Job</span></template>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-3">
+              <label for="pipeline-stages" class="block text-sm font-medium text-gray-700">Stages (leave blank to run all)</label>
+              <select v-model="pipelineForm.parameters.stages" id="pipeline-stages" multiple class="mt-1 block w-full input h-32">
+                <option v-for="stage in pipelineStages" :key="stage" :value="stage">{{ stage }}</option>
+              </select>
+              <p class="mt-1 text-xs text-gray-500">Select stages to run. If none are selected, all stages will run.</p>
+            </div>
+
+            <!-- Boston -->
+            <div>
+              <label for="boston-datasets" class="block text-sm font-medium text-gray-700">Boston Datasets</label>
+              <select v-model="pipelineForm.parameters.bostonDatasets" id="boston-datasets" multiple class="mt-1 block w-full input h-24">
+                <option v-for="dataset in bostonDatasets" :key="dataset.name" :value="dataset.name">{{ dataset.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="boston-seeders" class="block text-sm font-medium text-gray-700">Boston Seeders</label>
+              <select v-model="pipelineForm.parameters.bostonSeeders" id="boston-seeders" multiple class="mt-1 block w-full input h-24">
+                <option v-for="seeder in pipelineSteps.bostonSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
+              </select>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-md font-semibold text-gray-800">Boston</h4>
+                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders. Leave blank to run all items in the selected 'Boston' stages.</p>
+            </div>
+
+            <!-- Cambridge -->
+            <div>
+              <label for="cambridge-datasets" class="block text-sm font-medium text-gray-700">Cambridge Datasets</label>
+              <select v-model="pipelineForm.parameters.cambridgeDatasets" id="cambridge-datasets" multiple class="mt-1 block w-full input h-24">
+                <option v-for="cmd in pipelineSteps.cambridgeDatasets" :key="cmd" :value="cmd">{{ cmd }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="cambridge-seeders" class="block text-sm font-medium text-gray-700">Cambridge Seeders</label>
+              <select v-model="pipelineForm.parameters.cambridgeSeeders" id="cambridge-seeders" multiple class="mt-1 block w-full input h-24">
+                <option v-for="seeder in pipelineSteps.cambridgeSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
+              </select>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-md font-semibold text-gray-800">Cambridge</h4>
+                <p class="text-xs text-gray-600 mt-1">Select specific acquisition commands and/or seeders for Cambridge.</p>
+            </div>
+
+            <!-- Everett -->
+            <div>
+              <label for="everett-steps" class="block text-sm font-medium text-gray-700">Everett Steps</label>
+              <select v-model="pipelineForm.parameters.everettSteps" id="everett-steps" multiple class="mt-1 block w-full input h-24">
+                <option v-for="step in pipelineSteps.everettSteps" :key="step" :value="step">{{ step }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="everett-seeders" class="block text-sm font-medium text-gray-700">Everett Seeders</label>
+              <select v-model="pipelineForm.parameters.everettSeeders" id="everett-seeders" multiple class="mt-1 block w-full input h-24">
+                <option v-for="seeder in pipelineSteps.everettSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
+              </select>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-md font-semibold text-gray-800">Everett</h4>
+                <p class="text-xs text-gray-600 mt-1">Select specific processing steps and/or seeders for Everett.</p>
+            </div>
+
+            <!-- Post-Seeding & Reporting -->
+            <div>
+              <label for="post-seeding-steps" class="block text-sm font-medium text-gray-700">Post-Seeding Steps</label>
+              <select v-model="pipelineForm.parameters.postSeedingSteps" id="post-seeding-steps" multiple class="mt-1 block w-full input h-24">
+                <option v-for="step in pipelineSteps.postSeedingSteps" :key="step" :value="step">{{ step }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="reporting-steps" class="block text-sm font-medium text-gray-700">Reporting Steps</label>
+              <select v-model="pipelineForm.parameters.reportingSteps" id="reporting-steps" multiple class="mt-1 block w-full input h-24">
+                <option v-for="step in pipelineSteps.reportingSteps" :key="step" :value="step">{{ step }}</option>
+              </select>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-md font-semibold text-gray-800">General</h4>
+                <p class="text-xs text-gray-600 mt-1">Select specific aggregation, caching, or reporting steps.</p>
+            </div>
+
+          </div>
+        </JobCard>
+
         <!-- Statistical Analysis -->
         <JobCard command="app:dispatch-statistical-analysis-jobs" title="Statistical Analysis Jobs" description="Dispatch jobs for H3-based trend and anomaly analysis." @dispatch="submitStatJob">
           <template #button-text><span v-if="statForm.processing">Dispatching...</span><span v-else>Dispatch Job</span></template>
@@ -149,12 +236,29 @@ const props = defineProps({
   modelDetails: Object,
   newsReportModels: Array,
   newsConfigSets: Array,
+  pipelineStages: Array,
+  bostonDatasets: Array,
+  pipelineSteps: Object,
 });
 
 const statForm = useForm({ command: 'app:dispatch-statistical-analysis-jobs', parameters: { model: '', columns: [], fresh: false, plots: false, resolutions: '9,8,7,6,5', trendWeeks: '4,26,52', anomalyWeeks: 4, exportTimespan: 108 } });
 const yearlyForm = useForm({ command: 'app:dispatch-yearly-count-comparison-jobs', parameters: { model: '', columns: [], baselineYear: 2019, fresh: false } });
 const newsForm = useForm({ command: 'app:dispatch-news-article-generation-jobs', parameters: { model: 'all', fresh: false, runConfig: '', reportClass: '', reportId: '' } });
 const locationForm = useForm({ command: 'reports:send', parameters: { userId: '', locationId: '', force: false } });
+const pipelineForm = useForm({
+  command: 'app:run-all-data-pipeline',
+  parameters: {
+    stages: [],
+    bostonDatasets: [],
+    bostonSeeders: [],
+    cambridgeDatasets: [],
+    cambridgeSeeders: [],
+    everettSteps: [],
+    everettSeeders: [],
+    postSeedingSteps: [],
+    reportingSteps: [],
+  }
+});
 
 const availableStatColumns = computed(() => statForm.parameters.model ? props.modelDetails[statForm.parameters.model]?.columns || [] : []);
 const availableYearlyColumns = computed(() => yearlyForm.parameters.model ? props.modelDetails[yearlyForm.parameters.model]?.columns || [] : []);
@@ -184,6 +288,7 @@ const submitStatJob = () => postForm(statForm);
 const submitYearlyJob = () => postForm(yearlyForm);
 const submitNewsJob = () => postForm(newsForm);
 const submitLocationJob = () => postForm(locationForm);
+const submitPipelineJob = () => postForm(pipelineForm);
 </script>
 
 <style scoped>

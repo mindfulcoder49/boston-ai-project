@@ -21,29 +21,8 @@ class DataMapController extends Controller
 
     public function __construct()
     {
-        $this->modelRegistry = [
-            '311_cases' => \App\Models\ThreeOneOneCase::class,
-            'cambridge_311_cases' => \App\Models\CambridgeThreeOneOneCase::class,
-
-            'property_violations' => \App\Models\PropertyViolation::class,
-            'cambridge_housing_violations' => \App\Models\CambridgeHousingViolationData::class,
-
-            'food_inspections' => \App\Models\FoodInspection::class,
-            'cambridge_sanitary_inspections' => \App\Models\CambridgeSanitaryInspectionData::class,
-
-            'construction_off_hours' => \App\Models\ConstructionOffHour::class,
-
-            'building_permits' => \App\Models\BuildingPermit::class,
-            'cambridge_building_permits' => \App\Models\CambridgeBuildingPermitData::class,
-
-            'crime' => \App\Models\CrimeData::class,
-            'everett_crime' => \App\Models\EverettCrimeData::class,
-            'cambridge_crime_reports' => \App\Models\CambridgeCrimeReportData::class,
-            // Cambridge Models
-            'person_crash_data' => \App\Models\PersonCrashData::class,
-
-            'chicago_crime' => \App\Models\ChicagoCrime::class,
-        ];
+        // Load model registry from config
+        $this->modelRegistry = config('data_map.models', []);
 
         // Validate that all registered models use the Mappable trait
         foreach ($this->modelRegistry as $key => $class) {
@@ -57,21 +36,21 @@ class DataMapController extends Controller
 
     protected function getCityContextForDataType(string $dataType): array
     {
-        // Chicago models
-        if (Str::startsWith($dataType, 'chicago_')) {
-            return [
-                'city' => 'chicago',
-                'center' => [41.8781, -87.6298], // lat, lon
-                'zoom' => 11,
-            ];
+        // Check city contexts from config
+        $cityContexts = config('data_map.city_contexts', []);
+
+        foreach ($cityContexts as $prefix => $context) {
+            if (Str::startsWith($dataType, $prefix)) {
+                return $context;
+            }
         }
 
         // Default to Boston for all others (Boston, Cambridge, Everett, etc.)
-        return [
+        return config('data_map.default_city_context', [
             'city' => 'boston',
-            'center' => [42.3601, -71.0589], // lat, lon
+            'center' => [42.3601, -71.0589],
             'zoom' => 12,
-        ];
+        ]);
     }
 
     public function getModelMapping(): array
@@ -513,9 +492,12 @@ class DataMapController extends Controller
                 $point->longitude = $point->{$lngField} ?? null;
             }
             
-            // Unset the raw location field to prevent JSON encoding errors with binary data.
+            // Unset raw geometry fields to prevent JSON encoding errors with binary data.
             if (isset($point->location)) {
                 unset($point->location);
+            }
+            if (isset($point->point)) {
+                unset($point->point);
             }
             
             $point->alcivartech_date = $point->{$dateFieldFromConfig} ?? null;

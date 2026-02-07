@@ -100,6 +100,40 @@ class ScoringReportController extends Controller
     }
 
     /**
+     * Delete a specific scoring report from storage.
+     */
+    public function destroy($jobId, $artifactName)
+    {
+        try {
+            $s3 = Storage::disk('s3');
+            $scoringPath = "{$jobId}/{$artifactName}";
+
+            if ($s3->exists($scoringPath)) {
+                $s3->delete($scoringPath);
+                Log::info("Deleted scoring report from S3: {$scoringPath}");
+
+                // Check if the directory is now empty and delete it if so.
+                $filesInDir = $s3->files($jobId);
+                if (empty($filesInDir)) {
+                    $s3->deleteDirectory($jobId);
+                    Log::info("Deleted empty job directory from S3: {$jobId}");
+                }
+
+                // Clear the cache to force a refresh on the index page
+                Cache::forget('scoring_reports_listing');
+                Log::info('Scoring reports cache cleared after deletion.');
+
+                return redirect()->route('scoring-reports.index')->with('status', 'Report deleted successfully.');
+            } else {
+                return redirect()->route('scoring-reports.index')->with('error', 'Report not found for deletion.');
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to delete scoring report {$jobId}/{$artifactName}", ['error' => $e->getMessage()]);
+            return redirect()->route('scoring-reports.index')->with('error', 'An error occurred while trying to delete the report.');
+        }
+    }
+
+    /**
      * API endpoint to get the full source analysis data file for a job.
      */
     public function getSourceAnalysisData($jobId)

@@ -165,8 +165,7 @@ class ChicagoCrimeSeeder extends Seeder
         if (!empty($transformed['latitude']) && !empty($transformed['longitude'])) {
             $lat = (float)$transformed['latitude'];
             $lon = (float)$transformed['longitude'];
-            // Use ST_GeomFromText for better compatibility, mirroring the working person_crash_data migrations.
-            $transformed['location'] = DB::raw("ST_GeomFromText('POINT({$lon} {$lat})', 4326)");
+            $transformed['location'] = DB::raw("ST_GeomFromText('POINT({$lon} {$lat})')");
         } else {
             $transformed['location'] = null;
         }

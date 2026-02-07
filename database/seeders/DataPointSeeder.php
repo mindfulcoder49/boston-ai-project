@@ -38,6 +38,7 @@ class DataPointSeeder extends Seeder
          
         // New Model
         \App\Models\PersonCrashData::class,
+        
     ];
 
     public function run()

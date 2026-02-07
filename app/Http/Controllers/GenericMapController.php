@@ -2,24 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CrimeData;
-use App\Models\ThreeOneOneCase;
-use App\Models\BuildingPermit;
-use App\Models\PropertyViolation;
-use App\Models\ConstructionOffHour;
-use App\Models\FoodInspection;
-use App\Models\EverettCrimeData;
-use App\Models\CambridgeThreeOneOneCase;
-use App\Models\CambridgeBuildingPermitData;
-use App\Models\CambridgeCrimeReportData;
-use App\Models\CambridgeHousingViolationData;
-use App\Models\CambridgeSanitaryInspectionData;
-use App\Models\PersonCrashData;
-use App\Models\ChicagoCrime;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -27,77 +13,92 @@ use Illuminate\Support\Str;
 
 class GenericMapController extends Controller
 {
-    private const BOSTON_LINKABLE_MODELS = [
-        \App\Models\CrimeData::class,
-        \App\Models\ThreeOneOneCase::class,
-        \App\Models\PropertyViolation::class,
-        \App\Models\ConstructionOffHour::class,
-        \App\Models\BuildingPermit::class,
-        \App\Models\FoodInspection::class,
-        \App\Models\EverettCrimeData::class,
-        \App\Models\CambridgeThreeOneOneCase::class,
-        \App\Models\CambridgeBuildingPermitData::class,
-        \App\Models\CambridgeCrimeReportData::class,
-        \App\Models\CambridgeHousingViolationData::class,
-        \App\Models\CambridgeSanitaryInspectionData::class,
-        \App\Models\PersonCrashData::class,
-    ];
-
-    private const CHICAGO_LINKABLE_MODELS = [
-        \App\Models\ChicagoCrime::class,
-    ];
-
+    /**
+     * Get the model class from a table name within the city's models.
+     */
     protected function getModelClassFromTableName(string $tableName, array $cityModels): ?string
     {
         foreach ($cityModels as $modelClass) {
-            if (app($modelClass)->getTable() === $tableName) {
+            if (class_exists($modelClass) && app($modelClass)->getTable() === $tableName) {
                 return $modelClass;
             }
         }
         return null;
     }
 
+    /**
+     * Calculate Haversine distance between two points in kilometers.
+     */
+    protected function haversineDistance(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371; // km
+
+        $latFrom = deg2rad($lat1);
+        $lonFrom = deg2rad($lon1);
+        $latTo = deg2rad($lat2);
+        $lonTo = deg2rad($lon2);
+
+        $latDelta = $latTo - $latFrom;
+        $lonDelta = $lonTo - $lonFrom;
+
+        $angle = 2 * asin(sqrt(
+            pow(sin($latDelta / 2), 2) +
+            cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)
+        ));
+
+        return $angle * $earthRadius;
+    }
+
+    /**
+     * Get the city context (database, models, etc.) based on coordinates.
+     *
+     * Uses the cities config to find the nearest city to the given coordinates.
+     */
     protected function getCityContext(float $latitude, float $longitude): array
     {
-        $bostonLat = 42.3601;
-        $bostonLon = -71.0589;
-        $chicagoLat = 41.8781;
-        $chicagoLon = -87.6298;
+        $cities = Config::get('cities.cities', []);
+        $defaultCity = Config::get('cities.default', 'boston');
 
-        $earthRadius = 6371;
-        $latFrom = deg2rad($latitude);
-        $lonFrom = deg2rad($longitude);
-
-        $latToBoston = deg2rad($bostonLat);
-        $lonToBoston = deg2rad($bostonLon);
-        $latToChicago = deg2rad($chicagoLat);
-        $lonToChicago = deg2rad($chicagoLon);
-
-        $latDeltaBoston = $latToBoston - $latFrom;
-        $lonDeltaBoston = $lonToBoston - $lonFrom;
-        $latDeltaChicago = $latToChicago - $latFrom;
-        $lonDeltaChicago = $lonToChicago - $lonFrom;
-
-        $angleBoston = 2 * asin(sqrt(pow(sin($latDeltaBoston / 2), 2) + cos($latFrom) * cos($latToBoston) * pow(sin($lonDeltaBoston / 2), 2)));
-        $distBoston = $angleBoston * $earthRadius;
-
-        $angleChicago = 2 * asin(sqrt(pow(sin($latDeltaChicago / 2), 2) + cos($latFrom) * cos($latToChicago) * pow(sin($lonDeltaChicago / 2), 2)));
-        $distChicago = $angleChicago * $earthRadius;
-
-        if ($distChicago < $distBoston) {
+        if (empty($cities)) {
+            Log::error('GenericMapController: No cities configured in config/cities.php');
+            // Return a minimal fallback
             return [
-                'city' => 'chicago',
-                'data_points_table' => 'chicago_data_points',
-                'linkable_models' => self::CHICAGO_LINKABLE_MODELS,
-                'db_connection' => 'chicago_db',
+                'city' => 'unknown',
+                'data_points_table' => 'data_points',
+                'linkable_models' => [],
+                'db_connection' => 'mysql',
             ];
         }
 
+        $nearestCity = null;
+        $nearestDistance = PHP_FLOAT_MAX;
+
+        foreach ($cities as $cityKey => $cityConfig) {
+            $distance = $this->haversineDistance(
+                $latitude,
+                $longitude,
+                $cityConfig['latitude'],
+                $cityConfig['longitude']
+            );
+
+            if ($distance < $nearestDistance) {
+                $nearestDistance = $distance;
+                $nearestCity = $cityKey;
+            }
+        }
+
+        // Use default city if no nearest found (shouldn't happen with valid config)
+        if ($nearestCity === null) {
+            $nearestCity = $defaultCity;
+        }
+
+        $cityConfig = $cities[$nearestCity];
+
         return [
-            'city' => 'boston',
-            'data_points_table' => 'data_points',
-            'linkable_models' => self::BOSTON_LINKABLE_MODELS,
-            'db_connection' => 'mysql',
+            'city' => $nearestCity,
+            'data_points_table' => $cityConfig['data_points_table'],
+            'linkable_models' => $cityConfig['models'] ?? [],
+            'db_connection' => $cityConfig['db_connection'],
         ];
     }
 
@@ -105,10 +106,10 @@ class GenericMapController extends Controller
     {
         $model = new $modelClass;
         $table = $model->getTable();
-        
+
         $fields = $model->getFillable();
         $fields[] = $model->getKeyName();
-        
+
         if (method_exists($modelClass, 'getDateField')) {
             $dateField = $modelClass::getDateField();
             if (!in_array($dateField, $fields)) {
@@ -148,14 +149,22 @@ class GenericMapController extends Controller
 
         $centralLocation = $request->input('centralLocation');
 
+        // Get default city from config for fallback location
+        $defaultCity = Config::get('cities.default', 'boston');
+        $defaultCityConfig = Config::get("cities.cities.{$defaultCity}", [
+            'latitude' => 42.3601,
+            'longitude' => -71.0589,
+            'name' => 'Boston',
+        ]);
+
         if (!$centralLocation) {
             $centralLocation = [
-                'latitude' => 42.3601,
-                'longitude' => -71.0589,
-                'address' => 'Boston, MA',
+                'latitude' => $defaultCityConfig['latitude'],
+                'longitude' => $defaultCityConfig['longitude'],
+                'address' => $defaultCityConfig['name'] . ', USA',
             ];
         }
-        
+
         $latitude = $centralLocation['latitude'];
         $longitude = $centralLocation['longitude'];
 
@@ -203,7 +212,7 @@ class GenericMapController extends Controller
 
         $query = DB::connection($dbConnection)->table($targetTable)
             ->select(
-                $targetTable.'.id as data_point_id', 
+                $targetTable.'.id as data_point_id',
                 DB::raw("ST_AsText({$targetTable}.location) as location_wkt"),
                 $targetTable.'.type as alcivartech_type_raw',
                 $targetTable.'.alcivartech_date as data_point_alcivartech_date_from_dp_table'
@@ -222,14 +231,14 @@ class GenericMapController extends Controller
             $query->addSelect(DB::raw($this->getJsonSelectForModel($modelClass, $jsonAlias)));
             $query->leftJoin($sourceTableName, $targetTable.'.'.$fkColumnInDataPoints, '=', $sourceTableName.'.'.$modelInstance->getKeyName());
         }
-            
+
         $query->whereRaw("ST_Distance_Sphere({$targetTable}.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters]);
 
-        if ($cutoffDateTime && $targetTable === 'data_points') { 
+        if ($cutoffDateTime && $targetTable === 'data_points') {
             $query->where($targetTable.'.alcivartech_date', '>=', $cutoffDateTime);
         }
-        
-        $dataPoints = $query->get();    
+
+        $dataPoints = $query->get();
 
         $dataPoints = $dataPoints->map(function ($point) use ($linkableModels) {
             $sourceTableName = $point->alcivartech_type_raw;
@@ -247,7 +256,7 @@ class GenericMapController extends Controller
                 unset($point->{$jsonAlias});
 
                 $point->alcivartech_type = $modelClass::getAlcivartechTypeForStyling();
-                
+
                 $dateFieldInSource = $modelClass::getDateField();
                 if ($point->{$dataObjectKey} && property_exists($point->{$dataObjectKey}, $dateFieldInSource)) {
                     $point->alcivartech_date = $point->{$dataObjectKey}->{$dateFieldInSource};
@@ -269,7 +278,7 @@ class GenericMapController extends Controller
             preg_match('/POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)/', $point->location_wkt, $matches);
             $point->longitude = isset($matches[1]) ? floatval($matches[1]) : null;
             $point->latitude = isset($matches[2]) ? floatval($matches[2]) : null;
-            unset($point->location_wkt); 
+            unset($point->location_wkt);
 
             $point->alcivartech_model = $point->alcivartech_type_raw;
             unset($point->alcivartech_type_raw);
@@ -277,14 +286,14 @@ class GenericMapController extends Controller
             return $point;
         })->filter(function ($point) use ($cutoffDateTime) {
             if (!$cutoffDateTime) {
-                return true; 
+                return true;
             }
             if (empty($point->alcivartech_date)) {
-                return false; 
+                return false;
             }
             return Carbon::parse($point->alcivartech_date)->startOfDay()->gte($cutoffDateTime);
         })->values();
-        
+
         Log::info('Data points fetched and filtered.', ['totalDataPointsCount' => $dataPoints->count()]);
 
         $dataPointModelConfig = [];

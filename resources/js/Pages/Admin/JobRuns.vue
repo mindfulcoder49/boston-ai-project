@@ -31,7 +31,7 @@
                     </div>
                     <div v-else>N/A</div>
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-500 max-w-md truncate" :title="job.output">{{ job.output }}</td>
+                <td class="px-6 py-4 text-sm text-gray-500 max-w-lg truncate" :title="job.output">{{ job.output }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ job.duration || 'N/A' }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ job.created_at }}</td>
               </tr>

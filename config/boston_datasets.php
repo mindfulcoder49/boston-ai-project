@@ -4,8 +4,14 @@ return [
     'base_url' => 'http://data.boston.gov/datastore/dump',
     'datasets' => [
         [
-            //311 Service Requests 2024 (assuming this was the original name, adjust if needed)
-            'name' => '311-service-requests-2025', // Or original '311-service-requests-2024'
+            //311 Service Requests
+            'name' => '311-service-requests-2026',
+            'resource_id' => '1a0b420d-99f1-4887-9851-990b2a5a6e17',
+            'format' => 'csv',
+        ],
+        [
+            //311 Service Requests 2025 (assuming this was the original name, adjust if needed)
+            'name' => '311-service-requests-2025',
             'resource_id' => '9d7c2214-4709-478a-a2e8-fb2020a5bb94',
             'format' => 'csv',
         ],

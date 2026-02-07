@@ -115,6 +115,36 @@ return [
             'page_size' => 10000,
             'order_by_field' => ':id',
         ],    */
-            
+
+        [
+            'name' => 'san_francisco-crimes',
+            'city' => 'san_francisco',
+            'base_url' => 'https://data.sfgov.org/resource',
+            'resource_id' => 'wg3w-h783',
+            'format' => 'csv',
+            'url_pattern_type' => 'extension',
+            'pagination_type' => 'socrata_offset',
+            'page_size' => 50000,
+            'order_by_field' => 'incident_datetime',
+            'order_by_direction' => 'DESC',
+            'download_type' => 'incremental',
+            'model' => 'App\\Models\\SanFranciscoCrime',
+            'date_field' => 'incident_datetime',
+        ],
+        [
+            'name' => 'seattle-crimes',
+            'city' => 'seattle',
+            'base_url' => 'https://data.seattle.gov/resource',
+            'resource_id' => 'tazs-3rd5',
+            'format' => 'csv',
+            'url_pattern_type' => 'extension',
+            'pagination_type' => 'socrata_offset',
+            'page_size' => 50000,
+            'order_by_field' => 'offense_date',
+            'order_by_direction' => 'DESC',
+            'download_type' => 'incremental',
+            'model' => 'App\Models\SeattleCrime',
+            'date_field' => 'offense_date',
+        ],
     ],
 ];

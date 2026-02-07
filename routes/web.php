@@ -48,6 +48,9 @@ Route::post('/scoring-reports/refresh', [ScoringReportController::class, 'refres
 Route::get('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::class, 'show'])
     ->where('artifactName', '.*') // Allow dots in filename
     ->name('scoring-reports.show');
+Route::delete('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::class, 'destroy'])
+    ->where('artifactName', '.*')
+    ->name('scoring-reports.destroy');
 Route::post('/api/scoring-reports/score-for-location', [ScoringReportController::class, 'getScoreForLocation'])->name('scoring-reports.score-for-location');
 Route::get('/api/scoring-reports/source-analysis/{jobId}', [ScoringReportController::class, 'getSourceAnalysisData'])->name('scoring-reports.source-analysis');
 
@@ -159,7 +162,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/pipeline-file-logs', [AdminController::class, 'pipelineFileLogsIndex'])->name('pipeline.fileLogs.index');
     Route::get('/pipeline-file-logs/{runId}', [AdminController::class, 'showPipelineFileLogRun'])->name('pipeline.fileLogs.show');
     Route::get('/pipeline-file-logs/{runId}/command-log/{logFileName}', [AdminController::class, 'getPipelineCommandFileLogContent'])
-        ->where('logFileName', 'cmd_[a-z0-9-]+_\\d{14}(_\\d+)?.log') // More flexible regex
+        ->where('logFileName', '.*')
         ->name('pipeline.fileLogs.commandLogContent');
     Route::delete('/pipeline-file-logs/{runId}', [AdminController::class, 'deletePipelineFileRun'])->name('pipeline.fileLogs.delete');
 

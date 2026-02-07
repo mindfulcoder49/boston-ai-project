@@ -69,10 +69,14 @@ const getMarkerIcon = (alcivartechType, dataPoint) => {
 
   // Check for dynamic icon configuration first
   const dynamicIconConfig = props.dataTypeConfigProp?.dynamicIcon;
+  console.log("Dynamic Icon Config Check:", dynamicIconConfig);
   if (dynamicIconConfig?.enabled && dynamicIconConfig.textField) {
     const value = dataPoint[dynamicIconConfig.textField] || '0';
+    console.log("Dynamic Icon Value:", value);
     // Only show icon if value is greater than 0
     if (parseInt(value, 10) > 0) {
+      //If the className is 311
+      console.log("Dynamic Icon Config:", dynamicIconConfig);
       return L.divIcon({
         html: `<span>${value}</span>`,
         className: `leaflet-div-icon ${dynamicIconConfig.className || 'report-value-icon'}`,
