@@ -22,12 +22,13 @@ class DispatchHistoricalScoringJobsCommand extends Command
                             {model : The model class to process (e.g., CrimeData)}
                             {--column= : The column to use for grouping}
                             {--export-columns= : Comma-separated list of columns to include in the export, besides the required ones. Defaults to all statistical columns.}
-                            {--resolution=8 : The H3 resolution for aggregation}
+                            {--resolution=8 : Comma-separated list of H3 resolutions for aggregation}
                             {--analysis-weeks=52 : The number of weeks to include in the historical average}
                             {--group-weights= : JSON string of weights for each group}
                             {--default-weight=0.0 : Default weight for groups not in the weights JSON}
                             {--fresh : Force regeneration of the data export}
-                            {--export-timespan=0 : The total number of weeks of data to export. 0 means all data.}';
+                            {--export-timespan=0 : The total number of weeks of data to export. 0 means all data.}
+                            {--city= : The city name for the analysis. Defaults to the model\'s human name.}';
 
     /**
      * The console command description.
@@ -108,39 +109,52 @@ class DispatchHistoricalScoringJobsCommand extends Command
         $publicUrl = Storage::url($exportFilename);
         Log::info("Public URL for job: " . url($publicUrl));
 
-        $jobId = "laravel-hist-score-{$modelKey}-{$column}-" . time();
         $groupWeights = json_decode($this->option('group-weights') ?: '{}', true);
+        $cityName = $this->option('city') ?: $modelInstance::getHumanName();
+        $resolutions = array_filter(explode(',', $this->option('resolution')), 'strlen');
 
-        $payload = [
-            'job_id' => $jobId,
-            'city' => config('app.city_name', 'Boston'),
-            'data_sources' => [
-                [
-                    'data_url' => url($publicUrl),
-                    'timestamp_col' => $dateField,
-                    'lat_col' => $latField,
-                    'lon_col' => $lonField,
-                    'secondary_group_col' => $column,
+        if (empty($resolutions)) {
+            Log::error('No valid resolutions provided. Please provide at least one H3 resolution.');
+            return 1;
+        }
+
+        foreach ($resolutions as $resolution) {
+            $resolution = (int) trim($resolution);
+            Log::info("--- Preparing job for resolution: {$resolution} ---");
+
+            $jobId = "laravel-hist-score-{$modelKey}-{$column}-res{$resolution}-" . time();
+
+            $payload = [
+                'job_id' => $jobId,
+                'city' => $cityName,
+                'data_sources' => [
+                    [
+                        'data_url' => url($publicUrl),
+                        'timestamp_col' => $dateField,
+                        'lat_col' => $latField,
+                        'lon_col' => $lonField,
+                        'secondary_group_col' => $column,
+                    ],
                 ],
-            ],
-            'output_filename' => "stage6_historical_score_{$jobId}.json",
-            'group_weights' => $groupWeights,
-            'default_group_weight' => (float) $this->option('default-weight'),
-            'h3_resolution' => (int) $this->option('resolution'),
-            'analysis_period_weeks' => (int) $this->option('analysis-weeks'),
-        ];
+                'output_filename' => "stage6_historical_score_{$jobId}.json",
+                'group_weights' => $groupWeights,
+                'default_group_weight' => (float) $this->option('default-weight'),
+                'h3_resolution' => $resolution,
+                'analysis_period_weeks' => (int) $this->option('analysis-weeks'),
+            ];
 
-        Log::info('Dispatching historical scoring job with payload.', ['payload' => $payload]);
+            Log::info("Dispatching historical scoring job for resolution {$resolution} with payload.", ['payload' => $payload]);
 
-        $response = Http::timeout(30)->post("{$apiBaseUrl}/api/v1/jobs/stage6", $payload);
+            $response = Http::timeout(30)->post("{$apiBaseUrl}/api/v1/jobs/stage6", $payload);
 
-        if ($response->successful() && $response->status() === 202) {
-            Log::info("Successfully dispatched job. Job ID: {$jobId}");
-            // Here you would typically save the job_id to a model, similar to the Trend model in the other command.
-            // For now, we just log it.
-            Log::info("Dispatched historical scoring job.", ['job_id' => $jobId, 'model' => $modelClass, 'column' => $column]);
-        } else {
-            Log::error("Failed to dispatch job. Status: {$response->status()}", ['response' => $response->body()]);
+            if ($response->successful() && $response->status() === 202) {
+                Log::info("Successfully dispatched job for resolution {$resolution}. Job ID: {$jobId}");
+                // Here you would typically save the job_id to a model, similar to the Trend model in the other command.
+                // For now, we just log it.
+                Log::info("Dispatched historical scoring job.", ['job_id' => $jobId, 'model' => $modelClass, 'column' => $column, 'resolution' => $resolution]);
+            } else {
+                Log::error("Failed to dispatch job for resolution {$resolution}. Status: {$response->status()}", ['response' => $response->body()]);
+            }
         }
 
         Log::info('Historical scoring job dispatch process completed.');
@@ -201,10 +215,11 @@ class DispatchHistoricalScoringJobsCommand extends Command
 
         $primaryKey = DB::connection($connectionName)->getSchemaBuilder()->getIndexes($tableName)[0]['columns'][0] ?? 'id';
 
-        $progressBar = $this->output->createProgressBar($totalRows);
-        $progressBar->start();
+        $processedRows = 0;
+        $logInterval = 100000; // Log every 100,000 rows
+        $nextLogThreshold = $logInterval;
 
-        $selectColumns = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze);
+        $selectColumns = array_unique(array_merge([$dateField, $latField, $lonField, $primaryKey], $fieldsToAnalyze));
         $query = DB::connection($connectionName)->table($tableName)->select($selectColumns)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
 
@@ -216,19 +231,25 @@ class DispatchHistoricalScoringJobsCommand extends Command
 
         $unifiedValue = $modelClass::getHumanName();
 
-        $query->orderBy($primaryKey)->lazy(50000)
-            ->each(function ($row) use ($fileHandle, $selectColumns, $progressBar, $unifiedValue) {
+        $query->orderBy($primaryKey)->chunkById(10000, function ($rows) use ($fileHandle, $selectColumns, &$processedRows, $logInterval, &$nextLogThreshold, $totalRows, $unifiedValue, $primaryKey) {
+            foreach ($rows as $row) {
                 $rowData = [];
                 foreach ($selectColumns as $col) {
+                    if ($col === $primaryKey) continue; // Don't write the primary key to the CSV
                     $rowData[] = $row->$col;
                 }
                 $rowData[] = $unifiedValue;
                 fputcsv($fileHandle, $rowData);
-                $progressBar->advance();
-            });
+                
+                $processedRows++;
+                if ($processedRows >= $nextLogThreshold) {
+                    Log::info("      Export progress: {$processedRows} / {$totalRows} rows written.");
+                    $nextLogThreshold += $logInterval;
+                }
+            }
+        }, $primaryKey);
 
-        $progressBar->finish();
-        $this->newLine();
+        Log::info("      Finished export: {$processedRows} / {$totalRows} rows written.");
 
         fclose($fileHandle);
     }

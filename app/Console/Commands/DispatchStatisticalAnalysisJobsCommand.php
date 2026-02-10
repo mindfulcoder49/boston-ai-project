@@ -288,31 +288,38 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
 
         $primaryKey = DB::connection($connectionName)->getSchemaBuilder()->getIndexes($tableName)[0]['columns'][0] ?? 'id';
 
-        $progressBar = $this->output->createProgressBar($totalRows);
-        $progressBar->start();
+        $processedRows = 0;
+        $logInterval = 100000; // Log every 100,000 rows
+        $nextLogThreshold = $logInterval;
 
-        // Select only the columns that exist in the database.
-        $selectColumns = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze);
+        // Select only the columns that exist in the database, ensuring the primary key is included for chunking.
+        $selectColumns = array_unique(array_merge([$dateField, $latField, $lonField, $primaryKey], $fieldsToAnalyze));
         $query = DB::connection($connectionName)->table($tableName)->select($selectColumns)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField)
             ->where($dateField, '>=', $startDate);
 
         $unifiedValue = $modelClass::getHumanName();
 
-        $query->orderBy($primaryKey)->lazy(50000)
-            ->each(function ($row) use ($fileHandle, $selectColumns, $progressBar, $unifiedValue) {
+        $query->orderBy($primaryKey)->chunkById(10000, function ($rows) use ($fileHandle, $selectColumns, &$processedRows, $logInterval, &$nextLogThreshold, $totalRows, $unifiedValue, $primaryKey) {
+            foreach ($rows as $row) {
                 $rowData = [];
                 foreach ($selectColumns as $col) {
+                    if ($col === $primaryKey) continue; // Don't write the primary key to the CSV
                     $rowData[] = $row->$col;
                 }
                 // Always append the unified value for the source_dataset column.
                 $rowData[] = $unifiedValue;
                 fputcsv($fileHandle, $rowData);
-                $progressBar->advance();
-            });
+                
+                $processedRows++;
+                if ($processedRows >= $nextLogThreshold) {
+                    Log::info("      Export progress for {$tableName}: {$processedRows} / {$totalRows} rows written.");
+                    $nextLogThreshold += $logInterval;
+                }
+            }
+        }, $primaryKey);
 
-        $progressBar->finish();
-        $this->newLine();
+        Log::info("      Finished export for {$tableName}: {$processedRows} / {$totalRows} rows written.");
 
         fclose($fileHandle);
     }

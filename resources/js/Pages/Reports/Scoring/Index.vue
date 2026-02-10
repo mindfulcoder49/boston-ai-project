@@ -22,65 +22,61 @@
         <span class="block sm:inline">{{ error }}</span>
       </div>
 
-      <div v-if="reports.length > 0" class="bg-white shadow-md rounded-lg">
-        <div class="overflow-x-auto">
-          <table class="min-w-full leading-normal">
-            <thead>
-              <tr>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Report Title
-                </th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  City
-                </th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Data Date Range
-                </th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Resolution
-                </th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Generated At
-                </th>
-                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="report in reports" :key="report.job_id + report.artifact_name" class="hover:bg-gray-50">
-                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ report.title }}</p>
-                  <p class="text-gray-600 text-xs whitespace-no-wrap">Job ID: {{ report.job_id }}</p>
-                </td>
-                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ getCity(report) }}</p>
-                </td>
-                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ getDateRange(report) }}</p>
-                </td>
-                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ getResolution(report) }}</p>
-                </td>
-                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <p class="text-gray-900 whitespace-no-wrap">{{ new Date(report.generated_at * 1000).toLocaleString() }}</p>
-                </td>
-                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <div class="flex items-center space-x-2">
-                    <Link :href="route('scoring-reports.show', { jobId: report.job_id, artifactName: report.artifact_name })" class="text-indigo-600 hover:text-indigo-900 text-xs">
-                      View Report
-                    </Link>
-                    <button @click="showParameters(report.parameters)" class="text-gray-600 hover:text-gray-900 text-xs">
-                      Parameters
-                    </button>
-                    <button @click="deleteReport(report)" class="text-red-600 hover:text-red-900 text-xs">
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div v-if="Object.keys(reportGroups).length > 0" class="space-y-8">
+        <div v-for="(dateGroups, city) in reportGroups" :key="city" class="bg-white shadow-md rounded-lg overflow-hidden">
+          <h2 class="text-xl font-bold text-gray-700 bg-gray-50 p-4 border-b">{{ city }}</h2>
+          <div v-for="(reports, dateKey) in dateGroups" :key="dateKey" class="border-b last:border-b-0">
+            <div class="px-5 py-3 bg-gray-100/50">
+              <h3 class="text-sm font-semibold text-gray-600">Data Date Range: {{ dateKey }}</h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full leading-normal">
+                <thead>
+                  <tr>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Report Title
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Resolution
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Generated At
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="report in reports" :key="report.job_id + report.artifact_name" class="hover:bg-gray-50">
+                    <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                      <p class="text-gray-900 whitespace-no-wrap">{{ report.title }}</p>
+                      <p class="text-gray-600 text-xs whitespace-no-wrap">Job ID: {{ report.job_id }}</p>
+                    </td>
+                    <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                      <p class="text-gray-900 whitespace-no-wrap">{{ report.resolution }}</p>
+                    </td>
+                    <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                      <p class="text-gray-900 whitespace-no-wrap">{{ new Date(report.generated_at * 1000).toLocaleString() }}</p>
+                    </td>
+                    <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                      <div class="flex items-center space-x-2">
+                        <Link :href="route('scoring-reports.show', { jobId: report.job_id, artifactName: report.artifact_name })" class="text-indigo-600 hover:text-indigo-900 text-xs">
+                          View Report
+                        </Link>
+                        <button @click="showParameters(report.parameters)" class="text-gray-600 hover:text-gray-900 text-xs">
+                          Parameters
+                        </button>
+                        <button @click="deleteReport(report)" class="text-red-600 hover:text-red-900 text-xs">
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
       <div v-else-if="!error" class="text-center py-10">
@@ -113,7 +109,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps({
-  reports: Array,
+  reportGroups: Object,
   error: String,
 });
 

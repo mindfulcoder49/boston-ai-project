@@ -163,6 +163,10 @@
                 <option v-for="col in availableHistoricalColumns" :key="col" :value="col">{{ col }}</option>
               </select>
             </div>
+            <div>
+              <label for="historical-city" class="block text-sm font-medium text-gray-700">City Name</label>
+              <input type="text" v-model="historicalForm.parameters.city" id="historical-city" class="mt-1 block w-full input" placeholder="Defaults to model name">
+            </div>
             <div class="lg:col-span-2">
               <label for="historical-export-columns" class="block text-sm font-medium text-gray-700">Columns to Export (leave blank for all)</label>
               <select v-model="historicalForm.parameters.exportColumns" id="historical-export-columns" multiple class="mt-1 block w-full input h-24">
@@ -170,8 +174,8 @@
               </select>
             </div>
             <div>
-              <label for="historical-resolution" class="block text-sm font-medium text-gray-700">H3 Resolution</label>
-              <input type="number" v-model="historicalForm.parameters.resolution" id="historical-resolution" class="mt-1 block w-full input" placeholder="8">
+              <label for="historical-resolution" class="block text-sm font-medium text-gray-700">H3 Resolution(s)</label>
+              <input type="text" v-model="historicalForm.parameters.resolution" id="historical-resolution" class="mt-1 block w-full input" placeholder="8 or 8,7,6">
             </div>
             <div>
               <label for="historical-analysis-weeks" class="block text-sm font-medium text-gray-700">Analysis Period (Weeks)</label>
@@ -306,7 +310,7 @@ const props = defineProps({
 });
 
 const statForm = useForm({ command: 'app:dispatch-statistical-analysis-jobs', parameters: { model: '', columns: [], fresh: false, plots: false, resolutions: '9,8,7,6,5', trendWeeks: '4,26,52', anomalyWeeks: 4, exportTimespan: 108 } });
-const historicalForm = useForm({ command: 'app:dispatch-historical-scoring-jobs', parameters: { model: '', column: '', exportColumns: [], resolution: 8, analysisWeeks: 52, exportTimespan: 0, groupWeights: {}, defaultWeight: 0.0, fresh: false } });
+const historicalForm = useForm({ command: 'app:dispatch-historical-scoring-jobs', parameters: { model: '', column: '', city: '', exportColumns: [], resolution: '8', analysisWeeks: 52, exportTimespan: 0, groupWeights: {}, defaultWeight: 0.0, fresh: false } });
 const yearlyForm = useForm({ command: 'app:dispatch-yearly-count-comparison-jobs', parameters: { model: '', columns: [], baselineYear: 2019, fresh: false } });
 const newsForm = useForm({ command: 'app:dispatch-news-article-generation-jobs', parameters: { model: 'all', fresh: false, runConfig: '', reportClass: '', reportId: '' } });
 const locationForm = useForm({ command: 'reports:send', parameters: { userId: '', locationId: '', force: false } });
@@ -335,6 +339,7 @@ const historicalWeightsJson = ref('{}');
 
 function onHistoricalModelChange() {
   historicalForm.parameters.column = '';
+  historicalForm.parameters.city = '';
   historicalForm.parameters.exportColumns = [];
   historicalForm.parameters.groupWeights = {};
   historicalWeightsJson.value = '{}';
