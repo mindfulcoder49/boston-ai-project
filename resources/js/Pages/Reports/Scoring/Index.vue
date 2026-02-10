@@ -92,7 +92,7 @@ const isRefreshing = ref(false);
 
 const refreshReports = () => {
   isRefreshing.value = true;
-  router.post(route('scoring-reports.refresh'), {}, {
+  router.post(route('admin.scoring-reports.refresh'), {}, {
     onFinish: () => {
       isRefreshing.value = false;
     },
@@ -102,7 +102,7 @@ const refreshReports = () => {
 
 const deleteReport = (report) => {
   if (confirm(`Are you sure you want to delete the report for Job ID: ${report.job_id}? This action cannot be undone.`)) {
-    router.delete(route('scoring-reports.destroy', { jobId: report.job_id, artifactName: report.artifact_name }), {
+    router.delete(route('admin.scoring-reports.destroy', { jobId: report.job_id, artifactName: report.artifact_name }), {
       preserveState: false, // Reload props to update the list
     });
   }

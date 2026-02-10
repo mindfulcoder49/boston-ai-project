@@ -44,13 +44,11 @@ Route::get('/reports/yearly-comparison/{reportId}', [YearlyCountComparisonContro
 
 // Scoring Report Routes (New)
 Route::get('/scoring-reports', [ScoringReportController::class, 'index'])->name('scoring-reports.index');
-Route::post('/scoring-reports/refresh', [ScoringReportController::class, 'refreshIndex'])->name('scoring-reports.refresh');
+
 Route::get('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::class, 'show'])
     ->where('artifactName', '.*') // Allow dots in filename
     ->name('scoring-reports.show');
-Route::delete('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::class, 'destroy'])
-    ->where('artifactName', '.*')
-    ->name('scoring-reports.destroy');
+
 Route::post('/api/scoring-reports/score-for-location', [ScoringReportController::class, 'getScoreForLocation'])->name('scoring-reports.score-for-location');
 Route::get('/api/scoring-reports/source-analysis/{jobId}', [ScoringReportController::class, 'getSourceAnalysisData'])->name('scoring-reports.source-analysis');
 
@@ -125,6 +123,12 @@ Route::get('/saved-maps/{savedMap}/view', [SavedMapController::class, 'view'])->
 
 // Admin Routes (using controller-based auth check for now)
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    Route::post('/scoring-reports/refresh', [ScoringReportController::class, 'refreshIndex'])->name('scoring-reports.refresh');
+    Route::delete('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::class, 'destroy'])
+    ->where('artifactName', '.*')
+    ->name('scoring-reports.destroy');
+
+    
     Route::get('/', [AdminController::class, 'index'])->name('index');
 
     // Job Runs
