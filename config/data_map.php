@@ -48,6 +48,8 @@ return [
 
         'seattle_crime' => \App\Models\SeattleCrime::class,
 
+        'montgomery_county_md_crime' => \App\Models\MontgomeryCountyMdCrime::class,
+
         // Add new data types below this line
         // The city-generator tool will append new entries here automatically
     ],
@@ -75,6 +77,11 @@ return [
         'seattle_' => [
             'city' => 'seattle',
             'center' => [47.6062, -122.3321],
+            'zoom' => 12,
+        ],
+        'montgomery_county_md_' => [
+            'city' => 'montgomery_county_md',
+            'center' => [39.154, -77.24],
             'zoom' => 12,
         ],
         // Add new city contexts below this line

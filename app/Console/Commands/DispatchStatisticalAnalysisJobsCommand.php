@@ -181,7 +181,6 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                         'p_value_trend' => (float) $this->option('p-trend'),
                         'analysis_weeks_trend' => $trendWeeks,
                         'analysis_weeks_anomaly' => (int) $this->option('anomaly-weeks'),
-                        'generate_plots' => $generatePlots,
                         'plot_generation' => $generatePlots ? 'both' : 'none',
                     ];
 

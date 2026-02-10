@@ -189,6 +189,33 @@ return [
             'strict' => true,
             'engine' => null,
         ],
+        'montgomery_county_md_db' => [
+            'driver' => 'mysql',
+            'host' => env('MONTGOMERY_COUNTY_MD_DB_HOST', 'mysql'),
+            'port' => env('MONTGOMERY_COUNTY_MD_DB_PORT', '3306'),
+            'database' => env('MONTGOMERY_COUNTY_MD_DB_DATABASE', 'montgomery_county_md_db'),
+            'username' => env('MONTGOMERY_COUNTY_MD_DB_USERNAME', 'sail'),
+            'password' => env('MONTGOMERY_COUNTY_MD_DB_PASSWORD', 'password'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
+        'montgomery_county_md_crime_db' => [
+            'driver' => 'mysql',
+            'host' => env('MONTGOMERY_COUNTY_MD_CRIME_DB_HOST', 'mysql'),
+            'port' => env('MONTGOMERY_COUNTY_MD_CRIME_DB_PORT', '3306'),
+            'database' => env('MONTGOMERY_COUNTY_MD_CRIME_DB_DATABASE', 'montgomery_county_md_crime_db'),
+            'username' => env('MONTGOMERY_COUNTY_MD_CRIME_DB_USERNAME', 'sail'),
+            'password' => env('MONTGOMERY_COUNTY_MD_CRIME_DB_PASSWORD', 'password'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
 
     ],
 

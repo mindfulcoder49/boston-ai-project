@@ -82,6 +82,17 @@ return [
 
         // Add new cities below this line
 
+        'montgomery_county_md' => [
+            'name' => 'Montgomery County, MD',
+            'latitude' => 39.154,
+            'longitude' => -77.24,
+            'data_points_table' => 'montgomery_county_md_data_points',
+            'db_connection' => 'montgomery_county_md_db',
+            'models' => [
+                \App\Models\MontgomeryCountyMdCrime::class,
+            ],
+        ],
+
         'seattle' => [
             'name' => 'Seattle',
             'latitude' => 47.6062,

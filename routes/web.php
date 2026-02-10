@@ -137,6 +137,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Job Dispatcher (New)
     Route::get('/job-dispatcher', [AdminController::class, 'jobDispatcherIndex'])->name('job-dispatcher.index');
     Route::post('/job-dispatcher', [AdminController::class, 'dispatchJob'])->name('job-dispatcher.dispatch');
+    Route::post('/job-dispatcher/unique-values', [AdminController::class, 'getUniqueColumnValues'])->name('job-dispatcher.unique-values');
 
     // Map Management (moved to AdminMapController)
     Route::prefix('maps')->name('maps.')->group(function () {

@@ -17,4 +17,17 @@ export default defineConfig({
             },
         }),
     ],
+    server: {
+        watch: {
+            ignored: [
+                '**/node_modules/**',
+                '**/vendor/**',
+                '**/public/**',
+                '**/storage/**',
+                '**/.git/**',
+                '**/.idea/**',
+                '**/city-generator/**',
+            ],
+        },
+    },
 });

@@ -462,6 +462,36 @@ class DataMapController extends Controller
         ]);
     }
 
+    private function getGeometryFields(string $modelClass): array
+    {
+        $modelInstance = app($modelClass);
+        $connection = $modelInstance->getConnectionName();
+        $table = $modelInstance->getTable();
+
+        // Cache this per request to avoid repeated schema lookups for the same model
+        static $geometryFieldsCache = [];
+        if (isset($geometryFieldsCache[$modelClass])) {
+            return $geometryFieldsCache[$modelClass];
+        }
+
+        $geometryFields = [];
+        try {
+            $columns = Schema::connection($connection)->getColumnListing($table);
+            foreach ($columns as $column) {
+                $type = Schema::connection($connection)->getColumnType($table, $column);
+                // Add other geometry types if needed, e.g., 'polygon', 'linestring', etc.
+                if (in_array(strtolower($type), ['geometry', 'point'])) {
+                    $geometryFields[] = $column;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("Could not get geometry fields for {$modelClass}: " . $e->getMessage());
+        }
+
+        $geometryFieldsCache[$modelClass] = $geometryFields;
+        return $geometryFields;
+    }
+
     public function enrichData( $data, string $dataType, string $modelClass)
     {
         // $modelClass is now passed, no need to call getModelClassForDataType again
@@ -471,9 +501,10 @@ class DataMapController extends Controller
         $latField = $modelClass::getLatitudeField();
         $lngField = $modelClass::getLongitudeField();
         $dateFieldFromConfig = $modelClass::getDateField();
+        $geometryFields = $this->getGeometryFields($modelClass);
 
 
-        $data = $data->map(function ($point) use ($dataType, $modelClass, $alcivartechTypeForStyling, $latField, $lngField, $dateFieldFromConfig) {
+        $data = $data->map(function ($point) use ($dataType, $modelClass, $alcivartechTypeForStyling, $latField, $lngField, $dateFieldFromConfig, $geometryFields) {
             $point->alcivartech_model = $dataType;
             $point->alcivartech_type = $alcivartechTypeForStyling;
 
@@ -493,11 +524,10 @@ class DataMapController extends Controller
             }
             
             // Unset raw geometry fields to prevent JSON encoding errors with binary data.
-            if (isset($point->location)) {
-                unset($point->location);
-            }
-            if (isset($point->point)) {
-                unset($point->point);
+            foreach ($geometryFields as $field) {
+                if (isset($point->{$field})) {
+                    unset($point->{$field});
+                }
             }
             
             $point->alcivartech_date = $point->{$dateFieldFromConfig} ?? null;

@@ -145,6 +145,69 @@
           </div>
         </JobCard>
 
+        <!-- Historical Scoring -->
+        <JobCard command="app:dispatch-historical-scoring-jobs" title="Historical Scoring Jobs" description="Dispatch jobs for H3-based historical scoring from raw data." @dispatch="submitHistoricalJob">
+          <template #button-text><span v-if="historicalForm.processing">Dispatching...</span><span v-else>Dispatch Job</span></template>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label for="historical-model" class="block text-sm font-medium text-gray-700">Model</label>
+              <select v-model="historicalForm.parameters.model" id="historical-model" class="mt-1 block w-full input" @change="onHistoricalModelChange">
+                <option value="">Select Model...</option>
+                <option v-for="(details, name) in modelDetails" :key="name" :value="name">{{ name }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="historical-column" class="block text-sm font-medium text-gray-700">Grouping Column</label>
+              <select v-model="historicalForm.parameters.column" id="historical-column" class="mt-1 block w-full input" @change="fetchUniqueValuesForHistorical">
+                <option value="">Select Column...</option>
+                <option v-for="col in availableHistoricalColumns" :key="col" :value="col">{{ col }}</option>
+              </select>
+            </div>
+            <div class="lg:col-span-2">
+              <label for="historical-export-columns" class="block text-sm font-medium text-gray-700">Columns to Export (leave blank for all)</label>
+              <select v-model="historicalForm.parameters.exportColumns" id="historical-export-columns" multiple class="mt-1 block w-full input h-24">
+                <option v-for="col in availableHistoricalColumns" :key="col" :value="col">{{ col }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="historical-resolution" class="block text-sm font-medium text-gray-700">H3 Resolution</label>
+              <input type="number" v-model="historicalForm.parameters.resolution" id="historical-resolution" class="mt-1 block w-full input" placeholder="8">
+            </div>
+            <div>
+              <label for="historical-analysis-weeks" class="block text-sm font-medium text-gray-700">Analysis Period (Weeks)</label>
+              <input type="number" v-model="historicalForm.parameters.analysisWeeks" id="historical-analysis-weeks" class="mt-1 block w-full input" placeholder="52">
+            </div>
+            <div>
+              <label for="historical-export-timespan" class="block text-sm font-medium text-gray-700">Export Timespan (Weeks)</label>
+              <input type="number" v-model="historicalForm.parameters.exportTimespan" id="historical-export-timespan" class="mt-1 block w-full input" placeholder="0 for all">
+              <p class="mt-1 text-xs text-gray-500">Total weeks of data to export. 0 for all data.</p>
+            </div>
+            <div class="flex items-end">
+              <label class="flex items-center"><input type="checkbox" v-model="historicalForm.parameters.fresh" class="checkbox" /><span class="ml-2 text-sm">--fresh (re-export data)</span></label>
+            </div>
+
+            <div class="lg:col-span-3 mt-4" v-if="historicalForm.parameters.column">
+              <h4 class="text-md font-semibold text-gray-800">Group Weights</h4>
+              <p class="text-xs text-gray-600 mt-1 mb-2">Assign a weight to each group. The average weekly count for each group will be multiplied by this weight.</p>
+              <button type="button" @click="toggleWeightEditorMode" class="btn btn-sm mb-2">{{ isJsonEditorMode ? 'Switch to Form Builder' : 'Switch to JSON Editor' }}</button>
+
+              <div v-if="isJsonEditorMode">
+                <textarea v-model="historicalWeightsJson" rows="10" class="input w-full font-mono" placeholder='{ "GroupName1": 1.0, "GroupName2": -0.5 }'></textarea>
+              </div>
+              <div v-else class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                 <div v-for="(weight, name) in historicalForm.parameters.groupWeights" :key="name" class="flex items-center gap-2">
+                   <input type="text" :value="name" readonly class="input bg-gray-100 flex-grow">
+                   <input type="number" v-model="historicalForm.parameters.groupWeights[name]" step="0.1" class="input w-28">
+                 </div>
+              </div>
+               <div class="mt-2">
+                <label for="historical-default-weight" class="block text-sm font-medium text-gray-700">Default Group Weight</label>
+                <input type="number" v-model="historicalForm.parameters.defaultWeight" id="historical-default-weight" step="0.1" class="mt-1 input w-28">
+              </div>
+            </div>
+          </div>
+        </JobCard>
+
         <!-- Yearly Count Comparison -->
         <JobCard command="app:dispatch-yearly-count-comparison-jobs" title="Yearly Count Comparison Jobs" description="Dispatch jobs for yearly data comparisons." @dispatch="submitYearlyJob">
           <template #button-text><span v-if="yearlyForm.processing">Dispatching...</span><span v-else>Dispatch Job</span></template>
@@ -230,7 +293,8 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import JobCard from '@/Components/JobCard.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
   modelDetails: Object,
@@ -242,6 +306,7 @@ const props = defineProps({
 });
 
 const statForm = useForm({ command: 'app:dispatch-statistical-analysis-jobs', parameters: { model: '', columns: [], fresh: false, plots: false, resolutions: '9,8,7,6,5', trendWeeks: '4,26,52', anomalyWeeks: 4, exportTimespan: 108 } });
+const historicalForm = useForm({ command: 'app:dispatch-historical-scoring-jobs', parameters: { model: '', column: '', exportColumns: [], resolution: 8, analysisWeeks: 52, exportTimespan: 0, groupWeights: {}, defaultWeight: 0.0, fresh: false } });
 const yearlyForm = useForm({ command: 'app:dispatch-yearly-count-comparison-jobs', parameters: { model: '', columns: [], baselineYear: 2019, fresh: false } });
 const newsForm = useForm({ command: 'app:dispatch-news-article-generation-jobs', parameters: { model: 'all', fresh: false, runConfig: '', reportClass: '', reportId: '' } });
 const locationForm = useForm({ command: 'reports:send', parameters: { userId: '', locationId: '', force: false } });
@@ -261,12 +326,87 @@ const pipelineForm = useForm({
 });
 
 const availableStatColumns = computed(() => statForm.parameters.model ? props.modelDetails[statForm.parameters.model]?.columns || [] : []);
+const availableHistoricalColumns = computed(() => historicalForm.parameters.model ? props.modelDetails[historicalForm.parameters.model]?.columns || [] : []);
 const availableYearlyColumns = computed(() => yearlyForm.parameters.model ? props.modelDetails[yearlyForm.parameters.model]?.columns || [] : []);
+
+// --- Historical Scoring Logic ---
+const isJsonEditorMode = ref(false);
+const historicalWeightsJson = ref('{}');
+
+function onHistoricalModelChange() {
+  historicalForm.parameters.column = '';
+  historicalForm.parameters.exportColumns = [];
+  historicalForm.parameters.groupWeights = {};
+  historicalWeightsJson.value = '{}';
+}
+
+async function fetchUniqueValuesForHistorical() {
+  const model = historicalForm.parameters.model;
+  const column = historicalForm.parameters.column;
+  if (!model || !column) {
+    historicalForm.parameters.groupWeights = {};
+    historicalWeightsJson.value = '{}';
+    return;
+  }
+  try {
+    const response = await axios.post(route('admin.job-dispatcher.unique-values'), {
+      model: model,
+      column: column,
+    });
+    const weights = {};
+    response.data.unique_values.forEach(val => {
+      weights[val] = 1.0; // Default weight
+    });
+    historicalForm.parameters.groupWeights = weights;
+    historicalWeightsJson.value = JSON.stringify(weights, null, 2);
+  } catch (error) {
+    console.error('Failed to fetch unique values:', error);
+    alert('Could not fetch unique values for the selected column.');
+  }
+}
+
+function toggleWeightEditorMode() {
+  isJsonEditorMode.value = !isJsonEditorMode.value;
+  if (isJsonEditorMode.value) {
+    // Sync from form to JSON
+    historicalWeightsJson.value = JSON.stringify(historicalForm.parameters.groupWeights, null, 2);
+  } else {
+    // Sync from JSON to form
+    try {
+      historicalForm.parameters.groupWeights = JSON.parse(historicalWeightsJson.value);
+    } catch (e) {
+      alert('Invalid JSON. Please correct it before switching back to the form builder.');
+      isJsonEditorMode.value = true; // Stay in JSON mode
+    }
+  }
+}
+
+// --- End Historical Scoring Logic ---
 
 const postForm = (form) => {
   const params = {};
+  let customPayload = {};
+
+  // Special handling for historical scoring to include weights as JSON
+  if (form.command === 'app:dispatch-historical-scoring-jobs') {
+    if (isJsonEditorMode.value) {
+      try {
+        // Ensure form data is updated from JSON editor before submitting
+        form.parameters.groupWeights = JSON.parse(historicalWeightsJson.value);
+      } catch (e) {
+        alert('Invalid JSON in group weights. Please correct it before submitting.');
+        return;
+      }
+    }
+    // The command expects groupWeights as a JSON string option
+    customPayload['--group-weights'] = JSON.stringify(form.parameters.groupWeights);
+  }
+
   for (const [key, value] of Object.entries(form.parameters)) {
     if ((value !== '' && value !== false && !Array.isArray(value)) || (Array.isArray(value) && value.length > 0)) {
+      if (key === 'groupWeights' && form.command === 'app:dispatch-historical-scoring-jobs') {
+        continue; // Skip, handled in customPayload
+      }
       const kebabKey = key.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
       if (typeof value === 'boolean') {
         params[`--${kebabKey}`] = true;
@@ -280,15 +420,16 @@ const postForm = (form) => {
     }
   }
 
-  form.transform(() => ({ command: form.command, parameters: params }))
+  form.transform(() => ({ command: form.command, parameters: { ...params, ...customPayload } }))
       .post(route('admin.job-dispatcher.dispatch'), { preserveScroll: true });
 };
 
 const submitStatJob = () => postForm(statForm);
+const submitHistoricalJob = () => postForm(historicalForm);
 const submitYearlyJob = () => postForm(yearlyForm);
 const submitNewsJob = () => postForm(newsForm);
-const submitLocationJob = () => postForm(locationForm);
 const submitPipelineJob = () => postForm(pipelineForm);
+const submitLocationJob = () => postForm(locationForm);
 </script>
 
 <style scoped>

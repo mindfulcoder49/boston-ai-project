@@ -31,10 +31,16 @@
                   Report Title
                 </th>
                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Generated At
+                  City
                 </th>
                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Parameters
+                  Data Date Range
+                </th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Resolution
+                </th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Generated At
                 </th>
                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Actions
@@ -48,17 +54,26 @@
                   <p class="text-gray-600 text-xs whitespace-no-wrap">Job ID: {{ report.job_id }}</p>
                 </td>
                 <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ getCity(report) }}</p>
+                </td>
+                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ getDateRange(report) }}</p>
+                </td>
+                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
+                  <p class="text-gray-900 whitespace-no-wrap">{{ getResolution(report) }}</p>
+                </td>
+                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
                   <p class="text-gray-900 whitespace-no-wrap">{{ new Date(report.generated_at * 1000).toLocaleString() }}</p>
                 </td>
                 <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <JsonTree :data="report.parameters" />
-                </td>
-                <td class="px-5 py-4 border-b border-gray-200 bg-white text-sm">
-                  <div class="flex items-center space-x-4">
-                    <Link :href="route('scoring-reports.show', { jobId: report.job_id, artifactName: report.artifact_name })" class="text-indigo-600 hover:text-indigo-900">
+                  <div class="flex items-center space-x-2">
+                    <Link :href="route('scoring-reports.show', { jobId: report.job_id, artifactName: report.artifact_name })" class="text-indigo-600 hover:text-indigo-900 text-xs">
                       View Report
                     </Link>
-                    <button @click="deleteReport(report)" class="text-red-600 hover:text-red-900">
+                    <button @click="showParameters(report.parameters)" class="text-gray-600 hover:text-gray-900 text-xs">
+                      Parameters
+                    </button>
+                    <button @click="deleteReport(report)" class="text-red-600 hover:text-red-900 text-xs">
                       Delete
                     </button>
                   </div>
@@ -74,6 +89,20 @@
         </p>
       </div>
     </div>
+
+    <!-- Parameters Modal -->
+    <div v-if="showParamsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4" @click.self="closeParamsModal">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        <div class="flex justify-between items-center p-4 border-b">
+          <h3 class="text-lg font-semibold">Report Parameters</h3>
+          <button @click="closeParamsModal" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+        </div>
+        <div class="p-4 overflow-auto flex-grow">
+          <JsonTree :data="selectedParameters" />
+        </div>
+      </div>
+    </div>
+
   </PageTemplate>
 </template>
 
@@ -89,6 +118,32 @@ const props = defineProps({
 });
 
 const isRefreshing = ref(false);
+const showParamsModal = ref(false);
+const selectedParameters = ref({});
+
+const getCity = (report) => report.parameters?.city || 'N/A';
+
+const getDateRange = (report) => {
+  const range = report.parameters?.date_range;
+  if (range && range.start_date && range.end_date) {
+    const start = new Date(range.start_date).toLocaleDateString();
+    const end = new Date(range.end_date).toLocaleDateString();
+    return `${start} - ${end}`;
+  }
+  return 'N/A';
+};
+
+const getResolution = (report) => report.parameters?.h3_resolution || 'N/A';
+
+const showParameters = (parameters) => {
+  selectedParameters.value = parameters;
+  showParamsModal.value = true;
+};
+
+const closeParamsModal = () => {
+  showParamsModal.value = false;
+  selectedParameters.value = {};
+};
 
 const refreshReports = () => {
   isRefreshing.value = true;

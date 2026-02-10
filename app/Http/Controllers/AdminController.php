@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-// Removed: use App\Models\SavedMap; 
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,11 +18,10 @@ use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use App\Models\ThreeOneOneCase;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-    // Removed: private string $adminEmail = 'alex.g.alcivar49@gmail.com'; // Centralized to config
-
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
@@ -41,11 +39,7 @@ class AdminController extends Controller
 
     public function index()
     {
-        // This page now serves as a dashboard linking to other admin sections.
-        // Map listing is moved to AdminMapController@index and ManageMaps.vue
-        return Inertia::render('Admin/Index', [
-            // No longer passing mapsForApproval here
-        ]);
+        return Inertia::render('Admin/Index', []);
     }
 
     // --- JOB DISPATCHER ---
@@ -74,7 +68,6 @@ class AdminController extends Controller
         $newsReportModels = ['Trend', 'YearlyCountComparison'];
         $newsConfigSets = array_keys(config('news_generation.report_sets', []));
 
-        // From RunAllDataPipelineCommand.php
         $pipelineStages = [
             'Boston Data Acquisition',
             'Boston Data Seeding',
@@ -88,7 +81,6 @@ class AdminController extends Controller
 
         $bostonDatasets = config('boston_datasets.datasets', []);
 
-        // Define granular steps for the pipeline runner UI
         $pipelineSteps = [
             'bostonSeeders' => ['TrashSchedulesByAddressSeeder', 'CrimeDataSeeder', 'ThreeOneOneSeeder', 'BuildingPermitsSeeder', 'PropertyViolationsSeeder', 'ConstructionOffHoursSeeder', 'FoodInspectionsSeeder'],
             'cambridgeDatasets' => ['app:download-city-dataset', 'app:download-cambridge-logs'],
@@ -118,6 +110,7 @@ class AdminController extends Controller
                 'app:dispatch-news-article-generation-jobs',
                 'reports:send',
                 'app:run-all-data-pipeline',
+                'app:dispatch-historical-scoring-jobs',
             ])],
             'parameters' => ['nullable', 'array'],
         ]);
@@ -126,33 +119,37 @@ class AdminController extends Controller
         $parameters = $validated['parameters'] ?? [];
 
         try {
-            // For long-running pipeline jobs, run them in the background.
-            if ($command === 'app:run-all-data-pipeline') {
+            if (in_array($command, ['app:run-all-data-pipeline', 'app:dispatch-historical-scoring-jobs'])) {
                 $processCommand = [PHP_BINARY, base_path('artisan'), $command];
                 foreach ($parameters as $key => $value) {
-                    // Ensure boolean flags are handled correctly
                     if (is_bool($value) && $value) {
                         $processCommand[] = $key;
                     } elseif (!is_bool($value)) {
-                        $processCommand[] = "{$key}={$value}";
+                        // Handle positional arguments vs. options
+                        if ($key === 'model') {
+                             $processCommand[] = $value; // Positional argument
+                        } else {
+                             $processCommand[] = "{$key}={$value}";
+                        }
                     }
                 }
 
-                // Start the process but don't wait for it to finish.
                 $process = new Process($processCommand);
-                $process->disableOutput(); // We don't need output in the controller
+                $process->disableOutput();
                 $process->start();
 
-                // Give a moment for the process to potentially fail on startup
                 sleep(2);
                 if (!$process->isRunning() && !$process->isSuccessful()) {
                     throw new ProcessFailedException($process);
                 }
 
-                return redirect()->back()->with('success', "Pipeline job '{$command}' dispatched to run in the background. Check the Pipeline Logs page for progress.");
+                $message = $command === 'app:run-all-data-pipeline'
+                    ? "Pipeline job '{$command}' dispatched to run in the background. Check the Pipeline Logs page for progress."
+                    : "Job '{$command}' dispatched to run in the background. This may take a moment if a data export is required.";
+
+                return redirect()->back()->with('success', $message);
             }
 
-            // For other (presumably shorter) jobs, run synchronously to get output.
             Artisan::call($command, $parameters);
             $output = Artisan::output();
 
@@ -161,15 +158,53 @@ class AdminController extends Controller
             Log::error("Failed to dispatch background job '{$command}' from admin panel.", [
                 'error' => $e->getMessage(),
                 'parameters' => $parameters,
-                'output' => $e->getProcess()->getErrorOutput(),
             ]);
-            return redirect()->back()->with('error', "Failed to start background job: " . $e->getProcess()->getErrorOutput());
+            return redirect()->back()->with('error', "Failed to start background job: " . $e->getMessage());
         } catch (\Exception $e) {
             Log::error("Failed to dispatch job '{$command}' from admin panel.", [
                 'error' => $e->getMessage(),
                 'parameters' => $parameters,
             ]);
             return redirect()->back()->with('error', "Failed to dispatch job: " . $e->getMessage());
+        }
+    }
+
+    public function getUniqueColumnValues(Request $request)
+    {
+        $validated = $request->validate([
+            'model' => 'required|string',
+            'column' => 'required|string',
+        ]);
+
+        $modelName = $validated['model'];
+        $columnName = $validated['column'];
+
+        $modelClass = 'App\\Models\\' . $modelName;
+
+        if (!class_exists($modelClass)) {
+            return response()->json(['error' => 'Model not found.'], 404);
+        }
+
+        $modelInstance = new $modelClass();
+        $tableName = $modelInstance->getTable();
+        $connectionName = $modelInstance->getConnectionName() ?? config('database.default');
+
+        if (!DB::connection($connectionName)->getSchemaBuilder()->hasColumn($tableName, $columnName)) {
+            return response()->json(['error' => "Column '{$columnName}' not found on table '{$tableName}'."], 400);
+        }
+
+        try {
+            $uniqueValues = DB::connection($connectionName)
+                ->table($tableName)
+                ->whereNotNull($columnName)
+                ->distinct()
+                ->orderBy($columnName)
+                ->pluck($columnName);
+
+            return response()->json(['unique_values' => $uniqueValues]);
+        } catch (\Exception $e) {
+            Log::error("Failed to get unique values for {$modelName}->{$columnName}: " . $e->getMessage());
+            return response()->json(['error' => 'Could not retrieve unique values from the database.'], 500);
         }
     }
 
@@ -215,7 +250,6 @@ class AdminController extends Controller
         $runs = [];
         if (File::exists($historyFilePath)) {
             $runs = json_decode(File::get($historyFilePath), true) ?: [];
-            // Sort by start_time descending
             usort($runs, function ($a, $b) {
                 return strtotime($b['start_time']) - strtotime($a['start_time']);
             });
@@ -227,15 +261,12 @@ class AdminController extends Controller
 
     public function showPipelineFileLogRun(string $runId)
     {
-        // Validate runId format to prevent directory traversal
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', Str::after($runId, '_'))) {
-             // A basic check, ensure runId is what you expect (e.g., YYYYMMDDHHMMSS_uuid)
             if (!preg_match('/^\d{14}_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $runId)) {
                 Log::warning("Invalid runId format attempt: {$runId}");
                 abort(404, 'Pipeline run not found or invalid ID.');
             }
         }
-
 
         $summaryFilePath = storage_path('logs/pipeline_runs/' . $runId . '/run_summary.json');
         if (!File::exists($summaryFilePath)) {
@@ -251,9 +282,8 @@ class AdminController extends Controller
 
     public function getPipelineCommandFileLogContent(Request $request, string $runId, string $logFileName)
     {
-        // Validate runId and logFileName format to prevent directory traversal
         if (!preg_match('/^\d{14}_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $runId) ||
-            !preg_match('/^cmd_[a-z0-9-]+_\d{14}(_\d+)?\.log$/', $logFileName)) { // Updated regex
+            !preg_match('/^cmd_[a-z0-9-]+_\d{14}(_\d+)?\.log$/', $logFileName)) {
             Log::warning("Invalid runId or logFileName format attempt: {$runId}, {$logFileName}");
             abort(400, 'Invalid parameters.');
         }
@@ -263,9 +293,7 @@ class AdminController extends Controller
         if (!File::exists($logFilePath)) {
             return Response::make('Log file not found.', 404);
         }
-        
-        // Limit file size to prevent memory issues, e.g., read last 1MB or N lines
-        // For simplicity, returning full content. In production, consider streaming or partial reads.
+
         $content = File::get($logFilePath);
         return Response::make($content, 200, ['Content-Type' => 'text/plain']);
     }
@@ -273,7 +301,7 @@ class AdminController extends Controller
     public function deletePipelineFileRun(Request $request, string $runId)
     {
         if (!preg_match('/^\d{14}_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $runId)) {
-             Log::warning("Invalid runId format for deletion: {$runId}");
+            Log::warning("Invalid runId format for deletion: {$runId}");
             return redirect()->back()->with('error', 'Invalid Run ID format for deletion.');
         }
 
@@ -282,7 +310,6 @@ class AdminController extends Controller
         if (File::isDirectory($runLogDir)) {
             File::deleteDirectory($runLogDir);
 
-            // Update history file
             $historyFilePath = storage_path('logs/pipeline_runs_history.json');
             if (File::exists($historyFilePath)) {
                 $history = json_decode(File::get($historyFilePath), true) ?: [];
@@ -298,8 +325,6 @@ class AdminController extends Controller
     public function usersIndex()
     {
         $users = User::with(['locations', 'savedMaps' => function ($query) {
-                // Optionally eager load related data for saved maps if needed on this page
-                // $query->with('user:id,name'); 
             }])
             ->orderBy('name')
             ->get()
@@ -320,7 +345,6 @@ class AdminController extends Controller
                         'is_public' => $map->is_public,
                         'is_approved' => $map->is_approved,
                         'is_featured' => $map->is_featured,
-                        // Add a view URL for convenience
                         'view_url' => route('saved-maps.view', $map->id) 
                     ]),
                 ];
@@ -328,8 +352,8 @@ class AdminController extends Controller
 
         return Inertia::render('Admin/ManageUsers', [
             'users' => $users,
-            'subscriptionTiers' => ['free', 'basic', 'pro'], // For dropdowns
-            'userRoles' => ['user', 'admin'], // Define available roles
+            'subscriptionTiers' => ['free', 'basic', 'pro'],
+            'userRoles' => ['user', 'admin'],
         ]);
     }
 
@@ -355,17 +379,14 @@ class AdminController extends Controller
             'role' => ['required', 'string', Rule::in(config('auth.user_roles', ['user', 'admin']))],
             'manual_subscription_tier' => ['nullable', Rule::in(config('subscriptions.tiers', ['free', 'basic', 'pro']))],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            // Provider fields are usually set by OAuth, admin might correct them
             'provider_name' => ['nullable', 'string', 'max:255'],
             'provider_id' => ['nullable', 'string', 'max:255'],
-            // email_verified_at can be set to null or a valid date string
             'email_verified_at_action' => ['nullable', Rule::in(['keep', 'verify', 'unverify'])],
         ];
 
         if ($isSelfEdit) {
-            // Admin editing self: restrict role and email change to prevent lockout
-            unset($rules['email']); // Cannot change own email via this form
-            unset($rules['role']);  // Cannot change own role via this form
+            unset($rules['email']);
+            unset($rules['role']);
         }
         
         $validator = Validator::make($request->all(), $rules);
@@ -375,19 +396,17 @@ class AdminController extends Controller
         $updateData = [
             'name' => $validated['name'],
             'manual_subscription_tier' => $validated['manual_subscription_tier'],
-            'provider_name' => $validated['provider_name'] ?? $user->provider_name, // Keep old if not provided
-            'provider_id' => $validated['provider_id'] ?? $user->provider_id,     // Keep old if not provided
+            'provider_name' => $validated['provider_name'] ?? $user->provider_name,
+            'provider_id' => $validated['provider_id'] ?? $user->provider_id,
         ];
 
         if (!$isSelfEdit) {
             $updateData['email'] = $validated['email'];
             $updateData['role'] = $validated['role'];
-            // If email is changed, mark it as unverified
             if ($user->email !== $validated['email']) {
                 $updateData['email_verified_at'] = null;
             }
         }
-
 
         if (!empty($validated['password'])) {
             $updateData['password'] = Hash::make($validated['password']);
@@ -401,10 +420,8 @@ class AdminController extends Controller
                 case 'unverify':
                     $updateData['email_verified_at'] = null;
                     break;
-                // 'keep' does nothing to email_verified_at
             }
         }
-
 
         $user->update($updateData);
 
@@ -413,21 +430,11 @@ class AdminController extends Controller
 
     public function destroyUser(User $user)
     {
-        // Prevent admin from deleting themselves
         if ($user->id === Auth::id() && $user->email === config('admin.email')) {
             return redirect()->back()->with('error', 'Cannot delete the primary admin account.');
         }
 
-        // Consider implications: what happens to user's content?
-        // Soft delete if User model supports it, or hard delete.
-        // For now, a hard delete.
         try {
-            // You might want to handle related data here, e.g., reassign content or delete it.
-            // $user->locations()->delete();
-            // $user->savedMaps()->delete();
-            // $user->reports()->delete();
-            // etc.
-            
             $userName = $user->name;
             $user->delete();
             return redirect()->route('admin.users.index')->with('success', "User '{$userName}' deleted successfully.");
