@@ -1,0 +1,349 @@
+<template>
+    <PageTemplate>
+        <Head title="User Guide - PublicDataWatch" />
+
+        <div class="bg-gray-50 py-12 sm:py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto">
+                    <!-- Breadcrumb -->
+                    <nav class="mb-6 text-sm text-gray-500">
+                        <Link :href="route('help.index')" class="hover:text-blue-600">Help Center</Link>
+                        <span class="mx-2">/</span>
+                        <span class="text-gray-900">User Guide</span>
+                    </nav>
+
+                    <h1 class="text-4xl font-bold tracking-tight text-gray-900 mb-8">
+                        User Guide
+                    </h1>
+
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <!-- Table of Contents (sidebar) -->
+                        <aside class="lg:w-64 flex-shrink-0">
+                            <div class="lg:sticky lg:top-8 bg-white rounded-lg shadow-md p-4 border border-gray-200">
+                                <h2 class="font-semibold text-gray-900 mb-3">Contents</h2>
+                                <nav class="space-y-1 text-sm">
+                                    <a href="#getting-started" class="block text-blue-600 hover:text-blue-800 py-1">Getting Started</a>
+                                    <a href="#radial-map" class="block text-blue-600 hover:text-blue-800 py-1">The Radial Map</a>
+                                    <a href="#full-data-map" class="block text-blue-600 hover:text-blue-800 py-1">Full Data Map</a>
+                                    <a href="#ai-assistant" class="block text-blue-600 hover:text-blue-800 py-1">AI Assistant</a>
+                                    <a href="#data-types" class="block text-blue-600 hover:text-blue-800 py-1">Data Types Explained</a>
+                                    <a href="#cities" class="block text-blue-600 hover:text-blue-800 py-1">Cities & Coverage</a>
+                                    <a href="#saved-maps" class="block text-blue-600 hover:text-blue-800 py-1">Saved Maps & Community</a>
+                                    <a href="#reports" class="block text-blue-600 hover:text-blue-800 py-1">Reports & Analysis</a>
+                                    <a href="#statistical-reports" class="block text-blue-600 hover:text-blue-800 py-1">Statistical Reports</a>
+                                    <a href="#data-metrics" class="block text-blue-600 hover:text-blue-800 py-1">Data Metrics Dashboard</a>
+                                    <a href="#account" class="block text-blue-600 hover:text-blue-800 py-1">Account Management</a>
+                                    <a href="#subscriptions" class="block text-blue-600 hover:text-blue-800 py-1">Subscription Plans</a>
+                                </nav>
+                            </div>
+                        </aside>
+
+                        <!-- Main Content -->
+                        <div class="flex-1 min-w-0">
+                            <div class="bg-white rounded-lg shadow-md p-6 sm:p-8 border border-gray-200 prose prose-lg max-w-none">
+
+                                <!-- Getting Started -->
+                                <section id="getting-started">
+                                    <h2>Getting Started</h2>
+
+                                    <h3>Creating an Account</h3>
+                                    <p>
+                                        You can create a PublicDataWatch account in two ways:
+                                    </p>
+                                    <ul>
+                                        <li><strong>Email registration</strong> &mdash; Click "Register" in the navigation bar and fill in your name, email, and password.</li>
+                                        <li><strong>Google login</strong> &mdash; Click the Google icon to sign in with your Google account. An account will be created automatically on your first login.</li>
+                                    </ul>
+
+                                    <h3>Understanding Subscription Tiers</h3>
+                                    <p>PublicDataWatch offers three tiers with increasing data depth and features:</p>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full text-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left py-2 px-3">Feature</th>
+                                                    <th class="text-left py-2 px-3">Free</th>
+                                                    <th class="text-left py-2 px-3">Basic ($5/mo)</th>
+                                                    <th class="text-left py-2 px-3">Pro ($15/mo)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td class="py-2 px-3">Data window</td><td class="py-2 px-3">2 weeks</td><td class="py-2 px-3">6 months</td><td class="py-2 px-3">All time</td></tr>
+                                                <tr><td class="py-2 px-3">Saved locations</td><td class="py-2 px-3">1</td><td class="py-2 px-3">3</td><td class="py-2 px-3">10</td></tr>
+                                                <tr><td class="py-2 px-3">AI reports</td><td class="py-2 px-3">Limited</td><td class="py-2 px-3">Daily</td><td class="py-2 px-3">Unlimited</td></tr>
+                                                <tr><td class="py-2 px-3">CSV export</td><td class="py-2 px-3">No</td><td class="py-2 px-3">No</td><td class="py-2 px-3">Yes</td></tr>
+                                                <tr><td class="py-2 px-3">AI model choice</td><td class="py-2 px-3">Default</td><td class="py-2 px-3">Default</td><td class="py-2 px-3">Multiple models</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <h3>Navigating the Platform</h3>
+                                    <p>
+                                        The navigation bar at the top provides access to all major sections: <strong>Home</strong> (radial map), <strong>User Maps</strong>, <strong>Full Data Map</strong>, <strong>Trends</strong>, <strong>Yearly Comparison</strong>, <strong>Neighborhood Scores</strong>, <strong>Report History</strong> (authenticated users), <strong>Subscription</strong>, and <strong>Data Metrics</strong>. On mobile, tap the hamburger menu to see all links.
+                                    </p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Radial Map -->
+                                <section id="radial-map">
+                                    <h2>The Radial Map (Home Page)</h2>
+                                    <p>
+                                        The radial map is the core feature of PublicDataWatch. It lets you explore public data around any location within a configurable radius.
+                                    </p>
+                                    <h3>Setting Your Center Location</h3>
+                                    <p>Use the address search bar to enter an address or place name. You can also click directly on the map to set your center point.</p>
+
+                                    <h3>Adjusting the Search Radius</h3>
+                                    <p>Use the radius slider to expand or contract your search area. The circle on the map updates in real time to show the covered area.</p>
+
+                                    <h3>Understanding Data Markers</h3>
+                                    <p>Each data type appears as a differently colored marker on the map. Markers are clustered when zoomed out and expand as you zoom in. Click any marker or cluster to see details.</p>
+
+                                    <h3>Filtering Data</h3>
+                                    <ul>
+                                        <li><strong>By data type</strong> &mdash; Toggle categories on/off (Crime, 311, Permits, Violations, Food Inspections, etc.)</li>
+                                        <li><strong>By date range</strong> &mdash; Set start and end dates to narrow results to a specific time period.</li>
+                                    </ul>
+
+                                    <h3>Viewing Marker Details</h3>
+                                    <p>Clicking a marker opens a popup card showing key details about that data point, including dates, categories, descriptions, and status information.</p>
+
+                                    <h3>Statistics Panel</h3>
+                                    <p>The statistics panel shows aggregate counts and breakdowns for all data currently displayed on your map.</p>
+
+                                    <h3>Saving & Loading Locations</h3>
+                                    <p>Registered users can save locations (e.g., "Home", "Work") to quickly return to areas of interest. Your tier determines how many locations you can save.</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Full Data Map -->
+                                <section id="full-data-map">
+                                    <h2>Full Data Map</h2>
+                                    <h3>Single Data Type View</h3>
+                                    <p>Access individual data type maps to see all records of a specific type (e.g., all crime incidents, all building permits) across the entire city.</p>
+
+                                    <h3>Combined Data Map</h3>
+                                    <p>The <Link :href="route('data-map.combined')" class="text-blue-600 hover:text-blue-800">Combined Map</Link> overlays multiple data types on a single map, letting you see relationships between different categories.</p>
+
+                                    <h3>Natural Language Querying</h3>
+                                    <p>Use the NLP filter to describe what you're looking for in plain language (e.g., "show me robberies near downtown from last month"). The system translates your query into data filters automatically.</p>
+
+                                    <h3>Cluster Radius</h3>
+                                    <p>Adjust the cluster radius to control how aggressively nearby markers are grouped together.</p>
+
+                                    <h3>Saving Map Configurations</h3>
+                                    <p>Save your current map view, filters, and settings as a named map that you can return to later or share with the community.</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- AI Assistant -->
+                                <section id="ai-assistant">
+                                    <h2>AI Assistant</h2>
+                                    <h3>Asking Questions About Your Data</h3>
+                                    <p>The AI chat assistant can answer questions about the data currently displayed on your map. Ask about patterns, comparisons, or specific incidents.</p>
+
+                                    <h3>Generating Location Reports</h3>
+                                    <p>Generate comprehensive streaming reports for any location. Reports analyze all available data within your radius and provide insights, trends, and summaries.</p>
+
+                                    <h3>Choosing AI Models</h3>
+                                    <p>Pro subscribers can choose between different AI models (OpenAI GPT and Google Gemini) depending on their preference for response style.</p>
+
+                                    <h3>Multi-Language Reports</h3>
+                                    <p>Reports can be generated in 15+ languages including Spanish, Portuguese, Chinese, French, Arabic, and more &mdash; making city data accessible to diverse communities.</p>
+
+                                    <h3>Tips for Best Results</h3>
+                                    <ul>
+                                        <li>Be specific about location and time frame in your questions.</li>
+                                        <li>Use suggested prompts as starting points.</li>
+                                        <li>The AI works best with data already loaded on the map &mdash; load your area first, then ask questions.</li>
+                                    </ul>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Data Types -->
+                                <section id="data-types">
+                                    <h2>Data Types Explained</h2>
+
+                                    <h3>Crime Incident Reports</h3>
+                                    <p>Official police-reported crime incidents. Fields include offense description, offense group (e.g., Larceny, Assault), shooting indicator, date/time, and location. Data comes from city police department records.</p>
+
+                                    <h3>311 Service Cases</h3>
+                                    <p>Citizen-reported service requests (potholes, graffiti, noise complaints, etc.). Each case has a lifecycle: open, in progress, closed. PublicDataWatch supports live status polling to check current case status in real time.</p>
+
+                                    <h3>Building Permits</h3>
+                                    <p>Applications for construction and renovation work. Includes work type (new construction, renovation, demolition), permit status (issued, pending, denied), and estimated project valuation.</p>
+
+                                    <h3>Property Violations</h3>
+                                    <p>Code enforcement violations on properties. Includes violation type, status codes (open, closed, in compliance), and property details.</p>
+
+                                    <h3>Construction Off-Hours</h3>
+                                    <p>Special permits for construction work outside normal hours (evenings, weekends, holidays). Shows who has been approved for after-hours work in your area.</p>
+
+                                    <h3>Food Inspections</h3>
+                                    <p>Restaurant and food establishment inspection results. Includes inspection outcome (pass, fail, needs re-inspection), violation levels, and license information.</p>
+
+                                    <h3>Traffic Crash Data</h3>
+                                    <p>Motor vehicle crash reports including crash severity, vehicle types involved, pedestrian/cyclist involvement, and contributing factors.</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Cities -->
+                                <section id="cities">
+                                    <h2>Cities & Coverage</h2>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full text-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left py-2 px-3">City</th>
+                                                    <th class="text-left py-2 px-3">Data Types Available</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr><td class="py-2 px-3 font-medium">Boston, MA</td><td class="py-2 px-3">Crime, 311, Building Permits, Property Violations, Food Inspections, Construction Off-Hours</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Cambridge, MA</td><td class="py-2 px-3">Crime, 311, Building Permits, Housing Violations, Sanitary Inspections</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Everett, MA</td><td class="py-2 px-3">Crime (from police PDF reports)</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Chicago, IL</td><td class="py-2 px-3">Crime</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">San Francisco, CA</td><td class="py-2 px-3">Crime</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Seattle, WA</td><td class="py-2 px-3">Crime</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Montgomery County, MD</td><td class="py-2 px-3">Crime</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <p class="mt-4">More cities and data types are added regularly. If your city has an open data portal, <Link :href="route('help.contact')" class="text-blue-600 hover:text-blue-800">let us know</Link>!</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Saved Maps -->
+                                <section id="saved-maps">
+                                    <h2>Saved Maps & Community</h2>
+                                    <h3>Saving Your Current Map View</h3>
+                                    <p>Click the save button on any map view to capture your current location, zoom level, active filters, and data selections. Give your map a name and optional description.</p>
+
+                                    <h3>Public vs. Private Maps</h3>
+                                    <p>Choose to make your saved map public (visible to all users) or keep it private (only you can access it). Public maps may be featured by administrators.</p>
+
+                                    <h3>Browsing Community Maps</h3>
+                                    <p>Visit <Link :href="route('saved-maps.index')" class="text-blue-600 hover:text-blue-800">User Maps</Link> to browse maps created and shared by other users. Find interesting views of your city or discover data in areas you haven't explored.</p>
+
+                                    <h3>Creator Tier Badges</h3>
+                                    <p>Each shared map shows the creator's subscription tier, which indicates the depth of data available when the map was created (2 weeks for free, 6 months for basic, all time for pro).</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Reports -->
+                                <section id="reports">
+                                    <h2>Reports & Analysis</h2>
+                                    <h3>AI-Generated Location Reports</h3>
+                                    <p>Location reports provide a comprehensive analysis of all public data within your selected area. They include summaries of crime trends, service request patterns, permit activity, and more. Reports are generated in real time using AI streaming.</p>
+
+                                    <h3>Report History</h3>
+                                    <p>All your generated reports are saved in <Link :href="route('reports.index')" class="text-blue-600 hover:text-blue-800">Report History</Link> (requires login). You can review past reports and track changes over time.</p>
+
+                                    <h3>Downloading Reports</h3>
+                                    <p>Pro subscribers can download reports for offline use and sharing.</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Statistical Reports -->
+                                <section id="statistical-reports">
+                                    <h2>Statistical Reports</h2>
+
+                                    <h3>Trends & Anomaly Detection</h3>
+                                    <p>The <Link :href="route('trends.index')" class="text-blue-600 hover:text-blue-800">Trends</Link> page shows statistically significant changes in data patterns. The system uses time-series analysis to detect unusual spikes, drops, or sustained trends in incident counts across different categories and neighborhoods.</p>
+
+                                    <h3>Yearly Count Comparisons</h3>
+                                    <p><Link :href="route('yearly-comparisons.index')" class="text-blue-600 hover:text-blue-800">Yearly Comparisons</Link> show how this year's data compares to previous years. See which categories are increasing or decreasing year-over-year with percentage changes.</p>
+
+                                    <h3>Neighborhood Scoring</h3>
+                                    <p><Link :href="route('scoring-reports.index')" class="text-blue-600 hover:text-blue-800">Neighborhood Scores</Link> provide composite safety and livability scores for areas using H3 hexagonal indexing. Scores are calculated from weighted combinations of crime, violations, and service request data. You can drill down by resolution level to see scores at different geographic scales.</p>
+
+                                    <h3>AI-Generated News</h3>
+                                    <p>News articles are automatically generated from statistical analysis findings, turning data trends into readable narratives.</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Data Metrics -->
+                                <section id="data-metrics">
+                                    <h2>Data Metrics Dashboard</h2>
+                                    <p>The <Link :href="route('data.metrics')" class="text-blue-600 hover:text-blue-800">Data Metrics</Link> page provides an overview of the platform's data holdings: total record counts per data type, date ranges covered, and data freshness indicators showing when each dataset was last updated.</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Account -->
+                                <section id="account">
+                                    <h2>Account Management</h2>
+                                    <ul>
+                                        <li><strong>Edit profile</strong> &mdash; Update your name and email from the Profile page.</li>
+                                        <li><strong>Change password</strong> &mdash; Set a new password from Profile (email accounts only; Google login users manage passwords through Google).</li>
+                                        <li><strong>Manage subscription</strong> &mdash; Access the Stripe billing portal to update payment methods, view invoices, or cancel your plan.</li>
+                                        <li><strong>Redeem codes</strong> &mdash; Enter subscription codes on the Profile page to activate gifted or promotional plans.</li>
+                                        <li><strong>Delete account</strong> &mdash; Permanently delete your account and all associated data from the Profile page.</li>
+                                    </ul>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Subscriptions -->
+                                <section id="subscriptions">
+                                    <h2>Subscription Plans</h2>
+                                    <p>Visit the <Link :href="route('subscription.index')" class="text-blue-600 hover:text-blue-800">Subscription</Link> page to view full plan details and subscribe.</p>
+
+                                    <h3>Free Tier</h3>
+                                    <p>Access to all maps and features with a 2-week data window, 1 saved location, and basic AI features. No credit card required.</p>
+
+                                    <h3>Basic ($5/month)</h3>
+                                    <p>6-month data window, 3 saved locations, and daily AI report generation.</p>
+
+                                    <h3>Pro ($15/month)</h3>
+                                    <p>Full historical data access, 10 saved locations, unlimited AI reports, CSV data export, and choice of AI models.</p>
+
+                                    <h3>Managing Your Subscription</h3>
+                                    <p>You can upgrade, downgrade, or cancel at any time through the Stripe billing portal. Changes take effect at the start of your next billing cycle.</p>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </PageTemplate>
+</template>
+
+<script setup>
+import PageTemplate from '@/Components/PageTemplate.vue';
+import { Head, Link } from '@inertiajs/vue3';
+</script>
+
+<style scoped>
+.prose h2 {
+    @apply text-2xl font-bold text-gray-900 mt-8 mb-4;
+}
+.prose h3 {
+    @apply text-xl font-semibold text-gray-700 mt-6 mb-2;
+}
+.prose p {
+    @apply mb-4 leading-relaxed text-gray-600;
+}
+.prose ul {
+    @apply list-disc pl-6 mb-4 space-y-1 text-gray-600;
+}
+.prose table {
+    @apply border border-gray-200 rounded;
+}
+.prose th {
+    @apply bg-gray-50 border-b border-gray-200 font-semibold text-gray-700;
+}
+.prose td {
+    @apply border-b border-gray-100;
+}
+</style>

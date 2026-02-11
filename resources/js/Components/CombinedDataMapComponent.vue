@@ -33,7 +33,7 @@
       </div>
       <div class="mb-3">
         <span class="text-sm font-medium mr-2">Query Targets:</span>
-        <label v-for="modelKey in availableModels" :key="`nlp-${modelKey}`" class="mr-4 text-sm inline-flex items-center">
+        <label v-for="modelKey in mapSelectedModels" :key="`nlp-${modelKey}`" class="mr-4 text-sm inline-flex items-center">
           <input type="checkbox" :value="modelKey" v-model="nlpSelectedModels" class="mr-1 form-checkbox h-4 w-4 text-indigo-600">
           <span
             v-if="getIconClassForModelKey(modelKey)"
@@ -725,7 +725,7 @@ onMounted(async () => {
                                 ? [...props.initialMapSettings.selected_data_types] // These are modelKeys
                                 : [...availableModels.value]; 
 
-  nlpSelectedModels.value = [...availableModels.value]; 
+  nlpSelectedModels.value = [...mapSelectedModels.value];
 
   const fetchPromises = [];
   availableModels.value.forEach(modelKey => { 

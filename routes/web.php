@@ -80,9 +80,7 @@ Route::get('/map/{lat?}/{lng?}', function ($lat = null, $lng = null) {
     'lng' => '[-+]?([0-9]*\.[0-9]+|[0-9]+)'
 ])->name('map.index');
 
-Route::get('/', function () {
-    return redirect()->route('map.index');
-});
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 // New API endpoint for fetching map data
 Route::post('/api/map-data', [GenericMapController::class, 'getRadialMapData'])->name('map.data');
@@ -239,6 +237,26 @@ Route::get('/terms-of-use', function () {
 Route::get('/about-us', function () {
     return Inertia::render('Company/AboutUs');
 })->name('about.us');
+
+Route::get('/help', function () {
+    return Inertia::render('Help/Index');
+})->name('help.index');
+
+Route::get('/help/users', function () {
+    return Inertia::render('Help/ForUsers');
+})->name('help.users');
+
+Route::get('/help/municipalities', function () {
+    return Inertia::render('Help/ForMunicipalities');
+})->name('help.municipalities');
+
+Route::get('/help/researchers', function () {
+    return Inertia::render('Help/ForResearchers');
+})->name('help.researchers');
+
+Route::get('/help/investors', function () {
+    return Inertia::render('Help/ForInvestors');
+})->name('help.investors');
 
 Route::get('/help-contact', function () {
     return Inertia::render('Support/HelpContact');

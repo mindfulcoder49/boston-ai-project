@@ -1,6 +1,6 @@
 <template>
     <PageTemplate>
-        <Head title="Help & Contact - BostonScope" />
+        <Head title="Help & Contact - PublicDataWatch" />
 
         <div class="bg-gray-50 py-12 sm:py-16">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,9 +28,9 @@
                                 </p>
                             </div>
                             <div>
-                                <h3>What data does BostonScope use?</h3>
+                                <h3>What data does PublicDataWatch use?</h3>
                                 <p>
-                                    BostonScope utilizes publicly available data from sources like Boston's Analyze Boston open data portal, including crime incident reports, 311 service requests, building permits, and property violations. We process and present this data to offer valuable insights.
+                                    PublicDataWatch utilizes publicly available data from sources like Boston's Analyze Boston open data portal, including crime incident reports, 311 service requests, building permits, and property violations. We process and present this data to offer valuable insights.
                                 </p>
                             </div>
                             <div>
@@ -42,7 +42,7 @@
                             <div>
                                 <h3>How are the AI summaries generated?</h3>
                                 <p>
-                                    The AI-generated summaries and insights on BostonScope are powered by advanced language models (like Google's Gemini). They process the raw data points for a selected area and time frame to provide concise overviews. While helpful, always cross-reference important information.
+                                    The AI-generated summaries and insights on PublicDataWatch are powered by advanced language models (like Google's Gemini). They process the raw data points for a selected area and time frame to provide concise overviews. While helpful, always cross-reference important information.
                                 </p>
                             </div>
                             <!-- Add more relevant FAQs here -->
@@ -70,7 +70,7 @@
                     <!-- Feedback Form Section -->
                     <section>
                         <h2 class="text-3xl font-semibold text-gray-800 mb-6 border-b pb-3">
-                            Help Us Improve BostonScope
+                            Help Us Improve PublicDataWatch
                         </h2>
                         <div class="bg-white p-6 sm:p-8 rounded-lg shadow-lg">
                             <p class="text-gray-700 mb-6">
@@ -168,7 +168,7 @@ const submitFeedback = () => {
   feedbackForm.post(route('feedback.store'), { // Assuming you have a named route 'feedback.store'
     forceFormData: true, // Necessary to handle file uploads in Inertia.js
     onSuccess: () => {
-      successMessage.value = 'Thank you for your feedback! We appreciate you helping us improve BostonScope.';
+      successMessage.value = 'Thank you for your feedback! We appreciate you helping us improve PublicDataWatch.';
       feedbackForm.reset('feedback', 'image'); // Reset only feedback and image, keep name/email if prefilled
       const imageInput = document.getElementById('image');
       if (imageInput) {

@@ -13,7 +13,7 @@
                     <h3 class="text-lg font-semibold text-white mb-3">Quick Links</h3>
                     <ul class="space-y-2">
                         <li>
-                            <Link :href="route('map.index')" class="hover:text-white transition-colors duration-200">Home</Link>
+                            <Link :href="route('home')" class="hover:text-white transition-colors duration-200">Home</Link>
                         </li>
                         <li>
                             <Link :href="route('subscription.index')" class="hover:text-white transition-colors duration-200">Subscription</Link>
@@ -27,7 +27,7 @@
                             <Link :href="route('about.us')" class="hover:text-white transition-colors duration-200">About Us</Link>
                         </li>
                         <li>
-                            <Link :href="route('help.contact')" class="hover:text-white transition-colors duration-200">Help/Contact</Link>
+                            <Link :href="route('help.index')" class="hover:text-white transition-colors duration-200">Help Center</Link>
                         </li>
                         <li>
                             <Link :href="route('privacy.policy')" class="hover:text-white transition-colors duration-200">Privacy Policy</Link>

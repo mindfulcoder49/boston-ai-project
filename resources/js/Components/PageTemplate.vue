@@ -7,15 +7,18 @@
                 <div class="flex items-center">
                     <!-- Logo -->
                     <div class="shrink-0 flex items-center">
-                        <Link :href="route('map.index')">
+                        <Link :href="route('home')">
                             <ApplicationLogo class="block h-10 sm:h-12 w-auto fill-current text-gray-800" />
                         </Link>
                     </div>
 
                     <!-- Navigation Links -->
                     <div class="hidden space-x-4 lg:space-x-8 md:-my-px md:ml-6 lg:ml-10 md:flex">
-                        <NavLink :href="route('map.index')" :active="route().current('map.index')">
+                        <NavLink :href="route('home')" :active="route().current('home')">
                             Home
+                        </NavLink>
+                        <NavLink :href="route('map.index')" :active="route().current('map.index')">
+                            Explore Map
                         </NavLink>
                         <NavLink :href="route('saved-maps.index')" :active="route().current('saved-maps.index')">
                             User Maps
@@ -135,7 +138,8 @@
         <!-- Responsive Navigation Menu -->
         <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="md:hidden">
             <div class="pt-2 pb-3 space-y-1">
-                <ResponsiveNavLink :href="route('map.index')" :active="route().current('map.index')"> Home </ResponsiveNavLink>
+                <ResponsiveNavLink :href="route('home')" :active="route().current('home')"> Home </ResponsiveNavLink>
+                <ResponsiveNavLink :href="route('map.index')" :active="route().current('map.index')"> Explore Map </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('saved-maps.index')" :active="route().current('saved-maps.index')"> User Maps </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('data-map.combined')" :active="route().current('data-map.combined')"> Full Data Map </ResponsiveNavLink>
                 <ResponsiveNavLink :href="route('trends.index')" :active="route().current('trends.index')"> Trends </ResponsiveNavLink>
@@ -195,7 +199,7 @@
             <div class="pt-4 pb-1 border-t border-gray-200">
                  <div class="mt-3 space-y-1">
                     <ResponsiveNavLink :href="route('about.us')" :active="route().current('about.us')"> About Us </ResponsiveNavLink>
-                    <ResponsiveNavLink :href="route('help.contact')" :active="route().current('help.contact')"> Help/Contact </ResponsiveNavLink>
+                    <ResponsiveNavLink :href="route('help.index')" :active="route().current('help.index') || route().current('help.contact')"> Help </ResponsiveNavLink>
                     <ResponsiveNavLink :href="route('privacy.policy')" :active="route().current('privacy.policy')"> Privacy Policy </ResponsiveNavLink>
                     <ResponsiveNavLink :href="route('terms.of.use')" :active="route().current('terms.of.use')"> Terms of Use </ResponsiveNavLink>
                  </div>

@@ -4,7 +4,7 @@
       <title>Combined Data Map</title>
     </Head>
     <SubscriptionBanner />
-    <MapToolbar :model-toolbar-configs-prop="allModelConfigurationsForToolbar" />
+    <MapToolbar :model-toolbar-configs-prop="allModelConfigurationsForToolbar" :model-city-groups-prop="modelCityGroups" />
     <CombinedDataMapComponent
       :model-mapping-prop="modelMapping"
       :initial-data-type-prop="initialDataType"
@@ -33,6 +33,7 @@ const props = defineProps({
   initialFilters: Object, // Filters for the initialDataType
   allDataTypeDetails: Object, // Object keyed by dataType, containing { dateField, externalIdField, filterFieldsDescription, modelNameForHumans }
   allModelConfigurationsForToolbar: Array, // For MapToolbar
+  modelCityGroups: Array, // City-grouped data_map keys for toolbar
 
   // Props for read-only view (passed through if this page can be read-only)
   isReadOnly: {

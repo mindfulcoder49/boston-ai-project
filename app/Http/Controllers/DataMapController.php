@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
 class DataMapController extends Controller
@@ -196,12 +197,21 @@ class DataMapController extends Controller
             $initialModelKey = array_key_first($this->modelRegistry);
         }
 
+        $allDataTypeDetails = Cache::remember('combined_map_data_type_details', 3600, function () {
+            $details = [];
+            foreach ($this->modelRegistry as $modelKey => $modelClassString) {
+                if (!class_exists($modelClassString) || !in_array(Mappable::class, class_uses_recursive($modelClassString))) {
+                    continue;
+                }
+                $details[$modelKey] = $this->getDataTypeConfig($modelClassString);
+            }
+            return $details;
+        });
+
         foreach ($this->modelRegistry as $modelKey => $modelClassString) {
-            if (!class_exists($modelClassString) || !in_array(Mappable::class, class_uses_recursive($modelClassString))) {
-                Log::warning("Skipping data type {$modelKey} in combinedIndex as its model class {$modelClassString} is not Mappable or does not exist.");
+            if (!isset($allDataTypeDetails[$modelKey])) {
                 continue;
             }
-            $allDataTypeDetails[$modelKey] = $this->getDataTypeConfig($modelClassString);
 
             if ($modelKey === $initialModelKey) {
                 $config = $allDataTypeDetails[$initialModelKey];
@@ -220,7 +230,7 @@ class DataMapController extends Controller
                 }
             }
         }
-        
+
         // Fallback if initialModelKey had no data
         if ($initialModelKey && empty($initialDataSets[$initialModelKey]) && !empty($allDataTypeDetails)) {
              // Try to find the first model key from $allDataTypeDetails that might have data or is configured
@@ -250,18 +260,52 @@ class DataMapController extends Controller
         }
 
 
-        $allModelConfigurationsForToolbar = [];
-        foreach ($this->modelRegistry as $key => $class) {
-             if (class_exists($class) && in_array(Mappable::class, class_uses_recursive($class))) {
-                $allModelConfigurationsForToolbar[] = [
-                    'dataType' => $key,
-                    'name' => $class::getHumanName(),
-                    'iconClass' => $class::getIconClass(),
-                ];
+        $allModelConfigurationsForToolbar = Cache::remember('combined_map_toolbar_configs', 3600, function () {
+            $configs = [];
+            foreach ($this->modelRegistry as $key => $class) {
+                if (class_exists($class) && in_array(Mappable::class, class_uses_recursive($class))) {
+                    $configs[] = [
+                        'dataType' => $key,
+                        'name' => $class::getHumanName(),
+                        'iconClass' => $class::getIconClass(),
+                    ];
+                }
             }
+            return $configs;
+        });
+
+        $mapConfiguration = Cache::remember('combined_map_configuration', 3600, function () {
+            return $this->generateMapConfiguration();
+        });
+
+        // Parse ?types= query parameter for pre-filtering
+        $requestedTypes = [];
+        if ($request->has('types')) {
+            $requestedTypes = array_filter(
+                array_map('trim', explode(',', $request->query('types'))),
+                fn($type) => isset($this->modelRegistry[$type])
+            );
         }
 
-        $mapConfiguration = $this->generateMapConfiguration();
+        // Build initialMapSettings with optional type filtering
+        $initialMapSettings = [
+            'center' => [42.3601, -71.0589],
+            'zoom' => 12,
+        ];
+        if (!empty($requestedTypes)) {
+            $initialMapSettings['selected_data_types'] = array_values($requestedTypes);
+            // Determine center from city_contexts config based on first requested type
+            $cityContexts = config('data_map.city_contexts', []);
+            foreach ($cityContexts as $prefix => $ctx) {
+                if (str_starts_with($requestedTypes[0], $prefix)) {
+                    $initialMapSettings['center'] = $ctx['center'];
+                    if (isset($ctx['zoom'])) {
+                        $initialMapSettings['zoom'] = $ctx['zoom'];
+                    }
+                    break;
+                }
+            }
+        }
 
         return Inertia::render('CombinedDataMap', [
             'modelMapping' => $this->getModelMapping(),
@@ -270,7 +314,9 @@ class DataMapController extends Controller
             'initialFilters' => $initialFilters,
             'allDataTypeDetails' => $allDataTypeDetails,
             'allModelConfigurationsForToolbar' => $allModelConfigurationsForToolbar,
-            'mapConfiguration' => $mapConfiguration, // Add map configuration
+            'mapConfiguration' => $mapConfiguration,
+            'initialMapSettings' => $initialMapSettings,
+            'modelCityGroups' => $this->buildModelCityGroups(),
         ]);
     }
 
@@ -722,6 +768,68 @@ class DataMapController extends Controller
         
         \Log::error('OpenAI GPT Error: Failed to get valid filter arguments. Response: ' . json_encode($responseBody));
         throw new \Exception('Failed to get valid filter arguments from OpenAI. Check logs for details. OpenAI Response: ' . json_encode($responseBody));
+    }
+
+    /**
+     * Group data_map keys by city using prefix matching.
+     */
+    private function buildModelCityGroups(): array
+    {
+        return Cache::remember('model_city_groups', 3600, function () {
+            return $this->computeModelCityGroups();
+        });
+    }
+
+    private function computeModelCityGroups(): array
+    {
+        $cityContexts = config('data_map.city_contexts', []);
+        $defaultContext = config('data_map.default_city_context', []);
+        $citiesConfig = config('cities.cities', []);
+
+        // Build prefix-to-city-name mappings from city_contexts
+        $prefixNames = [
+            'cambridge_' => 'Cambridge',
+            'everett_' => 'Everett',
+        ];
+        foreach ($cityContexts as $prefix => $ctx) {
+            $cityKey = $ctx['city'];
+            $prefixNames[$prefix] = $citiesConfig[$cityKey]['name'] ?? ucfirst(str_replace('_', ' ', $cityKey));
+        }
+
+        $groups = [];
+        $defaultKeys = [];
+
+        foreach ($this->modelRegistry as $key => $modelClass) {
+            if (!class_exists($modelClass) || !in_array(Mappable::class, class_uses_recursive($modelClass))) {
+                continue;
+            }
+
+            $matched = false;
+            foreach ($prefixNames as $prefix => $cityName) {
+                if (str_starts_with($key, $prefix)) {
+                    if (!isset($groups[$cityName])) {
+                        $groups[$cityName] = ['name' => $cityName, 'keys' => []];
+                    }
+                    $groups[$cityName]['keys'][] = $key;
+                    $matched = true;
+                    break;
+                }
+            }
+            if (!$matched) {
+                $defaultKeys[] = $key;
+            }
+        }
+
+        $result = [];
+        if (!empty($defaultKeys)) {
+            $defaultName = $citiesConfig[$defaultContext['city'] ?? 'boston']['name'] ?? 'Boston';
+            $result[] = ['name' => $defaultName, 'keys' => $defaultKeys];
+        }
+        foreach ($groups as $group) {
+            $result[] = $group;
+        }
+
+        return $result;
     }
 
     public function generateMapConfiguration(): array
