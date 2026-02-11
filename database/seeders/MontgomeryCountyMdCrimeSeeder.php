@@ -140,6 +140,7 @@ class MontgomeryCountyMdCrimeSeeder extends Seeder
 
         $dateColumns = ['date', 'start_date', 'end_date'];
         $boolColumns = [];
+        $intColumns = ['victims'];
         $pointColumns = ['geolocation'];
 
         $transformed = [];
@@ -147,6 +148,8 @@ class MontgomeryCountyMdCrimeSeeder extends Seeder
             $cleaned = $cleanVal($value);
             if (in_array($key, $boolColumns)) {
                 $transformed[$key] = filter_var($cleaned, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            } elseif (in_array($key, $intColumns)) {
+                $transformed[$key] = $cleaned !== null && is_numeric($cleaned) ? (int)$cleaned : null;
             } elseif (in_array($key, $dateColumns)) {
                 try {
                     $transformed[$key] = $cleaned ? Carbon::parse($cleaned)->toDateTimeString() : null;
