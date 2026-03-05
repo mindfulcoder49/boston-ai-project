@@ -18,10 +18,18 @@ class RunAllDataPipelineCommand extends Command
                             {--stages= : Comma-separated list of stage names to run (e.g., "Stage Name 1,Stage Name 2")}
                             {--boston-datasets= : Comma-separated list of Boston dataset names to download}
                             {--boston-seeders= : Comma-separated list of Boston seeder classes to run}
-                            {--cambridge-datasets= : Comma-separated list of Cambridge dataset commands to run}
+                            {--cambridge-datasets= : Comma-separated list of Cambridge dataset names to download (e.g., cambridge-311-service-requests)}
                             {--cambridge-seeders= : Comma-separated list of Cambridge seeder classes to run}
                             {--everett-steps= : Comma-separated list of Everett processing commands to run}
                             {--everett-seeders= : Comma-separated list of Everett seeder classes to run}
+                            {--chicago-datasets= : Comma-separated list of Chicago dataset names to download}
+                            {--chicago-seeders= : Comma-separated list of Chicago seeder classes to run}
+                            {--san-francisco-datasets= : Comma-separated list of San Francisco dataset names to download}
+                            {--san-francisco-seeders= : Comma-separated list of San Francisco seeder classes to run}
+                            {--seattle-datasets= : Comma-separated list of Seattle dataset names to download}
+                            {--seattle-seeders= : Comma-separated list of Seattle seeder classes to run}
+                            {--montgomery-county-md-datasets= : Comma-separated list of Montgomery County MD dataset names to download}
+                            {--montgomery-county-md-seeders= : Comma-separated list of Montgomery County MD seeder classes to run}
                             {--post-seeding-steps= : Comma-separated list of post-seeding commands to run}
                             {--reporting-steps= : Comma-separated list of reporting commands to run}';
     protected $description = 'Runs all or specified download, processing, and seeding commands for the data pipeline with file-based logging.';
@@ -128,8 +136,14 @@ class RunAllDataPipelineCommand extends Command
                 'FoodInspectionsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'FoodInspectionsSeeder', '--force' => true]],
             ]),
             'Cambridge Data Acquisition' => $this->getFilteredCommands('cambridge-datasets', [
-                'app:download-city-dataset' => ['command' => 'app:download-city-dataset', 'params' => []], 
                 'app:download-cambridge-logs' => ['command' => 'app:download-cambridge-logs', 'params' => []],
+                'cambridge-311-service-requests' => ['command' => 'app:download-city-dataset', 'params' => ['cambridge-311-service-requests']],
+                'cambridge-building-permits' => ['command' => 'app:download-city-dataset', 'params' => ['cambridge-building-permits']],
+                'cambridge-sanitary-inspections' => ['command' => 'app:download-city-dataset', 'params' => ['cambridge-sanitary-inspections']],
+                'cambridge-housing-code-violations' => ['command' => 'app:download-city-dataset', 'params' => ['cambridge-housing-code-violations']],
+                'cambridge-crime-reports' => ['command' => 'app:download-city-dataset', 'params' => ['cambridge-crime-reports']],
+                'cambridge-master-addresses-list' => ['command' => 'app:download-city-dataset', 'params' => ['cambridge-master-addresses-list']],
+                'cambridge-master-intersections-list' => ['command' => 'app:download-city-dataset', 'params' => ['cambridge-master-intersections-list']],
             ]),
             'Cambridge Data Seeding' => $this->getFilteredCommands('cambridge-seeders', [
                 'NativeCambridgeBuildingPermitsSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'NativeCambridgeBuildingPermitsSeeder', '--force' => true]],
@@ -148,6 +162,34 @@ class RunAllDataPipelineCommand extends Command
             ]),
             'Everett Data Seeding' => $this->getFilteredCommands('everett-seeders', [
                 'EverettCrimeDataSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'EverettCrimeDataSeeder', '--force' => true]],
+            ]),
+            'Chicago Data Acquisition' => $this->getFilteredCommands('chicago-datasets', [
+                'chicago-crimes-2001-to-present' => ['command' => 'app:download-city-dataset', 'params' => ['chicago-crimes-2001-to-present']],
+            ]),
+            'Chicago Data Seeding' => $this->getFilteredCommands('chicago-seeders', [
+                'ChicagoCrimeSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'ChicagoCrimeSeeder', '--force' => true]],
+                'ChicagoDataPointSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'ChicagoDataPointSeeder', '--force' => true]],
+            ]),
+            'San Francisco Data Acquisition' => $this->getFilteredCommands('san-francisco-datasets', [
+                'san_francisco-crimes' => ['command' => 'app:download-city-dataset', 'params' => ['san_francisco-crimes']],
+            ]),
+            'San Francisco Data Seeding' => $this->getFilteredCommands('san-francisco-seeders', [
+                'SanFranciscoCrimeSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'SanFranciscoCrimeSeeder', '--force' => true]],
+                'SanFranciscoDataPointSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'SanFranciscoDataPointSeeder', '--force' => true]],
+            ]),
+            'Seattle Data Acquisition' => $this->getFilteredCommands('seattle-datasets', [
+                'seattle-crimes' => ['command' => 'app:download-city-dataset', 'params' => ['seattle-crimes']],
+            ]),
+            'Seattle Data Seeding' => $this->getFilteredCommands('seattle-seeders', [
+                'SeattleCrimeSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'SeattleCrimeSeeder', '--force' => true]],
+                'SeattleDataPointSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'SeattleDataPointSeeder', '--force' => true]],
+            ]),
+            'Montgomery County MD Data Acquisition' => $this->getFilteredCommands('montgomery-county-md-datasets', [
+                'montgomery_county_md-crimes' => ['command' => 'app:download-city-dataset', 'params' => ['montgomery_county_md-crimes']],
+            ]),
+            'Montgomery County MD Data Seeding' => $this->getFilteredCommands('montgomery-county-md-seeders', [
+                'MontgomeryCountyMdCrimeSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'MontgomeryCountyMdCrimeSeeder', '--force' => true]],
+                'MontgomeryCountyMdDataPointSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'MontgomeryCountyMdDataPointSeeder', '--force' => true]],
             ]),
             'Post-Seeding Aggregation & Caching' => $this->getFilteredCommands('post-seeding-steps', [
                 'DataPointSeeder' => ['command' => 'db:seed', 'params' => ['--class' => 'DataPointSeeder', '--force' => true]],

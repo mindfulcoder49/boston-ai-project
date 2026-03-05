@@ -3,7 +3,14 @@
         <Head :title="reportTitle" />
         <div class="container mx-auto p-4 md:p-8">
             <h1 class="text-4xl font-bold text-center text-gray-800">{{ reportTitle }}</h1>
-            <h2 class="text-lg text-center text-gray-500 mb-8">Job ID: {{ initialReport.job_id }}</h2>
+            <h2 class="text-lg text-center text-gray-500">Job ID: {{ initialReport.job_id }}</h2>
+            <div v-if="sourceTrend" class="text-center mt-2 mb-8">
+                <Link
+                    :href="route('reports.statistical-analysis.show', { trendId: sourceTrend.trend_id })"
+                    class="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
+                >← Source analysis: {{ sourceTrend.title }}</Link>
+            </div>
+            <div v-else class="mb-8"></div>
 
             <!-- Search Section -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -156,7 +163,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import PageTemplate from '@/Components/PageTemplate.vue';
 import GoogleAddressSearch from '@/Components/GoogleAddressSearch.vue';
 import ReportResolutionControl from '@/Components/ReportResolutionControl.vue';
@@ -176,6 +183,10 @@ const props = defineProps({
     reportGroup: Array,
     initialReport: Object,
     reportTitle: String,
+    sourceTrend: {
+        type: Object,
+        default: null,
+    },
 });
 
 const colorSteps = ref(10);

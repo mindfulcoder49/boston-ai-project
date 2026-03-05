@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use App\Models\Trend;
 
 class ScoringReportController extends Controller
 {
@@ -17,7 +19,7 @@ class ScoringReportController extends Controller
     public function index()
     {
         try {
-            $reports = Cache::rememberForever('scoring_reports_listing_grouped', function () {
+            $reports = Cache::rememberForever('scoring_reports_listing_v2', function () {
                 Log::info('Rebuilding scoring reports cache from S3 (grouped).');
                 $s3 = Storage::disk('s3');
                 $allJobDirs = $s3->directories();
@@ -44,6 +46,7 @@ class ScoringReportController extends Controller
                                 'city' => $city,
                                 'date_range_key' => $dateRange,
                                 'resolution' => $parameters['h3_resolution'] ?? 'N/A',
+                                'source_job_id' => $fileContent['source_job_id'] ?? null,
                             ];
                         }
                     }
@@ -78,7 +81,7 @@ class ScoringReportController extends Controller
      */
     public function refreshIndex()
     {
-        Cache::forget('scoring_reports_listing_grouped');
+        Cache::forget('scoring_reports_listing_v2');
         Log::info('Scoring reports cache has been cleared by user.');
         return redirect()->route('scoring-reports.index')->with('status', 'Report listing has been updated.');
     }
@@ -89,7 +92,7 @@ class ScoringReportController extends Controller
     public function show($jobId, $artifactName)
     {
         $s3 = Storage::disk('s3');
-        $allReportsGrouped = Cache::get('scoring_reports_listing_grouped', []);
+        $allReportsGrouped = Cache::get('scoring_reports_listing_v2', []);
         
         $targetReport = null;
         $reportGroup = null;
@@ -129,10 +132,26 @@ class ScoringReportController extends Controller
         // Sort by resolution ascending
         usort($reportsWithData, fn($a, $b) => ($a['resolution'] ?? 99) <=> ($b['resolution'] ?? 99));
 
+        // Look up the source Stage 4 analysis for cross-linking
+        $initial = collect($reportsWithData)->firstWhere('artifact_name', $artifactName);
+        $sourceJobId = $initial['scoring_data']['source_job_id'] ?? null;
+        $sourceTrend = null;
+        if ($sourceJobId) {
+            $trend = Trend::where('job_id', $sourceJobId)->first();
+            if ($trend && class_exists($trend->model_class)) {
+                $mc = $trend->model_class;
+                $label = $trend->column_name !== 'unified'
+                    ? $mc::getHumanName() . ' by ' . Str::of($trend->column_name)->replace('_', ' ')->title()
+                    : $mc::getHumanName() . ' — Unified Analysis';
+                $sourceTrend = ['trend_id' => $trend->id, 'title' => $label];
+            }
+        }
+
         return Inertia::render('Reports/Scoring/Viewer', [
             'reportGroup' => $reportsWithData,
-            'initialReport' => collect($reportsWithData)->firstWhere('artifact_name', $artifactName),
+            'initialReport' => $initial,
             'reportTitle' => 'Neighborhood Scoring Report Viewer',
+            'sourceTrend' => $sourceTrend,
         ]);
     }
 
@@ -157,7 +176,7 @@ class ScoringReportController extends Controller
                 }
 
                 // Clear the cache to force a refresh on the index page
-                Cache::forget('scoring_reports_listing_grouped');
+                Cache::forget('scoring_reports_listing_v2');
                 Log::info('Scoring reports cache cleared after deletion.');
 
                 return redirect()->route('scoring-reports.index')->with('status', 'Report deleted successfully.');

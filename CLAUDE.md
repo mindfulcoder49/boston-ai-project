@@ -57,11 +57,19 @@ The data pipeline is orchestrated by `RunAllDataPipelineCommand` (`app:run-all-d
 
 6. **Everett Data Seeding** - `EverettCrimeDataSeeder`
 
-7. **Post-Seeding Aggregation**
+7. **Chicago Data Seeding** - `ChicagoCrimeSeeder`, `ChicagoDataPointSeeder`
+
+8. **San Francisco Data Seeding** - `SanFranciscoCrimeSeeder`, `SanFranciscoDataPointSeeder`
+
+9. **Seattle Data Seeding** - `SeattleCrimeSeeder`, `SeattleDataPointSeeder`
+
+10. **Montgomery County MD Data Seeding** - `MontgomeryCountyMdCrimeSeeder`, `MontgomeryCountyMdDataPointSeeder`
+
+11. **Post-Seeding Aggregation**
    - `DataPointSeeder` - Aggregates all city data into unified `data_points` table for map display
    - `app:cache-metrics-data` - Caches statistics for dashboard
 
-8. **Reporting** - `reports:send` dispatches location-based email reports
+12. **Reporting** - `reports:send` dispatches location-based email reports
 
 ### Running Specific Stages
 
@@ -149,3 +157,21 @@ Reports are stored in `Trend`, `YearlyCountComparison`, and `NewsArticle` models
 - Map components use Leaflet via `@vue-leaflet/vue-leaflet`
 - Charts use ECharts via `vue-echarts`
 - Inertia.js handles routing - no API endpoints needed for page data
+
+## Analysis API Integration
+
+This app dispatches statistical analysis jobs to the `open-data-statistics` FastAPI service (separate repo). The API URL is set via `ANALYSIS_API_URL` in `.env` and read as `config('services.analysis_api.url')`.
+
+**Artisan commands that dispatch jobs:**
+- `app:dispatch-statistical-analysis-jobs` — Stage 4 H3 anomaly analysis; updates `Trend` model
+- `app:dispatch-yearly-count-comparison-jobs` — Stage 2 year-over-year comparison; updates `YearlyCountComparison` model
+- `app:dispatch-historical-scoring-jobs` — Stage 6 historical scoring (no model, logged only)
+
+**Results are consumed by:**
+- `StatisticalAnalysisReportController` — reads Stage 4 results from S3
+- `YearlyCountComparisonController` — fetches Stage 2 results live from the API
+- `ScoringReportController` — reads Stage 5/6 scoring artifacts from S3 (cached)
+
+See `docs/ANALYSIS_API_INTEGRATION.md` for full details on payloads, data flow, S3 layout, and failure modes.
+
+See `docs/PAGES_AND_UX.md` for a complete inventory of all pages, their data sources, components, and UX improvement goals.

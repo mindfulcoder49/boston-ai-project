@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import PageTemplate from '@/Components/PageTemplate.vue';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
@@ -28,6 +28,10 @@ const props = defineProps({
         required: false,
         default: null,
     },
+    relatedScoringReports: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const isLoading = ref(false);
@@ -50,6 +54,14 @@ onMounted(async () => {
 
     try {
         processAndDisplayData();
+        // Auto-activate the most significant category so reporters land on something useful
+        await nextTick();
+        if (sortedSecondaryGroups.value.length > 0) {
+            const topGroup = sortedSecondaryGroups.value[0];
+            activeSecondaryGroup.value = topGroup;
+            await nextTick();
+            initializeMapsForGroup(topGroup);
+        }
     } catch (e) {
         console.error('Failed to process report data:', e);
         error.value = `Failed to process report data. (${e.message})`;
@@ -96,13 +108,34 @@ const initializeMapsForGroup = (secGroup) => {
 };
 
 const toggleSecondaryGroup = async (secGroup) => {
-    const newActiveGroup = activeSecondaryGroup.value === secGroup ? null : secGroup;
+    const prevGroup = activeSecondaryGroup.value;
+    const newActiveGroup = prevGroup === secGroup ? null : secGroup;
+
+    // Destroy old Leaflet instances before the shared DOM container changes group
+    if (prevGroup) {
+        mapAnomaliesInstances[prevGroup]?.remove();
+        delete mapAnomaliesInstances[prevGroup];
+        Object.values(mapTrendsInstances[prevGroup] ?? {}).forEach(m => m.remove());
+        delete mapTrendsInstances[prevGroup];
+        delete h3Layers[prevGroup];
+    }
+
     activeSecondaryGroup.value = newActiveGroup;
 
     if (newActiveGroup) {
         await nextTick();
         initializeMapsForGroup(newActiveGroup);
     }
+};
+
+// Used by top-findings rows: always activates (never deactivates) and scrolls into view
+const activateAndScrollTo = async (secGroup) => {
+    if (activeSecondaryGroup.value !== secGroup) {
+        await toggleSecondaryGroup(secGroup);
+    }
+    await nextTick();
+    document.getElementById(`analysis-${sanitizeForFilename(secGroup)}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 const allFindings = ref([]);
@@ -131,11 +164,96 @@ const findingsBySecondaryGroup = computed(() => {
     return grouped;
 });
 
-const filteredFindings = computed(() => {
-    if (!activeSecondaryGroup.value) {
-        return [];
+// Top individual findings — sortable
+const anomalySortKey = ref('z_score');   // 'z_score' | 'p_value' | 'count' | 'week'
+const trendSortKey   = ref('slope');     // 'slope' | 'p_value' | 'category'
+
+const setAnomalySort = (key) => { anomalySortKey.value = key; };
+const setTrendSort   = (key) => { trendSortKey.value   = key; };
+
+const topAnomalyFindings = computed(() => {
+    const comparators = {
+        z_score:  (a, b) => (b.week_details.z_score ?? 0) - (a.week_details.z_score ?? 0),
+        p_value:  (a, b) => (a.week_details.anomaly_p_value ?? 1) - (b.week_details.anomaly_p_value ?? 1),
+        count:    (a, b) => (b.week_details.count ?? 0) - (a.week_details.count ?? 0),
+        week:     (a, b) => (b.week_details.week ?? '').localeCompare(a.week_details.week ?? ''),
+    };
+    return [...anomalyFindings.value].sort(comparators[anomalySortKey.value] ?? comparators.z_score).slice(0, 8);
+});
+
+// Trends grouped by window, each window sorted independently
+const topTrendsByWindow = computed(() => {
+    const compare = {
+        slope:    (a, b) => Math.abs(b.trend_details.slope ?? 0) - Math.abs(a.trend_details.slope ?? 0),
+        p_value:  (a, b) => (a.trend_details.p_value ?? 1) - (b.trend_details.p_value ?? 1),
+        category: (a, b) => (a.details.secondary_group ?? '').localeCompare(b.details.secondary_group ?? ''),
+    }[trendSortKey.value] ?? ((a, b) => Math.abs(b.trend_details.slope ?? 0) - Math.abs(a.trend_details.slope ?? 0));
+
+    const byWindow = {};
+    for (const f of trendFindings.value) {
+        if (!byWindow[f.trend_window]) byWindow[f.trend_window] = [];
+        byWindow[f.trend_window].push(f);
     }
-    return allFindings.value.filter(finding => finding.details.secondary_group === activeSecondaryGroup.value);
+    const result = {};
+    for (const w of Object.keys(byWindow).sort((a, b) => parseInt(a) - parseInt(b))) {
+        result[w] = [...byWindow[w]].sort(compare).slice(0, 8);
+    }
+    return result;
+});
+
+const formatPValue = (p) => {
+    if (p == null) return 'N/A';
+    if (p === 0)   return '< 1e-15';
+    if (p < 0.001) return p.toExponential(2);
+    if (p < 0.01)  return p.toFixed(4);
+    return p.toFixed(3);
+};
+
+// Secondary groups sorted by total findings descending — so the most significant appears first
+const sortedSecondaryGroups = computed(() => {
+    return Object.keys(findingsBySecondaryGroup.value).sort((a, b) => {
+        const totalA = (findingsBySecondaryGroup.value[a].anomalies.length + findingsBySecondaryGroup.value[a].trends.length);
+        const totalB = (findingsBySecondaryGroup.value[b].anomalies.length + findingsBySecondaryGroup.value[b].trends.length);
+        return totalB - totalA;
+    });
+});
+
+// Separate lists for the split summary view
+const groupsWithAnomalies = computed(() =>
+    Object.keys(findingsBySecondaryGroup.value)
+        .filter(g => findingsBySecondaryGroup.value[g].anomalies.length > 0)
+        .sort((a, b) => findingsBySecondaryGroup.value[b].anomalies.length - findingsBySecondaryGroup.value[a].anomalies.length)
+);
+
+const groupsWithTrends = computed(() =>
+    Object.keys(findingsBySecondaryGroup.value)
+        .filter(g => findingsBySecondaryGroup.value[g].trends.length > 0)
+        .sort((a, b) => findingsBySecondaryGroup.value[b].trends.length - findingsBySecondaryGroup.value[a].trends.length)
+);
+
+const filteredFindings = computed(() => {
+    if (!activeSecondaryGroup.value) return [];
+    return allFindings.value.filter(f => f.details.secondary_group === activeSecondaryGroup.value);
+});
+
+const filteredAnomalyFindings = computed(() =>
+    filteredFindings.value.filter(f => f.type === 'Anomaly')
+        .sort((a, b) => (b.week_details.z_score ?? 0) - (a.week_details.z_score ?? 0))
+);
+
+const filteredTrendsByWindow = computed(() => {
+    const byWindow = {};
+    for (const f of filteredFindings.value.filter(f => f.type === 'Trend')) {
+        if (!byWindow[f.trend_window]) byWindow[f.trend_window] = [];
+        byWindow[f.trend_window].push(f);
+    }
+    const result = {};
+    for (const w of Object.keys(byWindow).sort((a, b) => parseInt(a) - parseInt(b))) {
+        result[w] = byWindow[w].sort((a, b) =>
+            Math.abs(b.trend_details.slope ?? 0) - Math.abs(a.trend_details.slope ?? 0)
+        );
+    }
+    return result;
 });
 
 const filteredFindingsByH3 = computed(() => {
@@ -358,20 +476,151 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
             <div v-else-if="reportData" class="space-y-12">
                 <h1 class="text-4xl font-bold text-center text-gray-800">{{ reportTitle }}</h1>
                 <h2 class="text-lg text-center text-gray-500">Job ID: {{ jobId }}</h2>
+
+                <!-- Related scoring reports derived from this analysis -->
+                <div v-if="relatedScoringReports.length > 0" class="flex flex-wrap items-center justify-center gap-2">
+                    <span class="text-sm text-gray-500">Scoring reports derived from this analysis:</span>
+                    <Link
+                        v-for="sr in relatedScoringReports"
+                        :key="`${sr.job_id}-${sr.artifact_name}`"
+                        :href="route('scoring-reports.show', { jobId: sr.job_id, artifactName: sr.artifact_name })"
+                        class="inline-flex items-center gap-1 text-sm px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200 hover:bg-indigo-100 transition-colors"
+                    >{{ sr.city }} · res {{ sr.resolution }} →</Link>
+                </div>
                 
-                <section v-if="allFindings.length > 0" class="p-6 border rounded-lg bg-gray-50/50">
-                    <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Summary by Category</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div v-for="(groupData, secGroup) in findingsBySecondaryGroup" :key="`summary-${secGroup}`" 
-                             class="p-4 border rounded-lg bg-white shadow hover:shadow-md transition-shadow cursor-pointer"
-                             :class="{ 'ring-2 ring-indigo-500': activeSecondaryGroup === secGroup }"
+                <!-- Top Findings: most significant individual anomalies and trends across all categories -->
+                <section v-if="topAnomalyFindings.length > 0 || Object.keys(topTrendsByWindow).length > 0" class="space-y-6">
+
+                    <!-- Anomalies table -->
+                    <div v-if="topAnomalyFindings.length > 0" class="p-6 border border-amber-200 rounded-lg bg-amber-50/30">
+                        <h2 class="text-lg font-semibold text-amber-800 border-b border-amber-200 pb-2 mb-3">
+                            ⚠ Most Significant Anomalies
+                            <span class="text-xs font-normal text-amber-600 ml-2">click a header to sort · click a row to jump to that category</span>
+                        </h2>
+                        <table class="w-full text-base">
+                            <thead>
+                                <tr>
+                                    <th class="pb-1.5 w-6"></th>
+                                    <th class="text-left pb-1.5 pr-3 text-sm text-gray-500 font-medium">Category</th>
+                                    <th
+                                        v-for="col in [['z_score','Z-score'],['p_value','p-value'],['count','Count'],['week','Week']]"
+                                        :key="col[0]"
+                                        class="pb-1.5 px-2 text-sm font-medium text-right cursor-pointer select-none whitespace-nowrap transition-colors"
+                                        :class="anomalySortKey === col[0] ? 'text-amber-700 underline font-semibold' : 'text-gray-400 hover:text-gray-700'"
+                                        @click="setAnomalySort(col[0])"
+                                    >{{ col[1] }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr
+                                    v-for="(f, i) in topAnomalyFindings"
+                                    :key="`ta-${i}`"
+                                    class="cursor-pointer hover:bg-amber-100/60 transition-colors"
+                                    :class="{ 'bg-amber-100/60 font-semibold': activeSecondaryGroup === f.details.secondary_group }"
+                                    @click="activateAndScrollTo(f.details.secondary_group)"
+                                >
+                                    <td class="py-1.5 w-6 text-center">
+                                        <span :class="(f.week_details.z_score ?? 0) >= 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold">{{ (f.week_details.z_score ?? 0) >= 0 ? '↑' : '↓' }}</span>
+                                    </td>
+                                    <td class="py-1.5 pr-3 text-gray-800">{{ f.details.secondary_group }}</td>
+                                    <td class="py-1.5 px-2 text-right font-semibold text-amber-700 tabular-nums whitespace-nowrap">{{ (f.week_details.z_score ?? 0).toFixed(1) }}</td>
+                                    <td class="py-1.5 px-2 text-right text-gray-500 tabular-nums whitespace-nowrap">{{ formatPValue(f.week_details.anomaly_p_value) }}</td>
+                                    <td class="py-1.5 px-2 text-right text-gray-500 tabular-nums">{{ f.week_details.count }}</td>
+                                    <td class="py-1.5 px-2 text-right text-gray-400 whitespace-nowrap">{{ f.week_details.week }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Trends by window -->
+                    <template v-for="(findings, window) in topTrendsByWindow" :key="`tw-${window}`">
+                        <div class="p-6 border border-blue-200 rounded-lg bg-blue-50/30">
+                            <h2 class="text-lg font-semibold text-blue-800 border-b border-blue-200 pb-2 mb-3">
+                                ↗ {{ window.replace('_', ' ') }} Trends
+                                <span class="text-xs font-normal text-blue-600 ml-2">click a header to sort · click a row to jump</span>
+                            </h2>
+                            <table class="w-full text-base">
+                                <thead>
+                                    <tr>
+                                        <th class="pb-1.5 w-6"></th>
+                                        <th class="text-left pb-1.5 pr-3 text-sm text-gray-500 font-medium">Category</th>
+                                        <th
+                                            v-for="col in [['slope','Slope'],['p_value','p-value'],['category','A–Z']]"
+                                            :key="col[0]"
+                                            class="pb-1.5 px-2 text-sm font-medium text-right cursor-pointer select-none whitespace-nowrap transition-colors"
+                                            :class="trendSortKey === col[0] ? 'text-blue-700 underline font-semibold' : 'text-gray-400 hover:text-gray-700'"
+                                            @click="setTrendSort(col[0])"
+                                        >{{ col[1] }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr
+                                        v-for="(f, i) in findings"
+                                        :key="`tt-${window}-${i}`"
+                                        class="cursor-pointer hover:bg-blue-100/60 transition-colors"
+                                        :class="{ 'bg-blue-100/60 font-semibold': activeSecondaryGroup === f.details.secondary_group }"
+                                        @click="activateAndScrollTo(f.details.secondary_group)"
+                                    >
+                                        <td class="py-1.5 w-6 text-center">
+                                            <span :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold">{{ (f.trend_details.slope ?? 0) > 0 ? '↑' : '↓' }}</span>
+                                        </td>
+                                        <td class="py-1.5 pr-3 text-gray-800">{{ f.details.secondary_group }}</td>
+                                        <td class="py-1.5 px-2 text-right font-semibold tabular-nums whitespace-nowrap" :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-600' : 'text-blue-600'">
+                                            {{ f.trend_details.slope != null ? ((f.trend_details.slope > 0 ? '+' : '') + f.trend_details.slope.toFixed(2)) : '—' }}
+                                        </td>
+                                        <td class="py-1.5 px-2 text-right text-gray-500 tabular-nums whitespace-nowrap">{{ formatPValue(f.trend_details.p_value) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+
+                </section>
+
+                <!-- Anomaly categories -->
+                <section v-if="groupsWithAnomalies.length > 0" class="p-6 border border-amber-200 rounded-lg bg-amber-50/20">
+                    <h2 class="text-xl font-semibold text-amber-800 border-b border-amber-200 pb-2 mb-4">
+                        ⚠ Categories with Anomalies
+                        <span class="text-sm font-normal text-amber-600 ml-2">sorted by anomaly count</span>
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div v-for="secGroup in groupsWithAnomalies" :key="`sa-${secGroup}`"
+                             class="p-3 border border-amber-100 rounded-lg bg-white hover:bg-amber-50 cursor-pointer transition-colors"
+                             :class="{ 'ring-2 ring-amber-400': activeSecondaryGroup === secGroup }"
                              @click="toggleSecondaryGroup(secGroup)">
-                            <h3 class="font-bold text-lg text-indigo-700">
-                                {{ secGroup }}
-                            </h3>
-                            <p class="text-sm text-gray-600 mt-2">
-                                Found <strong>{{ groupData.anomalies.length }}</strong> significant anomalies and <strong>{{ groupData.trends.length }}</strong> significant trends.
-                            </p>
+                            <h3 class="font-semibold text-sm text-gray-800 truncate" :title="secGroup">{{ secGroup }}</h3>
+                            <div class="flex gap-2 mt-1.5">
+                                <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                    ⚠ {{ findingsBySecondaryGroup[secGroup].anomalies.length }} anomal{{ findingsBySecondaryGroup[secGroup].anomalies.length === 1 ? 'y' : 'ies' }}
+                                </span>
+                                <span v-if="findingsBySecondaryGroup[secGroup].trends.length > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                                    ↗ {{ findingsBySecondaryGroup[secGroup].trends.length }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Trend categories -->
+                <section v-if="groupsWithTrends.length > 0" class="p-6 border border-blue-200 rounded-lg bg-blue-50/20">
+                    <h2 class="text-xl font-semibold text-blue-800 border-b border-blue-200 pb-2 mb-4">
+                        ↗ Categories with Trends
+                        <span class="text-sm font-normal text-blue-600 ml-2">sorted by trend count</span>
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div v-for="secGroup in groupsWithTrends" :key="`st-${secGroup}`"
+                             class="p-3 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 cursor-pointer transition-colors"
+                             :class="{ 'ring-2 ring-blue-400': activeSecondaryGroup === secGroup }"
+                             @click="toggleSecondaryGroup(secGroup)">
+                            <h3 class="font-semibold text-sm text-gray-800 truncate" :title="secGroup">{{ secGroup }}</h3>
+                            <div class="flex gap-2 mt-1.5">
+                                <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                                    ↗ {{ findingsBySecondaryGroup[secGroup].trends.length }} trend{{ findingsBySecondaryGroup[secGroup].trends.length === 1 ? '' : 's' }}
+                                </span>
+                                <span v-if="findingsBySecondaryGroup[secGroup].anomalies.length > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                    ⚠ {{ findingsBySecondaryGroup[secGroup].anomalies.length }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -408,47 +657,80 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                         </div>
                     </section>
 
-                    <section>
-                        <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Summary of Significant Findings</h2>
-                        <div class="overflow-x-auto" v-if="filteredFindings.length > 0">
-                            <table class="min-w-full bg-white border rounded-lg">
-                                <thead class="bg-gray-100">
+                    <section v-if="filteredFindings.length > 0" class="space-y-6">
+                        <h2 class="text-2xl font-semibold border-b pb-2">Summary of Significant Findings</h2>
+
+                        <!-- Anomalies -->
+                        <div v-if="filteredAnomalyFindings.length > 0" class="overflow-x-auto rounded-lg border border-amber-200 bg-amber-50/20">
+                            <table class="min-w-full text-base bg-white">
+                                <thead class="bg-amber-50">
                                     <tr>
-                                        <th class="py-2 px-4 border-b">H3 Cell</th>
-                                        <th class="py-2 px-4 border-b">{{ reportData.parameters.secondary_group_col || 'Secondary Group' }}</th>
-                                        <th class="py-2 px-4 border-b">Finding Type</th>
-                                        <th class="py-2 px-4 border-b">Date/Period</th>
-                                        <th class="py-2 px-4 border-b">Details</th>
-                                        <th class="py-2 px-4 border-b">P-Value</th>
-                                        <th class="py-2 px-4 border-b">Z-Score / Slope</th>
+                                        <th class="py-2 px-2 border-b w-8"></th>
+                                        <th class="py-2 px-4 border-b text-left text-amber-800 font-semibold">⚠ Anomalies</th>
+                                        <th class="py-2 px-4 border-b text-left">H3 Cell</th>
+                                        <th class="py-2 px-4 border-b">Week</th>
+                                        <th class="py-2 px-4 border-b">Count</th>
+                                        <th class="py-2 px-4 border-b">Avg</th>
+                                        <th class="py-2 px-4 border-b">Z-Score</th>
+                                        <th class="py-2 px-4 border-b">p-value</th>
+                                        <th class="py-2 px-4 border-b"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(finding, index) in filteredFindings" :key="index" class="hover:bg-gray-50">
-                                        <td class="py-2 px-4 border-b">
-                                            <div class="flex items-center space-x-2">
-                                                <a :href="`#${finding.details[`h3_index_${reportData.parameters.h3_resolution}`]}`" class="text-blue-600 hover:underline">{{ finding.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</a>
-                                                <button @click="viewHexagonOnMap(finding.details[`h3_index_${reportData.parameters.h3_resolution}`], finding.type, finding.details.secondary_group, finding.trend_window)" class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-2 rounded">
-                                                    View on Map
-                                                </button>
-                                            </div>
+                                    <tr v-for="(f, i) in filteredAnomalyFindings" :key="`fa-${i}`" class="hover:bg-amber-50/40 border-b">
+                                        <td class="py-2 px-2 text-center">
+                                            <span :class="(f.week_details.z_score ?? 0) >= 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold">{{ (f.week_details.z_score ?? 0) >= 0 ? '↑' : '↓' }}</span>
                                         </td>
-                                        <td class="py-2 px-4 border-b">{{ finding.details.secondary_group }}</td>
-                                        <td class="py-2 px-4 border-b"><span :class="{'bg-yellow-200 text-yellow-800': finding.type === 'Anomaly', 'bg-blue-200 text-blue-800': finding.type === 'Trend'}" class="px-2 py-1 rounded-full text-xs font-medium">{{ finding.type }}</span></td>
-                                        <td v-if="finding.type === 'Trend'" class="py-2 px-4 border-b">{{ finding.trend_window.replace('_', ' ') }}</td>
-                                        <td v-else class="py-2 px-4 border-b">{{ finding.week_details.week }}</td>
-                                        <td v-if="finding.type === 'Trend'" class="py-2 px-4 border-b">{{ finding.trend_details.description }}</td>
-                                        <td v-else class="py-2 px-4 border-b">Count: {{ finding.week_details.count }} (vs avg {{ finding.details.historical_weekly_avg.toFixed(2) }})</td>
-                                        <td v-if="finding.type === 'Trend' && finding.trend_details.p_value" class="py-2 px-4 border-b">{{ finding.trend_details.p_value.toPrecision(4) }}</td>
-                                        <td v-else-if="finding.type === 'Anomaly'" class="py-2 px-4 border-b">{{ finding.week_details.anomaly_p_value.toPrecision(4) }}</td>
-                                        <td v-else class="py-2 px-4 border-b">N/A</td>
-                                        <td v-if="finding.type === 'Trend' && finding.trend_details.slope !== null" class="py-2 px-4 border-b">{{ finding.trend_details.slope.toFixed(2) }}</td>
-                                        <td v-else-if="finding.type === 'Anomaly'" class="py-2 px-4 border-b">{{ finding.week_details.z_score.toFixed(2) }}</td>
-                                        <td v-else class="py-2 px-4 border-b">N/A</td>
+                                        <td class="py-2 px-4 text-gray-800">{{ f.details.secondary_group }}</td>
+                                        <td class="py-2 px-4 font-mono text-xs text-gray-500">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</td>
+                                        <td class="py-2 px-4 whitespace-nowrap">{{ f.week_details.week }}</td>
+                                        <td class="py-2 px-4 text-right tabular-nums font-semibold text-amber-700">{{ f.week_details.count }}</td>
+                                        <td class="py-2 px-4 text-right tabular-nums text-gray-500">{{ (f.details.historical_weekly_avg ?? 0).toFixed(1) }}</td>
+                                        <td class="py-2 px-4 text-right tabular-nums font-semibold text-amber-700">{{ (f.week_details.z_score ?? 0).toFixed(2) }}</td>
+                                        <td class="py-2 px-4 text-right tabular-nums text-gray-500">{{ formatPValue(f.week_details.anomaly_p_value) }}</td>
+                                        <td class="py-2 px-4">
+                                            <button @click="viewHexagonOnMap(f.details[`h3_index_${reportData.parameters.h3_resolution}`], 'Anomaly', f.details.secondary_group)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded whitespace-nowrap">Map</button>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Trends by window -->
+                        <template v-for="(findings, window) in filteredTrendsByWindow" :key="`ft-${window}`">
+                            <div class="overflow-x-auto rounded-lg border border-blue-200 bg-blue-50/20">
+                                <table class="min-w-full text-base bg-white">
+                                    <thead class="bg-blue-50">
+                                        <tr>
+                                            <th class="py-2 px-2 border-b w-8"></th>
+                                            <th class="py-2 px-4 border-b text-left text-blue-800 font-semibold">↗ {{ window.replace('_', ' ') }} Trends</th>
+                                            <th class="py-2 px-4 border-b text-left">H3 Cell</th>
+                                            <th class="py-2 px-4 border-b">Slope</th>
+                                            <th class="py-2 px-4 border-b">p-value</th>
+                                            <th class="py-2 px-4 border-b text-left">Description</th>
+                                            <th class="py-2 px-4 border-b"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(f, i) in findings" :key="`ft-${window}-${i}`" class="hover:bg-blue-50/40 border-b">
+                                            <td class="py-2 px-2 text-center">
+                                                <span :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold">{{ (f.trend_details.slope ?? 0) > 0 ? '↑' : '↓' }}</span>
+                                            </td>
+                                            <td class="py-2 px-4 text-gray-800">{{ f.details.secondary_group }}</td>
+                                            <td class="py-2 px-4 font-mono text-xs text-gray-500">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</td>
+                                            <td class="py-2 px-4 text-right tabular-nums font-semibold" :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-600' : 'text-blue-600'">
+                                                {{ f.trend_details.slope != null ? ((f.trend_details.slope > 0 ? '+' : '') + f.trend_details.slope.toFixed(2)) : '—' }}
+                                            </td>
+                                            <td class="py-2 px-4 text-right tabular-nums text-gray-500">{{ formatPValue(f.trend_details.p_value) }}</td>
+                                            <td class="py-2 px-4 text-gray-600 text-sm">{{ f.trend_details.description }}</td>
+                                            <td class="py-2 px-4">
+                                                <button @click="viewHexagonOnMap(f.details[`h3_index_${reportData.parameters.h3_resolution}`], 'Trend', f.details.secondary_group, f.trend_window)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded whitespace-nowrap">Map</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
                     </section>
 
                     <section>

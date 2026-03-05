@@ -83,6 +83,78 @@
                 <p class="text-xs text-gray-600 mt-1">Select specific processing steps and/or seeders for Everett.</p>
             </div>
 
+            <!-- Chicago -->
+            <div>
+              <label for="chicago-datasets" class="block text-sm font-medium text-gray-700">Chicago Datasets</label>
+              <select v-model="pipelineForm.parameters.chicagoDatasets" id="chicago-datasets" multiple class="mt-1 block w-full input h-24">
+                <option v-for="dataset in pipelineSteps.chicagoDatasets" :key="dataset" :value="dataset">{{ dataset }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="chicago-seeders" class="block text-sm font-medium text-gray-700">Chicago Seeders</label>
+              <select v-model="pipelineForm.parameters.chicagoSeeders" id="chicago-seeders" multiple class="mt-1 block w-full input h-24">
+                <option v-for="seeder in pipelineSteps.chicagoSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
+              </select>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-md font-semibold text-gray-800">Chicago</h4>
+                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders for Chicago.</p>
+            </div>
+
+            <!-- San Francisco -->
+            <div>
+              <label for="san-francisco-datasets" class="block text-sm font-medium text-gray-700">San Francisco Datasets</label>
+              <select v-model="pipelineForm.parameters.sanFranciscoDatasets" id="san-francisco-datasets" multiple class="mt-1 block w-full input h-24">
+                <option v-for="dataset in pipelineSteps.sanFranciscoDatasets" :key="dataset" :value="dataset">{{ dataset }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="san-francisco-seeders" class="block text-sm font-medium text-gray-700">San Francisco Seeders</label>
+              <select v-model="pipelineForm.parameters.sanFranciscoSeeders" id="san-francisco-seeders" multiple class="mt-1 block w-full input h-24">
+                <option v-for="seeder in pipelineSteps.sanFranciscoSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
+              </select>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-md font-semibold text-gray-800">San Francisco</h4>
+                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders for San Francisco.</p>
+            </div>
+
+            <!-- Seattle -->
+            <div>
+              <label for="seattle-datasets" class="block text-sm font-medium text-gray-700">Seattle Datasets</label>
+              <select v-model="pipelineForm.parameters.seattleDatasets" id="seattle-datasets" multiple class="mt-1 block w-full input h-24">
+                <option v-for="dataset in pipelineSteps.seattleDatasets" :key="dataset" :value="dataset">{{ dataset }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="seattle-seeders" class="block text-sm font-medium text-gray-700">Seattle Seeders</label>
+              <select v-model="pipelineForm.parameters.seattleSeeders" id="seattle-seeders" multiple class="mt-1 block w-full input h-24">
+                <option v-for="seeder in pipelineSteps.seattleSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
+              </select>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-md font-semibold text-gray-800">Seattle</h4>
+                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders for Seattle.</p>
+            </div>
+
+            <!-- Montgomery County MD -->
+            <div>
+              <label for="montgomery-county-md-datasets" class="block text-sm font-medium text-gray-700">Montgomery County MD Datasets</label>
+              <select v-model="pipelineForm.parameters.montgomeryCountyMdDatasets" id="montgomery-county-md-datasets" multiple class="mt-1 block w-full input h-24">
+                <option v-for="dataset in pipelineSteps.montgomeryCountyMdDatasets" :key="dataset" :value="dataset">{{ dataset }}</option>
+              </select>
+            </div>
+            <div>
+              <label for="montgomery-county-md-seeders" class="block text-sm font-medium text-gray-700">Montgomery County MD Seeders</label>
+              <select v-model="pipelineForm.parameters.montgomeryCountyMdSeeders" id="montgomery-county-md-seeders" multiple class="mt-1 block w-full input h-24">
+                <option v-for="seeder in pipelineSteps.montgomeryCountyMdSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
+              </select>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-md font-semibold text-gray-800">Montgomery County MD</h4>
+                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders for Montgomery County MD.</p>
+            </div>
+
             <!-- Post-Seeding & Reporting -->
             <div>
               <label for="post-seeding-steps" class="block text-sm font-medium text-gray-700">Post-Seeding Steps</label>
@@ -324,6 +396,14 @@ const pipelineForm = useForm({
     cambridgeSeeders: [],
     everettSteps: [],
     everettSeeders: [],
+    chicagoDatasets: [],
+    chicagoSeeders: [],
+    sanFranciscoDatasets: [],
+    sanFranciscoSeeders: [],
+    seattleDatasets: [],
+    seattleSeeders: [],
+    montgomeryCountyMdDatasets: [],
+    montgomeryCountyMdSeeders: [],
     postSeedingSteps: [],
     reportingSteps: [],
   }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -81,14 +82,33 @@ class StatisticalAnalysisReportController extends Controller
         } else {
             $reportTitle .= ' - Unified Analysis';
         }
-        
+
+        // Find related scoring reports (Stage 5) derived from this Stage 4 job
+        $scoringCache = Cache::get('scoring_reports_listing_v2', []);
+        $relatedScoringReports = [];
+        foreach ($scoringCache as $city => $dateGroups) {
+            foreach ($dateGroups as $dateKey => $reportsInGroup) {
+                foreach ((array) $reportsInGroup as $scoringReport) {
+                    if (($scoringReport['source_job_id'] ?? null) === $jobId) {
+                        $relatedScoringReports[] = [
+                            'job_id' => $scoringReport['job_id'],
+                            'artifact_name' => $scoringReport['artifact_name'],
+                            'city' => $scoringReport['city'],
+                            'resolution' => $scoringReport['resolution'],
+                        ];
+                    }
+                }
+            }
+        }
+
         Log::info("Rendering report view.", ['job_id' => $jobId, 'reportTitle' => $reportTitle, 'data_found' => !is_null($reportData)]);
 
         return Inertia::render('Reports/StatisticalAnalysisViewer', [
             'jobId' => $jobId,
-            'apiBaseUrl' => config('services.analysis_api.url'), // Kept for any other potential API interactions on the frontend
+            'apiBaseUrl' => config('services.analysis_api.url'),
             'reportData' => $reportData,
             'reportTitle' => $reportTitle,
+            'relatedScoringReports' => $relatedScoringReports,
         ]);
     }
 
