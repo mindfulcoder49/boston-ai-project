@@ -35,8 +35,11 @@ use App\Http\Controllers\TrendsController;
 use App\Http\Controllers\StatisticalAnalysisReportController;
 use App\Http\Controllers\YearlyCountComparisonController;
 use App\Http\Controllers\ScoringReportController;
+use App\Http\Controllers\HotspotController;
 
 Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
+Route::get('/hotspots', [HotspotController::class, 'index'])->name('hotspots.index');
+Route::get('/hotspots/{citySlug}', [HotspotController::class, 'show'])->name('hotspots.show');
 Route::get('/reports/statistical-analysis/{trendId}', [StatisticalAnalysisReportController::class, 'show'])->name('reports.statistical-analysis.show');
 
 Route::get('/yearly-comparisons', [YearlyCountComparisonController::class, 'index'])->name('yearly-comparisons.index');

@@ -55,11 +55,19 @@ const significanceClass = (a) => {
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
         <!-- Header -->
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Trends & Anomaly Reports</h1>
-          <p class="mt-1 text-sm text-gray-500">
-            Statistical H3 spatial analysis across all data types. Sorted by number of significant findings.
-          </p>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Trends & Anomaly Reports</h1>
+            <p class="mt-1 text-sm text-gray-500">
+              Statistical H3 spatial analysis across all data types. Sorted by number of significant findings.
+            </p>
+          </div>
+          <Link
+            :href="route('hotspots.index')"
+            class="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            <span>🗺</span> Hotspot Map
+          </Link>
         </div>
 
         <!-- Stat bar -->
@@ -153,7 +161,7 @@ const significanceClass = (a) => {
                           <p v-for="t in trends" :key="t.secondary_group" class="text-sm text-gray-600 leading-snug pl-1">
                             <span v-if="t.slope != null" :class="t.slope > 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold mr-1">{{ t.slope > 0 ? '↑' : '↓' }}</span>
                             <span class="font-medium text-gray-800">{{ t.secondary_group }}</span>
-                            <span v-if="t.slope != null" :class="t.slope > 0 ? 'text-red-600' : 'text-blue-600'" class="font-semibold"> {{ t.slope > 0 ? '+' : '' }}{{ t.slope.toFixed(2) }}/wk</span>
+                            <span v-if="t.slope != null" :class="t.slope > 0 ? 'text-red-600' : 'text-blue-600'" class="font-semibold"> slope {{ t.slope > 0 ? '+' : '' }}{{ t.slope.toFixed(2) }}</span>
                             <span class="text-gray-500"> p={{ formatPValue(t.p_value) }}</span>
                           </p>
                         </div>
