@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator; // For conditional password validation
 use App\Models\JobRun;
 use Illuminate\Support\Facades\Artisan;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 use App\Models\ThreeOneOneCase;
 use Illuminate\Support\Facades\DB;
 
@@ -150,14 +148,11 @@ class AdminController extends Controller
                     }
                 }
 
-                $process = new Process($processCommand);
-                $process->disableOutput();
-                $process->start();
-
-                sleep(2);
-                if (!$process->isRunning() && !$process->isSuccessful()) {
-                    throw new ProcessFailedException($process);
-                }
+                // Use exec() with nohup and & so the child process is detached from the web request
+                // lifecycle. Symfony Process::__destruct() sends SIGTERM to any still-running child
+                // process when the PHP request ends, which would kill the pipeline mid-run.
+                $escapedCommand = implode(' ', array_map('escapeshellarg', $processCommand));
+                exec('nohup ' . $escapedCommand . ' > /dev/null 2>&1 &');
 
                 $message = $command === 'app:run-all-data-pipeline'
                     ? "Pipeline job '{$command}' dispatched to run in the background. Check the Pipeline Logs page for progress."
@@ -170,12 +165,6 @@ class AdminController extends Controller
             $output = Artisan::output();
 
             return redirect()->back()->with('success', "Job '{$command}' dispatched successfully.")->with('command_output', $output);
-        } catch (ProcessFailedException $e) {
-            Log::error("Failed to dispatch background job '{$command}' from admin panel.", [
-                'error' => $e->getMessage(),
-                'parameters' => $parameters,
-            ]);
-            return redirect()->back()->with('error', "Failed to start background job: " . $e->getMessage());
         } catch (\Exception $e) {
             Log::error("Failed to dispatch job '{$command}' from admin panel.", [
                 'error' => $e->getMessage(),
