@@ -127,6 +127,9 @@ class DispatchHistoricalScoringJobsCommand extends Command
             $payload = [
                 'job_id' => $jobId,
                 'city' => $cityName,
+                // Metadata for S3-based discovery (Phase 1)
+                'model_class' => $modelClass,
+                'column_name' => $column,
                 'data_sources' => [
                     [
                         'data_url' => url($publicUrl),

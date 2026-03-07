@@ -36,6 +36,14 @@
           <h2 class="text-lg font-semibold text-indigo-600">Job Dispatcher</h2>
           <p class="text-sm text-gray-500 mt-1">Manually trigger analysis and report generation jobs.</p>
         </Link>
+        <Link :href="route('admin.h3-geocoding.index')" class="block p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+          <h2 class="text-lg font-semibold text-indigo-600">H3 Location Names</h2>
+          <p class="text-sm text-gray-500 mt-1">Reverse-geocode hotspot hexagons to human-readable area names.</p>
+        </Link>
+        <Link :href="route('admin.s3-bucket.index')" class="block p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+          <h2 class="text-lg font-semibold text-indigo-600">S3 Bucket Browser</h2>
+          <p class="text-sm text-gray-500 mt-1">Browse, manage, and clean up analysis job directories in S3.</p>
+        </Link>
       </div>
     </div>
   </AdminLayout>

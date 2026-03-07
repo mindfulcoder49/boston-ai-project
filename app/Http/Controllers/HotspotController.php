@@ -4,12 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use App\Models\Trend;
 use App\Models\HotspotFinding;
 
 class HotspotController extends Controller
 {
-    // Model class basename prefixes → city name (Boston is the default fallback)
     private static array $CITY_PREFIXES = [
         'Cambridge'          => 'Cambridge',
         'Everett'            => 'Everett',
@@ -20,13 +18,13 @@ class HotspotController extends Controller
     ];
 
     private static array $CITY_CENTERS = [
-        'Boston'              => [42.3601, -71.0589],
-        'Cambridge'           => [42.3736, -71.1097],
-        'Everett'             => [42.4034, -71.0537],
-        'Chicago'             => [41.8781, -87.6298],
-        'San Francisco'       => [37.7749, -122.4194],
-        'Seattle'             => [47.6062, -122.3321],
-        'Montgomery County MD'=> [39.1547, -77.2405],
+        'Boston'               => [42.3601, -71.0589],
+        'Cambridge'            => [42.3736, -71.1097],
+        'Everett'              => [42.4034, -71.0537],
+        'Chicago'              => [41.8781, -87.6298],
+        'San Francisco'        => [37.7749, -122.4194],
+        'Seattle'              => [47.6062, -122.3321],
+        'Montgomery County MD' => [39.1547, -77.2405],
     ];
 
     public function index()
@@ -34,10 +32,10 @@ class HotspotController extends Controller
         $cities = $this->getAvailableCities();
         if (empty($cities)) {
             return Inertia::render('Hotspots/Show', [
-                'city'                  => null,
-                'cities'                => [],
-                'hotspotsByResolution'  => [],
-                'cityCenter'            => [42.3601, -71.0589],
+                'city'                 => null,
+                'cities'               => [],
+                'hotspotsByResolution' => [],
+                'cityCenter'           => [42.3601, -71.0589],
             ]);
         }
         return redirect()->route('hotspots.show', ['citySlug' => $cities[0]['slug']]);
@@ -78,16 +76,15 @@ class HotspotController extends Controller
         $seen   = [];
         $cities = [];
 
-        foreach (Trend::select('model_class')->get() as $trend) {
-            if (!class_exists($trend->model_class)) continue;
-            $name = $this->inferCity($trend->model_class);
+        foreach (HotspotFinding::select('model_class')->distinct()->get() as $row) {
+            if (!class_exists($row->model_class)) continue;
+            $name = $this->inferCity($row->model_class);
             if (!isset($seen[$name])) {
                 $seen[$name] = true;
                 $cities[] = ['name' => $name, 'slug' => Str::slug($name)];
             }
         }
 
-        // Boston first, then alphabetical
         usort($cities, fn($a, $b) =>
             $a['name'] === 'Boston' ? -1 : ($b['name'] === 'Boston' ? 1 : strcmp($a['name'], $b['name']))
         );
@@ -95,48 +92,33 @@ class HotspotController extends Controller
         return $cities;
     }
 
-    /**
-     * Build the hotspotsByResolution array from the materialized DB table.
-     *
-     * Returns an array keyed by H3 resolution; each resolution contains up to
-     * 100 hexagons sorted by report_count desc, then total findings desc.
-     */
     private function buildHotspots(string $cityName): array
     {
-        $trendIds = Trend::all()
-            ->filter(fn($t) => class_exists($t->model_class) && $this->inferCity($t->model_class) === $cityName)
-            ->pluck('id');
-
-        if ($trendIds->isEmpty()) {
-            return [];
-        }
-
-        $findings = HotspotFinding::with('trend')
-            ->whereIn('trend_id', $trendIds)
-            ->get();
+        $findings = HotspotFinding::all()->filter(
+            fn($f) => class_exists($f->model_class) && $this->inferCity($f->model_class) === $cityName
+        );
 
         if ($findings->isEmpty()) {
             return [];
         }
 
-        // Aggregate per [resolution][h3_index]
         $hexagons = [];
 
         foreach ($findings as $f) {
             $resolution = $f->h3_resolution;
             $h3Index    = $f->h3_index;
-            $trend      = $f->trend;
 
-            $label = $trend->model_class::getHumanName() . ' — ' .
-                     Str::of($trend->column_name)->replace('_', ' ')->title();
+            $label = class_exists($f->model_class)
+                ? $f->model_class::getHumanName() . ' — ' . Str::of($f->column_name)->replace('_', ' ')->title()
+                : $f->model_class . ' — ' . $f->column_name;
 
             if (!isset($hexagons[$resolution][$h3Index])) {
                 $hexagons[$resolution][$h3Index] = [
-                    'h3_index'     => $h3Index,
-                    'report_count' => 0,
-                    'anomaly_count'=> 0,
-                    'trend_count'  => 0,
-                    'reports'      => [],
+                    'h3_index'      => $h3Index,
+                    'report_count'  => 0,
+                    'anomaly_count' => 0,
+                    'trend_count'   => 0,
+                    'reports'       => [],
                 ];
             }
 
@@ -144,7 +126,7 @@ class HotspotController extends Controller
             $hexagons[$resolution][$h3Index]['anomaly_count'] += $f->anomaly_count;
             $hexagons[$resolution][$h3Index]['trend_count']   += $f->trend_count;
             $hexagons[$resolution][$h3Index]['reports'][]      = [
-                'trend_id'      => $trend->id,
+                'job_id'        => $f->job_id,
                 'label'         => $label,
                 'anomalies'     => $f->anomaly_count,
                 'trends'        => $f->trend_count,
@@ -153,7 +135,6 @@ class HotspotController extends Controller
             ];
         }
 
-        // Sort reports within each hexagon, sort hexagons, slice to 100
         $result = [];
 
         foreach ($hexagons as $resolution => $hexMap) {

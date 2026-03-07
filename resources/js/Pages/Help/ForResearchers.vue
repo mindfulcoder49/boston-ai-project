@@ -26,6 +26,7 @@
                                     <a href="#methodology" class="block text-blue-600 hover:text-blue-800 py-1">Statistical Methodology</a>
                                     <a href="#significance" class="block text-blue-600 hover:text-blue-800 py-1">Significance Testing</a>
                                     <a href="#geospatial" class="block text-blue-600 hover:text-blue-800 py-1">Geospatial Methods</a>
+                                    <a href="#h3-naming" class="block text-blue-600 hover:text-blue-800 py-1 pl-3">↳ H3 Area Naming</a>
                                     <a href="#ai-integration" class="block text-blue-600 hover:text-blue-800 py-1">AI/LLM Integration</a>
                                     <a href="#pipeline" class="block text-blue-600 hover:text-blue-800 py-1">Data Pipeline Architecture</a>
                                     <a href="#citing" class="block text-blue-600 hover:text-blue-800 py-1">Accessing & Citing</a>
@@ -141,6 +142,55 @@
                                         <li><strong>Coordinate validation:</strong> Sentinel values (0,0 coordinates, null values) are filtered during data ingestion.</li>
                                     </ul>
                                 </section>
+
+                                    <h3 id="h3-naming">H3 Area Naming: Reverse Geocoding Methodology</h3>
+                                    <p>
+                                        To give H3 cells human-readable labels, the platform performs reverse geocoding of each cell's centroid using the Google Geocoding API. The specific implementation is as follows:
+                                    </p>
+
+                                    <p><strong>Centroid computation.</strong> The H3 library's <code>cellToLatLng(h3Index)</code> function returns the geographic centroid of the cell — the arithmetic mean of its vertex coordinates projected onto the sphere. This is used as the query point for reverse geocoding. This is computed in the browser using the <code>h3-js</code> library rather than on the server, since PHP lacks a maintained H3 implementation.</p>
+
+                                    <p><strong>API request.</strong> The centroid <code>(lat, lng)</code> is sent to <code>maps.googleapis.com/maps/api/geocode/json?latlng={lat},{lng}</code> with no result-type filter, so the full address component hierarchy is returned. The first result is used.</p>
+
+                                    <p><strong>Component extraction by resolution.</strong> The appropriate name is selected from the returned address components using the following priority order, conditioned on resolution:</p>
+
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full text-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left py-2 px-3">Resolution</th>
+                                                    <th class="text-left py-2 px-3">Approx. area</th>
+                                                    <th class="text-left py-2 px-3">Component priority</th>
+                                                    <th class="text-left py-2 px-3">Example output</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="py-2 px-3">5–6</td>
+                                                    <td class="py-2 px-3">36–252 km²</td>
+                                                    <td class="py-2 px-3"><code>locality</code> → <code>administrative_area_level_2</code> → <code>administrative_area_level_1</code></td>
+                                                    <td class="py-2 px-3">"Boston" / "Suffolk County"</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="py-2 px-3">7+</td>
+                                                    <td class="py-2 px-3">&lt;5 km²</td>
+                                                    <td class="py-2 px-3"><code>neighborhood</code> → <code>sublocality_level_1</code> → <code>sublocality</code>, appended with <code>locality</code></td>
+                                                    <td class="py-2 px-3">"Beacon Hill, Boston"</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <p><strong>Storage.</strong> Results are stored in the <code>h3_location_names</code> table keyed by <code>h3_index</code> (which is globally unique across all resolutions). Resolution is stored as a separate column for filtering. Names are served to the frontend as a shared Inertia prop (<code>h3LocationNames</code>) on every page load, cached server-side for one hour and invalidated on each geocoding run.</p>
+
+                                    <p><strong>Known limitations and biases.</strong> Researchers should be aware of the following when interpreting area names:</p>
+                                    <ul>
+                                        <li><strong>Centroid boundary mismatch.</strong> H3 cells are not aligned to administrative boundaries. A cell whose centroid falls in neighborhood A may still include significant area from neighborhood B. This is more pronounced at resolutions 7–8 than at 9.</li>
+                                        <li><strong>Google component availability.</strong> The <code>neighborhood</code> component is not always present in Google's response, particularly in suburban or rural areas. The fallback hierarchy above handles this gracefully, but may produce coarser names than expected.</li>
+                                        <li><strong>Single-point sampling.</strong> Only the centroid is geocoded. A large hexagon spanning a park, a highway, and two neighborhoods will receive the name of whichever area contains the centroid alone.</li>
+                                        <li><strong>Temporal stability.</strong> Google's administrative component data can change (boundary redraws, renaming). Names are geocoded once and not automatically re-verified unless the admin tool is re-run.</li>
+                                        <li><strong>Coverage gaps.</strong> Hexagons are geocoded on-demand by the data team via the admin geocoding tool. Some hexagons may not yet have names; these display their raw <code>h3_index</code> as a fallback.</li>
+                                    </ul>
 
                                 <hr class="my-8" />
 

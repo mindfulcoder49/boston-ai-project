@@ -5,7 +5,9 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User; // Ensure User model is imported
+use Illuminate\Support\Facades\Cache;
+use App\Models\User;
+use App\Models\H3LocationName;
 use Tightenco\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
@@ -89,8 +91,13 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'status' => fn () => $request->session()->get('status'),
                 'status_error' => fn () => $request->session()->get('status_error'),
-                // You can add other flash message types here if needed
             ],
+            // h3_index → location_name lookup, cached for 1 hour, invalidated by the geocoding admin tool
+            'h3LocationNames' => fn () => Cache::remember(
+                'h3_location_names_map',
+                3600,
+                fn () => H3LocationName::pluck('location_name', 'h3_index')
+            ),
             // If you have global translations managed via PHP and want to share them:
             // 'translations' => function () {
             //     return [

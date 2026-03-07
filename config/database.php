@@ -63,6 +63,22 @@ return [
             ]) : [],
         ],
 
+        // Hostinger production — used only by app:sync-to-production
+        'hostinger' => [
+            'driver'    => 'mysql',
+            'host'      => env('HOSTINGER_DB_HOST', ''),
+            'port'      => env('HOSTINGER_DB_PORT', '3306'),
+            'database'  => env('HOSTINGER_DB_DATABASE', ''),
+            'username'  => env('HOSTINGER_DB_USERNAME', ''),
+            'password'  => env('HOSTINGER_DB_PASSWORD', ''),
+            'charset'   => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix'    => '',
+            'strict'    => true,
+            'engine'    => null,
+            'options'   => [],
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

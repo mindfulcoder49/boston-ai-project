@@ -6,7 +6,7 @@
             <h2 class="text-lg text-center text-gray-500">Job ID: {{ initialReport.job_id }}</h2>
             <div v-if="sourceTrend" class="text-center mt-2 mb-8">
                 <Link
-                    :href="route('reports.statistical-analysis.show', { trendId: sourceTrend.trend_id })"
+                    :href="route('reports.statistical-analysis.show', { jobId: sourceTrend.job_id })"
                     class="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
                 >← Source analysis: {{ sourceTrend.title }}</Link>
             </div>
@@ -92,8 +92,8 @@
 
             <!-- Details Section -->
             <div v-if="selectedHexagon" class="mt-8 bg-white p-6 rounded-lg shadow">
-                <h3 class="text-2xl font-semibold mb-2">Details for Hexagon</h3>
-                <p class="font-mono text-sm text-gray-600 mb-4">{{ selectedHexagon.h3_index }}</p>
+                <h3 class="text-2xl font-semibold mb-1">{{ getName(selectedHexagon.h3_index) }}</h3>
+                <p class="font-mono text-xs text-gray-400 mb-4">{{ selectedHexagon.h3_index }}</p>
 
                 <!-- Score Calculation for Anomaly Report -->
                 <div v-if="isAnomalyBasedReport && scoreExplanation.length > 0" class="mb-6 border-b pb-6">
@@ -165,6 +165,8 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import PageTemplate from '@/Components/PageTemplate.vue';
+import { useH3Names } from '@/composables/useH3Names';
+const { getName } = useH3Names();
 import GoogleAddressSearch from '@/Components/GoogleAddressSearch.vue';
 import ReportResolutionControl from '@/Components/ReportResolutionControl.vue';
 import 'leaflet/dist/leaflet.css';
@@ -325,7 +327,7 @@ function drawMap() {
             layer.on('click', () => {
                 handleHexagonClick(feature.properties.h3_index, feature.properties.resolution);
             });
-            layer.bindPopup(`<b>Hexagon:</b> ${feature.properties.h3_index}<br><b>Score:</b> ${feature.properties.score?.toFixed(2) ?? 'N/A'}`);
+            layer.bindPopup(`<b>${getName(feature.properties.h3_index)}</b><br><span style="font-family:monospace;font-size:11px;color:#6b7280">${feature.properties.h3_index}</span><br><b>Score:</b> ${feature.properties.score?.toFixed(2) ?? 'N/A'}`);
         }
     }).addTo(map);
 

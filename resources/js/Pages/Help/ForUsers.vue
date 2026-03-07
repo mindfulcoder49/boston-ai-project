@@ -31,6 +31,7 @@
                                     <a href="#saved-maps" class="block text-blue-600 hover:text-blue-800 py-1">Saved Maps & Community</a>
                                     <a href="#reports" class="block text-blue-600 hover:text-blue-800 py-1">Reports & Analysis</a>
                                     <a href="#statistical-reports" class="block text-blue-600 hover:text-blue-800 py-1">Statistical Reports</a>
+                                    <a href="#area-names" class="block text-blue-600 hover:text-blue-800 py-1">Area Names on Maps</a>
                                     <a href="#data-metrics" class="block text-blue-600 hover:text-blue-800 py-1">Data Metrics Dashboard</a>
                                     <a href="#account" class="block text-blue-600 hover:text-blue-800 py-1">Account Management</a>
                                     <a href="#subscriptions" class="block text-blue-600 hover:text-blue-800 py-1">Subscription Plans</a>
@@ -267,6 +268,39 @@
 
                                     <h3>AI-Generated News</h3>
                                     <p>News articles are automatically generated from statistical analysis findings, turning data trends into readable narratives.</p>
+                                </section>
+
+                                <hr class="my-8" />
+
+                                <!-- Area Names -->
+                                <section id="area-names">
+                                    <h2>Area Names on Maps</h2>
+                                    <p>
+                                        Throughout the hotspot map, statistical reports, and neighborhood scoring pages, geographic areas are displayed using human-readable names like <strong>"Beacon Hill, Boston"</strong> or <strong>"Logan Square, Chicago"</strong> rather than raw technical identifiers.
+                                    </p>
+
+                                    <h3>Where These Names Come From</h3>
+                                    <p>
+                                        The platform divides cities into a grid of uniform hexagonal cells (see "Statistical Reports" above for an explanation of H3 indexing). To give each hexagon a readable name, we take the <strong>center point</strong> of that hexagon and look up what neighborhood or area that coordinate falls in using Google's location data. The result &mdash; for example "South End, Boston" or "Wicker Park, Chicago" &mdash; is stored and shown wherever that hexagon appears.
+                                    </p>
+
+                                    <h3>What the Name Represents</h3>
+                                    <p>
+                                        The name reflects the area that contains the <em>center</em> of the hexagon, not necessarily every part of it. Because hexagons don't line up with neighborhood boundaries, a hexagon near a boundary might be labeled with one neighborhood even though part of it technically falls in an adjacent one. Think of the name as a useful approximation of where the hotspot is, not a precise administrative designation.
+                                    </p>
+                                    <p>
+                                        The level of detail in the name also depends on the resolution of the analysis:
+                                    </p>
+                                    <ul>
+                                        <li><strong>Large hexagons (resolution 5–6, covering several square miles)</strong> &mdash; Named at the city or district level, e.g. "Boston" or "Suffolk County."</li>
+                                        <li><strong>Medium hexagons (resolution 7, covering about 2 square miles)</strong> &mdash; Named at the neighborhood level, e.g. "Roxbury, Boston."</li>
+                                        <li><strong>Small hexagons (resolution 8–9, covering a few city blocks)</strong> &mdash; Named at the sub-neighborhood level, e.g. "Beacon Hill, Boston."</li>
+                                    </ul>
+
+                                    <h3>What If a Hexagon Shows a Technical ID?</h3>
+                                    <p>
+                                        If you see an identifier like <code class="font-mono text-sm">8928a3b3fffffff</code> instead of a place name, that hexagon hasn't been geocoded yet. Names are added in batches by the data team and grow over time as more areas are covered. The technical ID is always shown in small print beneath the name for reference.
+                                    </p>
                                 </section>
 
                                 <hr class="my-8" />

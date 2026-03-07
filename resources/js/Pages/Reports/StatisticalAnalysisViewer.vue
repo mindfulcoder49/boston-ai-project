@@ -2,6 +2,8 @@
 import { ref, onMounted, computed, nextTick } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import PageTemplate from '@/Components/PageTemplate.vue';
+import { useH3Names } from '@/composables/useH3Names';
+const { getName } = useH3Names();
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import * as h3 from 'h3-js';
@@ -404,7 +406,7 @@ const updateAnomaliesMap = (secGroup) => {
         const summary = h3Summary[h3Index];
         const boundary = h3.cellToBoundary(h3Index, true).map(p => [p[1], p[0]]);
         const numAnomalies = summary.anomalies.length;
-        let popupHtml = `<b>Hexagon:</b> ${h3Index}<br><b>Anomalies:</b> ${numAnomalies}<hr><ul>`;
+        let popupHtml = `<b>${getName(h3Index)}</b><br><span style="font-family:monospace;font-size:11px;color:#6b7280">${h3Index}</span><br><b>Anomalies:</b> ${numAnomalies}<hr><ul>`;
         summary.anomalies.forEach(a => {
             popupHtml += `<li>${a.details.secondary_group} on ${a.week_details.week}: Count ${a.week_details.count} (p=${a.week_details.anomaly_p_value.toPrecision(2)})</li>`
         });
@@ -442,7 +444,7 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
     Object.keys(h3Summary).forEach(h3Index => {
         const summary = h3Summary[h3Index];
         const boundary = h3.cellToBoundary(h3Index, true).map(p => [p[1], p[0]]);
-        let popupHtml = `<b>Hexagon:</b> ${h3Index}<br><b>Trends:</b> ${summary.trends.length}<hr><ul>`;
+        let popupHtml = `<b>${getName(h3Index)}</b><br><span style="font-family:monospace;font-size:11px;color:#6b7280">${h3Index}</span><br><b>Trends:</b> ${summary.trends.length}<hr><ul>`;
         summary.trends.forEach(t => {
             const trend = t.trend_details;
             popupHtml += `<li><strong>${t.details.secondary_group}</strong>: ${trend.description} (p=${(trend.p_value || 0).toPrecision(2)})</li>`;
@@ -502,6 +504,7 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                 <tr>
                                     <th class="pb-1.5 w-6"></th>
                                     <th class="text-left pb-1.5 pr-3 text-sm text-gray-500 font-medium">Category</th>
+                                    <th class="text-left pb-1.5 pr-3 text-sm text-gray-500 font-medium">Area</th>
                                     <th
                                         v-for="col in [['z_score','Z-score'],['p_value','p-value'],['count','Count'],['week','Week']]"
                                         :key="col[0]"
@@ -523,6 +526,13 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                         <span :class="(f.week_details.z_score ?? 0) >= 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold">{{ (f.week_details.z_score ?? 0) >= 0 ? '↑' : '↓' }}</span>
                                     </td>
                                     <td class="py-1.5 pr-3 text-gray-800">{{ f.details.secondary_group }}</td>
+                                    <td class="py-1.5 pr-3 text-xs">
+                                        <template v-if="f.details[`h3_index_${reportData.parameters.h3_resolution}`]">
+                                            <span class="text-gray-700">{{ getName(f.details[`h3_index_${reportData.parameters.h3_resolution}`]) }}</span><br>
+                                            <span class="font-mono text-gray-400">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</span>
+                                        </template>
+                                        <span v-else class="text-gray-300">—</span>
+                                    </td>
                                     <td class="py-1.5 px-2 text-right font-semibold text-amber-700 tabular-nums whitespace-nowrap">{{ (f.week_details.z_score ?? 0).toFixed(1) }}</td>
                                     <td class="py-1.5 px-2 text-right text-gray-500 tabular-nums whitespace-nowrap">{{ formatPValue(f.week_details.anomaly_p_value) }}</td>
                                     <td class="py-1.5 px-2 text-right text-gray-500 tabular-nums">{{ f.week_details.count }}</td>
@@ -544,6 +554,7 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                     <tr>
                                         <th class="pb-1.5 w-6"></th>
                                         <th class="text-left pb-1.5 pr-3 text-sm text-gray-500 font-medium">Category</th>
+                                        <th class="text-left pb-1.5 pr-3 text-sm text-gray-500 font-medium">Area</th>
                                         <th
                                             v-for="col in [['slope','Slope'],['p_value','p-value'],['category','A–Z']]"
                                             :key="col[0]"
@@ -565,6 +576,13 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                             <span :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold">{{ (f.trend_details.slope ?? 0) > 0 ? '↑' : '↓' }}</span>
                                         </td>
                                         <td class="py-1.5 pr-3 text-gray-800">{{ f.details.secondary_group }}</td>
+                                        <td class="py-1.5 pr-3 text-xs">
+                                            <template v-if="f.details[`h3_index_${reportData.parameters.h3_resolution}`]">
+                                                <span class="text-gray-700">{{ getName(f.details[`h3_index_${reportData.parameters.h3_resolution}`]) }}</span><br>
+                                                <span class="font-mono text-gray-400">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</span>
+                                            </template>
+                                            <span v-else class="text-gray-300">—</span>
+                                        </td>
                                         <td class="py-1.5 px-2 text-right font-semibold tabular-nums whitespace-nowrap" :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-600' : 'text-blue-600'">
                                             {{ f.trend_details.slope != null ? ((f.trend_details.slope > 0 ? '+' : '') + f.trend_details.slope.toFixed(2)) : '—' }}
                                         </td>
@@ -682,7 +700,10 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                             <span :class="(f.week_details.z_score ?? 0) >= 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold">{{ (f.week_details.z_score ?? 0) >= 0 ? '↑' : '↓' }}</span>
                                         </td>
                                         <td class="py-2 px-4 text-gray-800">{{ f.details.secondary_group }}</td>
-                                        <td class="py-2 px-4 font-mono text-xs text-gray-500">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</td>
+                                        <td class="py-2 px-4">
+                                            <div class="text-sm text-gray-800">{{ getName(f.details[`h3_index_${reportData.parameters.h3_resolution}`]) }}</div>
+                                            <div class="font-mono text-xs text-gray-400">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</div>
+                                        </td>
                                         <td class="py-2 px-4 whitespace-nowrap">{{ f.week_details.week }}</td>
                                         <td class="py-2 px-4 text-right tabular-nums font-semibold text-amber-700">{{ f.week_details.count }}</td>
                                         <td class="py-2 px-4 text-right tabular-nums text-gray-500">{{ (f.details.historical_weekly_avg ?? 0).toFixed(1) }}</td>
@@ -717,7 +738,10 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                                 <span :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-500' : 'text-blue-500'" class="font-bold">{{ (f.trend_details.slope ?? 0) > 0 ? '↑' : '↓' }}</span>
                                             </td>
                                             <td class="py-2 px-4 text-gray-800">{{ f.details.secondary_group }}</td>
-                                            <td class="py-2 px-4 font-mono text-xs text-gray-500">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</td>
+                                            <td class="py-2 px-4">
+                                                <div class="text-sm text-gray-800">{{ getName(f.details[`h3_index_${reportData.parameters.h3_resolution}`]) }}</div>
+                                                <div class="font-mono text-xs text-gray-400">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</div>
+                                            </td>
                                             <td class="py-2 px-4 text-right tabular-nums font-semibold" :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-600' : 'text-blue-600'">
                                                 {{ f.trend_details.slope != null ? ((f.trend_details.slope > 0 ? '+' : '') + f.trend_details.slope.toFixed(2)) : '—' }}
                                             </td>
@@ -737,7 +761,8 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                         <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Detailed Analysis by H3 Cell</h2>
                          <div class="space-y-6">
                             <div v-for="(h3Data, h3Index) in filteredFindingsByH3" :key="h3Index" :id="h3Index" class="p-4 border rounded-lg bg-gray-50 scroll-mt-4">
-                                <h4 class="text-xl font-bold mb-3">Hexagon: {{ h3Index }}</h4>
+                                <h4 class="text-xl font-bold mb-1">{{ getName(h3Index) }}</h4>
+                                <p class="font-mono text-xs text-gray-400 mb-3">{{ h3Index }}</p>
                                 <div class="space-y-4">
                                    <div v-for="(findingsInGroup, secGroup) in h3Data.findingsBySecGroup" :key="secGroup" class="p-3 bg-white border rounded shadow-sm">
                                         <h5 class="font-semibold">Findings for '{{ secGroup }}'</h5>

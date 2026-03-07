@@ -36,14 +36,23 @@ use App\Http\Controllers\StatisticalAnalysisReportController;
 use App\Http\Controllers\YearlyCountComparisonController;
 use App\Http\Controllers\ScoringReportController;
 use App\Http\Controllers\HotspotController;
+use App\Http\Controllers\AdminH3GeocodingController;
+use App\Http\Controllers\AdminS3BucketController;
 
 Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
+Route::middleware(['auth', 'verified'])->post('/trends/refresh', [TrendsController::class, 'refresh'])->name('trends.refresh');
+Route::get('/api/trends/{jobId}/summary', [TrendsController::class, 'getSummary'])->name('trends.summary');
 Route::get('/hotspots', [HotspotController::class, 'index'])->name('hotspots.index');
 Route::get('/hotspots/{citySlug}', [HotspotController::class, 'show'])->name('hotspots.show');
-Route::get('/reports/statistical-analysis/{trendId}', [StatisticalAnalysisReportController::class, 'show'])->name('reports.statistical-analysis.show');
+Route::get('/reports/statistical-analysis/{jobId}', [StatisticalAnalysisReportController::class, 'show'])
+    ->where('jobId', '[^/]+')
+    ->name('reports.statistical-analysis.show');
 
 Route::get('/yearly-comparisons', [YearlyCountComparisonController::class, 'index'])->name('yearly-comparisons.index');
-Route::get('/reports/yearly-comparison/{reportId}', [YearlyCountComparisonController::class, 'show'])->name('reports.yearly-comparison.show');
+Route::middleware(['auth', 'verified'])->post('/yearly-comparisons/refresh', [YearlyCountComparisonController::class, 'refresh'])->name('yearly-comparisons.refresh');
+Route::get('/reports/yearly-comparison/{jobId}', [YearlyCountComparisonController::class, 'show'])
+    ->where('jobId', '[\w\-]+')
+    ->name('reports.yearly-comparison.show');
 
 // Scoring Report Routes (New)
 Route::get('/scoring-reports', [ScoringReportController::class, 'index'])->name('scoring-reports.index');
@@ -124,6 +133,20 @@ Route::get('/saved-maps/{savedMap}/view', [SavedMapController::class, 'view'])->
 
 // Admin Routes (using controller-based auth check for now)
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/h3-geocoding', [AdminH3GeocodingController::class, 'index'])->name('h3-geocoding.index');
+    Route::post('/h3-geocoding/geocode', [AdminH3GeocodingController::class, 'geocode'])->name('h3-geocoding.geocode');
+
+    // S3 Bucket Browser
+    Route::prefix('s3-bucket')->name('s3-bucket.')->group(function () {
+        Route::get('/', [AdminS3BucketController::class, 'index'])->name('index');
+        Route::post('/refresh', [AdminS3BucketController::class, 'refresh'])->name('refresh');
+        Route::post('/bulk-destroy', [AdminS3BucketController::class, 'bulkDestroy'])->name('bulk-destroy');
+        Route::delete('/{jobId}', [AdminS3BucketController::class, 'destroyDirectory'])->name('destroy-directory');
+        Route::delete('/{jobId}/files/{filename}', [AdminS3BucketController::class, 'destroyFile'])
+            ->where('filename', '.*')
+            ->name('destroy-file');
+    });
+
     Route::post('/scoring-reports/refresh', [ScoringReportController::class, 'refreshIndex'])->name('scoring-reports.refresh');
     Route::delete('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::class, 'destroy'])
     ->where('artifactName', '.*')

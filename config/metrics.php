@@ -11,9 +11,9 @@ return array (
       'totalRecords' => 249007,
       'minDate' => '2023-01-01',
       'maxDate' => '2026-03-02',
-      'recordsLast30Days' => 5505,
-      'recordsLast90Days' => 17662,
-      'recordsLast1Year' => 80171,
+      'recordsLast30Days' => 5243,
+      'recordsLast90Days' => 17467,
+      'recordsLast1Year' => 79959,
       'offenseGroupDistribution' => 
       array (
         0 => 
@@ -76,9 +76,9 @@ return array (
       'totalRecords' => 337211,
       'minDate' => '2025-01-01',
       'maxDate' => '2026-03-03',
-      'recordsLast30Days' => 29701,
-      'recordsLast90Days' => 73820,
-      'recordsLast1Year' => 292206,
+      'recordsLast30Days' => 28167,
+      'recordsLast90Days' => 73286,
+      'recordsLast1Year' => 291295,
       'caseStatusDistribution' => 
       array (
         0 => 
@@ -101,9 +101,9 @@ return array (
       'totalRecords' => 874757,
       'minDate' => '2006-04-04',
       'maxDate' => '2026-03-03',
-      'recordsLast30Days' => 4363,
-      'recordsLast90Days' => 12103,
-      'recordsLast1Year' => 46205,
+      'recordsLast30Days' => 4163,
+      'recordsLast90Days' => 12082,
+      'recordsLast1Year' => 46117,
       'resultDistribution' => 
       array (
         0 => 
@@ -163,9 +163,9 @@ return array (
       'totalRecords' => 16879,
       'minDate' => '2009-12-01',
       'maxDate' => '2026-03-03',
-      'recordsLast30Days' => 69,
+      'recordsLast30Days' => 68,
       'recordsLast90Days' => 150,
-      'recordsLast1Year' => 701,
+      'recordsLast1Year' => 698,
       'statusDistribution' => 
       array (
         0 => 
@@ -255,9 +255,9 @@ return array (
       'totalRecords' => 643937,
       'minDate' => '2006-09-26',
       'maxDate' => '2026-03-04',
-      'recordsLast30Days' => 2668,
-      'recordsLast90Days' => 7583,
-      'recordsLast1Year' => 36715,
+      'recordsLast30Days' => 2489,
+      'recordsLast90Days' => 7571,
+      'recordsLast1Year' => 36558,
       'workTypeDistribution' => 
       array (
         0 => 
@@ -343,20 +343,20 @@ return array (
       'totalRecords' => 485,
       'minDate' => '2022-06-20',
       'maxDate' => '2033-04-08',
-      'recordsLast30Days' => 59,
-      'recordsLast90Days' => 117,
+      'recordsLast30Days' => 58,
+      'recordsLast90Days' => 100,
       'recordsLast1Year' => 484,
     ),
     6 => 
     array (
       'modelName' => 'Everett Crime',
       'tableName' => 'everett_crime_data',
-      'totalRecords' => 133243,
+      'totalRecords' => 133304,
       'minDate' => '2021-04-04',
-      'maxDate' => '2026-03-04',
-      'recordsLast30Days' => 1899,
-      'recordsLast90Days' => 5685,
-      'recordsLast1Year' => 26025,
+      'maxDate' => '2026-03-05',
+      'recordsLast30Days' => 1872,
+      'recordsLast90Days' => 5683,
+      'recordsLast1Year' => 26014,
     ),
     7 => 
     array (
@@ -367,7 +367,7 @@ return array (
       'maxDate' => '2025-09-02',
       'recordsLast30Days' => 0,
       'recordsLast90Days' => 0,
-      'recordsLast1Year' => 8281,
+      'recordsLast1Year' => 8240,
     ),
     8 => 
     array (
@@ -378,18 +378,18 @@ return array (
       'maxDate' => '2025-08-29',
       'recordsLast30Days' => 0,
       'recordsLast90Days' => 0,
-      'recordsLast1Year' => 900,
+      'recordsLast1Year' => 896,
     ),
     9 => 
     array (
       'modelName' => 'Cambridge Crime Report',
       'tableName' => 'cambridge_crime_reports_data',
-      'totalRecords' => 112505,
+      'totalRecords' => 113833,
       'minDate' => '1924-08-07',
-      'maxDate' => '2025-12-31',
-      'recordsLast30Days' => 0,
-      'recordsLast90Days' => 789,
-      'recordsLast1Year' => 10426,
+      'maxDate' => '2026-03-02',
+      'recordsLast30Days' => 433,
+      'recordsLast90Days' => 2072,
+      'recordsLast1Year' => 11724,
     ),
     10 => 
     array (
@@ -400,7 +400,7 @@ return array (
       'maxDate' => '2025-08-29',
       'recordsLast30Days' => 0,
       'recordsLast90Days' => 0,
-      'recordsLast1Year' => 708,
+      'recordsLast1Year' => 703,
     ),
     11 => 
     array (
@@ -411,7 +411,7 @@ return array (
       'maxDate' => '2025-06-06',
       'recordsLast30Days' => 0,
       'recordsLast90Days' => 0,
-      'recordsLast1Year' => 516,
+      'recordsLast1Year' => 512,
     ),
   ),
 );

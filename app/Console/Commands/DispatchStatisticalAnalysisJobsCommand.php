@@ -182,6 +182,10 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
                         'analysis_weeks_trend' => $trendWeeks,
                         'analysis_weeks_anomaly' => (int) $this->option('anomaly-weeks'),
                         'plot_generation' => $generatePlots ? 'both' : 'none',
+                        // Metadata for S3-based discovery (Phase 1)
+                        'model_class' => $modelClass,
+                        'column_name' => $jobSuffix,
+                        'city'        => $this->resolveCity($modelClass),
                     ];
 
                     $payload = [
@@ -300,7 +304,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
 
         $unifiedValue = $modelClass::getHumanName();
 
-        $query->orderBy($primaryKey)->chunkById(10000, function ($rows) use ($fileHandle, $selectColumns, &$processedRows, $logInterval, &$nextLogThreshold, $totalRows, $unifiedValue, $primaryKey) {
+        $query->orderBy($primaryKey)->chunkById(10000, function ($rows) use ($fileHandle, $selectColumns, &$processedRows, $logInterval, &$nextLogThreshold, $totalRows, $unifiedValue, $primaryKey, $tableName) {
             foreach ($rows as $row) {
                 $rowData = [];
                 foreach ($selectColumns as $col) {
@@ -322,6 +326,17 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         Log::info("      Finished export for {$tableName}: {$processedRows} / {$totalRows} rows written.");
 
         fclose($fileHandle);
+    }
+
+    private function resolveCity(string $modelClass): string
+    {
+        foreach (config('cities.cities', []) as $cityConfig) {
+            if (in_array($modelClass, $cityConfig['models'] ?? [])) {
+                return $cityConfig['name'];
+            }
+        }
+        $default = config('cities.default', 'boston');
+        return config("cities.cities.{$default}.name", 'Boston');
     }
 
     private function getModelClasses(): array

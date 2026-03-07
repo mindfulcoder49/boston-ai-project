@@ -133,9 +133,13 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
                         'analysis_stages' => ['stage2_yearly_count_comparison'],
                         'parameters' => [
                             'stage2_yearly_count_comparison' => [
-                                'group_by_col' => $field,
+                                'group_by_col'  => $field,
                                 'baseline_year' => $baselineYear,
-                                'timestamp_col' => $dateField, // Add timestamp_col here
+                                'timestamp_col' => $dateField,
+                                // Metadata for S3-based discovery (mirrors Stage 4 pattern)
+                                'model_class'   => $modelClass,
+                                'column_name'   => $field,
+                                'city'          => $this->resolveCity($modelClass),
                             ],
                         ],
                     ],
@@ -231,5 +235,16 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
         $fqcn = 'App\\Models\\' . $modelName;
         if (class_exists($fqcn)) return $fqcn;
         return null;
+    }
+
+    private function resolveCity(string $modelClass): string
+    {
+        foreach (config('cities.cities', []) as $cityConfig) {
+            if (in_array($modelClass, $cityConfig['models'] ?? [])) {
+                return $cityConfig['name'];
+            }
+        }
+        $default = config('cities.default', 'boston');
+        return config("cities.cities.{$default}.name", 'Boston');
     }
 }

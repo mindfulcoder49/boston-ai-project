@@ -9,7 +9,9 @@ class HotspotFinding extends Model
     protected $table = 'h3_hotspot_findings';
 
     protected $fillable = [
-        'trend_id',
+        'job_id',
+        'model_class',
+        'column_name',
         'h3_index',
         'h3_resolution',
         'anomaly_count',
@@ -22,9 +24,4 @@ class HotspotFinding extends Model
         'top_anomalies' => 'array',
         'top_trends'    => 'array',
     ];
-
-    public function trend()
-    {
-        return $this->belongsTo(Trend::class);
-    }
 }

@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+const page = usePage();
 import PageTemplate from '@/Components/PageTemplate.vue';
+import { useH3Names } from '@/composables/useH3Names';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import * as h3 from 'h3-js';
@@ -18,6 +20,9 @@ const props = defineProps({
     hotspotsByResolution: { type: Object,  default: () => ({}) },
     cityCenter:           { type: Array,   default: () => [42.3601, -71.0589] },
 });
+
+// ---- h3 names ----
+const { getName, hasName } = useH3Names();
 
 // ---- helpers ----
 const formatWindow = (w) => {
@@ -68,7 +73,7 @@ const sortedHotspots = computed(() => {
 const stats = computed(() => {
     const all = hotspots.value;
     if (!all.length) return { hexagons: 0, maxReports: 0, totalAnomalies: 0, totalTrends: 0, uniqueReports: 0 };
-    const reportIds = new Set(all.flatMap(h => h.reports.map(r => r.trend_id)));
+    const reportIds = new Set(all.flatMap(h => h.reports.map(r => r.job_id)));
     return {
         hexagons:       all.length,
         maxReports:     Math.max(...all.map(h => h.report_count)),
@@ -124,8 +129,10 @@ const renderHexagons = () => {
             fillOpacity: getHeatOpacity(h.report_count, maxReportCount.value),
         }).addTo(mapInstance);
 
+        const locationName = page.props.h3LocationNames?.[h.h3_index];
         poly.bindTooltip(
-            `<strong class="font-mono">${h.h3_index}</strong><br>` +
+            (locationName ? `<strong>${locationName}</strong><br>` : '') +
+            `<span class="font-mono text-xs text-gray-400">${h.h3_index}</span><br>` +
             `<strong>${h.report_count} report type${h.report_count !== 1 ? 's' : ''}</strong><br>` +
             `${h.anomaly_count} anomalies · ${h.trend_count} trends`,
             { sticky: true }
@@ -314,7 +321,10 @@ onUnmounted(() => {
                                         @click="selectHexagon(h)"
                                     >
                                         <td class="py-2 px-3 text-gray-400 text-xs tabular-nums">{{ i + 1 }}</td>
-                                        <td class="py-2 px-3 font-mono text-xs text-gray-600 whitespace-nowrap">{{ h.h3_index }}</td>
+                                        <td class="py-2 px-3">
+                                            <div v-if="hasName(h.h3_index)" class="text-sm text-gray-800 font-medium leading-tight">{{ getName(h.h3_index) }}</div>
+                                            <div class="font-mono text-xs text-gray-400">{{ h.h3_index }}</div>
+                                        </td>
                                         <td class="py-2 px-2 text-right">
                                             <span
                                                 class="inline-block px-1.5 py-0.5 rounded text-xs font-bold text-white tabular-nums"
@@ -346,7 +356,10 @@ onUnmounted(() => {
                     >
                         <div class="flex items-start justify-between gap-4">
                             <div>
-                                <h2 class="text-xl font-bold text-gray-800 font-mono">{{ activeHexagon.h3_index }}</h2>
+                                <h2 class="text-xl font-bold text-gray-800">
+                                    {{ getName(activeHexagon.h3_index) }}
+                                </h2>
+                                <p class="font-mono text-xs text-gray-400 mt-0.5">{{ activeHexagon.h3_index }}</p>
                                 <p class="text-sm text-gray-500 mt-0.5">
                                     H3 Resolution {{ activeResolution }} ·
                                     <span class="font-semibold text-gray-700">
@@ -377,7 +390,7 @@ onUnmounted(() => {
                             <div class="space-y-3">
                                 <div
                                     v-for="r in activeHexagon.reports"
-                                    :key="r.trend_id"
+                                    :key="r.job_id"
                                     class="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
                                 >
                                     <!-- Report header -->
@@ -390,7 +403,7 @@ onUnmounted(() => {
                                             </div>
                                         </div>
                                         <Link
-                                            :href="route('reports.statistical-analysis.show', { trendId: r.trend_id })"
+                                            :href="route('reports.statistical-analysis.show', { jobId: r.job_id })"
                                             class="text-xs text-indigo-600 hover:text-indigo-800 whitespace-nowrap flex-shrink-0 font-medium"
                                         >Full Report →</Link>
                                     </div>
