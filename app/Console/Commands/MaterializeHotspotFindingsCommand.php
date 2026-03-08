@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Models\AnalysisReportSnapshot;
 use App\Models\HotspotFinding;
 use League\Flysystem\FileAttributes;
@@ -55,6 +56,14 @@ class MaterializeHotspotFindingsCommand extends Command
             $h3Resolution = (int) ($params['h3_resolution'] ?? 8);
             $pAnomaly    = (float) ($params['p_value_anomaly'] ?? 0.05);
             $pTrend      = (float) ($params['p_value_trend']   ?? 0.05);
+
+            if (!$modelClass || !class_exists($modelClass)) {
+                // Fallback for pre-Phase-1 artifacts: parse model_class from job ID
+                ['model_class' => $modelClass, 'column_name' => $parsedCol] = $this->parseJobIdForMeta($jId);
+                if ($parsedCol && $columnName === 'unified') {
+                    $columnName = $parsedCol;
+                }
+            }
 
             if (!$modelClass || !class_exists($modelClass)) {
                 $this->warn("  Skipping {$jId} — model_class missing or not found in artifact parameters.");
@@ -166,6 +175,39 @@ class MaterializeHotspotFindingsCommand extends Command
 
         $this->info('Done.');
         return 0;
+    }
+
+    /**
+     * Parse model_class and column_name from a pre-Phase-1 job ID.
+     * Format: laravel-{model-key}-{column_name}-res{N}-{timestamp}
+     */
+    private function parseJobIdForMeta(string $jobId): array
+    {
+        if (!preg_match('/^laravel-(.+)-res\d+-\d+$/', $jobId, $m)) {
+            return ['model_class' => null, 'column_name' => null];
+        }
+
+        $modelAndCol = $m[1];
+
+        // Build reverse map: kebab-model-key → model_class, longest first
+        $keyMap = [];
+        foreach (config('cities.cities', []) as $cityConfig) {
+            foreach ($cityConfig['models'] ?? [] as $mc) {
+                $keyMap[Str::kebab(class_basename($mc))] = $mc;
+            }
+        }
+        uksort($keyMap, fn($a, $b) => strlen($b) <=> strlen($a));
+
+        foreach ($keyMap as $key => $mc) {
+            if ($modelAndCol === $key) {
+                return ['model_class' => $mc, 'column_name' => 'unified'];
+            }
+            if (str_starts_with($modelAndCol, $key . '-')) {
+                return ['model_class' => $mc, 'column_name' => substr($modelAndCol, strlen($key) + 1)];
+            }
+        }
+
+        return ['model_class' => null, 'column_name' => null];
     }
 
     private function discoverStage4JobIds($s3): array

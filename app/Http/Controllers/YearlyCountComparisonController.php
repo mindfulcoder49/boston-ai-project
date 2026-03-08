@@ -132,6 +132,14 @@ class YearlyCountComparisonController extends Controller
             $groupByCol   = $params['group_by_col'] ?? $params['column_name'] ?? null;
             $baselineYear = $params['baseline_year'] ?? null;
 
+            // Fallback for artifacts missing model_class (Pydantic stripping issue pre-fix)
+            if (!$modelClass || !class_exists($modelClass)) {
+                $parsed       = $this->parseJobIdForMeta($snapshot->job_id);
+                $modelClass   = $parsed['model_class'] ?? null;
+                $groupByCol   = $groupByCol ?? $parsed['column_name'] ?? null;
+                $baselineYear = $baselineYear ?? $parsed['baseline_year'] ?? null;
+            }
+
             if (!$modelClass || !class_exists($modelClass) || !$groupByCol) {
                 continue;
             }
@@ -154,6 +162,39 @@ class YearlyCountComparisonController extends Controller
         }
 
         return array_values($byModel);
+    }
+
+    /**
+     * Parse model_class, column_name, and baseline_year from a Stage 2 job ID.
+     * Format: laravel-{model-key}-{column_name}-yearly-{baselineYear}-{timestamp}
+     */
+    private function parseJobIdForMeta(string $jobId): array
+    {
+        if (!preg_match('/^laravel-(.+)-yearly-(\d+)-\d+$/', $jobId, $m)) {
+            return ['model_class' => null, 'column_name' => null, 'baseline_year' => null];
+        }
+
+        $modelAndCol  = $m[1];
+        $baselineYear = (int) $m[2];
+
+        $keyMap = [];
+        foreach (config('cities.cities', []) as $cityConfig) {
+            foreach ($cityConfig['models'] ?? [] as $mc) {
+                $keyMap[Str::kebab(class_basename($mc))] = $mc;
+            }
+        }
+        uksort($keyMap, fn($a, $b) => strlen($b) <=> strlen($a));
+
+        foreach ($keyMap as $key => $mc) {
+            if ($modelAndCol === $key) {
+                return ['model_class' => $mc, 'column_name' => 'unified', 'baseline_year' => $baselineYear];
+            }
+            if (str_starts_with($modelAndCol, $key . '-')) {
+                return ['model_class' => $mc, 'column_name' => substr($modelAndCol, strlen($key) + 1), 'baseline_year' => $baselineYear];
+            }
+        }
+
+        return ['model_class' => null, 'column_name' => null, 'baseline_year' => null];
     }
 
     private function discoverStage2JobIds($s3): array

@@ -11,6 +11,7 @@ use Inertia\Inertia;
 use League\Flysystem\FileAttributes;
 use App\Models\AnalysisReportSnapshot;
 use App\Models\Trend;
+use App\Services\TrendSummaryService;
 
 class TrendsController extends Controller
 {
@@ -43,13 +44,13 @@ class TrendsController extends Controller
             return response()->json(['error' => 'Invalid job ID.'], 400);
         }
 
-        $cacheKey = "trend_summary_v5_{$jobId}";
+        $cacheKey = TrendSummaryService::cacheKey($jobId);
 
         $summary = Cache::rememberForever($cacheKey, function () use ($jobId) {
             $trend = Trend::where('job_id', $jobId)->first();
 
             if ($trend) {
-                return $this->computeTrendSummary(
+                return TrendSummaryService::compute(
                     $jobId,
                     (int)   $trend->h3_resolution,
                     (float) $trend->p_value_anomaly,
@@ -62,7 +63,7 @@ class TrendsController extends Controller
                 return ['status' => 'no_data', 'total_findings' => 0];
             }
 
-            return $this->computeTrendSummary(
+            return TrendSummaryService::compute(
                 $jobId,
                 (int)   $meta['h3_resolution'],
                 (float) $meta['p_value_anomaly'],
@@ -113,8 +114,7 @@ class TrendsController extends Controller
                 continue;
             }
 
-            $cacheKey = "trend_summary_v5_{$jobId}";
-            $summary  = Cache::get($cacheKey); // null = not yet computed; frontend lazy-loads via getSummary()
+            $summary = Cache::get(TrendSummaryService::cacheKey($jobId)); // null = not yet computed
 
             $allAnalyses[] = [
                 'trend_id'               => $meta['trend_id'],
@@ -267,91 +267,4 @@ class TrendsController extends Controller
         return config("cities.cities.{$default}.name", 'Boston');
     }
 
-    private function computeTrendSummary(string $jobId, int $h3Resolution, float $pAnomaly, float $pTrend): array
-    {
-        try {
-            $data = AnalysisReportSnapshot::resolve($jobId, 'stage4_h3_anomaly.json');
-            if (!$data || empty($data['results'])) {
-                return ['status' => 'no_data', 'total_findings' => 0];
-            }
-
-            $anomalyCount      = 0;
-            $trendCount        = 0;
-            $affectedH3        = [];
-            $categoryFindings  = [];
-            $topAnomalies      = [];
-            $topTrendsByWindow = [];
-
-            foreach ($data['results'] as $row) {
-                $secGroup = $row['secondary_group'] ?? 'Unknown';
-                $h3Index  = $row["h3_index_{$h3Resolution}"] ?? null;
-                $rowHasFindings = false;
-
-                foreach ($row['anomaly_analysis'] ?? [] as $week) {
-                    if (($week['anomaly_p_value'] ?? 1) < $pAnomaly) {
-                        if (($row['historical_weekly_avg'] ?? 0) < 1 && ($week['count'] ?? 0) === 1) {
-                            continue;
-                        }
-                        $anomalyCount++;
-                        $rowHasFindings = true;
-                        $topAnomalies[] = [
-                            'h3_index'        => $h3Index,
-                            'secondary_group' => $secGroup,
-                            'week'            => $week['week'] ?? null,
-                            'count'           => $week['count'] ?? null,
-                            'z_score'         => isset($week['z_score']) ? round($week['z_score'], 1) : null,
-                            'historical_avg'  => round($row['historical_weekly_avg'] ?? 0, 1),
-                        ];
-                    }
-                }
-
-                foreach ($row['trend_analysis'] ?? [] as $window => $trendData) {
-                    if (($trendData['p_value'] ?? 1) < $pTrend) {
-                        $trendCount++;
-                        $rowHasFindings = true;
-                        $topTrendsByWindow[$window][] = [
-                            'h3_index'        => $h3Index,
-                            'secondary_group' => $secGroup,
-                            'slope'           => isset($trendData['slope']) ? round($trendData['slope'], 2) : null,
-                            'p_value'         => $trendData['p_value'] ?? null,
-                        ];
-                    }
-                }
-
-                if ($rowHasFindings) {
-                    if ($h3Index) $affectedH3[$h3Index] = true;
-                    $categoryFindings[$secGroup] = ($categoryFindings[$secGroup] ?? 0) + 1;
-                }
-            }
-
-            arsort($categoryFindings);
-            $topCategories = array_slice(array_keys($categoryFindings), 0, 5);
-
-            usort($topAnomalies, fn($a, $b) => ($b['z_score'] ?? 0) <=> ($a['z_score'] ?? 0));
-            $topAnomalies = array_slice($topAnomalies, 0, 5);
-
-            foreach ($topTrendsByWindow as &$windowTrends) {
-                usort($windowTrends, fn($a, $b) => ($a['p_value'] ?? 1) <=> ($b['p_value'] ?? 1));
-                $windowTrends = array_slice($windowTrends, 0, 5);
-            }
-            unset($windowTrends);
-            uksort($topTrendsByWindow, fn($a, $b) =>
-                (int) preg_replace('/[^0-9]/', '', $a) <=> (int) preg_replace('/[^0-9]/', '', $b)
-            );
-
-            return [
-                'status'               => 'ok',
-                'anomaly_count'        => $anomalyCount,
-                'trend_count'          => $trendCount,
-                'affected_h3_count'    => count($affectedH3),
-                'top_categories'       => $topCategories,
-                'total_findings'       => $anomalyCount + $trendCount,
-                'top_anomalies'        => $topAnomalies,
-                'top_trends_by_window' => $topTrendsByWindow,
-            ];
-        } catch (\Exception $e) {
-            Log::error("[TrendsController] computeTrendSummary({$jobId}): " . $e->getMessage());
-            return ['status' => 'error', 'total_findings' => 0];
-        }
-    }
 }

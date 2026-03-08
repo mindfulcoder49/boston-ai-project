@@ -99,12 +99,13 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
                 $this->line("    Running analysis for all available columns: <fg=yellow>" . implode(', ', $fieldsForAnalysis) . "</fg=yellow>");
             }
 
+            $baselineYear = (int) $this->option('baseline-year');
             $modelKey = Str::kebab(class_basename($modelClass));
-            $exportFilename = "{$this->exportDirectory}/{$modelKey}_all_fields.csv";
+            $exportFilename = "{$this->exportDirectory}/{$modelKey}_from_{$baselineYear}.csv";
 
             if (!Storage::disk('public')->exists($exportFilename)) {
                 $this->line('    No existing export found. Generating new CSV...');
-                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $availableColumns, $exportFilename, $modelClass);
+                $this->exportDataForModel($tableName, $dateField, $latField, $lonField, $availableColumns, $exportFilename, $modelClass, $baselineYear);
                 $this->info("    Successfully generated new data export.");
             } else {
                 $this->line("    Using existing data export: <fg=gray>{$exportFilename}</fg=gray>");
@@ -115,7 +116,6 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
             foreach ($fieldsForAnalysis as $field) {
                 $this->info("--> Preparing job for analysis field: <fg=yellow>{$field}</fg=yellow>");
 
-                $baselineYear = (int) $this->option('baseline-year');
                 $jobId = "laravel-{$modelKey}-{$field}-yearly-{$baselineYear}-" . time();
 
                 $payload = [
@@ -169,13 +169,21 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
         return 0;
     }
 
-    private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename, string $modelClass)
+    private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename, string $modelClass, int $baselineYear = 0)
     {
         $filePath = Storage::disk('public')->path($filename);
         $connectionName = (new $modelClass())->getConnectionName() ?? config('database.default');
 
-        $this->line("      Counting rows to export for {$tableName}...");
-        $totalRows = DB::connection($connectionName)->table($tableName)->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField)->count();
+        $this->line("      Counting rows to export for {$tableName}..." . ($baselineYear ? " (from {$baselineYear})" : ''));
+
+        $baseQuery = DB::connection($connectionName)->table($tableName)
+            ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
+
+        if ($baselineYear) {
+            $baseQuery->where($dateField, '>=', "{$baselineYear}-01-01");
+        }
+
+        $totalRows = $baseQuery->count();
 
         if ($totalRows === 0) {
             $this->warn("      No rows to export. Creating an empty file with a header.");
@@ -194,6 +202,7 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
 
         DB::connection($connectionName)->table($tableName)->select($header)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField)
+            ->when($baselineYear, fn($q) => $q->where($dateField, '>=', "{$baselineYear}-01-01"))
             ->orderBy($primaryKey)->lazy(50000)
             ->each(function ($row) use ($fileHandle, $header, $progressBar) {
                 $rowData = [];

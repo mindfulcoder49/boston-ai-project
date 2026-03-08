@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use League\Flysystem\FileAttributes;
+use App\Models\AnalysisReportSnapshot;
 use App\Models\Trend;
 
 class AdminS3BucketController extends Controller
@@ -125,36 +126,87 @@ class AdminS3BucketController extends Controller
     {
         $request->validate(['job_ids' => 'required|array|min:1', 'job_ids.*' => 'string']);
 
-        $deleted = 0;
         $errors = [];
-        $s3 = Storage::disk('s3');
 
+        // Validate all job IDs upfront
+        $validJobIds = [];
         foreach ($request->job_ids as $jobId) {
             if (!preg_match('/^[\w-]+$/', $jobId)) {
                 $errors[] = "Skipped invalid job ID: {$jobId}";
-                continue;
-            }
-            try {
-                if ($s3->directoryExists($jobId)) {
-                    $s3->deleteDirectory($jobId);
-                }
-                $trend = Trend::where('job_id', $jobId)->first();
-                if ($trend) {
-                    Cache::forget("trend_summary_v5_{$jobId}");
-                    $trend->delete();
-                }
-                Cache::forget("analysis_data_{$jobId}");
-                $deleted++;
-            } catch (\Exception $e) {
-                $errors[] = "Failed to delete {$jobId}: " . $e->getMessage();
-                Log::error("Bulk delete failed for {$jobId}: " . $e->getMessage());
+            } else {
+                $validJobIds[] = $jobId;
             }
         }
 
+        if (empty($validJobIds)) {
+            return back()->with('error', 'No valid job IDs. ' . implode('; ', $errors));
+        }
+
+        // ── S3: collect all object keys per job, then batch-delete in one call ─
+        $s3Cfg  = config('filesystems.disks.s3');
+        $bucket = $s3Cfg['bucket'];
+        $client = new \Aws\S3\S3Client([
+            'version'                 => 'latest',
+            'region'                  => $s3Cfg['region'],
+            'credentials'             => ['key' => $s3Cfg['key'], 'secret' => $s3Cfg['secret']],
+            'endpoint'                => $s3Cfg['endpoint'] ?? null,
+            'use_path_style_endpoint' => $s3Cfg['use_path_style_endpoint'] ?? false,
+        ]);
+
+        $objectsToDelete = [];
+        foreach ($validJobIds as $jobId) {
+            try {
+                $paginator = $client->getPaginator('ListObjectsV2', [
+                    'Bucket' => $bucket,
+                    'Prefix' => "{$jobId}/",
+                ]);
+                foreach ($paginator as $page) {
+                    foreach ($page['Contents'] ?? [] as $obj) {
+                        $objectsToDelete[] = ['Key' => $obj['Key']];
+                    }
+                }
+            } catch (\Exception $e) {
+                $errors[] = "Failed to list {$jobId}: " . $e->getMessage();
+                Log::error("Bulk delete list failed for {$jobId}: " . $e->getMessage());
+            }
+        }
+
+        $deletedObjects = 0;
+        if (!empty($objectsToDelete)) {
+            foreach (array_chunk($objectsToDelete, 1000) as $chunk) {
+                try {
+                    $result = $client->deleteObjects([
+                        'Bucket' => $bucket,
+                        'Delete' => ['Objects' => $chunk],
+                    ]);
+                    $deletedObjects += count($result['Deleted'] ?? []);
+                    foreach ($result['Errors'] ?? [] as $err) {
+                        $errors[] = "S3 error on {$err['Key']}: {$err['Message']}";
+                    }
+                } catch (\Exception $e) {
+                    $errors[] = 'S3 batch delete error: ' . $e->getMessage();
+                    Log::error('Bulk S3 deleteObjects error: ' . $e->getMessage());
+                }
+            }
+        }
+
+        // ── DB: batch delete in two queries ───────────────────────────────────
+        Trend::whereIn('job_id', $validJobIds)->delete();
+        AnalysisReportSnapshot::whereIn('job_id', $validJobIds)->delete();
+
+        // ── Cache: clear per-job and listing caches ───────────────────────────
+        foreach ($validJobIds as $jobId) {
+            Cache::forget("trend_summary_v5_{$jobId}");
+            Cache::forget("analysis_data_{$jobId}");
+        }
         Cache::forget(self::CACHE_KEY);
+        Cache::forget('trend_listing_v1');
+        Cache::forget('yearly_count_comparison_listing_v1');
         Cache::forget('scoring_reports_listing_v2');
 
-        $message = "Deleted {$deleted} job director" . ($deleted === 1 ? 'y' : 'ies') . '.';
+        $jobCount = count($validJobIds);
+        $message  = "Deleted {$deletedObjects} S3 object" . ($deletedObjects === 1 ? '' : 's')
+                  . " across {$jobCount} job" . ($jobCount === 1 ? '' : 's') . '.';
         if ($errors) {
             $message .= ' Errors: ' . implode('; ', $errors);
         }

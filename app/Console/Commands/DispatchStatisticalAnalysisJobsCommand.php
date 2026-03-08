@@ -142,7 +142,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
             // The unified 'source_dataset' column is added dynamically during export.
 
             // 1. Create a single export for all fields for this model
-            $exportFilename = "{$this->exportDirectory}/{$modelKey}_all_fields.csv";
+            $exportFilename = "{$this->exportDirectory}/{$modelKey}_stage4_{$exportWeeks}w.csv";
 
             if (Storage::disk('public')->exists($exportFilename)) {
                 Log::info("    Using existing data export for all fields: {$exportFilename}");

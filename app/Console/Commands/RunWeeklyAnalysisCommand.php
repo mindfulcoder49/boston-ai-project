@@ -11,6 +11,7 @@ class RunWeeklyAnalysisCommand extends Command
                             {--stage2   : Run Stage 2 only}
                             {--stage4   : Run Stage 4 only}
                             {--stage6   : Run Stage 6 only}
+                            {--models=  : Comma-separated model short names to target (e.g. CrimeData,ChicagoCrime)}
                             {--dry-run  : Preview jobs without dispatching}
                             {--fresh    : Force new data exports (passed through to sub-commands)}';
 
@@ -32,18 +33,27 @@ class RunWeeklyAnalysisCommand extends Command
         $dryRun    = $this->option('dry-run');
         $fresh     = $this->option('fresh');
 
+        $modelsOption = $this->option('models');
+        $modelFilter  = $modelsOption
+            ? array_map('trim', explode(',', $modelsOption))
+            : [];
+
+        if ($modelFilter) {
+            $this->info('Model filter active: ' . implode(', ', $modelFilter));
+        }
+
         $exitCode = 0;
 
         if ($runStage2) {
-            $exitCode |= $this->runStage2($cfg['stage2'] ?? [], $dryRun, $fresh);
+            $exitCode |= $this->runStage2($cfg['stage2'] ?? [], $dryRun, $fresh, $modelFilter);
         }
 
         if ($runStage4) {
-            $exitCode |= $this->runStage4($cfg['stage4'] ?? [], $dryRun, $fresh);
+            $exitCode |= $this->runStage4($cfg['stage4'] ?? [], $dryRun, $fresh, $modelFilter);
         }
 
         if ($runStage6) {
-            $exitCode |= $this->runStage6($cfg['stage6'] ?? [], $dryRun, $fresh);
+            $exitCode |= $this->runStage6($cfg['stage6'] ?? [], $dryRun, $fresh, $modelFilter);
         }
 
         $this->info($dryRun ? 'Dry run complete. No jobs were dispatched.' : 'Weekly analysis run complete.');
@@ -53,7 +63,7 @@ class RunWeeklyAnalysisCommand extends Command
 
     // -------------------------------------------------------------------------
 
-    private function runStage2(array $cfg, bool $dryRun, bool $fresh): int
+    private function runStage2(array $cfg, bool $dryRun, bool $fresh, array $modelFilter = []): int
     {
         if (empty($cfg['enabled'])) {
             $this->warn('[Stage 2] Disabled in config. Skipping.');
@@ -61,8 +71,8 @@ class RunWeeklyAnalysisCommand extends Command
         }
 
         $baselineYear = $cfg['baseline_year'] ?? 2019;
-
-        $this->info("[Stage 2] Dispatching yearly count comparisons for all auto-discoverable models.");
+        $label = $modelFilter ? implode(', ', $modelFilter) : 'all auto-discoverable models';
+        $this->info("[Stage 2] Dispatching yearly count comparisons for {$label}.");
         $this->line("  baseline_year={$baselineYear}");
 
         if ($dryRun) {
@@ -70,16 +80,24 @@ class RunWeeklyAnalysisCommand extends Command
             return 0;
         }
 
-        $args = ['--baseline-year' => $baselineYear];
-
+        $baseArgs = ['--baseline-year' => $baselineYear];
         if ($fresh) {
-            $args['--fresh'] = true;
+            $baseArgs['--fresh'] = true;
         }
 
-        return $this->call('app:dispatch-yearly-count-comparison-jobs', $args);
+        if (empty($modelFilter)) {
+            return $this->call('app:dispatch-yearly-count-comparison-jobs', $baseArgs);
+        }
+
+        $exitCode = 0;
+        foreach ($modelFilter as $modelName) {
+            $this->line("  [Stage 2] → {$modelName}");
+            $exitCode |= $this->call('app:dispatch-yearly-count-comparison-jobs', array_merge($baseArgs, ['model' => $modelName]));
+        }
+        return $exitCode;
     }
 
-    private function runStage4(array $cfg, bool $dryRun, bool $fresh): int
+    private function runStage4(array $cfg, bool $dryRun, bool $fresh, array $modelFilter = []): int
     {
         if (empty($cfg['enabled'])) {
             $this->warn('[Stage 4] Disabled in config. Skipping.');
@@ -93,7 +111,8 @@ class RunWeeklyAnalysisCommand extends Command
         $anomalyWeeks = $cfg['anomaly_weeks'] ?? 4;
         $exportSpan   = $cfg['export_timespan'] ?? 108;
 
-        $this->info("[Stage 4] Dispatching for all auto-discoverable models.");
+        $label = $modelFilter ? implode(', ', $modelFilter) : 'all auto-discoverable models';
+        $this->info("[Stage 4] Dispatching for {$label}.");
         $this->line("  resolutions={$resolutions}, p_anomaly={$pAnomaly}, p_trend={$pTrend}");
         $this->line("  trend_weeks={$trendWeeks}, anomaly_weeks={$anomalyWeeks}, export_timespan={$exportSpan}");
 
@@ -102,23 +121,32 @@ class RunWeeklyAnalysisCommand extends Command
             return 0;
         }
 
-        $args = [
-            '--resolutions'    => $resolutions,
-            '--p-anomaly'      => $pAnomaly,
-            '--p-trend'        => $pTrend,
-            '--trend-weeks'    => $trendWeeks,
-            '--anomaly-weeks'  => $anomalyWeeks,
+        $baseArgs = [
+            '--resolutions'     => $resolutions,
+            '--p-anomaly'       => $pAnomaly,
+            '--p-trend'         => $pTrend,
+            '--trend-weeks'     => $trendWeeks,
+            '--anomaly-weeks'   => $anomalyWeeks,
             '--export-timespan' => $exportSpan,
         ];
 
         if ($fresh) {
-            $args['--fresh'] = true;
+            $baseArgs['--fresh'] = true;
         }
 
-        return $this->call('app:dispatch-statistical-analysis-jobs', $args);
+        if (empty($modelFilter)) {
+            return $this->call('app:dispatch-statistical-analysis-jobs', $baseArgs);
+        }
+
+        $exitCode = 0;
+        foreach ($modelFilter as $modelName) {
+            $this->line("  [Stage 4] → {$modelName}");
+            $exitCode |= $this->call('app:dispatch-statistical-analysis-jobs', array_merge($baseArgs, ['model' => $modelName]));
+        }
+        return $exitCode;
     }
 
-    private function runStage6(array $cfg, bool $dryRun, bool $fresh): int
+    private function runStage6(array $cfg, bool $dryRun, bool $fresh, array $modelFilter = []): int
     {
         if (empty($cfg['enabled'])) {
             $this->warn('[Stage 6] Disabled in config. Skipping.');
@@ -126,6 +154,13 @@ class RunWeeklyAnalysisCommand extends Command
         }
 
         $jobs = $cfg['jobs'] ?? [];
+
+        if (!empty($modelFilter)) {
+            $jobs = array_values(array_filter($jobs, function ($job) use ($modelFilter) {
+                $basename = class_basename($job['model'] ?? '');
+                return in_array($basename, $modelFilter, true);
+            }));
+        }
 
         if (empty($jobs)) {
             $this->warn('[Stage 6] No jobs configured in analysis_schedule.php. Skipping.');

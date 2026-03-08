@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\AnalysisReportSnapshot;
+use App\Services\TrendSummaryService;
 use League\Flysystem\FileAttributes;
 
 class PullAnalysisReportsCommand extends Command
@@ -94,9 +95,12 @@ class PullAnalysisReportsCommand extends Command
             $this->call('app:materialize-hotspot-findings', ['--force' => true]);
         }
 
-        // ── 4. Clear all listing and per-job caches ───────────────────────────
-        $this->info('Clearing caches...');
-        $this->clearCaches(array_unique($pulledJobIds));
+        // ── 4. Warm trend summaries (compute + cache all stage4 summaries) ────
+        $this->warmTrendSummaries($fresh);
+
+        // ── 5. Clear listing caches so they rebuild with fresh summaries ───────
+        $this->info('Clearing listing caches...');
+        $this->clearListingCaches();
 
         $this->info('Done.');
 
@@ -151,18 +155,57 @@ class PullAnalysisReportsCommand extends Command
         return $relevant;
     }
 
-    private function clearCaches(array $pulledJobIds): void
+    /**
+     * Pre-compute and cache trend summaries for all stage4 snapshots.
+     * Skips already-cached summaries unless --fresh was passed.
+     */
+    private function warmTrendSummaries(bool $fresh): void
+    {
+        $snapshots = AnalysisReportSnapshot::where('artifact_name', 'stage4_h3_anomaly.json')->get();
+
+        if ($snapshots->isEmpty()) {
+            return;
+        }
+
+        $this->info("Warming {$snapshots->count()} trend summaries...");
+        $bar = $this->output->createProgressBar($snapshots->count());
+        $bar->start();
+
+        $warmed  = 0;
+        $skipped = 0;
+
+        foreach ($snapshots as $snapshot) {
+            $cacheKey = TrendSummaryService::cacheKey($snapshot->job_id);
+
+            if (!$fresh && Cache::has($cacheKey)) {
+                $skipped++;
+                $bar->advance();
+                continue;
+            }
+
+            $params       = $snapshot->payload['parameters'] ?? [];
+            $h3Resolution = (int)   ($params['h3_resolution']   ?? 8);
+            $pAnomaly     = (float) ($params['p_value_anomaly'] ?? 0.05);
+            $pTrend       = (float) ($params['p_value_trend']   ?? 0.05);
+
+            TrendSummaryService::computeAndCache($snapshot->job_id, $h3Resolution, $pAnomaly, $pTrend);
+            $warmed++;
+            $bar->advance();
+        }
+
+        $bar->finish();
+        $this->newLine();
+        $this->line("  Summaries warmed: {$warmed}, already cached (skipped): {$skipped}.");
+    }
+
+    private function clearListingCaches(): void
     {
         Cache::forget('trend_listing_v1');
         Cache::forget('yearly_count_comparison_listing_v1');
         Cache::forget('scoring_reports_listing_v2');
         Cache::forget('s3_bucket_listing_v1');
 
-        foreach ($pulledJobIds as $jobId) {
-            Cache::forget("trend_summary_v5_{$jobId}");
-            Cache::forget("analysis_data_{$jobId}");
-        }
-
-        $this->line('  Listing and per-job caches cleared.');
+        $this->line('  Listing caches cleared.');
     }
 }
+

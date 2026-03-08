@@ -89,7 +89,8 @@ class DispatchHistoricalScoringJobsCommand extends Command
 
         Storage::disk('public')->makeDirectory($this->exportDirectory);
         $modelKey = Str::kebab(class_basename($modelClass));
-        $exportFilename = "{$this->exportDirectory}/{$modelKey}_all_fields.csv";
+        $exportWeeks = (int) $this->option('export-timespan');
+        $exportFilename = "{$this->exportDirectory}/{$modelKey}_stage6_{$exportWeeks}w.csv";
 
         if ($this->option('fresh') && Storage::disk('public')->exists($exportFilename)) {
             Log::warning("The --fresh option was used. Deleting cached data export for {$modelName}.");
@@ -99,7 +100,6 @@ class DispatchHistoricalScoringJobsCommand extends Command
 
         if (!Storage::disk('public')->exists($exportFilename)) {
             Log::info('No existing export found. Generating new CSV...');
-            $exportWeeks = (int) $this->option('export-timespan');
             $this->exportDataForModel($modelInstance, $exportFilename, $exportColumns, $exportWeeks);
             Log::info("Successfully generated new data export.");
         } else {
