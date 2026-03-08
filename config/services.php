@@ -33,6 +33,7 @@ return [
 
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
+        'daily_token_limit' => env('OPENAI_DAILY_TOKEN_LIMIT', 2500000),
     ],
 
     'anthropic' => [

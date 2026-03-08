@@ -1,19 +1,21 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ClientException;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
+use App\Exceptions\DailyTokenLimitExceededException;
 use App\Http\Controllers\GenericMapController; // Added for streamLocationReport
 use App\Http\Controllers\ThreeOneOneCaseController; // Added for streamLocationReport
-use Illuminate\Support\Facades\Auth; // Added for Auth
 use App\Models\Report; // Added for Report model
+use App\Services\OpenAiTokenBudgetService;
+use Carbon\Carbon;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth; // Added for Auth
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AiAssistantController extends Controller
 {
@@ -32,9 +34,10 @@ class AiAssistantController extends Controller
         }
 
         $userMessage = $request->input('message');
-        $history = $request->input('history', []);
-        $context = $request->input('context', []);
-        $model = $request->input('model'); // Get the requested model
+        $history     = $request->input('history', []);
+        $context     = $request->input('context', []);
+        $model       = $request->input('model');
+        $meta        = $request->input('meta', []);
 
         // Add the context to the beginning of the conversation history
         $history = array_merge([['role' => 'user', 'content' => 'This is the relevant information to focus on in this conversation. Any
@@ -43,70 +46,124 @@ class AiAssistantController extends Controller
         // Add the user's message to the conversation history
         $history[] = ['role' => 'user', 'content' => $userMessage];
 
-        return new StreamedResponse(function () use ($history, $model) {
-            if (strpos($model, 'gemini') !== false) {
-                $this->streamGeminiResponse($history, 'gemini-2.0-flash-lite');
-            } else {
-                $this->streamAiResponse($history); // Assume OpenAI if not Gemini
-            }
+        return new StreamedResponse(function () use ($history, $userMessage, $meta) {
+            $this->streamAiResponse($history, $userMessage, $meta);
         });
     }
 
 
 
-    private function streamAiResponse($history)
+    private function streamAiResponse(array $history, string $userMessage = '', array $meta = [])
     {
         $maxTokens = 4096;
-        $temperature = 0.5;
-        $model = 'gpt-4o-mini';
+        $model = 'gpt-5-mini';
         $client = new Client();
         $apiKey = config('services.openai.api_key');
+        $tokenBudget = app(OpenAiTokenBudgetService::class);
 
         //prepend the context to the history
         $history = array_merge([['role' => 'user', 'content' => $this->getContext()]], $history);
 
-        $response = $client->request('POST', 'https://api.openai.com/v1/chat/completions', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ],
-            'json' => [
-                'messages' => $history, // Send the entire conversation history
-                'max_tokens' => $maxTokens,
-                'temperature' => $temperature,
-                'model' => $model,
+        $payload = [
+            'messages'              => $history,
+            'max_completion_tokens' => $maxTokens,
+            'model'                 => $model,
+            'stream'                => true,
+        ];
+        $reservation = null;
+
+        try {
+            $reservation = $tokenBudget->reserveForChatCompletion($payload, 'ai_assistant_chat_stream');
+            $response = $client->request('POST', 'https://api.openai.com/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                ],
+                'json'   => $payload,
                 'stream' => true,
-            ],
-            'stream' => true,
-        ]);
+            ]);
 
-        $body = $response->getBody();
-        $buffer = '';
+            $body   = $response->getBody();
+            $buffer = '';
 
-        while (!$body->eof()) {
-            $buffer .= $body->read(1024);
+            while (!$body->eof()) {
+                $buffer .= $body->read(1024);
 
-            while (($pos = strpos($buffer, "\n")) !== false) {
-                $chunk = substr($buffer, 0, $pos);
-                $buffer = substr($buffer, $pos + 1);
+                while (($pos = strpos($buffer, "\n")) !== false) {
+                    $chunk  = substr($buffer, 0, $pos);
+                    $buffer = substr($buffer, $pos + 1);
 
-                if (strpos($chunk, 'data: ') === 0) {
-                    $jsonData = substr($chunk, 6);
+                    if (strpos($chunk, 'data: ') === 0) {
+                        $jsonData = substr($chunk, 6);
 
-                    if ($jsonData === '[DONE]') {
-                        break 2;
-                    }
+                        if ($jsonData === '[DONE]') {
+                            break 2;
+                        }
 
-                    $decodedChunk = json_decode($jsonData, true);
+                        $decodedChunk = json_decode($jsonData, true);
 
-                    if (isset($decodedChunk['choices'][0]['delta']['content'])) {
-                        echo $decodedChunk['choices'][0]['delta']['content'];
-                        ob_flush();
-                        flush();
+                        if (isset($decodedChunk['choices'][0]['delta']['content'])) {
+                            echo $decodedChunk['choices'][0]['delta']['content'];
+                            ob_flush();
+                            flush();
+                        }
                     }
                 }
             }
+        } catch (DailyTokenLimitExceededException $e) {
+            echo $tokenBudget->formatLimitExceededMessage($e);
+            ob_flush();
+            flush();
+        } catch (ClientException | RequestException $e) {
+            $tokenBudget->releaseReservation($reservation);
+            $rawBody  = $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : '';
+            $errorData = json_decode($rawBody, true);
+            $errorCode = $errorData['error']['code'] ?? null;
+            Log::error('OpenAI stream request failed.', [
+                'status'        => $e->hasResponse() ? $e->getResponse()->getStatusCode() : null,
+                'error_code'    => $errorCode,
+                'error_message' => $e->getMessage(),
+                'response_body' => $rawBody,
+                'model'         => $model,
+                'message_count' => count($history),
+            ]);
+            if ($errorCode === 'context_length_exceeded') {
+                echo $this->buildContextLengthMessage($meta, $errorData['error']['message'] ?? '');
+            } else {
+                echo 'Error communicating with AI service: ' . ($rawBody ?: $e->getMessage());
+            }
+            ob_flush();
+            flush();
+        } catch (\Exception $e) {
+            $tokenBudget->releaseReservation($reservation);
+            Log::error('Unexpected error in streamAiResponse: ' . $e->getMessage());
+            echo 'Unexpected error: ' . $e->getMessage();
+            ob_flush();
+            flush();
         }
+    }
+
+    private function buildContextLengthMessage(array $meta, string $technicalError): string
+    {
+        $total = (int) ($meta['total'] ?? 0);
+
+        preg_match('/configured limit of ([\d,]+) tokens/', $technicalError, $limitMatch);
+        preg_match('/resulted in ([\d,]+) tokens/', $technicalError, $usedMatch);
+        $limitTokens = isset($limitMatch[1]) ? (int) str_replace(',', '', $limitMatch[1]) : 0;
+        $usedTokens  = isset($usedMatch[1])  ? (int) str_replace(',', '', $usedMatch[1])  : 0;
+
+        $message = "There are too many data points in the current map view for me to analyze at once.";
+
+        if ($limitTokens > 0 && $usedTokens > 0 && $total > 0) {
+            $targetItems = max(1, (int) round($total * ($limitTokens / $usedTokens) * 0.85));
+            $message .= " The {$total} items currently shown use about " . number_format($usedTokens)
+                     . " tokens, but the limit is " . number_format($limitTokens)
+                     . " — so you'd need roughly {$targetItems} items or fewer.";
+        }
+
+        $message .= " Try zooming into a smaller neighborhood, reducing your search radius, or narrowing the date range to bring the item count down.";
+
+        return $message;
     }
 
     private function streamGeminiResponse(array $history, string $model)
@@ -295,18 +352,18 @@ class AiAssistantController extends Controller
     }
 
     /**
-     * Generates a news article from report data using Gemini.
+     * Generates a news article from report data using OpenAI.
      *
      * @param string $reportTitle The title of the source report.
-     * @param array|object $reportData The raw data from the report.
+     * @param array|object $reportData The report data (trend summary or slimmed analysis data).
      * @param array $reportParameters Additional context about the report parameters.
-     * @return array|null An array containing 'headline', 'summary', and 'content', or null on failure.
+     * @return array|null An array containing 'headline', 'summary', 'content', 'title', 'slug', or null on failure.
      */
     public static function generateNewsArticle(string $reportTitle, $reportData, array $reportParameters = []): ?array
     {
-        $apiKey = config('services.gemini.api_key');
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=$apiKey";
+        $apiKey = config('services.openai.api_key');
         $client = new Client();
+        $tokenBudget = app(OpenAiTokenBudgetService::class);
 
         $systemPrompt = <<<EOT
 You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article based on the provided JSON data. The report title or the data itself will often indicate the city (e.g., Boston, Chicago, Cambridge). If a city is mentioned, focus the article on that city. If no city is specified anywhere, you can assume the data pertains to Boston, MA.
@@ -333,102 +390,177 @@ The JSON response MUST be a single, valid JSON object with three keys: "headline
 EOT;
 
         $contextPrompt = "The analysis was generated with the following parameters. Use them to provide context in the article:\n" . json_encode($reportParameters, JSON_PRETTY_PRINT);
-        $userPrompt = "Write a news article about the following report titled '{$reportTitle}'.\n\n{$contextPrompt}\n\nHere is the data: " . json_encode($reportData);
-
-        $requestBody = [
-            'contents' => [
-                ['role' => 'user', 'parts' => [['text' => $systemPrompt]]],
-                ['role' => 'model', 'parts' => [['text' => 'Understood. I will act as a journalist and provide a news article in the specified JSON format.']]],
-                ['role' => 'user', 'parts' => [['text' => $userPrompt]]],
+        $userPrompt    = "Write a news article about the following report titled '{$reportTitle}'.\n\n{$contextPrompt}\n\nHere is the data: " . json_encode($reportData);
+        $payload = [
+            'model'                 => 'gpt-5',
+            'messages'              => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user',   'content' => $userPrompt],
             ],
-            "generationConfig" => [
-                "temperature" => 0.7,
-                "maxOutputTokens" => 65536,
-                "response_mime_type" => "application/json",
-            ]
+            'max_completion_tokens' => 4096,
+            'response_format'       => ['type' => 'json_object'],
         ];
+        $reservation = null;
 
         try {
-            $response = $client->post($url, [
-                'headers' => ['Content-Type' => 'application/json'],
-                'json' => $requestBody,
+            $reservation = $tokenBudget->reserveForChatCompletion($payload, 'generate_news_article');
+            $response = $client->post('https://api.openai.com/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                ],
+                'json' => $payload,
+                'timeout' => 120,
             ]);
 
             $responseBody = json_decode($response->getBody()->getContents(), true);
+            $jsonString   = $responseBody['choices'][0]['message']['content'] ?? null;
 
-            // Check for any content first
-            if (isset($responseBody['candidates'][0]['content']['parts'][0]['text'])) {
-                $jsonString = $responseBody['candidates'][0]['content']['parts'][0]['text'];
-                $articleData = json_decode($jsonString, true);
-
-                // Case 1: Perfect response, valid JSON
-                if (json_last_error() === JSON_ERROR_NONE && isset($articleData['headline'], $articleData['summary'], $articleData['content'])) {
-                    $articleData['title'] = Str::limit($articleData['headline'], 250);
-                    $articleData['slug'] = Str::slug($articleData['title']);
-                    return $articleData;
-                }
-
-                // Case 2: Invalid JSON, but it might be because of truncation.
-                $finishReason = $responseBody['candidates'][0]['finishReason'] ?? null;
-                if ($finishReason === 'MAX_TOKENS') {
-                    Log::warning("AI response was truncated due to MAX_TOKENS. Attempting to salvage partial content.", [
-                        'reportTitle' => $reportTitle,
-                        'maxOutputTokens' => $requestBody['generationConfig']['maxOutputTokens'],
-                        'usageMetadata' => $responseBody['usageMetadata'] ?? 'N/A',
-                    ]);
-
-                    // Attempt to salvage what we can from the truncated JSON
-                    $salvagedData = [
-                        'headline' => 'Headline Missing (Truncated)',
-                        'summary' => 'Summary Missing (Truncated)',
-                        'content' => $jsonString, // Store the raw truncated string
-                    ];
-
-                    // Try to extract headline and summary with regex
-                    if (preg_match('/"headline":\s*"(.*?)"/s', $jsonString, $matches)) {
-                        $salvagedData['headline'] = json_decode('"' . $matches[1] . '"'); // Use json_decode to handle escaped chars
-                    }
-                    if (preg_match('/"summary":\s*"(.*?)"/s', $jsonString, $matches)) {
-                        $salvagedData['summary'] = json_decode('"' . $matches[1] . '"');
-                    }
-
-                    $salvagedData['title'] = Str::limit($salvagedData['headline'], 250);
-                    $salvagedData['slug'] = Str::slug($salvagedData['title']);
-                    return $salvagedData;
-                }
-
-                // If JSON is invalid for another reason, log it as an error.
-                Log::error('Failed to decode JSON from Gemini or JSON is missing required keys.', ['response' => $jsonString, 'finishReason' => $finishReason]);
+            if (!$jsonString) {
+                Log::warning("No content in OpenAI response for news article.", [
+                    'reportTitle'  => $reportTitle,
+                    'finishReason' => $responseBody['choices'][0]['finish_reason'] ?? 'unknown',
+                ]);
                 return null;
             }
 
-            // Handle cases where generation was stopped for other reasons (e.g., safety)
-            if (isset($responseBody['candidates'][0]['finishReason'])) {
-                $finishReason = $responseBody['candidates'][0]['finishReason'];
-                Log::warning("Gemini generation for news article finished with reason: {$finishReason}", [
-                    'finishReason' => $finishReason,
-                    'reportTitle' => $reportTitle,
-                    'usageMetadata' => $responseBody['usageMetadata'] ?? 'N/A',
-                ]);
-            } elseif (isset($responseBody['promptFeedback']['blockReason'])) {
-                Log::warning("Gemini content generation blocked for news article.", [
-                    'reason' => $responseBody['promptFeedback']['blockReason'],
-                    'reportTitle' => $reportTitle,
-                ]);
-            } else {
-                Log::warning("No text content found in Gemini response for news article.", ['responseBody' => $responseBody]);
+            $articleData = json_decode($jsonString, true);
+
+            // Case 1: Perfect response
+            if (json_last_error() === JSON_ERROR_NONE && isset($articleData['headline'], $articleData['summary'], $articleData['content'])) {
+                $articleData['title'] = Str::limit($articleData['headline'], 250);
+                $articleData['slug']  = Str::slug($articleData['title']);
+                return $articleData;
             }
 
+            // Case 2: Truncated response
+            $finishReason = $responseBody['choices'][0]['finish_reason'] ?? null;
+            if ($finishReason === 'length') {
+                Log::warning("OpenAI news article response truncated (max_tokens). Attempting to salvage.", ['reportTitle' => $reportTitle]);
+                $salvagedData = ['headline' => 'Headline Missing (Truncated)', 'summary' => 'Summary Missing (Truncated)', 'content' => $jsonString];
+                if (preg_match('/"headline":\s*"(.*?)"/s', $jsonString, $matches)) {
+                    $salvagedData['headline'] = json_decode('"' . $matches[1] . '"');
+                }
+                if (preg_match('/"summary":\s*"(.*?)"/s', $jsonString, $matches)) {
+                    $salvagedData['summary'] = json_decode('"' . $matches[1] . '"');
+                }
+                $salvagedData['title'] = Str::limit($salvagedData['headline'], 250);
+                $salvagedData['slug']  = Str::slug($salvagedData['title']);
+                return $salvagedData;
+            }
+
+            Log::error('Failed to decode JSON from OpenAI for news article.', ['reportTitle' => $reportTitle, 'response' => $jsonString, 'finishReason' => $finishReason]);
             return null;
 
+        } catch (DailyTokenLimitExceededException $e) {
+            Log::warning('Daily OpenAI token cap reached for news article generation.', [
+                'reportTitle' => $reportTitle,
+                'message' => $e->getMessage(),
+            ]);
+            return null;
         } catch (RequestException | ClientException $e) {
-            Log::error("Guzzle Exception during Gemini call for news article: " . $e->getMessage(), ['reportTitle' => $reportTitle]);
+            $tokenBudget->releaseReservation($reservation);
+            Log::error("OpenAI request failed for news article: " . $e->getMessage(), ['reportTitle' => $reportTitle]);
             if ($e->hasResponse()) {
-                Log::error("Gemini Response Body for news article: " . $e->getResponse()->getBody()->getContents());
+                Log::error("OpenAI Response Body: " . $e->getResponse()->getBody()->getContents());
             }
             return null;
         } catch (\Exception $e) {
+            $tokenBudget->releaseReservation($reservation);
             Log::error("Error generating news article: " . $e->getMessage(), ['reportTitle' => $reportTitle]);
+            return null;
+        }
+    }
+
+    /**
+     * Generates a news article about a geographic hotspot hexagon using OpenAI.
+     *
+     * @param string $h3Index The H3 hexagon index.
+     * @param string $locationName Human-readable location name (falls back to h3Index).
+     * @param array $hotspotData Structured data about the hotspot findings.
+     * @return array|null An array containing 'headline', 'summary', 'content', 'title', 'slug', or null on failure.
+     */
+    public static function generateNewsArticleFromHexagon(string $h3Index, string $locationName, array $hotspotData): ?array
+    {
+        $apiKey = config('services.openai.api_key');
+        $client = new Client();
+        $tokenBudget = app(OpenAiTokenBudgetService::class);
+
+        $systemPrompt = <<<EOT
+You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article about a geographic hotspot — a specific urban area that has been flagged across multiple independent data analysis reports as having significant statistical anomalies or trends.
+
+The data provided includes which types of incidents contributed to this hotspot designation, the most significant anomalies detected, and the strongest statistical trends. Focus on telling a coherent, compelling story about what is happening at this location.
+
+Rules:
+1. Identify the most compelling finding across all report types and build the narrative around it.
+2. Give the area human context — reference the neighborhood or area name when available.
+3. Do not list every data point. Interpret and explain the significance.
+4. Contextualize any numbers with meaningful comparisons when possible.
+5. The tone should be objective, informative, and accessible to a general audience.
+6. Avoid speculating beyond what the data supports.
+
+The JSON response MUST be a single, valid JSON object with three keys: "headline", "summary", and "content". "content" must be in Markdown format. Do not include any text outside the JSON object.
+EOT;
+
+        $locationLabel = $locationName ?: $h3Index;
+        $userPrompt    = "Write a news article about the following hotspot location: {$locationLabel} (H3 index: {$h3Index}).\n\nHotspot data:\n" . json_encode($hotspotData, JSON_PRETTY_PRINT);
+        $payload = [
+            'model'                 => 'gpt-5',
+            'messages'              => [
+                ['role' => 'system', 'content' => $systemPrompt],
+                ['role' => 'user',   'content' => $userPrompt],
+            ],
+            'max_completion_tokens' => 2048,
+            'response_format'       => ['type' => 'json_object'],
+        ];
+        $reservation = null;
+
+        try {
+            $reservation = $tokenBudget->reserveForChatCompletion($payload, 'generate_hexagon_news_article');
+            $response = $client->post('https://api.openai.com/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type'  => 'application/json',
+                ],
+                'json' => $payload,
+                'timeout' => 120,
+            ]);
+
+            $responseBody = json_decode($response->getBody()->getContents(), true);
+            $jsonString   = $responseBody['choices'][0]['message']['content'] ?? null;
+
+            if (!$jsonString) {
+                Log::warning("No content in OpenAI response for hexagon article.", ['h3Index' => $h3Index]);
+                return null;
+            }
+
+            $articleData = json_decode($jsonString, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE || !isset($articleData['headline'], $articleData['summary'], $articleData['content'])) {
+                Log::error('Invalid JSON from OpenAI for hexagon article.', ['h3Index' => $h3Index, 'response' => $jsonString]);
+                return null;
+            }
+
+            $articleData['title'] = Str::limit($articleData['headline'], 250);
+            $articleData['slug']  = Str::slug($articleData['title']);
+            return $articleData;
+
+        } catch (DailyTokenLimitExceededException $e) {
+            Log::warning('Daily OpenAI token cap reached for hexagon article generation.', [
+                'h3Index' => $h3Index,
+                'message' => $e->getMessage(),
+            ]);
+            return null;
+        } catch (RequestException | ClientException $e) {
+            $tokenBudget->releaseReservation($reservation);
+            Log::error("OpenAI request failed for hexagon article: " . $e->getMessage(), ['h3Index' => $h3Index]);
+            if ($e->hasResponse()) {
+                Log::error("OpenAI Response Body: " . $e->getResponse()->getBody()->getContents());
+            }
+            return null;
+        } catch (\Exception $e) {
+            $tokenBudget->releaseReservation($reservation);
+            Log::error("Error generating hexagon news article: " . $e->getMessage(), ['h3Index' => $h3Index]);
             return null;
         }
     }

@@ -126,7 +126,7 @@ const chatHistoryComponentRef = ref(null);
 const localContext = ref(props.context);
 const editingMessageId = ref(null);
 const editedMessageContent = ref('');
-const selectedModel = ref('gemini');
+const selectedModel = ref('openai');
 
 // --- NEW Reactive State for Detailed Loading Message ---
 const showDetailedLoadingMessage = ref(false); // Controls if the detailed message logic is active
@@ -376,6 +376,7 @@ const handleChatResponse = async (userMessageText, modelToUse, contextForChat) =
     history: messages.value.slice(0, -1), // Exclude current user message for history
     context: JSON.stringify(contextForChat),
     model: modelToUse,
+    meta: contextSummary.value,
   };
 
   try {

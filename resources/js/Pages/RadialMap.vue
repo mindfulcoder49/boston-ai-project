@@ -58,7 +58,7 @@
       <MapDisplay
         ref="mapDisplayRef"
         :mapCenterCoordinates="mapCenter"
-        :allMapDataPoints="pointsFilteredByDate"
+        :allMapDataPoints="pointsForMap"
         :activeFilterTypes="filters"
         :isCenterSelectionModeActive="centerSelectionActive"
         :tempNewMarkerPlacementCoords="tempNewMapClickCoords"
@@ -94,18 +94,20 @@
       @on-image-click="handleImageClick" 
     />
 
-    <DataPointStatistics 
-      :dataPoints="filteredDataPoints" 
+    <DataPointStatistics
+      :dataPoints="filteredDataPoints"
       :mapConfiguration="mapConfiguration"
-      />
-    <AiAssistant 
-      :context="filteredDataPoints" 
+      :resetKey="statsResetKey"
+      @value-filters-changed="handleValueFiltersChanged"
+    />
+    <AiAssistant
+      :context="fieldFilteredPoints"
       :language_codes="language_codes" 
       :centralLocation="centralLocation"
       :radius="reportRadius"
       :currentMapLanguage="currentReportLanguage"
     ></AiAssistant>
-    <GenericDataList :totalData="dataPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" :language_codes="language_codes" :map-configuration="mapConfiguration" />
+    <GenericDataList :totalData="fieldFilteredPoints" :itemsPerPage="8" @handle-goto-marker="handleListClick" :language_codes="language_codes" :map-configuration="mapConfiguration" />
 
   </PageTemplate>
 </template>
@@ -157,6 +159,7 @@ const filters = ref({});
 const allDataPoints = ref([]);
 const pointsFilteredByDate = ref([]); // New ref for date-filtered data for the map
 const dataPoints = ref([]);
+const fieldValueFilters = ref({});
 const centralLocation = ref({
   latitude: props.initialLat || 42.3601,
   longitude: props.initialLng || -71.0589,
@@ -173,6 +176,7 @@ const maxDate = ref('');
 const selectedDataPoint = ref(null);
 const isMapInitialized = ref(false);
 const mapLoading = ref(false);
+const statsResetKey = ref(0);
 
 const isAuthenticated = computed(() => !!page.props.auth.user); // Compute isAuthenticated
 
@@ -434,6 +438,7 @@ const fetchData = async () => {
     
     // Aggregate food violations after fetching. This function now expects nested structure.
     allDataPoints.value = aggregateFoodViolations(allDataPoints.value);
+    statsResetKey.value += 1;
 
     updateDateRange();
     populateFilters(); // Initialize filters based on new data
@@ -574,11 +579,53 @@ const applyFiltersAndData = () => {
 };
 
 
-const filteredDataPoints = computed(() => {
-  // After the transformation in fetchData, dataPoints.value should already be
-  // flattened and cleaned of extraneous _data properties.
-  return dataPoints.value;
+// Pre-field-filter — used by DataPointStatistics so value counts reflect the full type-filtered set
+const filteredDataPoints = computed(() => dataPoints.value);
+
+const applyFieldValueFilters = (points) => {
+  if (Object.keys(fieldValueFilters.value).length === 0) return points;
+  const config = mapConfiguration.value.dataPointModelConfig;
+  if (!config) return points;
+
+  return points.filter(point => {
+    const modelFilters = fieldValueFilters.value[point.alcivartech_model];
+    if (!modelFilters || Object.keys(modelFilters).length === 0) return true;
+
+    const dataObjectKey = config[point.alcivartech_model]?.dataObjectKey;
+    const nested = dataObjectKey ? point[dataObjectKey] : null;
+
+    return Object.entries(modelFilters).every(([fieldName, allowedValues]) => {
+      if (!allowedValues || allowedValues.length === 0) return true;
+      if (!nested) return true;
+      const value = nested[fieldName];
+      if (Array.isArray(value)) return value.some(v => allowedValues.includes(String(v)));
+      return allowedValues.includes(String(value));
+    });
+  });
+};
+
+// Field-filtered points for AI assistant and GenericDataList (respects type + date + field filters)
+const fieldFilteredPoints = computed(() => applyFieldValueFilters(dataPoints.value));
+
+// Points for the map: date + field filtered only.
+// Deliberately does NOT depend on pointsFilteredByDate (which is reassigned on every
+// applyFiltersAndData call, including type-only changes). Computing directly from
+// allDataPoints + selectedDates means a type-filter toggle won't trigger a cluster rebuild —
+// the map handles type visibility itself via activeFilterTypes / updateVisibleClusterGroups.
+const pointsForMap = computed(() => {
+  let points = allDataPoints.value;
+  if (selectedDates.value.length > 0) {
+    points = points.filter(point => {
+      const d = new Date(point.alcivartech_date).toISOString().split('T')[0];
+      return selectedDates.value.includes(d);
+    });
+  }
+  return applyFieldValueFilters(points);
 });
+
+const handleValueFiltersChanged = (filters) => {
+  fieldValueFilters.value = filters;
+};
 
 const handleMarkerClick = (dataPoint) => {
   selectedDataPoint.value = dataPoint;

@@ -1,8 +1,8 @@
 <template>
-  <div ref="chatHistoryContainerRef" class="p-2 bg-gray-600 chat-history max-h-[60vh] overflow-y-auto mb-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700">
+  <div ref="chatHistoryContainerRef" @scroll="onScroll" class="p-2 bg-gray-600 chat-history max-h-[60vh] overflow-y-auto mb-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-700">
     <!--FLoating scroll the the bottom button on the right, transparent, round with a downward arrow-->
     <div class="absolute top-4 right-6 z-10">
-      <button @click="scrollToBottom" class="bg-gray-700 text-white rounded-full p-2 shadow hover:bg-gray-800 focus:outline-none">
+      <button @click="forceScrollToBottom" class="bg-gray-700 text-white rounded-full p-2 shadow hover:bg-gray-800 focus:outline-none">
         ⬇️
       </button>
     </div>
@@ -95,8 +95,26 @@ const emit = defineEmits([
 const chatHistoryContainerRef = ref(null);
 const activeMessageMenuId = ref(null);
 const welcomeMessageActionsVisible = ref(false);
+const userScrolledUp = ref(false);
 
+const onScroll = () => {
+  const el = chatHistoryContainerRef.value;
+  if (!el) return;
+  // Consider "at bottom" if within 60px of the bottom
+  userScrolledUp.value = el.scrollHeight - el.scrollTop - el.clientHeight > 60;
+};
+
+// Called during streaming — only scrolls if the user hasn't scrolled up
 const scrollToBottom = () => {
+  if (userScrolledUp.value) return;
+  if (chatHistoryContainerRef.value) {
+    chatHistoryContainerRef.value.scrollTop = chatHistoryContainerRef.value.scrollHeight;
+  }
+};
+
+// Called by the manual button — always scrolls and resets the flag
+const forceScrollToBottom = () => {
+  userScrolledUp.value = false;
   if (chatHistoryContainerRef.value) {
     chatHistoryContainerRef.value.scrollTop = chatHistoryContainerRef.value.scrollHeight;
   }
@@ -152,7 +170,7 @@ watch(() => props.loading, (newValue, oldValue) => {
 });
 */
 
-defineExpose({ scrollToBottom });
+defineExpose({ scrollToBottom, forceScrollToBottom });
 </script>
 
 <style scoped>

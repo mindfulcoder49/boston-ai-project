@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Models\Trend;
 use App\Models\YearlyCountComparison;
+use App\Services\TrendSummaryService;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 class GenerateNewsArticleJob implements ShouldQueue
@@ -108,59 +110,41 @@ class GenerateNewsArticleJob implements ShouldQueue
 
     private function fetchReportData($report)
     {
-        $apiBaseUrl = config('services.analysis_api.url');
-        $apiUrl = null;
-
+        // Trend: use the cached summary (compact, pre-computed, no analysis API dependency)
         if ($report instanceof Trend) {
-            $apiUrl = "{$apiBaseUrl}/api/v1/jobs/{$report->job_id}/results/stage4_h3_anomaly.json";
-        } elseif ($report instanceof YearlyCountComparison) {
-            $apiUrl = "{$apiBaseUrl}/api/v1/jobs/{$report->job_id}/results/stage2_yearly_count_comparison.json";
+            $summary = Cache::get(TrendSummaryService::cacheKey($report->job_id))
+                ?? TrendSummaryService::compute($report->job_id, $report->h3_resolution, $report->p_value_anomaly, $report->p_value_trend);
+
+            if (empty($summary) || ($summary['status'] ?? '') !== 'ok') {
+                Log::warning("Trend summary unavailable for article generation.", ['trend_id' => $report->id, 'job_id' => $report->job_id]);
+                return null;
+            }
+            return $summary;
         }
 
-        if (!$apiUrl) return null;
+        // YearlyCountComparison: fetch from analysis API and slim the results
+        if (!($report instanceof YearlyCountComparison)) return null;
 
+        $apiUrl  = config('services.analysis_api.url') . "/api/v1/jobs/{$report->job_id}/results/stage2_yearly_count_comparison.json";
         $response = Http::timeout(120)->get($apiUrl);
+
         if ($response->successful()) {
             $data = $response->json();
             if (empty($data)) {
                 Log::warning("Fetched report data is empty for article generation.", ['report_class' => get_class($report), 'report_id' => $report->id]);
                 return null;
             }
-            // Data slimming logic from the original command
-            if ($report instanceof Trend && isset($data['city_wide_results'])) {
-                $significant_trends = array_filter($data['city_wide_results'], function ($item) use ($report) {
-                    if (!isset($item['trend_analysis'])) return false;
-                    foreach ($item['trend_analysis'] as $trend_period) {
-                        if (isset($trend_period['p_value']) && $trend_period['p_value'] < $report->p_value_trend) return true;
-                    }
-                    return false;
-                });
-                $anomalous_hexes = $data['results'] ?? [];
-                usort($anomalous_hexes, function ($a, $b) {
-                    $p_value_a = 1.0; if (!empty($a['trend_analysis'])) { $p_values_a = array_column(array_values($a['trend_analysis']), 'p_value'); $numeric_p_values_a = array_filter($p_values_a, 'is_numeric'); if (!empty($numeric_p_values_a)) { $p_value_a = min($numeric_p_values_a); } }
-                    $p_value_b = 1.0; if (!empty($b['trend_analysis'])) { $p_values_b = array_column(array_values($b['trend_analysis']), 'p_value'); $numeric_p_values_b = array_filter($p_values_b, 'is_numeric'); if (!empty($numeric_p_values_b)) { $p_value_b = min($numeric_p_values_b); } }
-                    return $p_value_a <=> $p_value_b;
-                });
+            if (isset($data['results'])) {
+                $current_year     = $data['parameters']['analysis_current_year'] ?? null;
+                $filtered_results = array_filter($data['results'], fn($item) => isset($item['to_date'][$current_year]['change_pct']));
+                usort($filtered_results, fn($a, $b) => ($b['to_date'][$current_year]['change_pct'] ?? 0) <=> ($a['to_date'][$current_year]['change_pct'] ?? 0));
                 return [
-                    'city_wide_significant_trends' => array_values($significant_trends),
-                    'top_5_most_significant_anomalous_hexes' => array_slice($anomalous_hexes, 0, 5),
+                    'summary_of_changes' => [
+                        'top_5_increases_ytd' => array_slice($filtered_results, 0, 5),
+                        'top_5_decreases_ytd' => array_slice(array_reverse($filtered_results), 0, 5),
+                    ],
                     'parameters' => $data['parameters'] ?? null,
                 ];
-            }
-            if ($report instanceof YearlyCountComparison && isset($data['results'])) {
-                $results = $data['results'];
-                $current_year = $data['parameters']['analysis_current_year'] ?? null;
-                if ($current_year && !empty($results)) {
-                    $filtered_results = array_filter($results, fn($item) => isset($item['to_date'][$current_year]['change_pct']));
-                    usort($filtered_results, fn($a, $b) => ($b['to_date'][$current_year]['change_pct'] ?? 0) <=> ($a['to_date'][$current_year]['change_pct'] ?? 0));
-                    return [
-                        'summary_of_changes' => [
-                            'top_5_increases_ytd' => array_slice($filtered_results, 0, 5),
-                            'top_5_decreases_ytd' => array_slice(array_reverse($filtered_results), 0, 5),
-                        ],
-                        'parameters' => $data['parameters'] ?? null,
-                    ];
-                }
             }
             return $data;
         }

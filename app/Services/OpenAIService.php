@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\OpenAiTokenBudgetService;
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Client;
 use Exception;
@@ -81,18 +82,28 @@ class OpenAIService
     {
         $client = new Client();
         $apiKey = config('services.openai.api_key');
+        $tokenBudget = app(OpenAiTokenBudgetService::class);
+        $payload = $data;
+
+        if (!isset($payload['max_completion_tokens']) && !isset($payload['max_tokens']) && (isset($payload['tools']) || isset($payload['functions']))) {
+            $payload['max_completion_tokens'] = OpenAiTokenBudgetService::DEFAULT_TOOL_CALL_MAX_COMPLETION_TOKENS;
+        }
+
+        $reservation = null;
 
         try {
+            $reservation = $tokenBudget->reserveForChatCompletion($payload, 'openai_service_chat_completion');
             $response = $client->post('https://api.openai.com/v1/chat/completions', [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $apiKey,
                     'Content-Type' => 'application/json',
                 ],
-                'json' => $data
+                'json' => $payload
             ]);
 
             return json_decode($response->getBody(), true);
         } catch (Exception $e) {
+            $tokenBudget->releaseReservation($reservation);
             Log::error("HTTP Request to OpenAI Failed", ['error' => $e->getMessage()]);
             throw new Exception("Failed to communicate with OpenAI API: " . $e->getMessage());
         }

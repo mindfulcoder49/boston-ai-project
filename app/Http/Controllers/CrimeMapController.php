@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\OpenAiTokenBudgetService;
 use App\Models\CrimeData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -94,44 +95,55 @@ class CrimeMapController extends Controller
         year: Array of integers representing years (examples: [2023, 2022]).
         shooting: Boolean (true or false).';
 
-        $response = $client->post('https://api.openai.com/v1/chat/completions', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
+        $payload = [
+            'model' => 'gpt-4o-mini',
+            'messages' => [
+                ['role' => 'system', 'content' => 'You are a helpful assistant.'],
+                ['role' => 'user', 'content' => 'The current datetime is' . date('Y-m-d H:i:s')],
+                ['role' => 'user', 'content' => "Convert this query into crime data filters: {$queryText}"],
+                ['role' => 'user', 'content' => "Here are the offense codes and names: \n" . $this->getCrimeDataContext()],
             ],
-            'json' => [
-                'model' => 'gpt-4o-mini',
-                'messages' => [
-                    ['role' => 'system', 'content' => 'You are a helpful assistant.'],
-                    ['role' => 'user', 'content' => 'The current datetime is' . date('Y-m-d H:i:s')],
-                    ['role' => 'user', 'content' => "Convert this query into crime data filters: {$queryText}"],
-                    ['role' => 'user', 'content' => "Here are the offense codes and names: \n" . $this->getCrimeDataContext()],
-                ],
-                'functions' => [
-                    [
-                        'name' => 'filter_crime_data',
-                        'description' => 'Generate filters for crime data query: ' . $description,
-                        'parameters' => [
-                            'type' => 'object',
-                            'properties' => [
-                                'filters' => [
-                                    'type' => 'object',
-                                    'properties' => [
-                                        'offense_codes' => ['type' => 'array', 'items' => ['type' => 'integer']],
-                                        'district' => ['type' => 'array', 'items' => ['type' => 'string']],
-                                        'start_date' => ['type' => 'string', 'format' => 'date-time'],
-                                        'end_date' => ['type' => 'string', 'format' => 'date-time'],
-                                        'year' => ['type' => 'array', 'items' => ['type' => 'integer']],
-                                        'shooting' => ['type' => 'boolean'],
-                                    ],
+            'functions' => [
+                [
+                    'name' => 'filter_crime_data',
+                    'description' => 'Generate filters for crime data query: ' . $description,
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'filters' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'offense_codes' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                    'district' => ['type' => 'array', 'items' => ['type' => 'string']],
+                                    'start_date' => ['type' => 'string', 'format' => 'date-time'],
+                                    'end_date' => ['type' => 'string', 'format' => 'date-time'],
+                                    'year' => ['type' => 'array', 'items' => ['type' => 'integer']],
+                                    'shooting' => ['type' => 'boolean'],
                                 ],
                             ],
                         ],
                     ],
                 ],
-                'function_call' => 'auto',
-            ]
-        ]);
+            ],
+            'function_call' => 'auto',
+            'max_completion_tokens' => OpenAiTokenBudgetService::DEFAULT_TOOL_CALL_MAX_COMPLETION_TOKENS,
+        ];
+        $tokenBudget = app(OpenAiTokenBudgetService::class);
+        $reservation = null;
+
+        try {
+            $reservation = $tokenBudget->reserveForChatCompletion($payload, 'crime_map_nlp_query');
+            $response = $client->post('https://api.openai.com/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+        } catch (\Throwable $e) {
+            $tokenBudget->releaseReservation($reservation);
+            throw $e;
+        }
 
         $responseBody = json_decode($response->getBody()->getContents(), true);
         $filters = $responseBody['choices'][0]['message']['function_call']['arguments'];

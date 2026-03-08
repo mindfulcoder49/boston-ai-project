@@ -7,6 +7,7 @@ use App\Http\Controllers\CrimeMapController;
 use App\Http\Controllers\DataMapController; // Added
 use App\Http\Controllers\MetricsController; // Added
 use App\Http\Controllers\NewsArticleController; // Added
+use App\Http\Controllers\AdminNewsArticleController;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -210,6 +211,13 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Remove or comment out old DB-based pipeline routes if they exist
     // Route::get('/pipeline-runs', [AdminController::class, 'pipelineRunsIndex'])->name('pipeline.runs.index');
     // Route::get('/pipeline-runs/{pipelineRun}', [AdminController::class, 'showPipelineRun'])->name('pipeline.runs.show');
+
+    // News Article Generator
+    Route::prefix('news-articles')->name('news-articles.')->group(function () {
+        Route::get('/',                       [AdminNewsArticleController::class, 'index'])->name('index');
+        Route::post('/generate-from-trend',   [AdminNewsArticleController::class, 'generateFromTrend'])->name('generate-from-trend');
+        Route::post('/generate-from-hexagon', [AdminNewsArticleController::class, 'generateFromHexagon'])->name('generate-from-hexagon');
+    });
 });
 
 

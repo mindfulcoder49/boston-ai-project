@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Services\OpenAiTokenBudgetService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
@@ -746,19 +747,29 @@ class DataMapController extends Controller
             \Log::error("DataMapController: model {$modelClass}::getGptFunctionSchema() returned an invalid schema.");
             throw new \Exception("Failed to generate a valid function schema for model {$modelClass}.");
         }
-        
-        $response = $client->post('https://api.openai.com/v1/chat/completions', [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ],
-            'json' => [
-                'model' => 'gpt-4o-mini',
-                'messages' => array_merge([['role' => 'system', 'content' => $systemMessage]], $userMessages),
-                'tools' => [$functionTool],
-                'tool_choice' => ["type" => "function", "function" => ["name" => $functionTool['function']['name']]], 
-            ]
-        ]);
+        $payload = [
+            'model' => 'gpt-4o-mini',
+            'messages' => array_merge([['role' => 'system', 'content' => $systemMessage]], $userMessages),
+            'tools' => [$functionTool],
+            'tool_choice' => ["type" => "function", "function" => ["name" => $functionTool['function']['name']]],
+            'max_completion_tokens' => OpenAiTokenBudgetService::DEFAULT_TOOL_CALL_MAX_COMPLETION_TOKENS,
+        ];
+        $tokenBudget = app(OpenAiTokenBudgetService::class);
+        $reservation = null;
+
+        try {
+            $reservation = $tokenBudget->reserveForChatCompletion($payload, 'data_map_nlp_query');
+            $response = $client->post('https://api.openai.com/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $payload
+            ]);
+        } catch (\Throwable $e) {
+            $tokenBudget->releaseReservation($reservation);
+            throw $e;
+        }
 
         $responseBody = json_decode($response->getBody()->getContents(), true);
 
