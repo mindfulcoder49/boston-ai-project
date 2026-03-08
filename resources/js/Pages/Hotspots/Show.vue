@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 const page = usePage();
 import PageTemplate from '@/Components/PageTemplate.vue';
+import GoogleAddressSearch from '@/Components/GoogleAddressSearch.vue';
 import { useH3Names } from '@/composables/useH3Names';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
@@ -43,10 +44,12 @@ const formatPValue = (p) => {
 const activeResolution = ref(null);
 const activeHexagon    = ref(null);
 const sortKey          = ref('report_count');
+const hexOpacity       = ref(0.65);
 
 let mapInstance   = null;
 let polygonLayers = {};
 let legendControl = null;
+let addressMarker = null;
 
 // ---- computed ----
 const resolutions = computed(() =>
@@ -97,8 +100,7 @@ const colorIndex = (count, maxCount) => {
     const t = (count - 1) / (maxCount - 1);
     return Math.min(Math.round(t * (HEAT_PALETTE.length - 1)), HEAT_PALETTE.length - 1);
 };
-const getHeatColor   = (count, maxCount) => HEAT_PALETTE[colorIndex(count, maxCount)];
-const getHeatOpacity = (count, maxCount) => 0.5 + (Math.min(count - 1, maxCount - 1) / Math.max(maxCount - 1, 1)) * 0.35;
+const getHeatColor = (count, maxCount) => HEAT_PALETTE[colorIndex(count, maxCount)];
 
 const maxReportCount = computed(() =>
     hotspots.value.length ? Math.max(...hotspots.value.map(h => h.report_count)) : 1
@@ -126,7 +128,7 @@ const renderHexagons = () => {
             color:       '#555',
             weight:      1,
             fillColor:   getHeatColor(h.report_count, maxReportCount.value),
-            fillOpacity: getHeatOpacity(h.report_count, maxReportCount.value),
+            fillOpacity: hexOpacity.value,
         }).addTo(mapInstance);
 
         const locationName = page.props.h3LocationNames?.[h.h3_index];
@@ -177,11 +179,11 @@ const renderHexagons = () => {
 const applyHighlight = (h3Index) => {
     Object.entries(polygonLayers).forEach(([idx, poly]) => {
         if (idx === h3Index) {
-            poly.setStyle({ color: '#1e40af', weight: 3, fillOpacity: 0.9 });
+            poly.setStyle({ color: '#1e40af', weight: 3, fillOpacity: hexOpacity.value });
             poly.bringToFront();
         } else {
             const h = hotspots.value.find(x => x.h3_index === idx);
-            if (h) poly.setStyle({ color: '#555', weight: 1, fillColor: getHeatColor(h.report_count, maxReportCount.value), fillOpacity: getHeatOpacity(h.report_count, maxReportCount.value) });
+            if (h) poly.setStyle({ color: '#555', weight: 1, fillColor: getHeatColor(h.report_count, maxReportCount.value), fillOpacity: hexOpacity.value });
         }
     });
     if (polygonLayers[h3Index]) {
@@ -195,7 +197,29 @@ const selectHexagon = async (h) => {
     document.getElementById('hotspot-detail')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 };
 
+// ---- address search ----
+const handleAddressSelection = ({ lat, lng, address }) => {
+    if (!mapInstance) return;
+    if (addressMarker) { mapInstance.removeLayer(addressMarker); addressMarker = null; }
+    addressMarker = L.marker([lat, lng]).addTo(mapInstance).bindPopup(address).openPopup();
+    mapInstance.setView([lat, lng], 15);
+
+    if (activeResolution.value === null) return;
+    const h3Index = h3.latLngToCell(lat, lng, activeResolution.value);
+    const hotspot = hotspots.value.find(h => h.h3_index === h3Index);
+    if (hotspot) {
+        selectHexagon(hotspot);
+    }
+};
+
 // ---- watchers ----
+watch(hexOpacity, () => {
+    Object.entries(polygonLayers).forEach(([idx, poly]) => {
+        const isActive = activeHexagon.value?.h3_index === idx;
+        poly.setStyle({ fillOpacity: hexOpacity.value });
+    });
+});
+
 watch(activeHexagon, (h) => { if (h) applyHighlight(h.h3_index); });
 
 watch(activeResolution, async () => {
@@ -218,6 +242,7 @@ onUnmounted(() => {
     if (mapInstance) { mapInstance.remove(); mapInstance = null; }
     polygonLayers = {};
     legendControl = null;
+    addressMarker = null;
 });
 </script>
 
@@ -297,9 +322,10 @@ onUnmounted(() => {
                     <div class="flex flex-col lg:flex-row gap-6 items-start">
 
                         <!-- Ranked table -->
-                        <div class="lg:w-2/5 w-full bg-white rounded-lg shadow-sm border overflow-hidden">
-                            <table class="w-full text-sm">
-                                <thead class="bg-gray-50 border-b">
+                        <div class="lg:w-2/5 w-full bg-white rounded-lg shadow-sm border overflow-hidden flex flex-col max-h-[640px]">
+                            <div class="overflow-y-auto flex-1">
+                            <table class="w-full text-sm table-fixed">
+                                <thead class="bg-gray-50 border-b sticky top-0 z-10">
                                     <tr>
                                         <th class="py-2 px-3 text-left text-xs text-gray-400 font-medium w-8">#</th>
                                         <th class="py-2 px-3 text-left text-xs text-gray-500 font-medium uppercase tracking-wide">Hexagon</th>
@@ -339,10 +365,19 @@ onUnmounted(() => {
                             <div v-if="sortedHotspots.length === 0" class="text-center py-10 text-gray-400 text-sm">
                                 No hotspot hexagons found at this resolution.
                             </div>
+                            </div><!-- /overflow-y-auto -->
                         </div>
 
                         <!-- Leaflet map -->
-                        <div class="lg:w-3/5 w-full">
+                        <div class="lg:w-3/5 w-full space-y-2">
+                            <div class="bg-white rounded-lg border shadow-sm px-3 py-2 relative">
+                                <GoogleAddressSearch @address-selected="handleAddressSelection" />
+                                <div class="flex items-center gap-3 mt-2 pt-2 border-t border-gray-100">
+                                    <label class="text-xs text-gray-500 whitespace-nowrap">Opacity</label>
+                                    <input type="range" min="0" max="1" step="0.01" v-model.number="hexOpacity" class="flex-1 accent-indigo-600" />
+                                    <span class="text-xs text-gray-500 tabular-nums w-8 text-right">{{ Math.round(hexOpacity * 100) }}%</span>
+                                </div>
+                            </div>
                             <div id="hotspot-map" class="h-[600px] rounded-lg border shadow-sm" />
                         </div>
 

@@ -7,10 +7,6 @@
         <h1 class="text-3xl font-bold text-gray-800">
           Neighborhood Scoring Reports
         </h1>
-        <button @click="refreshReports" :disabled="isRefreshing" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors">
-          <span v-if="isRefreshing">Refreshing...</span>
-          <span v-else>Update Report Listing</span>
-        </button>
       </div>
 
       <div v-if="$page.props.flash.status" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
@@ -113,7 +109,6 @@ const props = defineProps({
   error: String,
 });
 
-const isRefreshing = ref(false);
 const showParamsModal = ref(false);
 const selectedParameters = ref({});
 
@@ -139,16 +134,6 @@ const showParameters = (parameters) => {
 const closeParamsModal = () => {
   showParamsModal.value = false;
   selectedParameters.value = {};
-};
-
-const refreshReports = () => {
-  isRefreshing.value = true;
-  router.post(route('admin.scoring-reports.refresh'), {}, {
-    onFinish: () => {
-      isRefreshing.value = false;
-    },
-    preserveState: false, // Force a full reload of page props
-  });
 };
 
 const deleteReport = (report) => {

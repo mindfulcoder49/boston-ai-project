@@ -1,22 +1,12 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import PageTemplate from '@/Components/PageTemplate.vue';
 import { useH3Names } from '@/composables/useH3Names.js';
 
 const props = defineProps({
   analyses: Array,
-  isAdmin:  { type: Boolean, default: false },
 });
-
-const isRefreshing = ref(false);
-function refreshListing() {
-  isRefreshing.value = true;
-  router.post(route('trends.refresh'), {}, {
-    onFinish: () => { isRefreshing.value = false; },
-    preserveState: false,
-  });
-}
 
 // Summaries are lazy-loaded per job when not already cached server-side.
 const fetchedSummaries = ref({});
@@ -181,10 +171,6 @@ const significanceClass = (a) => {
               Statistical H3 spatial analysis across all data types. Sorted by number of significant findings.
             </p>
           </div>
-          <button v-if="isAdmin" @click="refreshListing" :disabled="isRefreshing"
-            class="flex-shrink-0 px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors">
-            {{ isRefreshing ? 'Refreshing…' : 'Refresh Listing' }}
-          </button>
           <Link
             :href="route('hotspots.index')"
             class="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"

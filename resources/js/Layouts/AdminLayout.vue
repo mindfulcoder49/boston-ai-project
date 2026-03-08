@@ -49,6 +49,7 @@
         <NavLink :href="route('admin.job-dispatcher.index')" :active="route().current('admin.job-dispatcher.index')">Job Dispatcher</NavLink>
         <NavLink :href="route('admin.h3-geocoding.index')" :active="route().current('admin.h3-geocoding.index')">H3 Location Names</NavLink>
         <NavLink :href="route('admin.s3-bucket.index')" :active="route().current('admin.s3-bucket.*')">S3 Bucket Browser</NavLink>
+        <NavLink :href="route('admin.cache-manager.index')" :active="route().current('admin.cache-manager.*')">Cache &amp; Reports</NavLink>
       </aside>
 
       <!-- Main Content -->

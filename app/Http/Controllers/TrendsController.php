@@ -134,11 +134,27 @@ class TrendsController extends Controller
             ];
         }
 
-        usort($allAnalyses, fn($a, $b) =>
+        // Deduplicate by (model_class, column_name, h3_resolution): old job snapshots
+        // stay in the DB after a re-run, so the same analysis can appear twice — once
+        // via the current Trend record (has trend_id) and once via the stale snapshot.
+        // Keep whichever entry has a trend_id; otherwise keep the first encountered.
+        $seen = [];
+        $deduped = [];
+        foreach ($allAnalyses as $analysis) {
+            $key = $analysis['model_name'] . '|' . $analysis['column_name'] . '|' . $analysis['h3_resolution'];
+            if (!isset($seen[$key])) {
+                $seen[$key] = count($deduped);
+                $deduped[] = $analysis;
+            } elseif ($analysis['trend_id'] !== null && $deduped[$seen[$key]]['trend_id'] === null) {
+                $deduped[$seen[$key]] = $analysis;
+            }
+        }
+
+        usort($deduped, fn($a, $b) =>
             ($b['summary']['total_findings'] ?? 0) <=> ($a['summary']['total_findings'] ?? 0)
         );
 
-        return $allAnalyses;
+        return $deduped;
     }
 
     /**

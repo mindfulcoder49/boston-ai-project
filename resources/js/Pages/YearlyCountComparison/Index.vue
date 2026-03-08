@@ -1,20 +1,10 @@
 <script setup>
-import { ref } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import PageTemplate from '@/Components/PageTemplate.vue';
 
 const props = defineProps({
   reportsByModel: Array,
 });
-
-const isRefreshing = ref(false);
-function refreshListing() {
-  isRefreshing.value = true;
-  router.post(route('yearly-comparisons.refresh'), {}, {
-    onFinish: () => { isRefreshing.value = false; },
-    preserveState: false,
-  });
-}
 </script>
 
 <template>
@@ -31,10 +21,6 @@ function refreshListing() {
                 <Link :href="route('news.index')" class="inline-block bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 transition-colors">
                   View News Articles
                 </Link>
-                <button @click="refreshListing" :disabled="isRefreshing"
-                  class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors">
-                  {{ isRefreshing ? 'Refreshing…' : 'Refresh Listing' }}
-                </button>
               </div>
             </div>
 

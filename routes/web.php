@@ -38,6 +38,7 @@ use App\Http\Controllers\ScoringReportController;
 use App\Http\Controllers\HotspotController;
 use App\Http\Controllers\AdminH3GeocodingController;
 use App\Http\Controllers\AdminS3BucketController;
+use App\Http\Controllers\AdminCacheController;
 
 Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
 Route::middleware(['auth', 'verified'])->post('/trends/refresh', [TrendsController::class, 'refresh'])->name('trends.refresh');
@@ -133,6 +134,17 @@ Route::get('/saved-maps/{savedMap}/view', [SavedMapController::class, 'view'])->
 
 // Admin Routes (using controller-based auth check for now)
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    // Cache & Report Import Manager
+    Route::prefix('cache-manager')->name('cache-manager.')->group(function () {
+        Route::get('/', [AdminCacheController::class, 'index'])->name('index');
+        Route::post('/forget', [AdminCacheController::class, 'forgetCache'])->name('forget');
+        Route::post('/forget-all-listing', [AdminCacheController::class, 'forgetAllListingCaches'])->name('forget-all-listing');
+        Route::post('/forget-all-summaries', [AdminCacheController::class, 'forgetAllSummaryCaches'])->name('forget-all-summaries');
+        Route::get('/pull-reports/stream', [AdminCacheController::class, 'pullReportsStream'])->name('pull-reports.stream');
+        Route::post('/materialize-hotspots', [AdminCacheController::class, 'materializeHotspots'])->name('materialize-hotspots');
+        Route::post('/warm-metrics', [AdminCacheController::class, 'warmMetrics'])->name('warm-metrics');
+    });
+
     Route::get('/h3-geocoding', [AdminH3GeocodingController::class, 'index'])->name('h3-geocoding.index');
     Route::post('/h3-geocoding/geocode', [AdminH3GeocodingController::class, 'geocode'])->name('h3-geocoding.geocode');
 
