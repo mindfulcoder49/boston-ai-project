@@ -90,9 +90,8 @@ const getMarkerIcon = (alcivartechType, dataPoint) => {
 
   // Use mapConfiguration to dynamically determine icon properties
   const config = props.mapConfiguration?.dataPointModelConfig || {};
-  const typeConfig = Object.values(config).find(
-    (entry) => entry.displayTitle === alcivartechType
-  );
+  const typeConfig = (dataPoint?.alcivartech_model && config[dataPoint.alcivartech_model])
+    || Object.values(config).find((entry) => entry.displayTitle === alcivartechType);
 
   if (!typeConfig) {
     // Fallback to default icon if no configuration is found
@@ -107,7 +106,11 @@ const getMarkerIcon = (alcivartechType, dataPoint) => {
 
   const customizations = getIconCustomizations(dataPoint);
   const determinedIconUrl = customizations.iconUrlOverride || transparentPixel;
-  const determinedClassName = customizations.className || typeConfig.displayTitle.toLowerCase().replace(/\s+/g, '-') + '-div-icon';
+  const fallbackClassName = typeConfig.displayTitle.toLowerCase().replace(/\s+/g, '-') + '-div-icon';
+  const determinedClassName = [
+    typeConfig.iconClass || fallbackClassName,
+    customizations.className || '',
+  ].filter(Boolean).join(' ');
 
   return L.icon({
     iconUrl: determinedIconUrl,

@@ -359,13 +359,9 @@ class AiAssistantController extends Controller
      * @param array $reportParameters Additional context about the report parameters.
      * @return array|null An array containing 'headline', 'summary', 'content', 'title', 'slug', or null on failure.
      */
-    public static function generateNewsArticle(string $reportTitle, $reportData, array $reportParameters = []): ?array
+    public static function defaultTrendSystemPrompt(): string
     {
-        $apiKey = config('services.openai.api_key');
-        $client = new Client();
-        $tokenBudget = app(OpenAiTokenBudgetService::class);
-
-        $systemPrompt = <<<EOT
+        return <<<'EOT'
 You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article based on the provided JSON data. The report title or the data itself will often indicate the city (e.g., Boston, Chicago, Cambridge). If a city is mentioned, focus the article on that city. If no city is specified anywhere, you can assume the data pertains to Boston, MA.
 
 Your goal is to identify and tell one compelling story that is the most salient and interesting from the data. Analyze the report to find the most significant trend, anomaly, or event that stands out as the "jewel" of the story. Focus on this specific aspect and craft a narrative around it, creating a vivid and engaging article.
@@ -380,25 +376,118 @@ To create an engaging narrative, follow these rules:
 5. Avoid simply listing data points. Instead, interpret the data to uncover the "why" behind the trends and explain their implications in a way that captivates the reader.
 
 The article should be structured in a standard news format. It must include:
-1. A compelling, SEO-friendly `headline` that captures the essence of the story.
-2. A brief, engaging `summary` of the key story (1-2 sentences).
-3. The main `content` of the article in Markdown format, presenting the story in detail.
+1. A compelling, SEO-friendly headline that captures the essence of the story.
+2. A brief, engaging summary of the key story (1-2 sentences).
+3. The main article body in Markdown format, presenting the story in detail.
 
 The tone should be objective, informative, and accessible to a general audience. Avoid listing all the data; instead, interpret the most interesting aspect and explain its significance in a way that captivates the reader.
 
-The JSON response MUST be a single, valid JSON object with three keys: "headline", "summary", and "content". Do not include any other text or formatting outside of this JSON object.
+Format your response exactly as follows — no text before HEADLINE, no text after the article body:
+
+HEADLINE: [your headline here]
+
+SUMMARY: [your 1-2 sentence summary here]
+
+ARTICLE:
+[full article in Markdown]
 EOT;
+    }
+
+    public static function defaultHotspotSystemPrompt(): string
+    {
+        return <<<'EOT'
+You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article about a geographic hotspot — a specific urban area that has been flagged across multiple independent data analysis reports as having significant statistical anomalies or trends.
+
+The data provided includes which types of incidents contributed to this hotspot designation, the most significant anomalies detected, and the strongest statistical trends. Focus on telling a coherent, compelling story about what is happening at this location.
+
+Rules:
+1. Identify the most compelling finding across all report types and build the narrative around it.
+2. Give the area human context — reference the neighborhood or area name when available.
+3. Do not list every data point. Interpret and explain the significance.
+4. Contextualize any numbers with meaningful comparisons when possible.
+5. The tone should be objective, informative, and accessible to a general audience.
+6. Avoid speculating beyond what the data supports.
+
+Format your response exactly as follows — no text before HEADLINE, no text after the article body:
+
+HEADLINE: [your headline here]
+
+SUMMARY: [your 1-2 sentence summary here]
+
+ARTICLE:
+[full article in Markdown]
+EOT;
+    }
+
+    /**
+     * Parse a sectioned article response into headline, summary, content fields.
+     * Expected format:
+     *   HEADLINE: ...
+     *   SUMMARY: ...
+     *   ARTICLE:
+     *   [markdown body]
+     */
+    public static function parseSectionedArticle(string $raw): array
+    {
+        $headline = 'Untitled Article';
+        $summary  = '';
+        $body     = $raw;
+
+        if (preg_match('/^HEADLINE:\s*(.+)/m', $raw, $m)) {
+            $headline = trim($m[1]);
+        }
+        if (preg_match('/SUMMARY:\s*([\s\S]+?)(?=\s*ARTICLE:|\z)/m', $raw, $m)) {
+            $summary = trim($m[1]);
+        }
+        if (preg_match('/ARTICLE:\s*([\s\S]+)/m', $raw, $m)) {
+            $body = trim($m[1]);
+        }
+
+        return ['headline' => $headline, 'summary' => $summary, 'content' => $body];
+    }
+
+    /**
+     * Estimate the number of input tokens for a prompt without sending a generation request.
+     * Uses OpenAI's /v1/responses/input_tokens endpoint.
+     */
+    public static function estimateInputTokens(string $model, string $systemPrompt, string $userPrompt): int
+    {
+        $apiKey = config('services.openai.api_key');
+        $client = new \GuzzleHttp\Client();
+
+        $response = $client->post('https://api.openai.com/v1/responses/input_tokens', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Content-Type'  => 'application/json',
+            ],
+            'json' => [
+                'model'        => $model,
+                'instructions' => $systemPrompt,
+                'input'        => $userPrompt,
+            ],
+            'timeout' => 30,
+        ]);
+
+        $body = json_decode($response->getBody()->getContents(), true);
+        return (int) ($body['input_tokens'] ?? 0);
+    }
+
+    public static function generateNewsArticle(string $reportTitle, $reportData, array $reportParameters = [], ?string $introPrompt = null): ?array
+    {
+        $apiKey = config('services.openai.api_key');
+        $client = new Client();
+        $tokenBudget = app(OpenAiTokenBudgetService::class);
+
+        $systemPrompt = $introPrompt ?? static::defaultTrendSystemPrompt();
 
         $contextPrompt = "The analysis was generated with the following parameters. Use them to provide context in the article:\n" . json_encode($reportParameters, JSON_PRETTY_PRINT);
         $userPrompt    = "Write a news article about the following report titled '{$reportTitle}'.\n\n{$contextPrompt}\n\nHere is the data: " . json_encode($reportData);
         $payload = [
-            'model'                 => 'gpt-5',
-            'messages'              => [
+            'model'    => 'gpt-5',
+            'messages' => [
                 ['role' => 'system', 'content' => $systemPrompt],
                 ['role' => 'user',   'content' => $userPrompt],
             ],
-            'max_completion_tokens' => 4096,
-            'response_format'       => ['type' => 'json_object'],
         ];
         $reservation = null;
 
@@ -414,43 +503,21 @@ EOT;
             ]);
 
             $responseBody = json_decode($response->getBody()->getContents(), true);
-            $jsonString   = $responseBody['choices'][0]['message']['content'] ?? null;
+            $content      = trim($responseBody['choices'][0]['message']['content'] ?? '');
 
-            if (!$jsonString) {
+            if (!$content) {
                 Log::warning("No content in OpenAI response for news article.", [
                     'reportTitle'  => $reportTitle,
                     'finishReason' => $responseBody['choices'][0]['finish_reason'] ?? 'unknown',
+                    'response'     => $responseBody,
                 ]);
                 return null;
             }
 
-            $articleData = json_decode($jsonString, true);
-
-            // Case 1: Perfect response
-            if (json_last_error() === JSON_ERROR_NONE && isset($articleData['headline'], $articleData['summary'], $articleData['content'])) {
-                $articleData['title'] = Str::limit($articleData['headline'], 250);
-                $articleData['slug']  = Str::slug($articleData['title']);
-                return $articleData;
-            }
-
-            // Case 2: Truncated response
-            $finishReason = $responseBody['choices'][0]['finish_reason'] ?? null;
-            if ($finishReason === 'length') {
-                Log::warning("OpenAI news article response truncated (max_tokens). Attempting to salvage.", ['reportTitle' => $reportTitle]);
-                $salvagedData = ['headline' => 'Headline Missing (Truncated)', 'summary' => 'Summary Missing (Truncated)', 'content' => $jsonString];
-                if (preg_match('/"headline":\s*"(.*?)"/s', $jsonString, $matches)) {
-                    $salvagedData['headline'] = json_decode('"' . $matches[1] . '"');
-                }
-                if (preg_match('/"summary":\s*"(.*?)"/s', $jsonString, $matches)) {
-                    $salvagedData['summary'] = json_decode('"' . $matches[1] . '"');
-                }
-                $salvagedData['title'] = Str::limit($salvagedData['headline'], 250);
-                $salvagedData['slug']  = Str::slug($salvagedData['title']);
-                return $salvagedData;
-            }
-
-            Log::error('Failed to decode JSON from OpenAI for news article.', ['reportTitle' => $reportTitle, 'response' => $jsonString, 'finishReason' => $finishReason]);
-            return null;
+            $articleData = static::parseSectionedArticle($content);
+            $articleData['title'] = Str::limit($articleData['headline'], 250);
+            $articleData['slug']  = Str::slug($articleData['title']);
+            return $articleData;
 
         } catch (DailyTokenLimitExceededException $e) {
             Log::warning('Daily OpenAI token cap reached for news article generation.', [
@@ -480,38 +547,22 @@ EOT;
      * @param array $hotspotData Structured data about the hotspot findings.
      * @return array|null An array containing 'headline', 'summary', 'content', 'title', 'slug', or null on failure.
      */
-    public static function generateNewsArticleFromHexagon(string $h3Index, string $locationName, array $hotspotData): ?array
+    public static function generateNewsArticleFromHexagon(string $h3Index, string $locationName, array $hotspotData, ?string $introPrompt = null): ?array
     {
         $apiKey = config('services.openai.api_key');
         $client = new Client();
         $tokenBudget = app(OpenAiTokenBudgetService::class);
 
-        $systemPrompt = <<<EOT
-You are a journalist for a local news organization focused on city operations and data analysis. Your task is to write a news article about a geographic hotspot — a specific urban area that has been flagged across multiple independent data analysis reports as having significant statistical anomalies or trends.
-
-The data provided includes which types of incidents contributed to this hotspot designation, the most significant anomalies detected, and the strongest statistical trends. Focus on telling a coherent, compelling story about what is happening at this location.
-
-Rules:
-1. Identify the most compelling finding across all report types and build the narrative around it.
-2. Give the area human context — reference the neighborhood or area name when available.
-3. Do not list every data point. Interpret and explain the significance.
-4. Contextualize any numbers with meaningful comparisons when possible.
-5. The tone should be objective, informative, and accessible to a general audience.
-6. Avoid speculating beyond what the data supports.
-
-The JSON response MUST be a single, valid JSON object with three keys: "headline", "summary", and "content". "content" must be in Markdown format. Do not include any text outside the JSON object.
-EOT;
+        $systemPrompt = $introPrompt ?? static::defaultHotspotSystemPrompt();
 
         $locationLabel = $locationName ?: $h3Index;
         $userPrompt    = "Write a news article about the following hotspot location: {$locationLabel} (H3 index: {$h3Index}).\n\nHotspot data:\n" . json_encode($hotspotData, JSON_PRETTY_PRINT);
         $payload = [
-            'model'                 => 'gpt-5',
-            'messages'              => [
+            'model'    => 'gpt-5',
+            'messages' => [
                 ['role' => 'system', 'content' => $systemPrompt],
                 ['role' => 'user',   'content' => $userPrompt],
             ],
-            'max_completion_tokens' => 2048,
-            'response_format'       => ['type' => 'json_object'],
         ];
         $reservation = null;
 
@@ -527,20 +578,18 @@ EOT;
             ]);
 
             $responseBody = json_decode($response->getBody()->getContents(), true);
-            $jsonString   = $responseBody['choices'][0]['message']['content'] ?? null;
+            $content      = trim($responseBody['choices'][0]['message']['content'] ?? '');
 
-            if (!$jsonString) {
-                Log::warning("No content in OpenAI response for hexagon article.", ['h3Index' => $h3Index]);
+            if (!$content) {
+                Log::warning("No content in OpenAI response for hexagon article.", [
+                    'h3Index'      => $h3Index,
+                    'finishReason' => $responseBody['choices'][0]['finish_reason'] ?? 'unknown',
+                    'response'     => $responseBody,
+                ]);
                 return null;
             }
 
-            $articleData = json_decode($jsonString, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE || !isset($articleData['headline'], $articleData['summary'], $articleData['content'])) {
-                Log::error('Invalid JSON from OpenAI for hexagon article.', ['h3Index' => $h3Index, 'response' => $jsonString]);
-                return null;
-            }
-
+            $articleData = static::parseSectionedArticle($content);
             $articleData['title'] = Str::limit($articleData['headline'], 250);
             $articleData['slug']  = Str::slug($articleData['title']);
             return $articleData;

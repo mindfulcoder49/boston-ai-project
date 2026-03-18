@@ -217,6 +217,13 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::get('/',                       [AdminNewsArticleController::class, 'index'])->name('index');
         Route::post('/generate-from-trend',   [AdminNewsArticleController::class, 'generateFromTrend'])->name('generate-from-trend');
         Route::post('/generate-from-hexagon', [AdminNewsArticleController::class, 'generateFromHexagon'])->name('generate-from-hexagon');
+        Route::get('/trends/{trend}/configure',        [AdminNewsArticleController::class, 'configureTrend'])->name('trends.configure');
+        Route::post('/trends/{trend}/configure',       [AdminNewsArticleController::class, 'saveTrendConfig'])->name('trends.save-config');
+        Route::get('/hotspots/{h3}/configure',         [AdminNewsArticleController::class, 'configureHotspot'])->name('hotspots.configure');
+        Route::post('/hotspots/{h3}/configure',        [AdminNewsArticleController::class, 'saveHotspotConfig'])->name('hotspots.save-config');
+        Route::post('/configs/{config}/generate',       [AdminNewsArticleController::class, 'generateFromConfig'])->name('configs.generate');
+        Route::post('/configs/{config}/estimate-tokens',[AdminNewsArticleController::class, 'estimateTokensForConfig'])->name('configs.estimate-tokens');
+        Route::post('/estimate-tokens-preview',         [AdminNewsArticleController::class, 'estimateTokensPreview'])->name('estimate-tokens-preview');
     });
 });
 

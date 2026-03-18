@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Models\NewsArticleGenerationConfig;
 use App\Models\Trend;
 use App\Models\YearlyCountComparison;
 use App\Services\TrendSummaryService;
@@ -29,11 +30,13 @@ class GenerateNewsArticleJob implements ShouldQueue
 
     protected NewsArticle $article;
     protected bool $fresh;
+    protected ?NewsArticleGenerationConfig $config = null;
 
-    public function __construct(NewsArticle $article, bool $fresh = false)
+    public function __construct(NewsArticle $article, bool $fresh = false, ?NewsArticleGenerationConfig $config = null)
     {
         $this->article = $article;
-        $this->fresh = $fresh;
+        $this->fresh   = $fresh;
+        $this->config  = $config;
     }
 
     public function handle(): void
@@ -57,8 +60,18 @@ class GenerateNewsArticleJob implements ShouldQueue
                 throw new \Exception("Could not fetch or process report data for " . get_class($report) . " #{$report->id}.");
             }
 
+            // Apply config filters if a config is attached
+            if ($this->config && $report instanceof Trend) {
+                $reportData = $this->config->applyTrendFilters($reportData);
+            }
+
             $reportContext = $this->getReportContext($report);
-            $articleData = AiAssistantController::generateNewsArticle($reportContext['title'], $reportData, $reportContext['parameters']);
+            $articleData = AiAssistantController::generateNewsArticle(
+                $reportContext['title'],
+                $reportData,
+                $reportContext['parameters'],
+                $this->config?->intro_prompt
+            );
 
             if ($articleData) {
                 $baseSlug = Str::slug($articleData['headline']);

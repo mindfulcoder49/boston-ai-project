@@ -50,6 +50,8 @@ return [
 
         'montgomery_county_md_crime' => \App\Models\MontgomeryCountyMdCrime::class,
 
+        'new_york_311' => \App\Models\NewYork311::class,
+
         // Add new data types below this line
         // The city-generator tool will append new entries here automatically
     ],
@@ -82,6 +84,11 @@ return [
         'montgomery_county_md_' => [
             'city' => 'montgomery_county_md',
             'center' => [39.154, -77.24],
+            'zoom' => 12,
+        ],
+        'new_york_' => [
+            'city' => 'new_york',
+            'center' => [40.7128, -74.006],
             'zoom' => 12,
         ],
         // Add new city contexts below this line

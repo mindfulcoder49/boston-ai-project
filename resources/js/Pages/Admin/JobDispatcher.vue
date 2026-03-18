@@ -29,145 +29,33 @@
               <p class="mt-1 text-xs text-gray-500">Select stages to run. If none are selected, all stages will run.</p>
             </div>
 
-            <!-- Boston -->
-            <div>
-              <label for="boston-datasets" class="block text-sm font-medium text-gray-700">Boston Datasets</label>
-              <select v-model="pipelineForm.parameters.bostonDatasets" id="boston-datasets" multiple class="mt-1 block w-full input h-24">
-                <option v-for="dataset in bostonDatasets" :key="dataset.name" :value="dataset.name">{{ dataset.name }}</option>
-              </select>
-            </div>
-            <div>
-              <label for="boston-seeders" class="block text-sm font-medium text-gray-700">Boston Seeders</label>
-              <select v-model="pipelineForm.parameters.bostonSeeders" id="boston-seeders" multiple class="mt-1 block w-full input h-24">
-                <option v-for="seeder in pipelineSteps.bostonSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
-              </select>
-            </div>
-            <div class="p-4 bg-gray-50 rounded-lg">
-                <h4 class="text-md font-semibold text-gray-800">Boston</h4>
-                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders. Leave blank to run all items in the selected 'Boston' stages.</p>
-            </div>
+            <template v-for="citySection in pipelineCitySections" :key="citySection.key">
+              <div>
+                <label :for="`${citySection.key}-primary`" class="block text-sm font-medium text-gray-700">{{ citySection.acquisition.label }}</label>
+                <select v-model="pipelineForm.parameters[citySection.acquisition.parameter]" :id="`${citySection.key}-primary`" multiple class="mt-1 block w-full input h-24">
+                  <option v-for="item in citySection.acquisition.items" :key="item" :value="item">{{ item }}</option>
+                </select>
+              </div>
+              <div>
+                <label :for="`${citySection.key}-secondary`" class="block text-sm font-medium text-gray-700">{{ citySection.seeding.label }}</label>
+                <select v-model="pipelineForm.parameters[citySection.seeding.parameter]" :id="`${citySection.key}-secondary`" multiple class="mt-1 block w-full input h-24">
+                  <option v-for="item in citySection.seeding.items" :key="item" :value="item">{{ item }}</option>
+                </select>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-lg">
+                  <h4 class="text-md font-semibold text-gray-800">{{ citySection.label }}</h4>
+                  <p class="text-xs text-gray-600 mt-1">{{ citySection.description }}</p>
+              </div>
+            </template>
 
-            <!-- Cambridge -->
-            <div>
-              <label for="cambridge-datasets" class="block text-sm font-medium text-gray-700">Cambridge Datasets</label>
-              <select v-model="pipelineForm.parameters.cambridgeDatasets" id="cambridge-datasets" multiple class="mt-1 block w-full input h-24">
-                <option v-for="cmd in pipelineSteps.cambridgeDatasets" :key="cmd" :value="cmd">{{ cmd }}</option>
-              </select>
-            </div>
-            <div>
-              <label for="cambridge-seeders" class="block text-sm font-medium text-gray-700">Cambridge Seeders</label>
-              <select v-model="pipelineForm.parameters.cambridgeSeeders" id="cambridge-seeders" multiple class="mt-1 block w-full input h-24">
-                <option v-for="seeder in pipelineSteps.cambridgeSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
-              </select>
-            </div>
-            <div class="p-4 bg-gray-50 rounded-lg">
-                <h4 class="text-md font-semibold text-gray-800">Cambridge</h4>
-                <p class="text-xs text-gray-600 mt-1">Select specific acquisition commands and/or seeders for Cambridge.</p>
-            </div>
-
-            <!-- Everett -->
-            <div>
-              <label for="everett-steps" class="block text-sm font-medium text-gray-700">Everett Steps</label>
-              <select v-model="pipelineForm.parameters.everettSteps" id="everett-steps" multiple class="mt-1 block w-full input h-24">
-                <option v-for="step in pipelineSteps.everettSteps" :key="step" :value="step">{{ step }}</option>
-              </select>
-            </div>
-            <div>
-              <label for="everett-seeders" class="block text-sm font-medium text-gray-700">Everett Seeders</label>
-              <select v-model="pipelineForm.parameters.everettSeeders" id="everett-seeders" multiple class="mt-1 block w-full input h-24">
-                <option v-for="seeder in pipelineSteps.everettSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
-              </select>
-            </div>
-            <div class="p-4 bg-gray-50 rounded-lg">
-                <h4 class="text-md font-semibold text-gray-800">Everett</h4>
-                <p class="text-xs text-gray-600 mt-1">Select specific processing steps and/or seeders for Everett.</p>
-            </div>
-
-            <!-- Chicago -->
-            <div>
-              <label for="chicago-datasets" class="block text-sm font-medium text-gray-700">Chicago Datasets</label>
-              <select v-model="pipelineForm.parameters.chicagoDatasets" id="chicago-datasets" multiple class="mt-1 block w-full input h-24">
-                <option v-for="dataset in pipelineSteps.chicagoDatasets" :key="dataset" :value="dataset">{{ dataset }}</option>
-              </select>
-            </div>
-            <div>
-              <label for="chicago-seeders" class="block text-sm font-medium text-gray-700">Chicago Seeders</label>
-              <select v-model="pipelineForm.parameters.chicagoSeeders" id="chicago-seeders" multiple class="mt-1 block w-full input h-24">
-                <option v-for="seeder in pipelineSteps.chicagoSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
-              </select>
-            </div>
-            <div class="p-4 bg-gray-50 rounded-lg">
-                <h4 class="text-md font-semibold text-gray-800">Chicago</h4>
-                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders for Chicago.</p>
-            </div>
-
-            <!-- San Francisco -->
-            <div>
-              <label for="san-francisco-datasets" class="block text-sm font-medium text-gray-700">San Francisco Datasets</label>
-              <select v-model="pipelineForm.parameters.sanFranciscoDatasets" id="san-francisco-datasets" multiple class="mt-1 block w-full input h-24">
-                <option v-for="dataset in pipelineSteps.sanFranciscoDatasets" :key="dataset" :value="dataset">{{ dataset }}</option>
-              </select>
-            </div>
-            <div>
-              <label for="san-francisco-seeders" class="block text-sm font-medium text-gray-700">San Francisco Seeders</label>
-              <select v-model="pipelineForm.parameters.sanFranciscoSeeders" id="san-francisco-seeders" multiple class="mt-1 block w-full input h-24">
-                <option v-for="seeder in pipelineSteps.sanFranciscoSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
-              </select>
-            </div>
-            <div class="p-4 bg-gray-50 rounded-lg">
-                <h4 class="text-md font-semibold text-gray-800">San Francisco</h4>
-                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders for San Francisco.</p>
-            </div>
-
-            <!-- Seattle -->
-            <div>
-              <label for="seattle-datasets" class="block text-sm font-medium text-gray-700">Seattle Datasets</label>
-              <select v-model="pipelineForm.parameters.seattleDatasets" id="seattle-datasets" multiple class="mt-1 block w-full input h-24">
-                <option v-for="dataset in pipelineSteps.seattleDatasets" :key="dataset" :value="dataset">{{ dataset }}</option>
-              </select>
-            </div>
-            <div>
-              <label for="seattle-seeders" class="block text-sm font-medium text-gray-700">Seattle Seeders</label>
-              <select v-model="pipelineForm.parameters.seattleSeeders" id="seattle-seeders" multiple class="mt-1 block w-full input h-24">
-                <option v-for="seeder in pipelineSteps.seattleSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
-              </select>
-            </div>
-            <div class="p-4 bg-gray-50 rounded-lg">
-                <h4 class="text-md font-semibold text-gray-800">Seattle</h4>
-                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders for Seattle.</p>
-            </div>
-
-            <!-- Montgomery County MD -->
-            <div>
-              <label for="montgomery-county-md-datasets" class="block text-sm font-medium text-gray-700">Montgomery County MD Datasets</label>
-              <select v-model="pipelineForm.parameters.montgomeryCountyMdDatasets" id="montgomery-county-md-datasets" multiple class="mt-1 block w-full input h-24">
-                <option v-for="dataset in pipelineSteps.montgomeryCountyMdDatasets" :key="dataset" :value="dataset">{{ dataset }}</option>
-              </select>
-            </div>
-            <div>
-              <label for="montgomery-county-md-seeders" class="block text-sm font-medium text-gray-700">Montgomery County MD Seeders</label>
-              <select v-model="pipelineForm.parameters.montgomeryCountyMdSeeders" id="montgomery-county-md-seeders" multiple class="mt-1 block w-full input h-24">
-                <option v-for="seeder in pipelineSteps.montgomeryCountyMdSeeders" :key="seeder" :value="seeder">{{ seeder }}</option>
-              </select>
-            </div>
-            <div class="p-4 bg-gray-50 rounded-lg">
-                <h4 class="text-md font-semibold text-gray-800">Montgomery County MD</h4>
-                <p class="text-xs text-gray-600 mt-1">Select specific datasets and/or seeders for Montgomery County MD.</p>
-            </div>
-
-            <!-- Post-Seeding & Reporting -->
-            <div>
-              <label for="post-seeding-steps" class="block text-sm font-medium text-gray-700">Post-Seeding Steps</label>
-              <select v-model="pipelineForm.parameters.postSeedingSteps" id="post-seeding-steps" multiple class="mt-1 block w-full input h-24">
-                <option v-for="step in pipelineSteps.postSeedingSteps" :key="step" :value="step">{{ step }}</option>
-              </select>
-            </div>
-            <div>
-              <label for="reporting-steps" class="block text-sm font-medium text-gray-700">Reporting Steps</label>
-              <select v-model="pipelineForm.parameters.reportingSteps" id="reporting-steps" multiple class="mt-1 block w-full input h-24">
-                <option v-for="step in pipelineSteps.reportingSteps" :key="step" :value="step">{{ step }}</option>
-              </select>
-            </div>
+            <template v-for="section in pipelineGeneralSections" :key="section.parameter">
+              <div>
+                <label :for="section.parameter" class="block text-sm font-medium text-gray-700">{{ section.label }}</label>
+                <select v-model="pipelineForm.parameters[section.parameter]" :id="section.parameter" multiple class="mt-1 block w-full input h-24">
+                  <option v-for="item in section.items" :key="item" :value="item">{{ item }}</option>
+                </select>
+              </div>
+            </template>
             <div class="p-4 bg-gray-50 rounded-lg">
                 <h4 class="text-md font-semibold text-gray-800">General</h4>
                 <p class="text-xs text-gray-600 mt-1">Select specific aggregation, caching, or reporting steps.</p>
@@ -369,7 +257,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import JobCard from '@/Components/JobCard.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -377,9 +265,19 @@ const props = defineProps({
   newsReportModels: Array,
   newsConfigSets: Array,
   pipelineStages: Array,
-  bostonDatasets: Array,
-  pipelineSteps: Object,
+  pipelineCitySections: Array,
+  pipelineGeneralSections: Array,
 });
+
+const pipelineParameterDefaults = {
+  stages: [],
+  ...Object.fromEntries(
+    [
+      ...props.pipelineCitySections.flatMap((section) => [section.acquisition.parameter, section.seeding.parameter]),
+      ...props.pipelineGeneralSections.map((section) => section.parameter),
+    ].map((key) => [key, []])
+  ),
+};
 
 const statForm = useForm({ command: 'app:dispatch-statistical-analysis-jobs', parameters: { model: '', columns: [], fresh: false, plots: false, resolutions: '9,8,7,6,5', trendWeeks: '4,26,52', anomalyWeeks: 4, exportTimespan: 108 } });
 const historicalForm = useForm({ command: 'app:dispatch-historical-scoring-jobs', parameters: { model: '', column: '', city: '', exportColumns: [], resolution: '8', analysisWeeks: 52, exportTimespan: 0, groupWeights: {}, defaultWeight: 0.0, fresh: false } });
@@ -388,25 +286,7 @@ const newsForm = useForm({ command: 'app:dispatch-news-article-generation-jobs',
 const locationForm = useForm({ command: 'reports:send', parameters: { userId: '', locationId: '', force: false } });
 const pipelineForm = useForm({
   command: 'app:run-all-data-pipeline',
-  parameters: {
-    stages: [],
-    bostonDatasets: [],
-    bostonSeeders: [],
-    cambridgeDatasets: [],
-    cambridgeSeeders: [],
-    everettSteps: [],
-    everettSeeders: [],
-    chicagoDatasets: [],
-    chicagoSeeders: [],
-    sanFranciscoDatasets: [],
-    sanFranciscoSeeders: [],
-    seattleDatasets: [],
-    seattleSeeders: [],
-    montgomeryCountyMdDatasets: [],
-    montgomeryCountyMdSeeders: [],
-    postSeedingSteps: [],
-    reportingSteps: [],
-  }
+  parameters: pipelineParameterDefaults,
 });
 
 const availableStatColumns = computed(() => statForm.parameters.model ? props.modelDetails[statForm.parameters.model]?.columns || [] : []);

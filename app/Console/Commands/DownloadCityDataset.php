@@ -98,7 +98,8 @@ class DownloadCityDataset extends Command
                 null, // destination
                 0, // startOffset
                 null, // startYear
-                $whereClause // whereClause for incremental
+                $whereClause, // whereClause for incremental
+                $dataset['max_records'] ?? null
             );
         }
 
@@ -199,13 +200,15 @@ class DownloadCityDataset extends Command
             $dataset['order_by_direction'] ?? 'ASC',
             $resumeFile, // Pass the destination file path
             $startOffset, // Pass the starting offset
-            $startYear // Pass the starting year for year-based downloads
+            $startYear, // Pass the starting year for year-based downloads
+            null,
+            $dataset['max_records'] ?? null
         );
 
         return 0;
     }
 
-    protected function downloadDataset($baseUrl, $resourceId, $format, $name, $city, $urlPatternType, $paginationType = null, $pageSize = 1000, $orderByField = ':id', $orderByDirection = 'ASC', $destination = null, $startOffset = 0, $startYear = null, ?string $incrementalWhere = null)
+    protected function downloadDataset($baseUrl, $resourceId, $format, $name, $city, $urlPatternType, $paginationType = null, $pageSize = 1000, $orderByField = ':id', $orderByDirection = 'ASC', $destination = null, $startOffset = 0, $startYear = null, ?string $incrementalWhere = null, ?int $maxRecords = null)
     {
         // If no destination is provided (new download), generate a new filename.
         if ($destination === null) {
@@ -228,14 +231,14 @@ class DownloadCityDataset extends Command
         if ($paginationType === 'socrata_by_year') {
             $this->info("Attempting year-by-year Socrata download for: {$name} ({$city}) to {$destination}...");
             $config = collect(config('datasets.datasets'))->firstWhere('name', $name);
-            if ($this->downloadSocrataByYear($config, $destination, $startOffset, $startYear, $incrementalWhere)) {
+            if ($this->downloadSocrataByYear($config, $destination, $startOffset, $startYear, $incrementalWhere, $maxRecords)) {
                 $this->info("Successfully completed year-by-year download: {$filename}");
             } else {
                 $this->error("Failed year-by-year Socrata download: {$name} ({$city})");
             }
         } elseif ($paginationType === 'socrata_offset' && $urlPatternType === 'extension') {
             $this->info("Attempting paginated Socrata download for: {$name} ({$city}) to {$destination}...");
-            if ($this->downloadSocrataDatasetWithPagination($baseUrl, $resourceId, $format, $destination, $pageSize, $orderByField, $orderByDirection, $name, $startOffset, $incrementalWhere)) {
+            if ($this->downloadSocrataDatasetWithPagination($baseUrl, $resourceId, $format, $destination, $pageSize, $orderByField, $orderByDirection, $name, $startOffset, $incrementalWhere, true, $maxRecords)) {
                 $this->info("Successfully downloaded paginated dataset: {$filename}");
             } else {
                 $this->error("Failed to download paginated Socrata dataset: {$name} ({$city})");
@@ -259,7 +262,7 @@ class DownloadCityDataset extends Command
         }
     }
 
-    protected function downloadSocrataByYear(array $config, string $destination, int $startOffset = 0, ?int $resumeYear = null, ?string $incrementalWhere = null)
+    protected function downloadSocrataByYear(array $config, string $destination, int $startOffset = 0, ?int $resumeYear = null, ?string $incrementalWhere = null, ?int $maxRecords = null)
     {
         $loopStartYear = $resumeYear ?? $config['start_year'];
         $endYear = $config['end_year'] ?? now()->year;
@@ -286,19 +289,25 @@ class DownloadCityDataset extends Command
                 $config['name'] . " (Year {$year})",
                 $currentYearOffset,
                 $whereClause,
-                $year === (int)$config['start_year'] // isFirstYearOfTotalDownload
+                $year === (int)$config['start_year'], // isFirstYearOfTotalDownload
+                $maxRecords
             );
 
             if (!$success) {
                 $this->error("Download failed for year {$year}. Stopping process. You can resume later.");
                 return false;
             }
+
+            if ($maxRecords !== null && $this->countCsvDataRows($destination) >= $maxRecords) {
+                $this->info("Reached configured max_records limit of {$maxRecords} rows for {$config['name']}. Stopping further yearly downloads.");
+                break;
+            }
         }
 
         return true;
     }
 
-    protected function downloadSocrataDatasetWithPagination($baseUrl, $resourceId, $format, $destination, $pageSize, $orderByField, $orderByDirection, $datasetName, $startOffset = 0, ?string $whereClause = null, bool $isFirstYearOfTotalDownload = true)
+    protected function downloadSocrataDatasetWithPagination($baseUrl, $resourceId, $format, $destination, $pageSize, $orderByField, $orderByDirection, $datasetName, $startOffset = 0, ?string $whereClause = null, bool $isFirstYearOfTotalDownload = true, ?int $maxRecords = null)
     {
         $offset = $startOffset;
         
@@ -313,6 +322,18 @@ class DownloadCityDataset extends Command
         }
 
         $firstPage = true;
+        $headerDefinitions = null;
+
+        if ($isNewFile) {
+            $headerDefinitions = $this->fetchSocrataHeaderDefinitions($baseUrl, $resourceId);
+        }
+
+        $writtenRowCount = $isNewFile ? 0 : $this->countCsvDataRows($destination);
+        if ($maxRecords !== null && $writtenRowCount >= $maxRecords) {
+            $this->info("Skipping {$datasetName}: destination already contains {$writtenRowCount} rows, meeting max_records={$maxRecords}.");
+            fclose($fileHandle);
+            return true;
+        }
 
         while (true) {
             // Build URL with optional $where clause
@@ -336,11 +357,24 @@ class DownloadCityDataset extends Command
                 break;
             }
 
+            if ($maxRecords !== null) {
+                $remainingCapacity = $maxRecords - $writtenRowCount;
+                if ($remainingCapacity <= 0) {
+                    $this->info("Reached configured max_records limit of {$maxRecords} rows for {$datasetName}.");
+                    break;
+                }
+                if (count($data) > $remainingCapacity) {
+                    $data = array_slice($data, 0, $remainingCapacity);
+                }
+            }
+
             // Only write header if it's a brand new file on the very first page.
             // For year-by-year, this ensures the header is only written once at the beginning.
             if ($isNewFile && $firstPage) {
-                $headers = array_keys($data[0]);
-                fputcsv($fileHandle, $headers);
+                $headerDefinitions = $headerDefinitions ?: array_map(function ($key) {
+                    return ['csv_header' => $key, 'source_key' => $key];
+                }, array_keys($data[0]));
+                fputcsv($fileHandle, array_column($headerDefinitions, 'csv_header'));
             }
 
             foreach ($data as $row) {
@@ -351,11 +385,26 @@ class DownloadCityDataset extends Command
                         $value = json_encode($value);
                     }
                 }
-                fputcsv($fileHandle, $row);
+
+                if ($headerDefinitions) {
+                    $orderedRow = [];
+                    foreach ($headerDefinitions as $definition) {
+                        $orderedRow[] = $row[$definition['source_key']] ?? null;
+                    }
+                    fputcsv($fileHandle, $orderedRow);
+                } else {
+                    fputcsv($fileHandle, $row);
+                }
             }
 
             $firstPage = false;
             $numDataRows = count($data);
+            $writtenRowCount += $numDataRows;
+
+            if ($maxRecords !== null && $writtenRowCount >= $maxRecords) {
+                $this->info("Reached configured max_records limit of {$maxRecords} rows for {$datasetName}.");
+                break;
+            }
 
             if ($numDataRows < $pageSize) {
                 $this->info("Last page fetched for {$datasetName} (received {$numDataRows} rows, page size {$pageSize}).");
@@ -368,6 +417,60 @@ class DownloadCityDataset extends Command
 
         fclose($fileHandle);
         return true;
+    }
+
+    protected function countCsvDataRows(string $path): int
+    {
+        if (!file_exists($path) || filesize($path) === 0) {
+            return 0;
+        }
+
+        $handle = fopen($path, 'r');
+        if ($handle === false) {
+            return 0;
+        }
+
+        $lineCount = 0;
+        while (fgets($handle) !== false) {
+            $lineCount++;
+        }
+        fclose($handle);
+
+        return max($lineCount - 1, 0);
+    }
+
+    protected function fetchSocrataHeaderDefinitions(string $baseUrl, string $resourceId): ?array
+    {
+        $metadataUrl = str_replace('/resource', '', $baseUrl) . "/api/views/{$resourceId}.json";
+        $metadataContent = $this->fetchSocrataPageContent($metadataUrl);
+
+        if ($metadataContent === false) {
+            $this->warn("Could not fetch Socrata metadata for {$resourceId}; falling back to first row keys for CSV headers.");
+            return null;
+        }
+
+        $metadata = json_decode($metadataContent, true);
+        $columns = $metadata['columns'] ?? null;
+
+        if (!is_array($columns) || empty($columns)) {
+            $this->warn("Socrata metadata for {$resourceId} did not include columns; falling back to first row keys for CSV headers.");
+            return null;
+        }
+
+        $headerDefinitions = [];
+        foreach ($columns as $column) {
+            $fieldName = $column['fieldName'] ?? null;
+            $displayName = $column['name'] ?? null;
+
+            if (is_string($fieldName) && $fieldName !== '') {
+                $headerDefinitions[] = [
+                    'csv_header' => is_string($displayName) && $displayName !== '' ? $displayName : $fieldName,
+                    'source_key' => $fieldName,
+                ];
+            }
+        }
+
+        return empty($headerDefinitions) ? null : $headerDefinitions;
     }
 
     protected function fetchSocrataPageContent(string $url): string|false

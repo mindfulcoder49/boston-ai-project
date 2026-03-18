@@ -859,6 +859,7 @@ class DataMapController extends Controller
             $dataPointModelConfig[$modelKey] = [
                 'dataObjectKey' => $dataObjectKey,
                 'displayTitle' => $modelClass::getAlcivartechTypeForStyling(),
+                'iconClass' => $modelClass::getIconClass(),
                 'popupConfig' => $modelClass::getPopupConfig(),
             ];
         }

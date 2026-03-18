@@ -14,6 +14,21 @@ use Illuminate\Support\Str;
 class GenericMapController extends Controller
 {
     /**
+     * Convert a model class basename to the data-point naming convention.
+     *
+     * Laravel's Str::snake() does not split trailing numeric suffixes, so
+     * NewYork311 becomes "new_york311" instead of the schema convention
+     * "new_york_311" used by generated data-point foreign keys.
+     */
+    protected function getModelDataPointStem(string $modelClass): string
+    {
+        $baseName = class_basename($modelClass);
+        $normalized = preg_replace('/([a-zA-Z])(\d+)/', '$1_$2', $baseName);
+
+        return Str::snake($normalized);
+    }
+
+    /**
      * Get the model class from a table name within the city's models.
      */
     protected function getModelClassFromTableName(string $tableName, array $cityModels): ?string
@@ -225,8 +240,9 @@ class GenericMapController extends Controller
             }
             $modelInstance = new $modelClass();
             $sourceTableName = $modelInstance->getTable();
-            $jsonAlias = Str::snake(class_basename($modelClass)) . '_json';
-            $fkColumnInDataPoints = Str::snake(class_basename($modelClass)) . '_id';
+            $modelStem = $this->getModelDataPointStem($modelClass);
+            $jsonAlias = $modelStem . '_json';
+            $fkColumnInDataPoints = $modelStem . '_id';
 
             $query->addSelect(DB::raw($this->getJsonSelectForModel($modelClass, $jsonAlias)));
             $query->leftJoin($sourceTableName, $targetTable.'.'.$fkColumnInDataPoints, '=', $sourceTableName.'.'.$modelInstance->getKeyName());
@@ -245,8 +261,9 @@ class GenericMapController extends Controller
             $modelClass = $this->getModelClassFromTableName($sourceTableName, $linkableModels);
 
             if ($modelClass) {
-                $jsonAlias = Str::snake(class_basename($modelClass)) . '_json';
-                $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data';
+                $modelStem = $this->getModelDataPointStem($modelClass);
+                $jsonAlias = $modelStem . '_json';
+                $dataObjectKey = $modelStem . '_data';
 
                 if (property_exists($point, $jsonAlias) && $point->{$jsonAlias}) {
                     $point->{$dataObjectKey} = json_decode($point->{$jsonAlias});
@@ -267,7 +284,7 @@ class GenericMapController extends Controller
                 $point->alcivartech_type = 'Unknown';
                 $point->alcivartech_date = $point->data_point_alcivartech_date_from_dp_table;
                 foreach ($linkableModels as $mc) {
-                    $jsonAliasFallback = Str::snake(class_basename($mc)) . '_json';
+                    $jsonAliasFallback = $this->getModelDataPointStem($mc) . '_json';
                     if (property_exists($point, $jsonAliasFallback)) {
                         unset($point->{$jsonAliasFallback});
                     }
@@ -305,7 +322,7 @@ class GenericMapController extends Controller
             }
             $modelInstance = new $modelClass();
             $tableName = $modelInstance->getTable();
-            $dataObjectKey = Str::snake(class_basename($modelClass)) . '_data';
+            $dataObjectKey = $this->getModelDataPointStem($modelClass) . '_data';
 
             $modelToSubObjectKeyMap[$tableName] = $dataObjectKey;
 

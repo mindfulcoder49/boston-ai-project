@@ -130,10 +130,35 @@ const cityStats = computed(() => {
   return out;
 });
 
+// ---- pagination ----
+const PAGE_SIZE   = 20;
+const currentPage = ref(1);
+
+// Reset to page 1 whenever any filter changes
+watch([filterCity, filterType, filterResolution, filterModel, filterCategory], () => {
+  currentPage.value = 1;
+});
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / PAGE_SIZE)));
+
+const paginatedFiltered = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return filtered.value.slice(start, start + PAGE_SIZE);
+});
+
+// Page range: up to 7 buttons centred on current page
+const pageRange = computed(() => {
+  const cur  = currentPage.value;
+  const last = totalPages.value;
+  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
+  const pages = new Set([1, last, cur, cur - 1, cur + 1, cur - 2, cur + 2]);
+  return [...pages].filter(p => p >= 1 && p <= last).sort((a, b) => a - b);
+});
+
 // ---- card grouping ----
 const groupedByCity = computed(() => {
   const groups = {};
-  for (const a of filtered.value) {
+  for (const a of paginatedFiltered.value) {
     groups[a.city] ??= [];
     groups[a.city].push(a);
   }
@@ -229,6 +254,7 @@ const significanceClass = (a) => {
             </select>
 
             <span class="text-sm text-gray-500 ml-auto">{{ filtered.length }} report{{ filtered.length !== 1 ? 's' : '' }}</span>
+            <span v-if="totalPages > 1" class="text-sm text-gray-400">· page {{ currentPage }} of {{ totalPages }}</span>
           </div>
 
           <!-- Resolution pills -->
@@ -370,6 +396,28 @@ const significanceClass = (a) => {
               </Link>
             </div>
           </div>
+        </div>
+
+        <!-- Pagination controls -->
+        <div v-if="totalPages > 1 && filtered.length > 0" class="flex items-center justify-center gap-1 pt-2">
+          <button
+            @click="currentPage--"
+            :disabled="currentPage <= 1"
+            class="px-3 py-1.5 rounded border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+          >← Prev</button>
+          <template v-for="(p, idx) in pageRange" :key="p">
+            <span v-if="idx > 0 && p > pageRange[idx - 1] + 1" class="px-1 text-gray-400">…</span>
+            <button
+              @click="currentPage = p"
+              class="px-3 py-1.5 rounded border text-sm font-medium transition-colors"
+              :class="p === currentPage ? 'bg-indigo-600 text-white border-indigo-600' : 'hover:bg-gray-100'"
+            >{{ p }}</button>
+          </template>
+          <button
+            @click="currentPage++"
+            :disabled="currentPage >= totalPages"
+            class="px-3 py-1.5 rounded border text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+          >Next →</button>
         </div>
 
         <!-- Empty states -->

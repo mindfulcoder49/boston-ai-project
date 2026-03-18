@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Http\Controllers\AiAssistantController;
 use App\Models\HotspotFinding;
 use App\Models\NewsArticle;
+use App\Models\NewsArticleGenerationConfig;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,6 +27,7 @@ class GenerateHotspotArticleJob implements ShouldQueue
         protected string      $h3Index,
         protected string      $locationName,
         protected array       $hotspotContext,
+        protected ?NewsArticleGenerationConfig $config = null,
     ) {}
 
     public function handle(): void
@@ -35,7 +37,8 @@ class GenerateHotspotArticleJob implements ShouldQueue
         $articleData = AiAssistantController::generateNewsArticleFromHexagon(
             $this->h3Index,
             $this->locationName,
-            $this->hotspotContext
+            $this->hotspotContext,
+            $this->config?->intro_prompt
         );
 
         if (!$articleData) {

@@ -10,7 +10,7 @@ class TrendSummaryService
 {
     public static function cacheKey(string $jobId): string
     {
-        return "trend_summary_v5_{$jobId}";
+        return "trend_summary_v6_{$jobId}";
     }
 
     public static function computeAndCache(string $jobId, int $h3Resolution, float $pAnomaly, float $pTrend): array
@@ -35,6 +35,7 @@ class TrendSummaryService
             $topAnomalies      = [];
             $topTrendsByWindow = [];
 
+            $availableWindows = [];
             foreach ($data['results'] as $row) {
                 $secGroup = $row['secondary_group'] ?? 'Unknown';
                 $h3Index  = $row["h3_index_{$h3Resolution}"] ?? null;
@@ -59,6 +60,7 @@ class TrendSummaryService
                 }
 
                 foreach ($row['trend_analysis'] ?? [] as $window => $trendData) {
+                    $availableWindows[$window] = true;
                     if (($trendData['p_value'] ?? 1) < $pTrend) {
                         $trendCount++;
                         $rowHasFindings = true;
@@ -100,6 +102,8 @@ class TrendSummaryService
                 'trend_count'          => $trendCount,
                 'affected_h3_count'    => count($affectedH3),
                 'top_categories'       => $topCategories,
+                'all_categories'       => array_keys($categoryFindings),
+                'available_windows'    => array_keys($availableWindows),
                 'total_findings'       => $anomalyCount + $trendCount,
                 'top_anomalies'        => $topAnomalies,
                 'top_trends_by_window' => $topTrendsByWindow,

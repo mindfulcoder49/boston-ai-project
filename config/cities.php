@@ -82,6 +82,17 @@ return [
 
         // Add new cities below this line
 
+        'new_york' => [
+            'name' => 'New York',
+            'latitude' => 40.7128,
+            'longitude' => -74.006,
+            'data_points_table' => 'new_york_data_points',
+            'db_connection' => 'new_york_db',
+            'models' => [
+                \App\Models\NewYork311::class,
+            ],
+        ],
+
         'montgomery_county_md' => [
             'name' => 'Montgomery County, MD',
             'latitude' => 39.154,

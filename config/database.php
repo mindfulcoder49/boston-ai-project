@@ -232,6 +232,33 @@ return [
             'strict' => true,
             'engine' => null,
         ],
+        'new_york_db' => [
+            'driver' => 'mysql',
+            'host' => env('NEW_YORK_DB_HOST', 'mysql'),
+            'port' => env('NEW_YORK_DB_PORT', '3306'),
+            'database' => env('NEW_YORK_DB_DATABASE', 'new_york_db'),
+            'username' => env('NEW_YORK_DB_USERNAME', 'sail'),
+            'password' => env('NEW_YORK_DB_PASSWORD', 'password'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
+        'new_york_311_db' => [
+            'driver' => 'mysql',
+            'host' => env('NEW_YORK_311_DB_HOST', 'mysql'),
+            'port' => env('NEW_YORK_311_DB_PORT', '3306'),
+            'database' => env('NEW_YORK_311_DB_DATABASE', 'new_york_311_db'),
+            'username' => env('NEW_YORK_311_DB_USERNAME', 'sail'),
+            'password' => env('NEW_YORK_311_DB_PASSWORD', 'password'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
 
     ],
 

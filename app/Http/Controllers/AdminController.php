@@ -13,10 +13,12 @@ use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator; // For conditional password validation
+use App\Jobs\RunArtisanCommandJob;
 use App\Models\JobRun;
 use Illuminate\Support\Facades\Artisan;
 use App\Models\ThreeOneOneCase;
 use Illuminate\Support\Facades\DB;
+use App\Support\AdminPipelineConfig;
 
 class AdminController extends Controller
 {
@@ -66,52 +68,13 @@ class AdminController extends Controller
         $newsReportModels = ['Trend', 'YearlyCountComparison'];
         $newsConfigSets = array_keys(config('news_generation.report_sets', []));
 
-        $pipelineStages = [
-            'Boston Data Acquisition',
-            'Boston Data Seeding',
-            'Cambridge Data Acquisition',
-            'Cambridge Data Seeding',
-            'Everett Data Acquisition & Processing',
-            'Everett Data Seeding',
-            'Chicago Data Acquisition',
-            'Chicago Data Seeding',
-            'San Francisco Data Acquisition',
-            'San Francisco Data Seeding',
-            'Seattle Data Acquisition',
-            'Seattle Data Seeding',
-            'Montgomery County MD Data Acquisition',
-            'Montgomery County MD Data Seeding',
-            'Post-Seeding Aggregation & Caching',
-            'Reporting',
-        ];
-
-        $bostonDatasets = config('boston_datasets.datasets', []);
-
-        $pipelineSteps = [
-            'bostonSeeders' => ['TrashSchedulesByAddressSeeder', 'CrimeDataSeeder', 'ThreeOneOneSeeder', 'BuildingPermitsSeeder', 'PropertyViolationsSeeder', 'ConstructionOffHoursSeeder', 'FoodInspectionsSeeder'],
-            'cambridgeDatasets' => ['app:download-cambridge-logs', 'cambridge-311-service-requests', 'cambridge-building-permits', 'cambridge-sanitary-inspections', 'cambridge-housing-code-violations', 'cambridge-crime-reports', 'cambridge-master-addresses-list', 'cambridge-master-intersections-list'],
-            'cambridgeSeeders' => ['NativeCambridgeBuildingPermitsSeeder', 'NativeCambridgeThreeOneOneSeeder', 'NativeCambridgeSanitaryInspectionsSeeder', 'NativeCambridgeHousingViolationsSeeder', 'CambridgeAddressesSeeder', 'CambridgeIntersectionsSeeder', 'CambridgeCrimeDataSeederMerge', 'CambridgePoliceLogSeeder'],
-            'everettSteps' => ['app:download-everett-pdf-markdown', 'everett:process-data', 'app:generate-everett-csv'],
-            'everettSeeders' => ['EverettCrimeDataSeeder'],
-            'chicagoDatasets' => ['chicago-crimes-2001-to-present'],
-            'chicagoSeeders' => ['ChicagoCrimeSeeder', 'ChicagoDataPointSeeder'],
-            'sanFranciscoDatasets' => ['san_francisco-crimes'],
-            'sanFranciscoSeeders' => ['SanFranciscoCrimeSeeder', 'SanFranciscoDataPointSeeder'],
-            'seattleDatasets' => ['seattle-crimes'],
-            'seattleSeeders' => ['SeattleCrimeSeeder', 'SeattleDataPointSeeder'],
-            'montgomeryCountyMdDatasets' => ['montgomery_county_md-crimes'],
-            'montgomeryCountyMdSeeders' => ['MontgomeryCountyMdCrimeSeeder', 'MontgomeryCountyMdDataPointSeeder'],
-            'postSeedingSteps' => ['DataPointSeeder', 'app:cache-metrics-data'],
-            'reportingSteps' => ['reports:send'],
-        ];
-
         return Inertia::render('Admin/JobDispatcher', [
             'modelDetails' => $modelDetails,
             'newsReportModels' => $newsReportModels,
             'newsConfigSets' => $newsConfigSets,
-            'pipelineStages' => $pipelineStages,
-            'bostonDatasets' => $bostonDatasets,
-            'pipelineSteps' => $pipelineSteps,
+            'pipelineStages' => AdminPipelineConfig::getStageNames(),
+            'pipelineCitySections' => AdminPipelineConfig::getCitySections(),
+            'pipelineGeneralSections' => AdminPipelineConfig::getGeneralSections(),
         ]);
     }
 
@@ -134,25 +97,9 @@ class AdminController extends Controller
 
         try {
             if (in_array($command, ['app:run-all-data-pipeline', 'app:dispatch-historical-scoring-jobs'])) {
-                $processCommand = [PHP_BINARY, base_path('artisan'), $command];
-                foreach ($parameters as $key => $value) {
-                    if (is_bool($value) && $value) {
-                        $processCommand[] = $key;
-                    } elseif (!is_bool($value)) {
-                        // Handle positional arguments vs. options
-                        if ($key === 'model') {
-                             $processCommand[] = $value; // Positional argument
-                        } else {
-                             $processCommand[] = "{$key}={$value}";
-                        }
-                    }
-                }
-
-                // Use exec() with nohup and & so the child process is detached from the web request
-                // lifecycle. Symfony Process::__destruct() sends SIGTERM to any still-running child
-                // process when the PHP request ends, which would kill the pipeline mid-run.
-                $escapedCommand = implode(' ', array_map('escapeshellarg', $processCommand));
-                exec('nohup ' . $escapedCommand . ' > /dev/null 2>&1 &');
+                // Dispatch via the queue so the command runs outside the HTTP request lifecycle.
+                // This avoids the need for exec()/nohup and works on hosts where exec() is disabled.
+                RunArtisanCommandJob::dispatch($command, $parameters);
 
                 $message = $command === 'app:run-all-data-pipeline'
                     ? "Pipeline job '{$command}' dispatched to run in the background. Check the Pipeline Logs page for progress."
