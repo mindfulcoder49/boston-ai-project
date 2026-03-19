@@ -172,7 +172,7 @@ return [
             'page_size' => 50000,
             'order_by_field' => 'created_date',
             'order_by_direction' => 'DESC',
-            'max_records' => 250000,
+            'max_records' => 800000,
             'download_type' => 'incremental',
             'model' => 'App\Models\NewYork311',
             'date_field' => 'created_date',

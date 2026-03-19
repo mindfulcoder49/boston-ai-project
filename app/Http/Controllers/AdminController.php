@@ -96,14 +96,26 @@ class AdminController extends Controller
         $parameters = $validated['parameters'] ?? [];
 
         try {
-            if (in_array($command, ['app:run-all-data-pipeline', 'app:dispatch-historical-scoring-jobs'])) {
+            if (in_array($command, [
+                'app:run-all-data-pipeline',
+                'app:dispatch-historical-scoring-jobs',
+                'app:dispatch-statistical-analysis-jobs',
+            ])) {
                 // Dispatch via the queue so the command runs outside the HTTP request lifecycle.
                 // This avoids the need for exec()/nohup and works on hosts where exec() is disabled.
+                // It also ensures URL generation falls back to APP_URL instead of the current
+                // browser request host (e.g. localhost), which fixes analysis export URLs for
+                // worker containers that cannot reach the web app at "http://localhost/...".
                 RunArtisanCommandJob::dispatch($command, $parameters);
 
-                $message = $command === 'app:run-all-data-pipeline'
-                    ? "Pipeline job '{$command}' dispatched to run in the background. Check the Pipeline Logs page for progress."
-                    : "Job '{$command}' dispatched to run in the background. This may take a moment if a data export is required.";
+                $message = match ($command) {
+                    'app:run-all-data-pipeline' =>
+                        "Pipeline job '{$command}' dispatched to run in the background. Check the Pipeline Logs page for progress.",
+                    'app:dispatch-statistical-analysis-jobs' =>
+                        "Job '{$command}' dispatched to run in the background. Running this outside the web request also ensures worker-accessible export URLs are generated.",
+                    default =>
+                        "Job '{$command}' dispatched to run in the background. This may take a moment if a data export is required.",
+                };
 
                 return redirect()->back()->with('success', $message);
             }

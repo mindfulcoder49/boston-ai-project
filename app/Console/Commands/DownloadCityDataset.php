@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class DownloadCityDataset extends Command
 {
-    protected $signature = 'app:download-city-dataset {dataset? : The name of a specific dataset to download.} {--resume-from= : The path to a partial CSV file to resume downloading.}';
+    protected $signature = 'app:download-city-dataset {dataset? : The name of a specific dataset to download.} {--resume-from= : The path to a partial CSV file to resume downloading.} {--full : Force a full historical download and ignore incremental resume logic.}';
     protected $description = 'Downloads datasets from configured cities (e.g., Boston, Cambridge), with resume support.';
 
     public function handle()
@@ -25,6 +25,7 @@ class DownloadCityDataset extends Command
     protected function handleNewDownload()
     {
         $datasetName = $this->argument('dataset');
+        $forceFullDownload = (bool) $this->option('full');
         $config = config('datasets');
         $allDatasets = $config['datasets'];
 
@@ -50,7 +51,9 @@ class DownloadCityDataset extends Command
             $whereClause = null;
 
             // Handle incremental downloads
-            if (($dataset['download_type'] ?? 'full') === 'incremental') {
+            if ($forceFullDownload) {
+                $this->info("Forcing full download for '{$dataset['name']}'. Incremental resume logic disabled.");
+            } elseif (($dataset['download_type'] ?? 'full') === 'incremental') {
                 $this->info("Processing incremental download for '{$dataset['name']}'.");
                 $modelClass = $dataset['model'] ?? null;
                 $dateField = $dataset['date_field'] ?? null;
