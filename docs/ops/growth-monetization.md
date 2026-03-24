@@ -4,6 +4,8 @@
 
 Run pricing, distribution, and social execution through a conservative recommendation-and-approval loop that minimizes founder thrash while keeping brand and financial control in founder hands.
 
+Use [social-distribution.md](./social-distribution.md) for the channel-specific operating playbook and page strategy.
+
 ## Primary Outcomes
 
 - clear monetization experiments
@@ -85,4 +87,3 @@ Founder:
 - first content calendar
 - first pricing experiment plan
 - founder action queue for external systems
-

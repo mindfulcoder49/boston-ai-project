@@ -30,6 +30,7 @@ Build a repeatable operating system where:
 - [SEO](./seo.md)
 - [Backend Administration](./backend-administration.md)
 - [Growth And Monetization](./growth-monetization.md)
+- [Social Distribution](./social-distribution.md)
 
 ## Operating Rules
 
