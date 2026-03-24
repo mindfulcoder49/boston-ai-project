@@ -159,12 +159,12 @@ const languageButtonLabels = {
 
 const welcomeMessage = ref("");
 const welcomeMessageTranslations = {
-  'en-US': "Hi! I'm the BostonScope AI Assistant. I can see all the data points in the map and answer questions about them. How can I help you today?",
-  'es-MX': "¡Hola! Soy el asistente de IA de la aplicación de Boston. Puedo ver todos los puntos de datos en el mapa y responder preguntas sobre ellos. ¿Cómo puedo ayudarte hoy?",
-  'zh-CN': "你好！我是波士顿应用程序的AI助手。我可以查看地图中的所有数据点并用多种语言回答有关它们的问题。我今天能帮你什么？",
-  'ht-HT': "Bonjou! Mwen se asistan AI nan aplikasyon Boston an. Mwen ka wè tout pwen done nan kat la ak reponn kesyon sou yo. Kijan mwen ka ede ou jodi a?",
-  'vi-VN': "Chào bạn! Tôi là trợ lý trí tuệ nhân tạo của ứng dụng Boston. Tôi có thể xem tất cả các điểm dữ liệu trên bản đồ và trả lời câu hỏi về chúng. Hôm nay tôi có thể giúp gì cho bạn?",
-  'pt-BR': "Oi! Eu sou o assistente de IA do aplicativo Boston. Eu posso ver todos os pontos de dados no mapa e responder perguntas sobre eles. Como posso te ajudar hoje?",
+  'en-US': "Hi! I'm the PublicDataWatch AI Assistant. I can see all the data points in the map and answer questions about them. How can I help you today?",
+  'es-MX': "¡Hola! Soy el asistente de IA de PublicDataWatch. Puedo ver todos los puntos de datos en el mapa y responder preguntas sobre ellos. ¿Cómo puedo ayudarte hoy?",
+  'zh-CN': "你好！我是 PublicDataWatch 的 AI 助手。我可以查看地图中的所有数据点并回答有关它们的问题。今天我能帮你什么？",
+  'ht-HT': "Bonjou! Mwen se asistan AI PublicDataWatch la. Mwen ka wè tout pwen done nan kat la epi reponn kesyon sou yo. Kijan mwen ka ede ou jodi a?",
+  'vi-VN': "Chào bạn! Tôi là trợ lý AI của PublicDataWatch. Tôi có thể xem tất cả các điểm dữ liệu trên bản đồ và trả lời câu hỏi về chúng. Hôm nay tôi có thể giúp gì cho bạn?",
+  'pt-BR': "Oi! Eu sou o assistente de IA do PublicDataWatch. Eu posso ver todos os pontos de dados no mapa e responder perguntas sobre eles. Como posso te ajudar hoje?",
 };
 
 // --- NEW Translations for Loading Messages ---

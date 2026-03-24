@@ -1,7 +1,7 @@
 <template>
   <PageTemplate>
     <Head>
-      <title>Single Data Map</title>
+      <title>{{ pageTitle }}</title>
     </Head>
     <SubscriptionBanner />
     <MapToolbar :model-toolbar-configs-prop="allModelConfigurationsForToolbar" />
@@ -56,6 +56,13 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   }
+});
+
+const pageTitle = computed(() => {
+  const displayTitle = props.dataTypeConfig?.displayTitle || props.dataTypeConfig?.modelNameForHumans;
+  return displayTitle
+    ? `${displayTitle} Data Map | PublicDataWatch`
+    : 'City Dataset Map | PublicDataWatch';
 });
 
 onMounted(() => {

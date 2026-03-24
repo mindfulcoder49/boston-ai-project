@@ -59,7 +59,7 @@
                                 If you cannot find an answer to your question in our FAQ, or if you need further assistance with your account, billing, or technical issues, please feel free to contact our support team.
                             </p>
                             <p>
-                                <strong>Email:</strong> <a href="mailto:help@bostonscope.com" class="text-blue-600 hover:text-blue-800 underline">help@bostonscope.com</a>
+                                <strong>Email:</strong> <a href="mailto:help@publicdatawatch.com" class="text-blue-600 hover:text-blue-800 underline">help@publicdatawatch.com</a>
                             </p>
                             <p>
                                 We aim to respond to all inquiries within 24-48 business hours.

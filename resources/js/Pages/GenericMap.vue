@@ -2,7 +2,7 @@
   
   <PageTemplate>
     <Head>
-      <title>Home</title>
+      <title>Public Data Map | PublicDataWatch</title>
     </Head>
     <!-- Filter Buttons -->
     <div class="filter-container">

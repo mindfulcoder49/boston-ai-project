@@ -82,12 +82,12 @@
                 <!-- Cities We Cover -->
                 <section class="py-10">
                     <h2 class="text-2xl md:text-3xl font-bold text-slate-900 mb-2 text-center">Cities We Cover</h2>
-                    <p class="text-slate-500 text-center mb-8 max-w-lg mx-auto">Open data from across the country. Click a city to explore its datasets on the full map.</p>
+                    <p class="text-slate-500 text-center mb-8 max-w-lg mx-auto">Open data from across the country. Click a city to open its landing page and explore local datasets.</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                         <Link
                             v-for="city in cities"
                             :key="city.name"
-                            :href="city.mapUrl"
+                            :href="city.primaryUrl"
                             class="glass-card group rounded-2xl p-5 block hover:scale-[1.02] transition-all duration-200"
                         >
                             <div class="flex items-center gap-3 mb-3">

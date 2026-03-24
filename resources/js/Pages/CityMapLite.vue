@@ -1,7 +1,7 @@
 <template>
   <div class="city-lite-page">
     <Head>
-      <title>{{ city.name }}</title>
+      <title>{{ `${city.name} Crime Map and Public Safety Data | PublicDataWatch` }}</title>
     </Head>
 
     <MapDisplay

@@ -41,6 +41,9 @@ use App\Http\Controllers\AdminH3GeocodingController;
 use App\Http\Controllers\AdminS3BucketController;
 use App\Http\Controllers\AdminCacheController;
 use App\Http\Controllers\CityLandingController;
+use App\Http\Controllers\SitemapController;
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
 Route::middleware(['auth', 'verified'])->post('/trends/refresh', [TrendsController::class, 'refresh'])->name('trends.refresh');

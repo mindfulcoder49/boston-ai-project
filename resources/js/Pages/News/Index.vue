@@ -10,7 +10,7 @@ defineProps({
 
 <template>
   <PageTemplate>
-    <Head title="News Articles" />
+    <Head title="Data-Driven City News | PublicDataWatch" />
 
     <div class="py-12">
       <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">

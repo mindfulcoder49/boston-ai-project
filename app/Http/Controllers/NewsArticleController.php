@@ -48,6 +48,7 @@ class NewsArticleController extends Controller
             'article' => [
                 'id' => $newsArticle->id,
                 'headline' => $newsArticle->headline,
+                'summary' => $newsArticle->summary,
                 'content' => $articleContent,
                 'published_at' => $newsArticle->published_at ? $newsArticle->published_at->format('F j, Y, g:i A') : 'Not yet published',
                 'source_model_name' => $this->getSourceModelName($newsArticle->source_model_class),

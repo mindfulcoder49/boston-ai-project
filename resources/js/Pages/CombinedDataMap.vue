@@ -1,7 +1,7 @@
 <template>
   <PageTemplate>
     <Head>
-      <title>Combined Data Map</title>
+      <title>Interactive Public Data Map | PublicDataWatch</title>
     </Head>
     <SubscriptionBanner />
     <MapToolbar :model-toolbar-configs-prop="allModelConfigurationsForToolbar" :model-city-groups-prop="modelCityGroups" />

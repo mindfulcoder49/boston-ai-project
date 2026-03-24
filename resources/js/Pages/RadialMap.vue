@@ -1,7 +1,7 @@
 <template>
   <PageTemplate>
     <Head>
-      <title>Home</title>
+      <title>Address-Based Public Data Map | PublicDataWatch</title>
     </Head>
 
     <FeaturedUserMapsBanner />

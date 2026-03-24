@@ -9,10 +9,16 @@ import { translations } from './translations';
 import { createGtag } from 'vue-gtag'; // Import createGtag
 import { isAnalyticsEnabledForCurrentRoute } from './Utils/analytics';
 
-const appName = 'BostonScope'
+const appName = 'PublicDataWatch';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: (title) => {
+        if (!title) {
+            return appName;
+        }
+
+        return title.includes(appName) ? title : `${title} | ${appName}`;
+    },
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) })

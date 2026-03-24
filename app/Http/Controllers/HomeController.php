@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 class HomeController extends Controller
@@ -50,6 +51,19 @@ class HomeController extends Controller
     ];
 
     /**
+     * Map display areas to city landing routes where they exist.
+     */
+    private const AREA_LANDING_ROUTES = [
+        'Boston' => 'city.landing.boston',
+        'Everett' => 'city.landing.everett',
+        'Chicago' => 'city.landing.chicago',
+        'San Francisco' => 'city.landing.san_francisco',
+        'New York' => 'city.landing.new_york',
+        'Montgomery County, MD' => 'city.landing.montgomery_county_md',
+        'Seattle' => 'city.landing.seattle',
+    ];
+
+    /**
      * Descriptions for data categories.
      */
     private const CATEGORY_DESCRIPTIONS = [
@@ -64,7 +78,7 @@ class HomeController extends Controller
 
     public function index()
     {
-        $homeData = Cache::remember('home_page_data', 3600, function () {
+        $homeData = Cache::remember('home_page_data_v2', 3600, function () {
             $cities = config('cities.cities', []);
             $metricsData = config('metrics.data', []);
 
@@ -140,6 +154,12 @@ class HomeController extends Controller
             } else {
                 $area['mapUrl'] = route('data-map.combined');
             }
+
+            $landingRoute = self::AREA_LANDING_ROUTES[$area['name']] ?? null;
+            $area['landingUrl'] = ($landingRoute && Route::has($landingRoute))
+                ? route($landingRoute)
+                : null;
+            $area['primaryUrl'] = $area['landingUrl'] ?: $area['mapUrl'];
         }
 
         return $areas;

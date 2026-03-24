@@ -79,3 +79,8 @@ Target state:
 - daily admin runbook draft
 - validation checklist for ingestion and analysis
 
+## Current Production Deploy
+
+- Production deploys currently run from `~/publicdatawatchdeploy.sh` on the Hostinger server.
+- That script now includes `php artisan route:cache` as part of the deploy sequence, so route caching is no longer a manual post-deploy step.
+- After deploy, verify the public site, the relevant city routes, and `sitemap.xml` before treating the release as complete.
