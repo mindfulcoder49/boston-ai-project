@@ -24,6 +24,7 @@ At the beginning of every session, before doing substantial work:
 - If a task touches social distribution, product page management, or public content planning, align the work with [docs/ops/social-distribution.md](docs/ops/social-distribution.md).
 - Prefer standalone local tooling for analytics, ops automation, and non-production test infrastructure when the work does not need to run on Hostinger or inside Laravel.
 - For deployment or server-access work, check [docs/ops/backend-administration.md](docs/ops/backend-administration.md) for the deploy flow, and use local `~/.ssh/config` for exact SSH connection details.
+- When work identifies a `founder_review` or `founder_required` external action, create or update the task in `tools/exoskeleton` before handing the task back to the founder.
 - When making recommendations or planning work, separate:
   - safe agent-driven actions
   - founder-review actions

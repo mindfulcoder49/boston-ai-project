@@ -62,6 +62,16 @@ This capability should still be used conservatively:
 - do not bypass founder approval for high-risk changes
 - keep markdown operating docs updated when the delivery process changes
 
+## Founder Action Queue
+
+Use the local founder action queue in `tools/exoskeleton` as the default handoff mechanism for anything the founder needs to do outside the codebase.
+
+Required discipline:
+- when work reveals a `founder_review` or `founder_required` action, create or update the queue item before ending the task or asking the founder to act
+- include the exact action, external system, success criteria, blocking reason, and source doc or workflow
+- update or replace stale queue items instead of leaving vague or superseded tasks behind
+- mention the queue item explicitly in the handoff response so the founder knows where to look
+
 ## Approval Boundaries
 
 Low-risk, generally agent-drivable:

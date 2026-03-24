@@ -355,6 +355,8 @@ Founder-required:
 - actual publishing
 - replies that could create legal, political, or brand risk
 
+Any founder-required external setup or publishing task should also be mirrored into the founder action queue in `tools/exoskeleton` before handoff.
+
 ## Setup Notes From LinkedIn
 
 As of March 24, 2026:
