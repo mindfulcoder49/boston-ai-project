@@ -25,6 +25,7 @@ At the beginning of every session, before doing substantial work:
 - Prefer standalone local tooling for analytics, ops automation, and non-production test infrastructure when the work does not need to run on Hostinger or inside Laravel.
 - For deployment or server-access work, check [docs/ops/backend-administration.md](docs/ops/backend-administration.md) for the deploy flow, and use local `~/.ssh/config` for exact SSH connection details.
 - When work identifies a `founder_review` or `founder_required` external action, create or update the task in `tools/exoskeleton` before handing the task back to the founder.
+- Founder queue tasks must be self-contained. Do not rely on the founder opening markdown files to know what to do; include exact copy, exact values, or exact step text directly in the task.
 - When making recommendations or planning work, separate:
   - safe agent-driven actions
   - founder-review actions

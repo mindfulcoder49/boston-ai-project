@@ -357,6 +357,13 @@ Founder-required:
 
 Any founder-required external setup or publishing task should also be mirrored into the founder action queue in `tools/exoskeleton` before handoff.
 
+For social tasks, queue items should be one concrete action at a time:
+- create the page
+- publish this launch post now
+- publish this next product update now
+
+Do not hand the founder a batch-review task that requires opening markdown to find the real copy. Put the exact post text directly in the queue item.
+
 ## Setup Notes From LinkedIn
 
 As of March 24, 2026:

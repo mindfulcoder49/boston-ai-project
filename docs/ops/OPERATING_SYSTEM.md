@@ -69,6 +69,8 @@ Use the local founder action queue in `tools/exoskeleton` as the default handoff
 Required discipline:
 - when work reveals a `founder_review` or `founder_required` action, create or update the queue item before ending the task or asking the founder to act
 - include the exact action, external system, success criteria, blocking reason, and source doc or workflow
+- queue items for the founder must be self-contained and actionable without requiring the founder to open markdown files
+- if the action is a post, message, setting change, or external form entry, include the exact copy or exact values directly in the queue item
 - update or replace stale queue items instead of leaving vague or superseded tasks behind
 - mention the queue item explicitly in the handoff response so the founder knows where to look
 
