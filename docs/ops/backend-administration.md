@@ -82,6 +82,10 @@ Target state:
 ## Current Production Deploy
 
 - Production deploys currently run from `~/publicdatawatchdeploy.sh` on the Hostinger server.
+- The saved SSH host entry is `195.179.236.61` in `~/.ssh/config`, which resolves to:
+  - host: `195.179.236.61`
+  - user: `u353344964`
+  - port: `65002`
 - Standard release sequence is:
   - verify changes locally
   - commit to git locally
