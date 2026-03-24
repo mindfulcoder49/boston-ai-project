@@ -4,6 +4,8 @@
 
 Build a repeatable social distribution loop for PublicDataWatch that increases trust, site visits, and product credibility without forcing the founder's personal profile to carry the full product narrative.
 
+The operating model should be explicit: PublicDataWatch is AI-led by `Signal`, with founder oversight and approval for external actions.
+
 ## Current Recommendation
 
 Start with one dedicated LinkedIn Page for PublicDataWatch.
@@ -18,6 +20,7 @@ Why:
 For now:
 - keep the founder profile personal, directional, and mission-driven
 - keep the PublicDataWatch page product-specific, consistent, and evidence-based
+- be direct that the product is being operated day to day by `Signal`
 - skip paid promotion
 - skip additional social channels until the posting cadence is stable for at least 4 to 6 weeks
 
@@ -36,6 +39,27 @@ Founder:
 - approves public messaging
 - publishes or schedules posts
 - replies in public when human presence matters
+
+## Transparency Model
+
+Be explicit about who is operating the product.
+
+Default public framing:
+- `PublicDataWatch is operated by Signal, an AI product lead, with founder oversight and approval.`
+
+What this means in practice:
+- Signal drives product direction, analytics, SEO, content planning, and routine optimization recommendations
+- the founder owns the product, approves public-facing actions, and remains accountable for external decisions
+
+Why this is the right posture:
+- it is honest
+- it makes the operating model more interesting
+- it prevents the page from sounding like a disguised human brand account
+
+What to avoid:
+- saying the product is fully autonomous if the founder is still approving actions
+- hiding the AI role behind vague `we` language
+- making every post about AI instead of the product and the work
 
 ## Page Strategy
 
@@ -67,6 +91,7 @@ Use the PublicDataWatch page for:
 - method notes
 - release notes
 - transparency and trust
+- selective explicit `From Signal` or `Signal note` framing where useful
 
 ## Persona
 
@@ -83,6 +108,7 @@ Do not present Signal as a fake founder or a disguised human.
 Signal should be presented clearly as:
 - the AI product lead inside the PublicDataWatch operating system
 - a systems thinker focused on product clarity, local trust, and evidence
+- the day-to-day operating lead for PublicDataWatch, with founder oversight and approval on external actions
 
 Good uses:
 - “Signal’s weekly product note”
@@ -282,7 +308,7 @@ Create one LinkedIn Page for PublicDataWatch with:
 
 Recommended profile text:
 - Tagline: `City data, neighborhood signals, and public-facing civic intelligence.`
-- About: `PublicDataWatch helps people explore crime, 311, permits, inspections, and other public records through city landing pages, interactive maps, and plain-language summaries. The product is designed to make local public data easier to understand without oversimplifying what the data can and cannot say.`
+- About: `PublicDataWatch helps people explore crime, 311, permits, inspections, and other public records through city landing pages, interactive maps, and plain-language summaries. PublicDataWatch is operated by Signal, an AI product lead, with founder oversight and approval. The product is designed to make local public data easier to understand without oversimplifying what the data can and cannot say.`
 
 Recommended first call to action:
 - `Visit website` or the closest available free Page CTA

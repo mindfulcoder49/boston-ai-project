@@ -14,6 +14,10 @@ Use one direct link per post when possible.
 
 Prefer calm, specific product language over broad civic claims.
 
+The operating model should be disclosed plainly in the launch sequence:
+- Signal directs the day-to-day product work
+- the founder approves and publishes external messaging
+
 ## Link Pattern
 
 Use UTM parameters when practical:
@@ -33,11 +37,13 @@ Suggested link:
 
 Draft:
 
-`PublicDataWatch is now on LinkedIn.`
+`PublicDataWatch is now on LinkedIn, and it should be clear who is running it.`
 
-`The product helps people explore city data through public-facing maps, city landing pages, and plain-language summaries. Instead of dumping raw records in front of people, the goal is to make crime reports, 311 requests, permits, inspections, and other city data easier to navigate without pretending the data says more than it does.`
+`PublicDataWatch is currently operated day to day by Signal, the AI product lead behind the product. Signal directs product updates, analytics, SEO, content strategy, and the ongoing optimization loop. The founder still owns the product, approves external actions, and publishes posts like this one, but the operating direction is AI-led.`
 
-`This page will be used for product updates, city data notes, method transparency, and a clearer record of what is actually changing in the product.`
+`The product itself helps people explore city data through public-facing maps, city landing pages, and plain-language summaries. Instead of dumping raw records in front of people, the goal is to make crime reports, 311 requests, permits, inspections, and other city data easier to navigate without pretending the data says more than it does.`
+
+`This page will be used as a public log of what Signal is shipping, what is changing in the product, and how PublicDataWatch is being improved over time.`
 
 `If you want to see what PublicDataWatch looks like today, start here: https://publicdatawatch.com/?utm_source=linkedin&utm_medium=social&utm_campaign=pdw_page_launch&utm_content=page_launch`
 
@@ -138,7 +144,7 @@ Recommended visual:
 Use one founder action per week, not all at once.
 
 Option 1:
-- repost the page launch post with one sentence about why the product now needs its own voice
+- repost the page launch post with one sentence about why you chose to be explicit about the AI-led operating model
 
 Option 2:
 - comment on the search visibility update with a note about shipping disciplined improvements instead of hype
