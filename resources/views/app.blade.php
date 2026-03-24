@@ -18,6 +18,9 @@
         <meta name="twitter:card" content="{{ $seo['twitter_card'] }}">
         <meta name="twitter:title" content="{{ $seo['title'] }}">
         <meta name="twitter:description" content="{{ $seo['description'] }}">
+        @foreach ($seo['structured_data'] ?? [] as $structuredData)
+            <script type="application/ld+json">{!! json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+        @endforeach
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

@@ -21,6 +21,16 @@ class CityLandingController extends Controller
         ['code' => 'vi-VN', 'label' => 'Tiếng Việt', 'name' => 'Vietnamese'],
     ];
 
+    private const DATASET_LABELS = [
+        'Crime' => 'Crime Reports',
+        '311 Case' => '311 Requests',
+        'Building Permit' => 'Building Permits',
+        'Property Violation' => 'Property Violations',
+        'Food Inspection' => 'Food Inspections',
+        'Construction Off Hour' => 'After-Hours Construction Permits',
+        'Car Crash' => 'Crash Reports',
+    ];
+
     public function show(string $citySlug): Response
     {
         $cityKey = $this->resolveCityKeyFromSlug($citySlug);
@@ -28,6 +38,10 @@ class CityLandingController extends Controller
 
         $cityConfig = config("cities.cities.{$cityKey}");
         abort_unless(is_array($cityConfig), 404);
+        $dataTypes = $this->getCityDatasetLabels($cityConfig);
+        $fullMapUrl = $this->resolveFullMapUrl($cityKey, $cityConfig);
+        $seoTitle = $this->getCitySeoTitle($cityConfig['name'], $dataTypes);
+        $seoDescription = $this->getCitySeoDescription($cityConfig['name'], $dataTypes);
 
         return Inertia::render('CityMapLite', [
             'city' => [
@@ -39,7 +53,14 @@ class CityLandingController extends Controller
                 'defaultRadius' => $cityKey === 'everett' ? 0.35 : 0.25,
                 'tagline' => $this->getCityTagline($cityConfig['name']),
                 'intro' => $this->getCityIntro($cityConfig['name']),
-                'fullMapUrl' => $this->resolveFullMapUrl($cityKey, $cityConfig),
+                'fullMapUrl' => $fullMapUrl,
+                'dataTypes' => $dataTypes,
+                'seoTitle' => $seoTitle,
+                'seoDescription' => $seoDescription,
+                'overview' => $this->getCityOverview($cityConfig['name'], $dataTypes),
+                'howToUse' => $this->getCityHowToUse($cityConfig['name']),
+                'dataUpdateNote' => 'Data refresh schedules vary by source, so recent records may arrive at different times.',
+                'relatedLinks' => $this->getRelatedLinks($fullMapUrl),
             ],
             'languageOptions' => self::LANGUAGE_OPTIONS,
         ]);
@@ -119,6 +140,100 @@ class CityLandingController extends Controller
     private function getCityIntro(string $cityName): string
     {
         return "No account needed. Tap the map, use your location, or search an address in {$cityName}.";
+    }
+
+    private function getCityDatasetLabels(array $cityConfig): array
+    {
+        $labels = collect($cityConfig['models'] ?? [])
+            ->filter(fn ($modelClass) => method_exists($modelClass, 'getAlcivartechTypeForStyling'))
+            ->map(function ($modelClass) {
+                $dataType = $modelClass::getAlcivartechTypeForStyling();
+                return self::DATASET_LABELS[$dataType] ?? Str::headline(Str::plural($dataType));
+            })
+            ->unique()
+            ->values()
+            ->all();
+
+        return is_array($labels) ? $labels : [];
+    }
+
+    private function getCityOverview(string $cityName, array $dataTypes): string
+    {
+        $datasetPhrase = $this->joinNaturalLanguageList(
+            array_map(fn ($label) => Str::lower($label), $dataTypes)
+        );
+
+        if ($datasetPhrase === '') {
+            return "PublicDataWatch helps you explore recent public records in {$cityName} with a mobile-friendly map, address search, and fast record summaries.";
+        }
+
+        return "PublicDataWatch helps you explore recent {$datasetPhrase} in {$cityName} with a mobile-friendly map, address search, and fast record summaries.";
+    }
+
+    private function getCitySeoTitle(string $cityName, array $dataTypes): string
+    {
+        if ($dataTypes === ['Crime Reports']) {
+            return "{$cityName} Crime Map and Public Safety Data | PublicDataWatch";
+        }
+
+        if ($dataTypes === ['311 Requests']) {
+            return "{$cityName} 311 Map and City Service Data | PublicDataWatch";
+        }
+
+        if (count($dataTypes) === 1) {
+            return "{$cityName} {$dataTypes[0]} Map | PublicDataWatch";
+        }
+
+        return "{$cityName} Public Data Map and Neighborhood Activity | PublicDataWatch";
+    }
+
+    private function getCitySeoDescription(string $cityName, array $dataTypes): string
+    {
+        $datasetPhrase = $this->joinNaturalLanguageList(
+            array_map(fn ($label) => Str::lower($label), $dataTypes)
+        );
+
+        if ($datasetPhrase === '') {
+            return "Explore recent public records in {$cityName} with an interactive map, address search, and multilingual record summaries.";
+        }
+
+        return "Explore recent {$datasetPhrase} in {$cityName} with an interactive map, address search, and multilingual record summaries.";
+    }
+
+    private function getCityHowToUse(string $cityName): string
+    {
+        return "Start with your current location or search an address in {$cityName}, then tap markers to read plain-language details. When you want a wider view, open the full explore map to compare more records across the city.";
+    }
+
+    private function getRelatedLinks(string $fullMapUrl): array
+    {
+        return [
+            ['label' => 'Open full explore map', 'url' => $fullMapUrl],
+            ['label' => 'Read city data news', 'url' => route('news.index')],
+            ['label' => 'Learn how to use the maps', 'url' => route('help.users')],
+        ];
+    }
+
+    private function joinNaturalLanguageList(array $values): string
+    {
+        $values = array_values(array_filter($values, fn ($value) => is_string($value) && $value !== ''));
+        $count = count($values);
+
+        if ($count === 0) {
+            return '';
+        }
+
+        if ($count === 1) {
+            return $values[0];
+        }
+
+        if ($count === 2) {
+            return "{$values[0]} and {$values[1]}";
+        }
+
+        $last = array_pop($values);
+
+        return implode(', ', $values) . ", and {$last}";
     }
 
     private function requestTranslation(array $validated): array

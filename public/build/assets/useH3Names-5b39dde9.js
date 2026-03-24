@@ -1,1 +1,0 @@
-import{Q as s}from"./app-b8453a23.js";function p(){const a=s();return{getName:(e,t=null)=>{var o;return((o=a.props.h3LocationNames)==null?void 0:o[e])??t??e},hasName:e=>e in(a.props.h3LocationNames??{})}}export{p as u};

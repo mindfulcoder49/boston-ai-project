@@ -26,7 +26,10 @@ class SeoMetadata
             'twitter_card' => 'summary',
         ];
 
-        return array_merge($metadata, self::componentMetadata($component, $props));
+        $metadata = array_merge($metadata, self::componentMetadata($component, $props));
+        $metadata['structured_data'] = self::structuredData($component, $props, $metadata);
+
+        return $metadata;
     }
 
     private static function componentMetadata(string $component, array $props): array
@@ -108,10 +111,14 @@ class SeoMetadata
     private static function cityLandingMetadata(array $props): array
     {
         $city = trim((string) Arr::get($props, 'city.name', 'Your City'));
+        $title = trim((string) Arr::get($props, 'city.seoTitle', ''));
+        $description = trim((string) Arr::get($props, 'city.seoDescription', ''));
 
         return [
-            'title' => "{$city} Crime Map and Public Safety Data | PublicDataWatch",
-            'description' => "Explore recent public-safety data in {$city} with an interactive map, address search, and multilingual record summaries.",
+            'title' => $title !== '' ? $title : "{$city} Public Data Map | PublicDataWatch",
+            'description' => $description !== ''
+                ? $description
+                : "Explore recent public data in {$city} with an interactive map, address search, and multilingual record summaries.",
         ];
     }
 
@@ -163,6 +170,48 @@ class SeoMetadata
     private static function withBrand(string $title): string
     {
         return Str::contains($title, self::BRAND_NAME) ? $title : "{$title} | " . self::BRAND_NAME;
+    }
+
+    private static function structuredData(string $component, array $props, array $metadata): array
+    {
+        return match ($component) {
+            'CityMapLite' => [self::cityLandingStructuredData($props, $metadata)],
+            default => [],
+        };
+    }
+
+    private static function cityLandingStructuredData(array $props, array $metadata): array
+    {
+        $city = trim((string) Arr::get($props, 'city.name', ''));
+        $overview = trim((string) Arr::get($props, 'city.overview', ''));
+        $dataTypes = array_values(Arr::where(
+            Arr::get($props, 'city.dataTypes', []),
+            fn ($value) => is_string($value) && trim($value) !== ''
+        ));
+
+        return array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'CollectionPage',
+            'name' => $metadata['title'],
+            'description' => $overview !== '' ? $overview : $metadata['description'],
+            'url' => $metadata['canonical'],
+            'isPartOf' => [
+                '@type' => 'WebSite',
+                'name' => self::BRAND_NAME,
+                'url' => self::PRIMARY_HOST,
+            ],
+            'about' => $city !== '' ? [
+                '@type' => 'City',
+                'name' => $city,
+            ] : null,
+            'mentions' => array_map(
+                fn ($dataType) => [
+                    '@type' => 'Thing',
+                    'name' => $dataType,
+                ],
+                $dataTypes
+            ),
+        ], fn ($value) => $value !== null && $value !== []);
     }
 
     private static function robotsForComponent(string $component, Request $request): string

@@ -1,7 +1,7 @@
 <template>
   <div class="city-lite-page">
     <Head>
-      <title>{{ `${city.name} Crime Map and Public Safety Data | PublicDataWatch` }}</title>
+      <title>{{ city.seoTitle }}</title>
     </Head>
 
     <MapDisplay
@@ -170,6 +170,37 @@
         <p class="eyebrow">{{ city.name }}</p>
         <h2>{{ text.emptyTitle }}</h2>
         <p>{{ text.emptyState }}</p>
+
+        <div class="city-guide">
+          <p class="detail-heading">What's included</p>
+          <p>{{ city.overview }}</p>
+
+          <div v-if="city.dataTypes?.length" class="dataset-strip" aria-label="Included datasets">
+            <span
+              v-for="dataType in city.dataTypes"
+              :key="dataType"
+              class="dataset-chip"
+            >
+              {{ dataType }}
+            </span>
+          </div>
+
+          <p class="detail-heading guide-heading">How to use this page</p>
+          <p>{{ city.howToUse }}</p>
+          <p class="guide-note">{{ city.dataUpdateNote }}</p>
+
+          <p class="detail-heading guide-heading">Explore more</p>
+          <div class="related-links">
+            <a
+              v-for="link in city.relatedLinks"
+              :key="link.url"
+              :href="link.url"
+              class="related-link"
+            >
+              {{ link.label }}
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -217,8 +248,8 @@ const UI_TEXT = {
     lastDay: 'Most recent day',
     last3Days: 'Last 3 days',
     last7Days: 'Last 7 days',
-    emptyTitle: 'Explore Everett nearby activity',
-    emptyState: 'Use your location, search an address, or zoom into the map to browse nearby records.',
+    emptyTitle: 'Explore nearby activity in {city}',
+    emptyState: 'Use your location, search an address, or zoom into the map to browse nearby records in {city}.',
     geolocationDenied: 'Location access was blocked. You can search your address instead.',
     geolocationUnavailable: 'Your location is unavailable right now.',
     geolocationTimeout: 'Location request timed out. Try again or search your address.',
@@ -247,8 +278,8 @@ const UI_TEXT = {
     lastDay: 'Día más reciente',
     last3Days: 'Últimos 3 días',
     last7Days: 'Últimos 7 días',
-    emptyTitle: 'Explora la actividad cercana en Everett',
-    emptyState: 'Usa tu ubicación, busca una dirección o acércate al mapa para ver registros cercanos.',
+    emptyTitle: 'Explora la actividad cercana en {city}',
+    emptyState: 'Usa tu ubicación, busca una dirección o acércate al mapa para ver registros cercanos en {city}.',
     geolocationDenied: 'Se bloqueó el acceso a tu ubicación. Puedes buscar tu dirección.',
     geolocationUnavailable: 'Tu ubicación no está disponible en este momento.',
     geolocationTimeout: 'La solicitud de ubicación tardó demasiado. Inténtalo otra vez o busca tu dirección.',
@@ -277,8 +308,8 @@ const UI_TEXT = {
     lastDay: 'Dia mais recente',
     last3Days: 'Últimos 3 dias',
     last7Days: 'Últimos 7 dias',
-    emptyTitle: 'Explore a atividade próxima em Everett',
-    emptyState: 'Use sua localização, busque um endereço ou aproxime o mapa para ver registros próximos.',
+    emptyTitle: 'Explore a atividade próxima em {city}',
+    emptyState: 'Use sua localização, busque um endereço ou aproxime o mapa para ver registros próximos em {city}.',
     geolocationDenied: 'O acesso à localização foi bloqueado. Você pode buscar seu endereço.',
     geolocationUnavailable: 'Sua localização não está disponível agora.',
     geolocationTimeout: 'A solicitação de localização expirou. Tente novamente ou busque seu endereço.',
@@ -307,8 +338,8 @@ const UI_TEXT = {
     lastDay: 'Dènye jou a',
     last3Days: 'Dènye 3 jou yo',
     last7Days: 'Dènye 7 jou yo',
-    emptyTitle: 'Eksplore aktivite ki toupre Everett',
-    emptyState: 'Sèvi ak kote ou, chèche adrès, oswa rale kat la pi pre pou wè dosye ki toupre yo.',
+    emptyTitle: 'Eksplore aktivite ki toupre {city}',
+    emptyState: 'Sèvi ak kote ou, chèche adrès, oswa rale kat la pi pre pou wè dosye ki toupre yo nan {city}.',
     geolocationDenied: 'Aksè ak kote ou a bloke. Ou ka chèche adrès ou pito.',
     geolocationUnavailable: 'Kote ou a pa disponib kounye a.',
     geolocationTimeout: 'Demann kote a pran twòp tan. Eseye ankò oswa chèche adrès ou.',
@@ -337,8 +368,8 @@ const UI_TEXT = {
     lastDay: '最近一天',
     last3Days: '最近3天',
     last7Days: '最近7天',
-    emptyTitle: '查看 Everett 附近活动',
-    emptyState: '使用你的位置、搜索地址，或放大地图来查看附近记录。',
+    emptyTitle: '查看 {city} 附近活动',
+    emptyState: '使用你的位置、搜索地址，或放大地图来查看 {city} 附近记录。',
     geolocationDenied: '定位权限被拒绝。你也可以搜索地址。',
     geolocationUnavailable: '暂时无法获取你的位置。',
     geolocationTimeout: '定位请求超时。请重试或搜索地址。',
@@ -367,8 +398,8 @@ const UI_TEXT = {
     lastDay: 'Ngày gần nhất',
     last3Days: '3 ngày qua',
     last7Days: '7 ngày qua',
-    emptyTitle: 'Khám phá hoạt động gần Everett',
-    emptyState: 'Dùng vị trí của bạn, tìm địa chỉ hoặc phóng to bản đồ để xem các bản ghi gần đó.',
+    emptyTitle: 'Khám phá hoạt động gần {city}',
+    emptyState: 'Dùng vị trí của bạn, tìm địa chỉ hoặc phóng to bản đồ để xem các bản ghi gần {city}.',
     geolocationDenied: 'Quyền truy cập vị trí đã bị chặn. Bạn có thể tìm địa chỉ thay thế.',
     geolocationUnavailable: 'Hiện chưa lấy được vị trí của bạn.',
     geolocationTimeout: 'Yêu cầu vị trí bị quá thời gian. Hãy thử lại hoặc tìm địa chỉ.',
@@ -405,7 +436,15 @@ const centralLocation = ref({
 const mapCenter = ref([props.city.latitude, props.city.longitude]);
 const initialZoom = computed(() => (props.city.key === 'everett' ? 14 : 13));
 
-const text = computed(() => UI_TEXT[selectedLanguage.value] || UI_TEXT['en-US']);
+const text = computed(() => {
+  const baseText = UI_TEXT[selectedLanguage.value] || UI_TEXT['en-US'];
+
+  return {
+    ...baseText,
+    emptyTitle: formatText(baseText.emptyTitle, { city: props.city.name }),
+    emptyState: formatText(baseText.emptyState, { city: props.city.name }),
+  };
+});
 
 const recencyOptions = computed(() => ([
   { key: 'default', label: text.value.defaultRange, days: 14 },
@@ -966,6 +1005,13 @@ function syncLiveCenter() {
   const center = map.getCenter();
   liveMapCenter.value = [center.lat, center.lng];
 }
+
+function formatText(template, replacements) {
+  return Object.entries(replacements).reduce(
+    (result, [key, value]) => result.replaceAll(`{${key}}`, value),
+    template,
+  );
+}
 </script>
 
 <style scoped>
@@ -1227,6 +1273,51 @@ h1 {
   box-shadow: 0 -10px 40px rgba(22, 35, 31, 0.18);
 }
 
+.city-guide {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(35, 68, 59, 0.08);
+}
+
+.guide-heading {
+  margin-top: 0.9rem;
+}
+
+.guide-note {
+  margin-top: 0.45rem;
+  font-size: 0.88rem;
+  color: #5f756b;
+}
+
+.dataset-strip,
+.related-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.dataset-chip,
+.related-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.45rem 0.72rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dataset-chip {
+  background: #e5eee6;
+  color: #23443b;
+}
+
+.related-link {
+  background: #d9e9de;
+  color: #1f4a3e;
+}
+
 .sheet-header {
   display: flex;
   justify-content: space-between;
@@ -1477,6 +1568,12 @@ h1 {
 
   .empty-sheet p:last-child {
     font-size: 0.85rem;
+  }
+
+  .dataset-chip,
+  .related-link {
+    font-size: 0.76rem;
+    padding: 0.38rem 0.62rem;
   }
 
   .detail-row {
