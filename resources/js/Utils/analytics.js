@@ -1,5 +1,19 @@
 import { event } from 'vue-gtag';
 
+const TRACKED_HOSTNAMES = new Set([
+  'publicdatawatch.com',
+  'www.publicdatawatch.com',
+  'bostonscope.com',
+  'www.bostonscope.com',
+]);
+
+const EXCLUDED_PATH_PREFIXES = [
+  '/admin',
+  '/reports/statistical-analysis',
+  '/scoring-reports',
+  '/csvreports',
+];
+
 function inferDeviceType() {
   if (typeof window === 'undefined') {
     return 'unknown';
@@ -76,6 +90,21 @@ function sanitizeParams(params) {
   return Object.fromEntries(filtered);
 }
 
+export function isAnalyticsEnabledForCurrentRoute() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const hostname = window.location.hostname.toLowerCase();
+  const path = window.location.pathname || '';
+
+  if (!TRACKED_HOSTNAMES.has(hostname)) {
+    return false;
+  }
+
+  return !EXCLUDED_PATH_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
+
 export function buildCommonEventParams({
   city,
   pageType,
@@ -96,6 +125,10 @@ export function buildCommonEventParams({
 }
 
 export function trackAnalyticsEvent(name, options = {}) {
+  if (!isAnalyticsEnabledForCurrentRoute()) {
+    return;
+  }
+
   try {
     event(name, buildCommonEventParams(options));
   } catch (error) {

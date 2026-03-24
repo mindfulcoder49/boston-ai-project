@@ -7,6 +7,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import { translations } from './translations';
 import { createGtag } from 'vue-gtag'; // Import createGtag
+import { isAnalyticsEnabledForCurrentRoute } from './Utils/analytics';
 
 const appName = 'BostonScope'
 
@@ -14,15 +15,20 @@ createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
-        const gtag = createGtag({ // Initialize gtag
-            tagId: import.meta.env.VITE_GA_ID, // Ensure VITE_GA_ID is in your .env
-        });
-        return createApp({ render: () => h(App, props) })
+        const app = createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue, Ziggy)
-            .use(gtag) // Use the gtag plugin
             .provide('translations', translations)
-            .mount(el);
+        ;
+
+        if (import.meta.env.VITE_GA_ID && isAnalyticsEnabledForCurrentRoute()) {
+            const gtag = createGtag({
+                tagId: import.meta.env.VITE_GA_ID,
+            });
+            app.use(gtag);
+        }
+
+        return app.mount(el);
     },
     progress: {
         color: '#4B5563',
