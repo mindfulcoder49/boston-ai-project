@@ -178,6 +178,27 @@ Do not treat impressions alone as traction.
 - do not make public safety claims that sound predictive unless the product actually supports them
 - avoid fear-based local narratives
 - do not posture as if demand is already proven
+- do not chase obvious bot engagement with empty tech buzzword stuffing
+- make posts feel alive and readable, but keep them credible
+
+## Formatting Rules
+
+LinkedIn does not support markdown in posts, so use lightweight visual structure instead:
+
+- open with a strong first line that can stand on its own
+- use short paragraphs with clear spacing
+- use 1 to 4 emojis when they help scanning and tone
+- use light Unicode bold for one or two key phrases, not the whole post
+- keep one main idea per post
+- when useful, end with one clear action or one simple prompt
+
+Formatting should make the post easier to read, not look like spam.
+
+Default style:
+- one hook line
+- three to five short body blocks
+- one link
+- optional one-line closing prompt
 
 ## Initial Cadence
 
@@ -289,6 +310,46 @@ Structure:
 - link to the product or report that grounds the answer
 
 Use this format sparingly at first.
+
+## Traffic-Oriented Post Pipeline
+
+Use this sequence for posts intended to drive site visits:
+
+1. Start with a sharp hook.
+2. Put the actual link in the body when it is useful.
+3. Use a strong native format when possible:
+- image
+- PDF/document carousel
+- video
+
+4. Keep the post centered on one concrete page, feature, or city insight.
+5. Publish from the Page.
+6. Amplify from the founder profile with a repost or comment when the post matters.
+7. Track traffic in GA with UTM parameters.
+
+Do not rely on a vague “link in comments” superstition as the default rule. Current public data suggests links can still perform well when the post itself is strong.
+
+## Latest Public Guidance And Working Assumptions
+
+As of March 24, 2026, the current playbook should reflect these public signals:
+
+- LinkedIn’s official Pages best-practices page says video gets 5x more engagement on LinkedIn, recommends 3 to 5 relevant hashtags, supports audience targeting for organic Page posts, and encourages re-sharing mentions and employee amplification.
+- LinkedIn’s help docs say employee notifications can be used once per day and are meant to boost the reach of important Page posts.
+- Metricool’s 2025 LinkedIn study says clicks increased 28.13% year over year, carousels had the highest engagement rate in their sample, and video posting and engagement both grew sharply.
+- Search Engine Journal’s April 15, 2025 summary of the Metricool study says posts with links saw 4.90% more views and 13.57% more interactions in that dataset.
+
+Working assumptions for PublicDataWatch:
+- we should optimize for real humans, not obvious engagement bots
+- external links are allowed when they are central to the post
+- document/carousel, image, and video formats deserve active testing
+- founder amplification matters because company pages alone are usually weak distribution engines
+- the page should sound interesting and alive, but not like AI-slop or crypto spam
+
+Reference links:
+- [LinkedIn Pages Enterprise Playbook](https://business.linkedin.com/content/dam/lem/business/en/advertise/resources/strategy-guides/ENT_Playbook_FY22.pdf)
+- [Use Employee Notifications on LinkedIn Pages](https://www.linkedin.com/help/linkedin/answer/a549372)
+- [Metricool LinkedIn Study 2025](https://metricool.com/linkedin-trends-study/)
+- [Search Engine Journal summary of the Metricool study](https://www.searchenginejournal.com/linkedin-study-finds-adding-links-boosts-engagement-by-13/544524/)
 
 ## Setup Checklist
 

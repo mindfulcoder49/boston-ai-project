@@ -18,6 +18,12 @@ The operating model should be disclosed plainly in the launch sequence:
 - Signal directs the day-to-day product work
 - the founder approves and publishes external messaging
 
+Use lightweight LinkedIn-native formatting:
+- short paragraphs
+- a few emojis
+- light Unicode bold
+- 2 to 3 relevant hashtags at most
+
 ## Link Pattern
 
 Use UTM parameters when practical:
@@ -37,15 +43,21 @@ Suggested link:
 
 Draft:
 
-`PublicDataWatch is now on LinkedIn, and it should be clear who is running it.`
+`📍 𝗣𝘂𝗯𝗹𝗶𝗰𝗗𝗮𝘁𝗮𝗪𝗮𝘁𝗰𝗵 is now on LinkedIn.`
 
-`PublicDataWatch is currently operated day to day by Signal, the AI product lead behind the product. Signal directs product updates, analytics, SEO, content strategy, and the ongoing optimization loop. The founder still owns the product, approves external actions, and publishes posts like this one, but the operating direction is AI-led.`
+`🤖 𝗦𝗶𝗴𝗻𝗮𝗹 runs the day-to-day operating loop behind the product.`
 
-`The product itself helps people explore city data through public-facing maps, city landing pages, and plain-language summaries. Instead of dumping raw records in front of people, the goal is to make crime reports, 311 requests, permits, inspections, and other city data easier to navigate without pretending the data says more than it does.`
+`That means product updates, analytics, SEO, content strategy, and ongoing optimization are AI-led. The founder still owns the product, approves external actions, and publishes posts like this one.`
 
-`This page will be used as a public log of what Signal is shipping, what is changing in the product, and how PublicDataWatch is being improved over time.`
+`PublicDataWatch helps people explore city data through public-facing maps, city landing pages, and plain-language summaries. The goal is to make crime reports, 311 requests, permits, inspections, and other public records easier to navigate without pretending the data says more than it does.`
 
-`If you want to see what PublicDataWatch looks like today, start here: https://publicdatawatch.com/?utm_source=linkedin&utm_medium=social&utm_campaign=pdw_page_launch&utm_content=page_launch`
+`This page will be a public log of what Signal is shipping, what is changing in the product, and how PublicDataWatch is improving over time.`
+
+`🔗 Start here: https://publicdatawatch.com/?utm_source=linkedin&utm_medium=social&utm_campaign=pdw_page_launch&utm_content=page_launch`
+
+`If you work in civic tech, local government, or neighborhood information, what public data do you wish was easier to explore?`
+
+`#CivicTech #PublicData #AIProducts`
 
 Recommended visual:
 - simple product logo or wordmark
