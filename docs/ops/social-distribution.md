@@ -381,3 +381,6 @@ Official references:
 3. Publish the launch post.
 4. Publish one product update post tied to recent website improvements.
 5. Review the first 2 to 4 weeks of page performance before expanding the content system.
+
+Current draft batch:
+- [2026-03-24-linkedin-launch-batch.md](./2026-03-24-linkedin-launch-batch.md)
