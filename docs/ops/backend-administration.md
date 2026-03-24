@@ -82,5 +82,13 @@ Target state:
 ## Current Production Deploy
 
 - Production deploys currently run from `~/publicdatawatchdeploy.sh` on the Hostinger server.
+- Standard release sequence is:
+  - verify changes locally
+  - commit to git locally
+  - push `main` to GitHub
+  - SSH to the Hostinger server
+  - run `~/publicdatawatchdeploy.sh`
+  - verify the public site after deploy
 - That script now includes `php artisan route:cache` as part of the deploy sequence, so route caching is no longer a manual post-deploy step.
 - After deploy, verify the public site, the relevant city routes, and `sitemap.xml` before treating the release as complete.
+- Agent execution is now allowed for the full low-risk release path when git auth and server access are available.

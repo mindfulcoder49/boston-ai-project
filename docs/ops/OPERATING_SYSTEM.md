@@ -39,6 +39,27 @@ Build a repeatable operating system where:
 - Add test coverage around anything that materially affects user flows, payments, or data operations.
 - Do not treat vanity engagement as evidence of product traction.
 - Separate low-risk autonomous work from high-risk approval-required work.
+- Keep the repo, remote branch, and production state aligned whenever shipping changes.
+
+## Delivery Loop
+
+Standard delivery sequence for code changes:
+- make the change locally
+- run the relevant local verification
+- commit the change in git
+- sync `main` to GitHub
+- run the production deploy flow
+- verify the live site and critical routes after deploy
+
+Agent capability now includes:
+- creating local commits for completed work
+- syncing the current branch to GitHub when auth is configured
+- running the standard production deploy flow
+
+This capability should still be used conservatively:
+- do not deploy unverified changes
+- do not bypass founder approval for high-risk changes
+- keep markdown operating docs updated when the delivery process changes
 
 ## Approval Boundaries
 
@@ -55,6 +76,7 @@ Medium-risk, usually founder review first:
 - new event definitions that affect reporting conventions
 - command sequencing changes in operational flows
 - experiment design that affects user experience materially
+- routine production deploys after low-risk code changes, unless the founder has already delegated that flow for the current workstream
 
 High-risk, founder approval required:
 - production pricing changes
@@ -62,6 +84,7 @@ High-risk, founder approval required:
 - public social posting
 - account creation on external platforms
 - actions with legal, billing, or brand consequences
+- risky or unclear production deploys where the impact is not well understood
 
 ## Weekly Deliverables
 
@@ -105,4 +128,3 @@ Needed over time:
 - Which Stripe products and prices are currently active?
 - Which external social accounts already exist versus need to be created?
 - Which backend command sequences are considered production-critical today?
-
