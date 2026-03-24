@@ -16,8 +16,12 @@
     "src": "DataMapComponent.css"
   },
   "GoogleAddressSearch.css": {
-    "file": "assets/GoogleAddressSearch-b6512440.css",
+    "file": "assets/GoogleAddressSearch-2e84049e.css",
     "src": "GoogleAddressSearch.css"
+  },
+  "MapDisplay.css": {
+    "file": "assets/MapDisplay-7b22a38c.css",
+    "src": "MapDisplay.css"
   },
   "MapToolbar.css": {
     "file": "assets/MapToolbar-f47243b6.css",
@@ -31,145 +35,159 @@
     "file": "assets/SubscriptionBanner-63fbb7e3.css",
     "src": "SubscriptionBanner.css"
   },
-  "_AdminLayout-a850e6a7.js": {
+  "_AdminLayout-c0047f99.js": {
     "css": [
       "assets/AdminLayout-e3b0c442.css"
     ],
-    "file": "assets/AdminLayout-a850e6a7.js",
+    "file": "assets/AdminLayout-c0047f99.js",
     "imports": [
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ]
   },
-  "_AiAssistant-d691efc1.js": {
+  "_AiAssistant-8b86cf8a.js": {
     "css": [
       "assets/AiAssistant-426a9409.css"
     ],
-    "file": "assets/AiAssistant-d691efc1.js",
+    "file": "assets/AiAssistant-8b86cf8a.js",
     "imports": [
-      "_index-30e52c04.js",
+      "_index-5ae5407d.js",
       "__plugin-vue_export-helper-c27b6911.js",
       "resources/js/app.js"
     ]
   },
-  "_CombinedDataMapComponent-3af81b0b.js": {
+  "_CombinedDataMapComponent-07fa77cf.js": {
     "css": [
       "assets/CombinedDataMapComponent-48030d41.css"
     ],
-    "file": "assets/CombinedDataMapComponent-3af81b0b.js",
+    "file": "assets/CombinedDataMapComponent-07fa77cf.js",
     "imports": [
       "resources/js/app.js",
-      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-d7148103.js",
-      "_AiAssistant-d691efc1.js",
-      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js",
+      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-cd81a203.js",
+      "_AiAssistant-8b86cf8a.js",
+      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ]
   },
-  "_DataMapComponent-147b98f9.js": {
+  "_DataMapComponent-c11e45be.js": {
     "css": [
       "assets/DataMapComponent-cea02c1a.css"
     ],
-    "file": "assets/DataMapComponent-147b98f9.js",
+    "file": "assets/DataMapComponent-c11e45be.js",
     "imports": [
       "resources/js/app.js",
-      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-d7148103.js",
-      "_AiAssistant-d691efc1.js",
-      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js",
+      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-cd81a203.js",
+      "_AiAssistant-8b86cf8a.js",
+      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ]
   },
-  "_GoogleAddressSearch-6c89bbad.js": {
+  "_GoogleAddressSearch-180a6d42.js": {
     "css": [
-      "assets/GoogleAddressSearch-b6512440.css"
+      "assets/GoogleAddressSearch-2e84049e.css"
     ],
-    "file": "assets/GoogleAddressSearch-6c89bbad.js",
+    "file": "assets/GoogleAddressSearch-180a6d42.js",
     "imports": [
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ]
   },
-  "_GuestLayout-986f1b3f.js": {
-    "file": "assets/GuestLayout-986f1b3f.js",
+  "_GuestLayout-5fed528e.js": {
+    "file": "assets/GuestLayout-5fed528e.js",
     "imports": [
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js",
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
       "resources/js/app.js"
     ]
   },
-  "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-d7148103.js": {
+  "_MapDisplay-74fd14a0.js": {
+    "css": [
+      "assets/MapDisplay-7b22a38c.css"
+    ],
+    "file": "assets/MapDisplay-74fd14a0.js",
+    "imports": [
+      "_leaflet-src-49cee519.js",
+      "_leaflet.markercluster-src-30c97269.js",
+      "_iconUtils-6fb57d8f.js",
+      "__plugin-vue_export-helper-c27b6911.js",
+      "resources/js/app.js"
+    ]
+  },
+  "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-cd81a203.js": {
     "css": [
       "assets/MapToolbar-f47243b6.css"
     ],
-    "file": "assets/MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-d7148103.js",
+    "file": "assets/MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-cd81a203.js",
     "imports": [
-      "_leaflet-src-68565725.js",
-      "_leaflet.markercluster-src-a2c4521e.js",
-      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js",
+      "_leaflet-src-49cee519.js",
+      "_leaflet.markercluster-src-30c97269.js",
+      "_iconUtils-6fb57d8f.js",
       "__plugin-vue_export-helper-c27b6911.js",
       "resources/js/app.js"
     ]
   },
-  "_Modal-78976c25.js": {
-    "file": "assets/Modal-78976c25.js",
+  "_Modal-6f189f19.js": {
+    "file": "assets/Modal-6f189f19.js",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_NavLink-55ac4029.js": {
-    "file": "assets/NavLink-55ac4029.js",
+  "_NavLink-9c99e90b.js": {
+    "file": "assets/NavLink-9c99e90b.js",
     "imports": [
       "__plugin-vue_export-helper-c27b6911.js",
       "resources/js/app.js"
     ]
   },
-  "_PageTemplate-ea1ad02b.js": {
+  "_PageTemplate-6be065cd.js": {
     "css": [
       "assets/PageTemplate-75cb86b4.css"
     ],
-    "file": "assets/PageTemplate-ea1ad02b.js",
+    "file": "assets/PageTemplate-6be065cd.js",
     "imports": [
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js",
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
       "resources/js/app.js",
-      "__plugin-vue_export-helper-c27b6911.js"
+      "__plugin-vue_export-helper-c27b6911.js",
+      "_analytics-ec9c88fd.js"
     ]
   },
-  "_PrimaryButton-ab2e7be1.js": {
-    "file": "assets/PrimaryButton-ab2e7be1.js",
+  "_PrimaryButton-b66751ab.js": {
+    "file": "assets/PrimaryButton-b66751ab.js",
     "imports": [
       "__plugin-vue_export-helper-c27b6911.js",
       "resources/js/app.js"
     ]
   },
-  "_ResponsiveNavLink-a7c7db75.js": {
-    "file": "assets/ResponsiveNavLink-a7c7db75.js",
+  "_ResponsiveNavLink-17fea2eb.js": {
+    "file": "assets/ResponsiveNavLink-17fea2eb.js",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_SubscriptionBanner-a8f1d605.js": {
-    "file": "assets/SubscriptionBanner-a8f1d605.js",
+  "_SubscriptionBanner-70633fa2.js": {
+    "file": "assets/SubscriptionBanner-70633fa2.js",
     "imports": [
       "resources/js/app.js",
-      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-d7148103.js",
+      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-cd81a203.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js"
+      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js"
     ]
   },
-  "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js": {
+  "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js": {
     "css": [
       "assets/SubscriptionBanner-63fbb7e3.css"
     ],
-    "file": "assets/SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js",
+    "file": "assets/SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js",
     "imports": [
-      "_Modal-78976c25.js",
+      "_Modal-6f189f19.js",
       "__plugin-vue_export-helper-c27b6911.js",
       "resources/js/app.js"
     ]
   },
-  "_TextInput-3a2c5101.js": {
-    "file": "assets/TextInput-3a2c5101.js",
+  "_TextInput-0a6b4089.js": {
+    "file": "assets/TextInput-0a6b4089.js",
     "imports": [
       "resources/js/app.js"
     ]
@@ -177,16 +195,25 @@
   "__plugin-vue_export-helper-c27b6911.js": {
     "file": "assets/_plugin-vue_export-helper-c27b6911.js"
   },
-  "_h3-js.es-4f5a56f2.js": {
-    "file": "assets/h3-js.es-4f5a56f2.js"
-  },
-  "_index-30e52c04.js": {
-    "file": "assets/index-30e52c04.js",
+  "_analytics-ec9c88fd.js": {
+    "file": "assets/analytics-ec9c88fd.js",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_leaflet-src-68565725.js": {
+  "_h3-js.es-4f5a56f2.js": {
+    "file": "assets/h3-js.es-4f5a56f2.js"
+  },
+  "_iconUtils-6fb57d8f.js": {
+    "file": "assets/iconUtils-6fb57d8f.js"
+  },
+  "_index-5ae5407d.js": {
+    "file": "assets/index-5ae5407d.js",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_leaflet-src-49cee519.js": {
     "assets": [
       "assets/layers-1dbbe9d0.png",
       "assets/layers-2x-066daca8.png",
@@ -195,16 +222,16 @@
     "css": [
       "assets/leaflet-src-93e82042.css"
     ],
-    "file": "assets/leaflet-src-68565725.js",
+    "file": "assets/leaflet-src-49cee519.js",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_leaflet.markercluster-src-a2c4521e.js": {
+  "_leaflet.markercluster-src-30c97269.js": {
     "css": [
       "assets/leaflet-0069d45a.css"
     ],
-    "file": "assets/leaflet.markercluster-src-a2c4521e.js",
+    "file": "assets/leaflet.markercluster-src-30c97269.js",
     "imports": [
       "resources/js/app.js"
     ]
@@ -217,8 +244,8 @@
     ],
     "file": "assets/marker-shadow-f0fc6587.js"
   },
-  "_useH3Names-3c985ded.js": {
-    "file": "assets/useH3Names-3c985ded.js",
+  "_useH3Names-48faec3d.js": {
+    "file": "assets/useH3Names-48faec3d.js",
     "imports": [
       "resources/js/app.js"
     ]
@@ -259,7 +286,7 @@
     "css": [
       "assets/AdminLayout-e3b0c442.css"
     ],
-    "file": "assets/BarChartCard-db12c103.js",
+    "file": "assets/BarChartCard-06c976e8.js",
     "imports": [
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js"
@@ -268,7 +295,7 @@
     "src": "resources/js/Components/Metrics/BarChartCard.vue"
   },
   "resources/js/Components/Metrics/ListCard.vue": {
-    "file": "assets/ListCard-168d88a9.js",
+    "file": "assets/ListCard-214611c4.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -276,7 +303,7 @@
     "src": "resources/js/Components/Metrics/ListCard.vue"
   },
   "resources/js/Components/Metrics/MetricCard.vue": {
-    "file": "assets/MetricCard-d37ad08d.js",
+    "file": "assets/MetricCard-919e0636.js",
     "imports": [
       "resources/js/app.js"
     ],
@@ -284,88 +311,102 @@
     "src": "resources/js/Components/Metrics/MetricCard.vue"
   },
   "resources/js/Pages/Admin/CacheManager.vue": {
-    "file": "assets/CacheManager-473a472a.js",
+    "file": "assets/CacheManager-541d2962.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/CacheManager.vue"
   },
   "resources/js/Pages/Admin/H3Geocoding.vue": {
-    "file": "assets/H3Geocoding-76c1d8b5.js",
+    "file": "assets/H3Geocoding-9b144229.js",
     "imports": [
       "resources/js/app.js",
-      "_AdminLayout-a850e6a7.js",
+      "_AdminLayout-c0047f99.js",
       "_h3-js.es-4f5a56f2.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/H3Geocoding.vue"
   },
-  "resources/js/Pages/Admin/Index.vue": {
-    "file": "assets/Index-8818471e.js",
+  "resources/js/Pages/Admin/HotspotArticleConfig.vue": {
+    "file": "assets/HotspotArticleConfig-aff179ea.js",
     "imports": [
-      "_AdminLayout-a850e6a7.js",
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_AdminLayout-c0047f99.js",
+      "_leaflet-src-49cee519.js",
+      "_h3-js.es-4f5a56f2.js",
+      "_NavLink-9c99e90b.js",
+      "__plugin-vue_export-helper-c27b6911.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/Pages/Admin/HotspotArticleConfig.vue"
+  },
+  "resources/js/Pages/Admin/Index.vue": {
+    "file": "assets/Index-646db16d.js",
+    "imports": [
+      "_AdminLayout-c0047f99.js",
+      "resources/js/app.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/Index.vue"
   },
   "resources/js/Pages/Admin/JobDispatcher.css": {
-    "file": "assets/JobDispatcher-e47ee5ed.css",
+    "file": "assets/JobDispatcher-fe4a6d53.css",
     "src": "resources/js/Pages/Admin/JobDispatcher.css"
   },
   "resources/js/Pages/Admin/JobDispatcher.vue": {
     "css": [
-      "assets/JobDispatcher-e47ee5ed.css"
+      "assets/JobDispatcher-fe4a6d53.css"
     ],
-    "file": "assets/JobDispatcher-d1459518.js",
+    "file": "assets/JobDispatcher-191249fa.js",
     "imports": [
       "resources/js/app.js",
-      "_AdminLayout-a850e6a7.js",
+      "_AdminLayout-c0047f99.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js"
+      "_NavLink-9c99e90b.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/JobDispatcher.vue"
   },
   "resources/js/Pages/Admin/JobRuns.vue": {
-    "file": "assets/JobRuns-11983702.js",
+    "file": "assets/JobRuns-27faceca.js",
     "imports": [
-      "_AdminLayout-a850e6a7.js",
+      "_AdminLayout-c0047f99.js",
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/JobRuns.vue"
   },
   "resources/js/Pages/Admin/ManageLocations.vue": {
-    "file": "assets/ManageLocations-80e16a19.js",
+    "file": "assets/ManageLocations-aadadc70.js",
     "imports": [
-      "_AdminLayout-a850e6a7.js",
+      "_AdminLayout-c0047f99.js",
       "resources/js/Pages/Admin/Partials/EditLocationModal.vue",
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/ManageLocations.vue"
   },
   "resources/js/Pages/Admin/ManageMaps.vue": {
-    "file": "assets/ManageMaps-5397ab36.js",
+    "file": "assets/ManageMaps-d0078b33.js",
     "imports": [
-      "_AdminLayout-a850e6a7.js",
+      "_AdminLayout-c0047f99.js",
       "resources/js/Pages/Admin/Partials/EditMapModal.vue",
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
@@ -379,23 +420,25 @@
     "css": [
       "assets/ManageUsers-027a79f5.css"
     ],
-    "file": "assets/ManageUsers-3c74d59f.js",
+    "file": "assets/ManageUsers-b3ffcbed.js",
     "imports": [
-      "_AdminLayout-a850e6a7.js",
+      "_AdminLayout-c0047f99.js",
       "resources/js/Pages/Admin/Partials/EditUserModal.vue",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js"
+      "_NavLink-9c99e90b.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/ManageUsers.vue"
   },
   "resources/js/Pages/Admin/NewsArticleGenerator.vue": {
-    "file": "assets/NewsArticleGenerator-1b5e9c98.js",
+    "file": "assets/NewsArticleGenerator-e2d17335.js",
     "imports": [
       "resources/js/app.js",
-      "_AdminLayout-a850e6a7.js",
-      "_NavLink-55ac4029.js",
+      "_AdminLayout-c0047f99.js",
+      "_leaflet-src-49cee519.js",
+      "_h3-js.es-4f5a56f2.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
@@ -409,7 +452,7 @@
     "css": [
       "assets/EditLocationModal-a83c77cf.css"
     ],
-    "file": "assets/EditLocationModal-220ff8de.js",
+    "file": "assets/EditLocationModal-98912e40.js",
     "imports": [
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js"
@@ -425,7 +468,7 @@
     "css": [
       "assets/EditMapModal-c16cfbd3.css"
     ],
-    "file": "assets/EditMapModal-24e5570a.js",
+    "file": "assets/EditMapModal-88b2fdd3.js",
     "imports": [
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js"
@@ -441,7 +484,7 @@
     "css": [
       "assets/EditUserModal-765d43ed.css"
     ],
-    "file": "assets/EditUserModal-fa0d16ab.js",
+    "file": "assets/EditUserModal-7b2f9a7d.js",
     "imports": [
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js"
@@ -450,11 +493,11 @@
     "src": "resources/js/Pages/Admin/Partials/EditUserModal.vue"
   },
   "resources/js/Pages/Admin/PipelineFileLogViewer.vue": {
-    "file": "assets/PipelineFileLogViewer-612e5908.js",
+    "file": "assets/PipelineFileLogViewer-7f231a4c.js",
     "imports": [
-      "_AdminLayout-a850e6a7.js",
+      "_AdminLayout-c0047f99.js",
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
@@ -468,109 +511,144 @@
     "css": [
       "assets/PipelineFileRunDetail-3bf80370.css"
     ],
-    "file": "assets/PipelineFileRunDetail-eb7b8c6a.js",
+    "file": "assets/PipelineFileRunDetail-ddb60816.js",
     "imports": [
       "resources/js/app.js",
-      "_AdminLayout-a850e6a7.js",
+      "_AdminLayout-c0047f99.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js"
+      "_NavLink-9c99e90b.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/PipelineFileRunDetail.vue"
   },
   "resources/js/Pages/Admin/S3BucketBrowser.vue": {
-    "file": "assets/S3BucketBrowser-8226642e.js",
+    "file": "assets/S3BucketBrowser-41268467.js",
     "imports": [
       "resources/js/app.js",
-      "_AdminLayout-a850e6a7.js",
-      "_NavLink-55ac4029.js",
+      "_AdminLayout-c0047f99.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Admin/S3BucketBrowser.vue"
   },
-  "resources/js/Pages/Auth/ConfirmPassword.vue": {
-    "file": "assets/ConfirmPassword-0b4ae5a9.js",
+  "resources/js/Pages/Admin/TrendArticleConfig.vue": {
+    "file": "assets/TrendArticleConfig-a4dde28d.js",
     "imports": [
       "resources/js/app.js",
-      "_GuestLayout-986f1b3f.js",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
-      "_NavLink-55ac4029.js",
+      "_AdminLayout-c0047f99.js",
+      "_NavLink-9c99e90b.js",
+      "__plugin-vue_export-helper-c27b6911.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/Pages/Admin/TrendArticleConfig.vue"
+  },
+  "resources/js/Pages/Auth/ConfirmPassword.vue": {
+    "file": "assets/ConfirmPassword-1dac0d33.js",
+    "imports": [
+      "resources/js/app.js",
+      "_GuestLayout-5fed528e.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/ConfirmPassword.vue"
   },
   "resources/js/Pages/Auth/ForgotPassword.vue": {
-    "file": "assets/ForgotPassword-e3a360e5.js",
+    "file": "assets/ForgotPassword-411b78a3.js",
     "imports": [
       "resources/js/app.js",
-      "_GuestLayout-986f1b3f.js",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
-      "_NavLink-55ac4029.js",
+      "_GuestLayout-5fed528e.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/ForgotPassword.vue"
   },
   "resources/js/Pages/Auth/Login.vue": {
-    "file": "assets/Login-ee744c04.js",
+    "file": "assets/Login-fdf7ac07.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/Login.vue"
   },
   "resources/js/Pages/Auth/Register.vue": {
-    "file": "assets/Register-18fb945a.js",
+    "file": "assets/Register-9b3ad5a6.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
+      "_analytics-ec9c88fd.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/Register.vue"
   },
   "resources/js/Pages/Auth/ResetPassword.vue": {
-    "file": "assets/ResetPassword-5723bf0e.js",
+    "file": "assets/ResetPassword-add8291c.js",
     "imports": [
       "resources/js/app.js",
-      "_GuestLayout-986f1b3f.js",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
-      "_NavLink-55ac4029.js",
+      "_GuestLayout-5fed528e.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/ResetPassword.vue"
   },
   "resources/js/Pages/Auth/VerifyEmail.vue": {
-    "file": "assets/VerifyEmail-7ddfe48a.js",
+    "file": "assets/VerifyEmail-d04cf287.js",
     "imports": [
       "resources/js/app.js",
-      "_GuestLayout-986f1b3f.js",
-      "_PrimaryButton-ab2e7be1.js",
-      "_NavLink-55ac4029.js",
+      "_GuestLayout-5fed528e.js",
+      "_PrimaryButton-b66751ab.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Auth/VerifyEmail.vue"
+  },
+  "resources/js/Pages/CityMapLite.css": {
+    "file": "assets/CityMapLite-0355860c.css",
+    "src": "resources/js/Pages/CityMapLite.css"
+  },
+  "resources/js/Pages/CityMapLite.vue": {
+    "css": [
+      "assets/CityMapLite-0355860c.css"
+    ],
+    "file": "assets/CityMapLite-dad09330.js",
+    "imports": [
+      "resources/js/app.js",
+      "_GoogleAddressSearch-180a6d42.js",
+      "_MapDisplay-74fd14a0.js",
+      "_analytics-ec9c88fd.js",
+      "__plugin-vue_export-helper-c27b6911.js",
+      "_leaflet-src-49cee519.js",
+      "_leaflet.markercluster-src-30c97269.js",
+      "_iconUtils-6fb57d8f.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "resources/js/Pages/CityMapLite.vue"
   },
   "resources/js/Pages/CombinedDataMap.css": {
     "file": "assets/AdminLayout-e3b0c442.css",
@@ -580,22 +658,24 @@
     "css": [
       "assets/AdminLayout-e3b0c442.css"
     ],
-    "file": "assets/CombinedDataMap-3ffff66a.js",
+    "file": "assets/CombinedDataMap-e0734206.js",
     "imports": [
-      "_CombinedDataMapComponent-3af81b0b.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_SubscriptionBanner-a8f1d605.js",
+      "_CombinedDataMapComponent-07fa77cf.js",
+      "_PageTemplate-6be065cd.js",
+      "_SubscriptionBanner-70633fa2.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-d7148103.js",
-      "_leaflet-src-68565725.js",
-      "_leaflet.markercluster-src-a2c4521e.js",
-      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js",
-      "_Modal-78976c25.js",
-      "_AiAssistant-d691efc1.js",
-      "_index-30e52c04.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-cd81a203.js",
+      "_leaflet-src-49cee519.js",
+      "_leaflet.markercluster-src-30c97269.js",
+      "_iconUtils-6fb57d8f.js",
+      "_AiAssistant-8b86cf8a.js",
+      "_index-5ae5407d.js",
+      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js",
+      "_Modal-6f189f19.js",
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/CombinedDataMap.vue"
@@ -608,13 +688,14 @@
     "css": [
       "assets/AboutUs-eff1c976.css"
     ],
-    "file": "assets/AboutUs-bb07ae71.js",
+    "file": "assets/AboutUs-6e4d956f.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Company/AboutUs.vue"
@@ -627,15 +708,16 @@
     "css": [
       "assets/CrimeMap-ddf3a9f0.css"
     ],
-    "file": "assets/CrimeMap-9eab9599.js",
+    "file": "assets/CrimeMap-8c640ea0.js",
     "imports": [
       "resources/js/app.js",
-      "_leaflet-src-68565725.js",
-      "_leaflet.markercluster-src-a2c4521e.js",
+      "_leaflet-src-49cee519.js",
+      "_leaflet.markercluster-src-30c97269.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_PageTemplate-6be065cd.js",
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/CrimeMap.vue"
@@ -648,22 +730,24 @@
     "css": [
       "assets/AdminLayout-e3b0c442.css"
     ],
-    "file": "assets/DataMap-fd356a2f.js",
+    "file": "assets/DataMap-3a0aabea.js",
     "imports": [
-      "_DataMapComponent-147b98f9.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_SubscriptionBanner-a8f1d605.js",
+      "_DataMapComponent-c11e45be.js",
+      "_PageTemplate-6be065cd.js",
+      "_SubscriptionBanner-70633fa2.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-d7148103.js",
-      "_leaflet-src-68565725.js",
-      "_leaflet.markercluster-src-a2c4521e.js",
-      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js",
-      "_Modal-78976c25.js",
-      "_AiAssistant-d691efc1.js",
-      "_index-30e52c04.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-cd81a203.js",
+      "_leaflet-src-49cee519.js",
+      "_leaflet.markercluster-src-30c97269.js",
+      "_iconUtils-6fb57d8f.js",
+      "_AiAssistant-8b86cf8a.js",
+      "_index-5ae5407d.js",
+      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js",
+      "_Modal-6f189f19.js",
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/DataMap.vue"
@@ -681,13 +765,14 @@
       "resources/js/Components/Metrics/BarChartCard.vue",
       "resources/js/Components/Metrics/ListCard.vue"
     ],
-    "file": "assets/DataMetrics-813232b1.js",
+    "file": "assets/DataMetrics-00cd4e2a.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/DataMetrics.vue"
@@ -700,16 +785,17 @@
     "css": [
       "assets/GenericMap-a3151ae4.css"
     ],
-    "file": "assets/GenericMap-157eb9d8.js",
+    "file": "assets/GenericMap-155cee6a.js",
     "imports": [
-      "_leaflet-src-68565725.js",
+      "_leaflet-src-49cee519.js",
       "__plugin-vue_export-helper-c27b6911.js",
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_AiAssistant-d691efc1.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js",
-      "_index-30e52c04.js"
+      "_PageTemplate-6be065cd.js",
+      "_AiAssistant-8b86cf8a.js",
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js",
+      "_index-5ae5407d.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/GenericMap.vue"
@@ -722,13 +808,14 @@
     "css": [
       "assets/ForInvestors-bdc5a769.css"
     ],
-    "file": "assets/ForInvestors-de4bb9cb.js",
+    "file": "assets/ForInvestors-b2e58fa9.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Help/ForInvestors.vue"
@@ -741,13 +828,14 @@
     "css": [
       "assets/ForMunicipalities-a8f040f8.css"
     ],
-    "file": "assets/ForMunicipalities-11ebec82.js",
+    "file": "assets/ForMunicipalities-8579a407.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Help/ForMunicipalities.vue"
@@ -760,13 +848,14 @@
     "css": [
       "assets/ForResearchers-836700cf.css"
     ],
-    "file": "assets/ForResearchers-6dfdb36b.js",
+    "file": "assets/ForResearchers-cf3a285e.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Help/ForResearchers.vue"
@@ -779,25 +868,27 @@
     "css": [
       "assets/ForUsers-308e31ef.css"
     ],
-    "file": "assets/ForUsers-6b853d96.js",
+    "file": "assets/ForUsers-afacddba.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Help/ForUsers.vue"
   },
   "resources/js/Pages/Help/Index.vue": {
-    "file": "assets/Index-0bb839c0.js",
+    "file": "assets/Index-e373b6e5.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Help/Index.vue"
@@ -810,14 +901,15 @@
     "css": [
       "assets/Home-2b18b820.css"
     ],
-    "file": "assets/Home-958f4d0d.js",
+    "file": "assets/Home-3300e5d1.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_GoogleAddressSearch-6c89bbad.js",
+      "_PageTemplate-6be065cd.js",
+      "_GoogleAddressSearch-180a6d42.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Home.vue"
@@ -830,18 +922,19 @@
     "css": [
       "assets/Show-d269760f.css"
     ],
-    "file": "assets/Show-9a29c534.js",
+    "file": "assets/Show-4a56cb07.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_GoogleAddressSearch-6c89bbad.js",
-      "_useH3Names-3c985ded.js",
-      "_leaflet-src-68565725.js",
+      "_PageTemplate-6be065cd.js",
+      "_GoogleAddressSearch-180a6d42.js",
+      "_useH3Names-48faec3d.js",
+      "_leaflet-src-49cee519.js",
       "_h3-js.es-4f5a56f2.js",
       "_marker-shadow-f0fc6587.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Hotspots/Show.vue"
@@ -854,13 +947,14 @@
     "css": [
       "assets/PrivacyPolicy-013c4472.css"
     ],
-    "file": "assets/PrivacyPolicy-60777b0f.js",
+    "file": "assets/PrivacyPolicy-96414b31.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Legal/PrivacyPolicy.vue"
@@ -873,25 +967,27 @@
     "css": [
       "assets/TermsOfUse-42448940.css"
     ],
-    "file": "assets/TermsOfUse-9d2d0c80.js",
+    "file": "assets/TermsOfUse-ebd94721.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Legal/TermsOfUse.vue"
   },
   "resources/js/Pages/News/Index.vue": {
-    "file": "assets/Index-8a1ba161.js",
+    "file": "assets/Index-4edd768a.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/News/Index.vue"
@@ -904,137 +1000,145 @@
     "css": [
       "assets/Show-431e0f8c.css"
     ],
-    "file": "assets/Show-cab04e85.js",
+    "file": "assets/Show-befd45fe.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/News/Show.vue"
   },
   "resources/js/Pages/Profile/Edit.vue": {
-    "file": "assets/Edit-16f4a56e.js",
+    "file": "assets/Edit-dc2fd0a5.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/Pages/Profile/Partials/DeleteUserForm.vue",
       "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue",
       "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
-      "_NavLink-55ac4029.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js",
-      "_Modal-78976c25.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js",
+      "_Modal-6f189f19.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Edit.vue"
   },
   "resources/js/Pages/Profile/Partials/DeleteUserForm.vue": {
-    "file": "assets/DeleteUserForm-52b7a96d.js",
+    "file": "assets/DeleteUserForm-c86bdb2a.js",
     "imports": [
       "resources/js/app.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_TextInput-3a2c5101.js",
-      "_Modal-78976c25.js"
+      "_TextInput-0a6b4089.js",
+      "_Modal-6f189f19.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Partials/DeleteUserForm.vue"
   },
   "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue": {
-    "file": "assets/UpdatePasswordForm-8bf844b3.js",
+    "file": "assets/UpdatePasswordForm-c3afb6f0.js",
     "imports": [
       "resources/js/app.js",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue"
   },
   "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue": {
-    "file": "assets/UpdateProfileInformationForm-ea0da452.js",
+    "file": "assets/UpdateProfileInformationForm-0120649d.js",
     "imports": [
       "resources/js/app.js",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue"
   },
   "resources/js/Pages/Profile/Partials/UpdateRole.vue": {
-    "file": "assets/UpdateRole-daab9616.js",
+    "file": "assets/UpdateRole-399da555.js",
     "imports": [
       "resources/js/app.js",
-      "_TextInput-3a2c5101.js",
-      "_PrimaryButton-ab2e7be1.js",
+      "_TextInput-0a6b4089.js",
+      "_PrimaryButton-b66751ab.js",
       "__plugin-vue_export-helper-c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Profile/Partials/UpdateRole.vue"
   },
   "resources/js/Pages/RadialMap.css": {
-    "file": "assets/RadialMap-51f83b46.css",
+    "file": "assets/RadialMap-a39fb90a.css",
     "src": "resources/js/Pages/RadialMap.css"
   },
   "resources/js/Pages/RadialMap.vue": {
     "css": [
-      "assets/RadialMap-51f83b46.css"
+      "assets/RadialMap-a39fb90a.css"
     ],
-    "file": "assets/RadialMap-95ea39e9.js",
+    "file": "assets/RadialMap-e94af080.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_AiAssistant-d691efc1.js",
-      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js",
+      "_PageTemplate-6be065cd.js",
+      "_AiAssistant-8b86cf8a.js",
+      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_GoogleAddressSearch-6c89bbad.js",
-      "_leaflet-src-68565725.js",
-      "_leaflet.markercluster-src-a2c4521e.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js",
-      "_index-30e52c04.js",
-      "_Modal-78976c25.js"
+      "_GoogleAddressSearch-180a6d42.js",
+      "_MapDisplay-74fd14a0.js",
+      "_leaflet-src-49cee519.js",
+      "_analytics-ec9c88fd.js",
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_index-5ae5407d.js",
+      "_Modal-6f189f19.js",
+      "_leaflet.markercluster-src-30c97269.js",
+      "_iconUtils-6fb57d8f.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/RadialMap.vue"
   },
   "resources/js/Pages/ReportIndex.vue": {
-    "file": "assets/ReportIndex-871f6d2d.js",
+    "file": "assets/ReportIndex-722027d6.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/ReportIndex.vue"
   },
   "resources/js/Pages/Reports/Index.vue": {
-    "file": "assets/Index-9af56ff1.js",
+    "file": "assets/Index-daf4d4f1.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Reports/Index.vue"
   },
   "resources/js/Pages/Reports/Scoring/Index.vue": {
-    "file": "assets/Index-83f9f6fd.js",
+    "file": "assets/Index-97891f26.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Reports/Scoring/Index.vue"
@@ -1047,18 +1151,19 @@
     "css": [
       "assets/Viewer-0e028087.css"
     ],
-    "file": "assets/Viewer-95d375ba.js",
+    "file": "assets/Viewer-90833cdd.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_useH3Names-3c985ded.js",
-      "_GoogleAddressSearch-6c89bbad.js",
-      "_leaflet-src-68565725.js",
+      "_PageTemplate-6be065cd.js",
+      "_useH3Names-48faec3d.js",
+      "_GoogleAddressSearch-180a6d42.js",
+      "_leaflet-src-49cee519.js",
       "_h3-js.es-4f5a56f2.js",
       "_marker-shadow-f0fc6587.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Reports/Scoring/Viewer.vue"
@@ -1071,14 +1176,15 @@
     "css": [
       "assets/Show-52806e69.css"
     ],
-    "file": "assets/Show-7d1764ec.js",
+    "file": "assets/Show-969ad09d.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
-      "_index-30e52c04.js",
+      "_index-5ae5407d.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Reports/Show.vue"
@@ -1091,29 +1197,31 @@
     "css": [
       "assets/StatisticalAnalysisViewer-a04cc76f.css"
     ],
-    "file": "assets/StatisticalAnalysisViewer-8df793b0.js",
+    "file": "assets/StatisticalAnalysisViewer-feeb29b9.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_useH3Names-3c985ded.js",
-      "_leaflet-src-68565725.js",
+      "_PageTemplate-6be065cd.js",
+      "_useH3Names-48faec3d.js",
+      "_leaflet-src-49cee519.js",
       "_h3-js.es-4f5a56f2.js",
       "_marker-shadow-f0fc6587.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Reports/StatisticalAnalysisViewer.vue"
   },
   "resources/js/Pages/Reports/YearlyCountComparisonViewer.vue": {
-    "file": "assets/YearlyCountComparisonViewer-cea18aa2.js",
+    "file": "assets/YearlyCountComparisonViewer-893dcbe1.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Reports/YearlyCountComparisonViewer.vue"
@@ -1126,13 +1234,14 @@
     "css": [
       "assets/AdminLayout-e3b0c442.css"
     ],
-    "file": "assets/Subscription-fa22c5b2.js",
+    "file": "assets/Subscription-1fc0589b.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
+      "_analytics-ec9c88fd.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Subscription.vue"
@@ -1145,13 +1254,14 @@
     "css": [
       "assets/HelpContact-e1c31954.css"
     ],
-    "file": "assets/HelpContact-06e18291.js",
+    "file": "assets/HelpContact-7f5f6084.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Support/HelpContact.vue"
@@ -1164,40 +1274,43 @@
     "css": [
       "assets/ThreeOneOneProject-a4bac56c.css"
     ],
-    "file": "assets/ThreeOneOneProject-cce42f8d.js",
+    "file": "assets/ThreeOneOneProject-415c7137.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
-      "_leaflet-src-68565725.js",
-      "_leaflet.markercluster-src-a2c4521e.js",
+      "_leaflet-src-49cee519.js",
+      "_leaflet.markercluster-src-30c97269.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/ThreeOneOneProject.vue"
   },
   "resources/js/Pages/Trends/Index.vue": {
-    "file": "assets/Index-b7359960.js",
+    "file": "assets/Index-423a4038.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_useH3Names-3c985ded.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_useH3Names-48faec3d.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/Trends/Index.vue"
   },
   "resources/js/Pages/UserSavedMapsPage.vue": {
-    "file": "assets/UserSavedMapsPage-f7704268.js",
+    "file": "assets/UserSavedMapsPage-0a869501.js",
     "imports": [
-      "_PageTemplate-ea1ad02b.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
-      "_NavLink-55ac4029.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/UserSavedMapsPage.vue"
@@ -1210,49 +1323,53 @@
     "css": [
       "assets/AdminLayout-e3b0c442.css"
     ],
-    "file": "assets/ViewSavedMapPage-004a26ca.js",
+    "file": "assets/ViewSavedMapPage-6697fadb.js",
     "imports": [
-      "_DataMapComponent-147b98f9.js",
-      "_CombinedDataMapComponent-3af81b0b.js",
-      "_PageTemplate-ea1ad02b.js",
+      "_DataMapComponent-c11e45be.js",
+      "_CombinedDataMapComponent-07fa77cf.js",
+      "_PageTemplate-6be065cd.js",
       "resources/js/app.js",
-      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-d7148103.js",
+      "_MapToolbar.vue_vue_type_style_index_0_scoped_503db10d_lang-cd81a203.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-96dc652a.js",
-      "_AiAssistant-d691efc1.js",
-      "_index-30e52c04.js",
-      "_NavLink-55ac4029.js",
-      "_ResponsiveNavLink-a7c7db75.js",
-      "_leaflet-src-68565725.js",
-      "_leaflet.markercluster-src-a2c4521e.js",
-      "_Modal-78976c25.js"
+      "_SubscriptionBanner.vue_vue_type_style_index_0_scoped_7aa2f15c_lang-7749673b.js",
+      "_AiAssistant-8b86cf8a.js",
+      "_index-5ae5407d.js",
+      "_NavLink-9c99e90b.js",
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js",
+      "_leaflet-src-49cee519.js",
+      "_leaflet.markercluster-src-30c97269.js",
+      "_iconUtils-6fb57d8f.js",
+      "_Modal-6f189f19.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/ViewSavedMapPage.vue"
   },
   "resources/js/Pages/YearlyCountComparison/Index.vue": {
-    "file": "assets/Index-7f4720d0.js",
+    "file": "assets/Index-ac780fbe.js",
     "imports": [
       "resources/js/app.js",
-      "_PageTemplate-ea1ad02b.js",
-      "_NavLink-55ac4029.js",
+      "_PageTemplate-6be065cd.js",
+      "_NavLink-9c99e90b.js",
       "__plugin-vue_export-helper-c27b6911.js",
-      "_ResponsiveNavLink-a7c7db75.js"
+      "_ResponsiveNavLink-17fea2eb.js",
+      "_analytics-ec9c88fd.js"
     ],
     "isDynamicEntry": true,
     "src": "resources/js/Pages/YearlyCountComparison/Index.vue"
   },
   "resources/js/app.css": {
-    "file": "assets/app-e2aefc43.css",
+    "file": "assets/app-c09798e9.css",
     "src": "resources/js/app.css"
   },
   "resources/js/app.js": {
     "css": [
-      "assets/app-e2aefc43.css"
+      "assets/app-c09798e9.css"
     ],
     "dynamicImports": [
       "resources/js/Pages/Admin/CacheManager.vue",
       "resources/js/Pages/Admin/H3Geocoding.vue",
+      "resources/js/Pages/Admin/HotspotArticleConfig.vue",
       "resources/js/Pages/Admin/Index.vue",
       "resources/js/Pages/Admin/JobDispatcher.vue",
       "resources/js/Pages/Admin/JobRuns.vue",
@@ -1266,12 +1383,14 @@
       "resources/js/Pages/Admin/PipelineFileLogViewer.vue",
       "resources/js/Pages/Admin/PipelineFileRunDetail.vue",
       "resources/js/Pages/Admin/S3BucketBrowser.vue",
+      "resources/js/Pages/Admin/TrendArticleConfig.vue",
       "resources/js/Pages/Auth/ConfirmPassword.vue",
       "resources/js/Pages/Auth/ForgotPassword.vue",
       "resources/js/Pages/Auth/Login.vue",
       "resources/js/Pages/Auth/Register.vue",
       "resources/js/Pages/Auth/ResetPassword.vue",
       "resources/js/Pages/Auth/VerifyEmail.vue",
+      "resources/js/Pages/CityMapLite.vue",
       "resources/js/Pages/CombinedDataMap.vue",
       "resources/js/Pages/Company/AboutUs.vue",
       "resources/js/Pages/CrimeMap.vue",
@@ -1310,7 +1429,7 @@
       "resources/js/Pages/ViewSavedMapPage.vue",
       "resources/js/Pages/YearlyCountComparison/Index.vue"
     ],
-    "file": "assets/app-b5d0f6ea.js",
+    "file": "assets/app-d179cc0f.js",
     "isEntry": true,
     "src": "resources/js/app.js"
   }

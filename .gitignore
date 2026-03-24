@@ -50,6 +50,9 @@ Thumbs.db
 transferdata.sh
 
 .venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
 
 *.pdf
 
@@ -58,3 +61,9 @@ latest.diff
 
 # City Generator Python framework (separate repo)
 city-generator/
+
+# Local exoskeleton data
+tools/exoskeleton/data/*.sqlite3
+
+tools/ 
+

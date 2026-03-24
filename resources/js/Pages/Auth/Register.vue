@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { trackAnalyticsEvent } from '@/Utils/analytics';
 
 const form = useForm({
     name: '',
@@ -14,12 +15,33 @@ const form = useForm({
 });
 
 const submit = () => {
+    trackAnalyticsEvent('signup_started', {
+        pageType: 'register',
+        params: {
+            method: 'manual',
+        },
+    });
+
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
         onSuccess: () => {
-                // Redirect to the home page with a hard refresh
+                trackAnalyticsEvent('signup_completed', {
+                    pageType: 'register',
+                    params: {
+                        method: 'manual',
+                    },
+                });
                 window.location.href = route('map.index');
             },
+    });
+};
+
+const trackGoogleSignupStart = () => {
+    trackAnalyticsEvent('signup_started', {
+        pageType: 'register',
+        params: {
+            method: 'google_oauth',
+        },
     });
 };
 </script>
@@ -104,7 +126,7 @@ const submit = () => {
             </div>
         </form>
         <div class="flex flex-col space-y-2">
-         <a :href="route('socialite.redirect', 'google')"
+         <a :href="route('socialite.redirect', 'google')" @click="trackGoogleSignupStart"
                class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
              <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
              Sign in with Google

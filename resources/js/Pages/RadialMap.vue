@@ -32,6 +32,8 @@
         :translations="translations"
         :singleLanguageCode="getSingleLanguageCode"
         @toggle-center-selection-mode="handleToggleCenterSelection"
+        @address-search-started="handleAddressSearchStarted"
+        @current-location-requested="handleCurrentLocationRequested"
         @address-search-coordinates-selected="handleAddressSearchUpdate"
         @trigger-form-submit="submitNewCenter"
         @load-saved-location="handleLoadLocation"
@@ -138,6 +140,7 @@ import DataPointStatistics from '@/Components/DataPointStatistics.vue';
 import { usePage } from '@inertiajs/vue3'; // Import usePage
 import FeaturedUserMapsBanner from '@/Components/FeaturedUserMapsBanner.vue';
 import { map } from 'leaflet';
+import { trackAnalyticsEvent } from '@/Utils/analytics';
 
 const props = defineProps({
   initialLat: {
@@ -374,6 +377,17 @@ const handleMapClickForNewCenter = (latlng) => {
 };
 
 const handleAddressSearchUpdate = (coordinates) => {
+    if (coordinates.address) {
+      trackAnalyticsEvent('address_search_completed', {
+        pageType: 'explore_map',
+        languageCode: language_codes.value[0],
+        isAuthenticated: isAuthenticated.value,
+        params: {
+          search_provider: 'google_places',
+        },
+      });
+    }
+
     centralLocation.value.latitude = coordinates.lat;
     centralLocation.value.longitude = coordinates.lng;
     if (coordinates.address) {
@@ -389,6 +403,25 @@ const handleAddressSearchUpdate = (coordinates) => {
     fetchData().then(() => {
         if (mapDisplayRef.value) mapDisplayRef.value.initializeNewMapAtCenter([coordinates.lat, coordinates.lng], true);
     });
+};
+
+const handleAddressSearchStarted = () => {
+  trackAnalyticsEvent('address_search_started', {
+    pageType: 'explore_map',
+    languageCode: language_codes.value[0],
+    isAuthenticated: isAuthenticated.value,
+    params: {
+      search_provider: 'google_places',
+    },
+  });
+};
+
+const handleCurrentLocationRequested = () => {
+  trackAnalyticsEvent('use_my_location_clicked', {
+    pageType: 'explore_map',
+    languageCode: language_codes.value[0],
+    isAuthenticated: isAuthenticated.value,
+  });
 };
 
 
@@ -628,6 +661,15 @@ const handleValueFiltersChanged = (filters) => {
 };
 
 const handleMarkerClick = (dataPoint) => {
+  trackAnalyticsEvent('map_marker_selected', {
+    pageType: 'explore_map',
+    languageCode: language_codes.value[0],
+    isAuthenticated: isAuthenticated.value,
+    params: {
+      record_type: dataPoint?.alcivartech_type,
+      data_point_id: dataPoint?.data_point_id,
+    },
+  });
   selectedDataPoint.value = dataPoint;
 };
 
@@ -671,6 +713,12 @@ watch(reportRadius, (newRadius) => {
 
 
 onMounted(async () => {
+  trackAnalyticsEvent('explore_map_view', {
+    pageType: 'explore_map',
+    languageCode: language_codes.value[0],
+    isAuthenticated: isAuthenticated.value,
+  });
+
   // If coordinates are in the URL, they are used to initialize centralLocation.
   // We just need to fetch data. The URL is already correct.
   if (props.initialLat && props.initialLng) {

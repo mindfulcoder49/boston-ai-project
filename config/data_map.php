@@ -91,6 +91,11 @@ return [
             'center' => [40.7128, -74.006],
             'zoom' => 12,
         ],
+        'everett_' => [
+            'city' => 'everett',
+            'center' => [42.4084, -71.0537],
+            'zoom' => 13,
+        ],
         // Add new city contexts below this line
         // The city-generator tool will append new entries here automatically
     ],

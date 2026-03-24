@@ -84,6 +84,7 @@ const localizationLabelsByLanguageCode = {
 
 export default {
   props: ["initialSearchQuery", "language_codes"],
+  emits: ["address-selected", "search-started"],
   data() {
     return {
       searchQuery: this.initialSearchQuery || "",
@@ -92,6 +93,7 @@ export default {
       isLoadingGoogle: false,
       googleSearchAttempted: false,
       debouncedGoogleSearch: null,
+      hasTrackedSearchStart: false,
     };
   },
   computed: {
@@ -108,6 +110,12 @@ export default {
       if (this.searchQuery.length >= 3) {
         this.isLoadingGoogle = true;
         this.googleSearchAttempted = true;
+        if (!this.hasTrackedSearchStart) {
+          this.$emit("search-started", {
+            queryLength: this.searchQuery.length,
+          });
+          this.hasTrackedSearchStart = true;
+        }
         this.debouncedGoogleSearch();
       } else {
         this.clearGoogleSuggestions();
@@ -141,6 +149,7 @@ export default {
       this.googleSuggestions = [];
       this.showGoogleSuggestions = false;
       this.googleSearchAttempted = false;
+      this.hasTrackedSearchStart = false;
     },
     clearGoogleSuggestionsAndQuery() {
       this.searchQuery = "";

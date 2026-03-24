@@ -84,7 +84,7 @@
             <div class="mt-auto">
               <button
                 v-if="isAuthenticated && currentPlan !== 'basic'"
-                @click="goToRoute(route('subscribe.checkout', { plan: 'basic' }))"
+                @click="startCheckout('basic')"
                 class="w-full px-6 py-3 text-white bg-blue-500 rounded-md shadow-lg hover:bg-blue-600 transition-colors">
                 {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscribeButton || 'Subscribe' }}
               </button>
@@ -125,7 +125,7 @@
             <div class="mt-auto">
               <button
                 v-if="isAuthenticated && currentPlan !== 'pro'"
-                @click="goToRoute(route('subscribe.checkout', { plan: 'pro' }))"
+                @click="startCheckout('pro')"
                 class="w-full px-6 py-3 text-white bg-purple-500 rounded-md shadow-lg hover:bg-purple-600 transition-colors">
                 {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscribeButton || 'Subscribe' }}
               </button>
@@ -161,7 +161,8 @@
   <script setup>
   import PageTemplate from '@/Components/PageTemplate.vue';
   import { Head, Link, usePage } from '@inertiajs/vue3';
-  import { computed, inject, ref } from 'vue';
+  import { computed, inject, onMounted, ref } from 'vue';
+  import { trackAnalyticsEvent, trackOncePerSession } from '@/Utils/analytics';
   
   const props = defineProps({
     status: String, // 'success', 'cancel', or null
@@ -180,14 +181,59 @@
   });
   
   const goToRoute = (targetRoute) => {
-    // No need to check isAuthenticated here anymore for the primary button click,
-    // as the template logic now separates authenticated and unauthenticated actions.
-    // However, if called from other places, the check might still be relevant.
-    // For direct checkout, it's assumed user is authenticated by this point.
-    // Inertia.visit might be preferable if you want to stay within SPA navigation
-    // For Stripe checkout, window.location.href is often necessary.
     window.location.href = targetRoute;
   };
+
+  const startCheckout = (plan) => {
+    trackAnalyticsEvent('checkout_started', {
+      pageType: 'pricing',
+      isAuthenticated: props.isAuthenticated,
+      params: {
+        plan_name: plan,
+      },
+    });
+
+    window.location.href = route('subscribe.checkout', { plan });
+  };
+
+  onMounted(() => {
+    trackAnalyticsEvent('pricing_page_view', {
+      pageType: 'pricing',
+      isAuthenticated: props.isAuthenticated,
+      params: {
+        current_plan: props.currentPlan || 'guest',
+      },
+    });
+
+    if (props.status === 'success') {
+      trackOncePerSession(
+        `checkout_completed:${props.sessionId || 'unknown'}`,
+        'checkout_completed',
+        {
+          pageType: 'pricing',
+          isAuthenticated: props.isAuthenticated,
+          params: {
+            session_id: props.sessionId,
+            plan_name: props.currentPlan || 'unknown',
+          },
+        }
+      );
+    }
+
+    if (props.status === 'cancel') {
+      trackOncePerSession(
+        `subscription_canceled:${window.location.search || 'pricing'}`,
+        'subscription_canceled',
+        {
+          pageType: 'pricing',
+          isAuthenticated: props.isAuthenticated,
+          params: {
+            reason: 'checkout_canceled',
+          },
+        }
+      );
+    }
+  });
   
   // Define features for each plan - these should be translatable
   const freeFeatures = computed(() => [

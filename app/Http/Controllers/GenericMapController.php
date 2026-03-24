@@ -117,6 +117,22 @@ class GenericMapController extends Controller
         ];
     }
 
+    protected function getCityContextByKey(string $cityKey): ?array
+    {
+        $cityConfig = Config::get("cities.cities.{$cityKey}");
+
+        if (!$cityConfig) {
+            return null;
+        }
+
+        return [
+            'city' => $cityKey,
+            'data_points_table' => $cityConfig['data_points_table'],
+            'linkable_models' => $cityConfig['models'] ?? [],
+            'db_connection' => $cityConfig['db_connection'],
+        ];
+    }
+
     protected function getJsonSelectForModel($modelClass, $jsonAlias)
     {
         $model = new $modelClass;
@@ -183,7 +199,23 @@ class GenericMapController extends Controller
         $latitude = $centralLocation['latitude'];
         $longitude = $centralLocation['longitude'];
 
-        $cityContext = $this->getCityContext($latitude, $longitude);
+        $forcedCity = $request->input('city');
+        $cityContext = null;
+
+        if (is_string($forcedCity) && $forcedCity !== '') {
+            $cityContext = $this->getCityContextByKey($forcedCity);
+
+            if (!$cityContext) {
+                return response()->json([
+                    'message' => "Unknown city '{$forcedCity}'.",
+                ], 422);
+            }
+        }
+
+        if (!$cityContext) {
+            $cityContext = $this->getCityContext($latitude, $longitude);
+        }
+
         $targetTable = $cityContext['data_points_table'];
         $linkableModels = $cityContext['linkable_models'];
         $dbConnection = $cityContext['db_connection'];
@@ -357,6 +389,7 @@ class GenericMapController extends Controller
             'dataPoints' => $dataPoints,
             'centralLocation' => $centralLocation,
             'mapConfiguration' => $mapConfiguration,
+            'city' => $cityContext['city'],
         ]);
     }
 }

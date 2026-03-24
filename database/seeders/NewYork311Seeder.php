@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class NewYork311Seeder extends Seeder
 {
-    public function run()
+    public function run(bool $resumeHistorical = false)
     {
         $directoryPath = 'datasets/new_york';
         $name = 'new_york-311s';
@@ -34,6 +34,10 @@ class NewYork311Seeder extends Seeder
         $csvPath = Storage::disk('local')->path($latestFile);
 
         $this->command->info("Processing latest file: {$csvPath}");
+
+        $resumeFromEndOfDay = $resumeHistorical
+            ? $this->getResumeFromEndOfDay('new_york_311_db', $fullTableName)
+            : null;
 
         $fileHandle = fopen($csvPath, 'r');
         if ($fileHandle === false) {
@@ -116,9 +120,13 @@ class NewYork311Seeder extends Seeder
         $dataToInsertFull = [];
         $dataToInsertRecent = [];
         $rowCount = 0;
+        $skippedResumeRowCount = 0;
         $totalUpsertedFull = 0;
         $totalUpsertedRecent = 0;
         $skippedRowCount = 0;
+        $hasReachedResumePoint = $resumeFromEndOfDay === null;
+        $resumeLogInterval = 100000;
+        $nextResumeLogThreshold = $resumeLogInterval;
 
         DB::disableQueryLog();
 
@@ -131,6 +139,29 @@ class NewYork311Seeder extends Seeder
 
             $record = array_combine($dbColumns, $row);
             $transformedRecord = $this->transformRecord($record);
+
+            if (! $hasReachedResumePoint) {
+                $recordDate = $this->parseDate($transformedRecord['created_date'] ?? null);
+
+                if ($recordDate !== null && $recordDate->greaterThan($resumeFromEndOfDay)) {
+                    $skippedResumeRowCount++;
+                    $rowCount++;
+
+                    if ($skippedResumeRowCount >= $nextResumeLogThreshold) {
+                        $this->command->line(
+                            "Resume scan: skipped {$skippedResumeRowCount} newer rows so far; latest scanned created_date {$transformedRecord['created_date']}."
+                        );
+                        $nextResumeLogThreshold += $resumeLogInterval;
+                    }
+
+                    continue;
+                }
+
+                $hasReachedResumePoint = true;
+                $this->command->info(
+                    "Resume point reached at created_date {$transformedRecord['created_date']}."
+                );
+            }
 
             if ($transformedRecord['location'] === null) {
                 $skippedRowCount++;
@@ -172,7 +203,7 @@ class NewYork311Seeder extends Seeder
         }
 
         fclose($fileHandle);
-        $this->command->info("Finished processing file: {$csvPath}. Total records: {$rowCount}, Full DB Upserted: {$totalUpsertedFull}, Recent DB Upserted: {$totalUpsertedRecent}, Skipped: {$skippedRowCount}.");
+        $this->command->info("Finished processing file: {$csvPath}. Total records: {$rowCount}, Resume-skipped: {$skippedResumeRowCount}, Full DB Upserted: {$totalUpsertedFull}, Recent DB Upserted: {$totalUpsertedRecent}, Skipped: {$skippedRowCount}.");
 
         DB::enableQueryLog();
         $this->command->info("NewYork 311 file processed.");
@@ -236,6 +267,36 @@ class NewYork311Seeder extends Seeder
         unset($transformed['']);
 
         return $transformed;
+    }
+
+    private function getResumeFromEndOfDay(string $connection, string $tableName): ?Carbon
+    {
+        $oldestLoadedDate = DB::connection($connection)->table($tableName)->min('created_date');
+
+        if (! $oldestLoadedDate) {
+            $this->command->warn('No existing historical rows found. Falling back to full file processing.');
+            return null;
+        }
+
+        $resumeFromEndOfDay = Carbon::parse($oldestLoadedDate)->endOfDay();
+        $this->command->info(
+            "Resuming historical import from oldest loaded day {$resumeFromEndOfDay->toDateString()} with one-day overlap."
+        );
+
+        return $resumeFromEndOfDay;
+    }
+
+    private function parseDate(?string $value): ?Carbon
+    {
+        if (! $value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     /**

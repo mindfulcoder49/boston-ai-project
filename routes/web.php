@@ -40,6 +40,7 @@ use App\Http\Controllers\HotspotController;
 use App\Http\Controllers\AdminH3GeocodingController;
 use App\Http\Controllers\AdminS3BucketController;
 use App\Http\Controllers\AdminCacheController;
+use App\Http\Controllers\CityLandingController;
 
 Route::get('/trends', [TrendsController::class, 'index'])->name('trends.index');
 Route::middleware(['auth', 'verified'])->post('/trends/refresh', [TrendsController::class, 'refresh'])->name('trends.refresh');
@@ -96,8 +97,18 @@ Route::get('/map/{lat?}/{lng?}', function ($lat = null, $lng = null) {
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+foreach (array_keys(config('cities.cities', [])) as $cityKey) {
+    $citySlug = str_replace('_', '-', $cityKey);
+
+    Route::get("/{$citySlug}", function () use ($citySlug) {
+        return app(CityLandingController::class)->show($citySlug);
+    })
+        ->name("city.landing.{$cityKey}");
+}
+
 // New API endpoint for fetching map data
 Route::post('/api/map-data', [GenericMapController::class, 'getRadialMapData'])->name('map.data');
+Route::post('/api/city-landing/translate-record', [CityLandingController::class, 'translateRecord'])->name('city-landing.translate-record');
 
 
 Route::post('/api/ai-chat', [AiAssistantController::class, 'handleRequest'])->name('ai.assistant');

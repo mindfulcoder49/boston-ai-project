@@ -290,7 +290,9 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         $header = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze, ['source_dataset']);
         fputcsv($fileHandle, $header);
 
-        $primaryKey = DB::connection($connectionName)->getSchemaBuilder()->getIndexes($tableName)[0]['columns'][0] ?? 'id';
+        // Use the model's configured primary key instead of guessing from schema indexes.
+        // This avoids chunking by arbitrary indexed columns like `agency` on NYC 311.
+        $primaryKey = (new $modelClass())->getKeyName() ?: 'id';
 
         $processedRows = 0;
         $logInterval = 100000; // Log every 100,000 rows

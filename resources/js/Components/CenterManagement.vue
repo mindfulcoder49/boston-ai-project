@@ -27,7 +27,12 @@
     <div class="mb-2">
       <!-- Method 1: Search Address -->
       <div class="p-2 md:p-4 border rounded-lg shadow hover:shadow-lg transition-shadow bg-white mb-2 md:mb-4">
-        <GoogleAddressSearch @address-selected="handleAddressSelected" :language_codes="language_codes" :placeholder_text="translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].searchAddressPlaceholder || 'Search for an address'" />
+        <GoogleAddressSearch
+          @address-selected="handleAddressSelected"
+          @search-started="handleAddressSearchStarted"
+          :language_codes="language_codes"
+          :placeholder_text="translations.localizationLabelsByLanguageCode[singleLanguageCodeToUse].searchAddressPlaceholder || 'Search for an address'"
+        />
       </div>
 
       <!-- Container for the two buttons: Click on Map and Use Current Location -->
@@ -91,6 +96,8 @@ const props = defineProps({
 const emit = defineEmits([
   'toggle-center-selection-mode',
   'address-search-coordinates-selected',
+  'address-search-started',
+  'current-location-requested',
   'load-saved-location',
 ]);
 
@@ -100,6 +107,7 @@ const geolocationLoading = ref(false);
 const geolocationError = ref(null);
 
 const requestCurrentLocation = () => {
+  emit('current-location-requested');
   if (navigator.geolocation) {
     geolocationLoading.value = true;
     geolocationError.value = null;
@@ -134,6 +142,10 @@ const requestCurrentLocation = () => {
 const handleAddressSelected = (coordinates) => {
   geolocationError.value = null; // Clear geolocation error if address is selected
   emit('address-search-coordinates-selected', coordinates);
+};
+
+const handleAddressSearchStarted = (payload) => {
+  emit('address-search-started', payload);
 };
 
 const handleToggleCenterSelection = () => {

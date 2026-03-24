@@ -48,13 +48,23 @@ return [
                 \App\Models\ConstructionOffHour::class,
                 \App\Models\BuildingPermit::class,
                 \App\Models\FoodInspection::class,
-                \App\Models\EverettCrimeData::class,
                 \App\Models\CambridgeThreeOneOneCase::class,
                 \App\Models\CambridgeBuildingPermitData::class,
                 \App\Models\CambridgeCrimeReportData::class,
                 \App\Models\CambridgeHousingViolationData::class,
                 \App\Models\CambridgeSanitaryInspectionData::class,
                 \App\Models\PersonCrashData::class,
+            ],
+        ],
+
+        'everett' => [
+            'name' => 'Everett',
+            'latitude' => 42.4084,
+            'longitude' => -71.0537,
+            'data_points_table' => 'data_points',
+            'db_connection' => 'mysql',
+            'models' => [
+                \App\Models\EverettCrimeData::class,
             ],
         ],
 

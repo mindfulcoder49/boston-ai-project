@@ -23,6 +23,10 @@
     mapIsLoading: Boolean,
     shouldClearTempMarker: Boolean,
     mapConfiguration: Object, // Added new prop
+    initialZoom: {
+      type: Number,
+      default: 16,
+    },
   });
   
   const emit = defineEmits([
@@ -42,7 +46,7 @@
   // On re-init, this saved view is used to restore the map's position.
   const currentMapViewport = ref({ 
     center: props.mapCenterCoordinates && props.mapCenterCoordinates.length === 2 ? props.mapCenterCoordinates : [42.3601, -71.0589], 
-    zoom: 16 
+    zoom: props.initialZoom
   });
 
   
@@ -587,7 +591,7 @@
     // Initialize currentMapViewport based on initial props before map creation
     currentMapViewport.value = {
         center: props.mapCenterCoordinates && props.mapCenterCoordinates.length === 2 ? props.mapCenterCoordinates : [42.3601, -71.0589],
-        zoom: 16 // Or derive from a prop if zoom can be set initially
+        zoom: props.initialZoom
     };
     initializeMapInternal();
   });

@@ -218,17 +218,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'; // Added onMounted, watch
+import { ref, computed, onMounted, watch } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link, router, usePage } from '@inertiajs/vue3'; 
-// import axios from 'axios'; // No longer needed for logoutUser
 import Footer from '@/Components/Footer.vue'; 
 import DataVisibilityBanner from '@/Components/DataVisibilityBanner.vue'; 
-import { event } from 'vue-gtag'; // Import event from vue-gtag
+import { trackAnalyticsEvent, trackPageView } from '@/Utils/analytics';
 
 const $page = usePage();
 
@@ -245,61 +244,43 @@ async function logoutUser() {
   try {
       router.post(route('logout'), {}, {
           onSuccess: () => {
-              console.log("User logged out successfully via Inertia router.post");
-              event('logout', {
-                  method: 'Standard (Inertia)'
+              trackAnalyticsEvent('logout', {
+                  pageType: 'account',
+                  isAuthenticated: true,
+                  params: {
+                      method: 'inertia',
+                  },
               });
-              console.log("Logout event tracked successfully");
-              // Inertia will handle the redirect based on the server response.
-              // No need for window.location = '/' here.
           },
           onError: (errors) => {
               console.error("Logout failed:", errors);
-              // Handle logout error, e.g., show a notification
           }
       });
   } catch (error) {
-      // This catch block might not be strictly necessary for router.post
-      // as errors are typically handled in the onError callback.
       console.error("Exception during logoutUser call:", error);
   }
 }
 
 onMounted(() => {
-  // Global click tracking
-  document.addEventListener('click', (e) => {
-    let label = e.target.innerText || e.target.title || e.target.alt || 'unlabeled_element';
-    if (e.target.closest('a')) {
-        label = `link_click: ${label} (href: ${e.target.closest('a').href})`;
-    } else if (e.target.closest('button')) {
-        label = `button_click: ${label}`;
-    }
-    event('click_event', {
-      event_category: 'interaction',
-      event_label: label.substring(0, 100), // Limit label length
-      value: 1
-    });
-  });
-
-  // Initial page view
-  event('page_view', {
-    page_title: document.title,
-    page_location: window.location.href,
-    page_path: window.location.pathname,
-    user_id: $page.props.auth?.user?.id // Optional: include user_id if available
+  trackPageView({
+    isAuthenticated: isAuthenticated.value,
+    params: {
+      page_location: window.location.href,
+      page_path: window.location.pathname,
+    },
   });
 });
 
-// Watch for page changes (URL changes) to track subsequent page views
 watch(() => $page.url, (newUrl, oldUrl) => {
   if (newUrl !== oldUrl) {
-    event('page_view', {
-      page_title: document.title, // Title might update after navigation
-      page_location: window.location.origin + newUrl,
-      page_path: newUrl,
-      user_id: $page.props.auth?.user?.id // Optional: include user_id if available
+    trackPageView({
+      isAuthenticated: isAuthenticated.value,
+      params: {
+        page_location: window.location.origin + newUrl,
+        page_path: newUrl,
+      },
     });
   }
-}, { immediate: false }); // 'immediate: false' to avoid double-tracking on initial load with onMounted
+}, { immediate: false });
 
 </script>
