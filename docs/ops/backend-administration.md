@@ -96,10 +96,11 @@ Current retention direction:
 - new cleanup work should be preview-first, with dry-run review before any new delete automation
 - aggregate table retention and file cleanup are the first safe areas to standardize
 - current file-cleanup priority is:
-  - `pipeline-runs` first
+  - `pipeline-runs` first, now successfully trialed on production
   - `boston-datasets` second
   - `cambridge-socrata-datasets` third
 - Cambridge daily police logs are explicitly separated from Cambridge full snapshots and are not an early cleanup priority because they only account for about `1.53 MB` in the current dry run
+- the first live cleanup trial deleted `5,469` old pipeline-run files and freed `9.73 GB`, which validates the preview-first retention workflow for further narrow manual trials
 
 ## Current Production Deploy
 

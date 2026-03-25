@@ -122,6 +122,20 @@ Interpretation:
 - `cambridge-socrata-datasets` is large and likely safe, but it stays behind Boston because Cambridge storage also contains a separate daily-log flow
 - `cambridge-logs` is too small to matter right now and should not drive early cleanup decisions
 
+## First Live Cleanup Trial
+
+Executed on production on `2026-03-25`:
+
+- command: `php artisan app:cleanup --delete-before=2026-02-24 --target=pipeline-runs`
+- result: `5,469` files deleted, `9.73 GB` freed
+- `storage/logs/pipeline_runs` dropped from about `11G` to `605M`
+- a repeat dry run for the same cutoff now returns `0` candidate files
+
+Outcome:
+- the preview-first workflow worked as intended
+- scoped cleanup is safe enough to continue manually on the next narrow target
+- the next recommended manual trial is `boston-datasets`
+
 ## Recommended Next Phases
 
 ### Phase 2. Centralize Apply Paths
