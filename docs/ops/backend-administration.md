@@ -81,6 +81,9 @@ Target state:
 
 Current audit and first runbook draft:
 - [2026-03-25-backend-admin-audit.md](./2026-03-25-backend-admin-audit.md)
+- [2026-03-25-data-flow-report.md](./2026-03-25-data-flow-report.md)
+- [2026-03-25-daily-ops-runbook.md](./2026-03-25-daily-ops-runbook.md)
+- [2026-03-25-daily-observability-plan.md](./2026-03-25-daily-observability-plan.md)
 
 ## Current Production Deploy
 
