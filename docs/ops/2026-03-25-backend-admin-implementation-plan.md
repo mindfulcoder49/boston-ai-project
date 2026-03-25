@@ -13,6 +13,26 @@ It translates the recommendation set into:
 
 It is the execution plan for the next backend-admin sessions, not just a list of ideas.
 
+## Implementation Status
+
+As of March 25, 2026, the code-side implementation described in this plan is complete.
+
+What shipped:
+
+- Laravel scheduler entries for the long-queue worker, dependency checks, daily dispatch, and alert evaluation
+- dedicated `admin-long` queue runtime for `RunArtisanCommandJob`
+- dependency health aggregation and admin visibility
+- summary-first logging for the priority daily commands
+- backend health dashboard
+- first lightweight alert path
+- stale-running pipeline guard so old `running` history entries do not block dispatch forever
+
+What still remains is mostly outside the codebase:
+
+- Hostinger cron cutover to `php artisan schedule:run`
+- confirming the external sysadmin runtime publishes the DNS status artifact
+- the next approved retention cleanup trial
+
 ## Scope
 
 This plan covers:
@@ -77,7 +97,7 @@ Laravel schedule:
 Hostinger cron target state:
 - one cron for scheduler:
   - `* * * * * /usr/bin/php /home/.../artisan schedule:run`
-- one cron for the long-running admin queue worker until process supervision exists
+- the scheduled `queue:work --stop-when-empty --queue=admin-long --timeout=7200 --tries=1` entry runs inside Laravel scheduling, so no second Hostinger cron is needed for this path
 
 ### Files To Change
 
@@ -134,7 +154,7 @@ Use a dedicated queue for long-running orchestration:
 - queue name: `admin-long`
 
 Use `queue:work`, not `queue:listen`, for this path:
-- `php artisan queue:work database --queue=admin-long --stop-when-empty --timeout=7200 --tries=1 --sleep=3`
+- `php artisan queue:work --stop-when-empty --queue=admin-long --timeout=7200 --tries=1`
 
 If Hostinger permits it:
 - wrap the worker invocation in `flock` to prevent overlap
@@ -163,7 +183,7 @@ Unit / behavior tests:
 
 Local verification:
 - dispatch a harmless long-running command onto `admin-long`
-- run `queue:work database --queue=admin-long --stop-when-empty`
+- run `php artisan queue:work --stop-when-empty --queue=admin-long --timeout=7200 --tries=1`
 - verify the job drains and exits cleanly
 
 Production-safe verification:
@@ -179,7 +199,8 @@ Production-safe verification:
 ### Founder / External Follow-Up
 
 After code is ready:
-- update Hostinger cron or worker invocation to the documented `queue:work` command
+- update Hostinger to the single scheduler cron:
+  - `* * * * * /usr/bin/php /home/.../artisan schedule:run`
 
 ## Workstream 3: Scraper And DNS Dependency Health Checks
 

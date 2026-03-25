@@ -13,7 +13,9 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Console\Input\InputOption;
 use App\Support\AdminPipelineConfig;
+use App\Support\OperationalSummaryLogger;
 use App\Support\PipelineRunSummary;
+use App\Support\PipelineRunStore;
 
 class RunAllDataPipelineCommand extends Command
 {
@@ -29,7 +31,7 @@ class RunAllDataPipelineCommand extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->historyFilePath = storage_path('logs/pipeline_runs_history.json');
+        $this->historyFilePath = (string) config('backend_admin.pipeline_runs.history_path', storage_path('logs/pipeline_runs_history.json'));
 
         foreach (AdminPipelineConfig::getOptionDefinitions() as $option) {
             $this->getDefinition()->addOption(new InputOption(
@@ -44,7 +46,7 @@ class RunAllDataPipelineCommand extends Command
     private function initializeRun(): void
     {
         $this->runId = Carbon::now()->format('YmdHis') . '_' . Str::uuid()->toString();
-        $this->runLogDir = storage_path('logs/pipeline_runs/' . $this->runId);
+        $this->runLogDir = app(PipelineRunStore::class)->runDirectory($this->runId);
         File::ensureDirectoryExists($this->runLogDir);
 
         $stagesOption = $this->option('stages');
@@ -260,6 +262,8 @@ class RunAllDataPipelineCommand extends Command
                 'status' => 'running', // Initial status
                 'log_file' => $commandLogFileName,
                 'failure_excerpt' => null,
+                'summary_events' => [],
+                'latest_summary_event' => null,
             ];
             
             $this->runSummary['commands'][] = $currentCommandDetails;
@@ -306,6 +310,11 @@ class RunAllDataPipelineCommand extends Command
             $commandEndTime = Carbon::now();
             $this->runSummary['commands'][$currentCommandIndex]['end_time'] = $commandEndTime->toIso8601String();
             $this->runSummary['commands'][$currentCommandIndex]['duration_seconds'] = $commandEndTime->diffInSeconds($commandStartTime);
+            $this->runSummary['commands'][$currentCommandIndex]['summary_events'] = OperationalSummaryLogger::extractFromFile($commandLogFilePath);
+            $this->runSummary['commands'][$currentCommandIndex]['latest_summary_event'] =
+                !empty($this->runSummary['commands'][$currentCommandIndex]['summary_events'])
+                    ? end($this->runSummary['commands'][$currentCommandIndex]['summary_events'])
+                    : null;
             // Status is already set in try/catch blocks
 
             $this->writeRunSummary(); // Write summary after each command's details are finalized.

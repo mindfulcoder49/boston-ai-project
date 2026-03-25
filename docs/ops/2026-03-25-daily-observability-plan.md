@@ -210,15 +210,34 @@ Implemented on March 25, 2026:
   - first failed command card
   - stage summary section
   - per-command failure excerpts
+- per-command latest operational summary events
+- standardized summary-first logging for the priority daily commands:
+  - `app:download-boston-dataset-via-scraper`
+  - `app:download-everett-pdf-markdown`
+  - `app:download-cambridge-logs`
+  - `DataPointSeeder`
+  - `app:cache-metrics-data`
+- dependency health checks:
+  - scraper reachability
+  - DNS status artifact consumption
+  - queue worker heartbeat evidence
+- backend health dashboard
+- lightweight alerts:
+  - admin banner
+  - direct email alerts
+- scheduler consolidation in code:
+  - scheduled long-queue worker
+  - scheduled dependency checks
+  - scheduled daily pipeline dispatch
+  - scheduled alert evaluation
 
 Backward-compatibility note:
-- older historical summaries do not contain stage names or failure excerpts, so those fields may be blank on runs created before this change
+- older historical summaries do not contain stage names, failure excerpts, or operational summary events, so those fields may be blank on runs created before this change
 
-Still deferred to later phases:
-- standardized per-command summary logging
-- scraper/DNS dependency health checks
-- alerting
-- scheduler consolidation
+Still remaining after implementation:
+- Hostinger cron cutover to `php artisan schedule:run`
+- confirming that the real external sysadmin runtime is publishing its DNS status artifact
+- confirming fresh worker heartbeat evidence in the real scheduled runtime
 
 Retention and storage follow-up:
 - cleanup review is now explicitly dry-run-first

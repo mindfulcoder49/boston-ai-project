@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\OperationalSummaryLogger;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -42,6 +43,9 @@ class CacheMetricsDataCommand extends Command
     public function handle()
     {
         $this->info('Starting to calculate and cache metrics data...');
+        OperationalSummaryLogger::emit($this, $this->getName(), 'start', [
+            'model_count' => count($this->mappableModels),
+        ]);
 
         $allMetrics = [];
         $overallPageLastUpdated = null;
@@ -69,7 +73,9 @@ class CacheMetricsDataCommand extends Command
             }
             
             // Metrics will always be recalculated now
-            $this->line("Calculating metrics for {$modelName}...");
+            if ($this->output->isVerbose()) {
+                $this->line("Calculating metrics for {$modelName}...");
+            }
             $newlyCalculatedMetrics = ['modelName' => $modelName, 'tableName' => $modelInstance->getTable()];
             $newlyCalculatedMetrics['totalRecords'] = $currentTotalRecords;
 
@@ -141,6 +147,11 @@ class CacheMetricsDataCommand extends Command
             $modelMetricsData = $newlyCalculatedMetrics;
 
             $allMetrics[] = $modelMetricsData;
+            OperationalSummaryLogger::emit($this, $this->getName(), 'model_complete', [
+                'model' => $modelName,
+                'total_records' => $currentTotalRecords,
+                'max_date' => $currentDbMaxDateString,
+            ]);
 
             if ($currentModelUpdateTime && (!isset($overallPageLastUpdated) || $currentModelUpdateTime->gt($overallPageLastUpdated))) {
                 $overallPageLastUpdated = $currentModelUpdateTime;
@@ -193,9 +204,18 @@ class CacheMetricsDataCommand extends Command
         try {
             File::put(config_path('metrics.php'), $configContent);
             $this->info('Successfully cached metrics data to config/metrics.php.');
+            OperationalSummaryLogger::emit($this, $this->getName(), 'complete', [
+                'models_processed' => count($allMetricsClean),
+                'output_file' => config_path('metrics.php'),
+                'last_updated' => $pageLastUpdatedTimestamp,
+            ]);
         } catch (\Exception $e) {
             $this->error('Failed to write metrics data to config/metrics.php: ' . $e->getMessage());
             Log::error('Failed to write metrics data to config/metrics.php: ' . $e->getMessage());
+            OperationalSummaryLogger::emit($this, $this->getName(), 'failed', [
+                'output_file' => config_path('metrics.php'),
+                'message' => $e->getMessage(),
+            ], 'error');
             return 1;
         }
         

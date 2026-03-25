@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Artisan;
 use App\Models\ThreeOneOneCase;
 use Illuminate\Support\Facades\DB;
 use App\Support\AdminPipelineConfig;
+use App\Support\BackendHealthSnapshot;
+use App\Support\PipelineRunStore;
 use App\Support\PipelineRunSummary;
 
 class AdminController extends Controller
@@ -42,6 +44,13 @@ class AdminController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Index', []);
+    }
+
+    public function backendHealthIndex(BackendHealthSnapshot $backendHealthSnapshot)
+    {
+        return Inertia::render('Admin/BackendHealth', [
+            'snapshot' => $backendHealthSnapshot->build(),
+        ]);
     }
 
     // --- JOB DISPATCHER ---
@@ -212,15 +221,10 @@ class AdminController extends Controller
 
     public function pipelineFileLogsIndex()
     {
-        $historyFilePath = storage_path('logs/pipeline_runs_history.json');
-        $runs = [];
-        if (File::exists($historyFilePath)) {
-            $runs = json_decode(File::get($historyFilePath), true) ?: [];
-            usort($runs, function ($a, $b) {
-                return strtotime($b['start_time']) - strtotime($a['start_time']);
-            });
-            $runs = array_map(fn (array $run) => $this->enrichPipelineHistoryRun($run), $runs);
-        }
+        $runs = array_map(
+            fn (array $run) => $this->enrichPipelineHistoryRun($run),
+            app(PipelineRunStore::class)->history()
+        );
         return Inertia::render('Admin/PipelineFileLogViewer', [
             'pipelineRuns' => $runs,
         ]);
@@ -235,7 +239,7 @@ class AdminController extends Controller
             }
         }
 
-        $summaryFilePath = storage_path('logs/pipeline_runs/' . $runId . '/run_summary.json');
+        $summaryFilePath = app(PipelineRunStore::class)->summaryPath($runId);
         if (!File::exists($summaryFilePath)) {
             abort(404, 'Pipeline run summary not found.');
         }
@@ -257,7 +261,7 @@ class AdminController extends Controller
             abort(400, 'Invalid parameters.');
         }
 
-        $logFilePath = storage_path('logs/pipeline_runs/' . $runId . '/' . $logFileName);
+        $logFilePath = app(PipelineRunStore::class)->runDirectory($runId) . '/' . $logFileName;
 
         if (!File::exists($logFilePath)) {
             return Response::make('Log file not found.', 404);
@@ -274,12 +278,12 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Invalid Run ID format for deletion.');
         }
 
-        $runLogDir = storage_path('logs/pipeline_runs/' . $runId);
+        $runLogDir = app(PipelineRunStore::class)->runDirectory($runId);
 
         if (File::isDirectory($runLogDir)) {
             File::deleteDirectory($runLogDir);
 
-            $historyFilePath = storage_path('logs/pipeline_runs_history.json');
+            $historyFilePath = (string) config('backend_admin.pipeline_runs.history_path', storage_path('logs/pipeline_runs_history.json'));
             if (File::exists($historyFilePath)) {
                 $history = json_decode(File::get($historyFilePath), true) ?: [];
                 $history = array_filter($history, fn($run) => $run['run_id'] !== $runId);
@@ -308,7 +312,7 @@ class AdminController extends Controller
         $relativePath = ltrim((string) ($run['summary_file_path'] ?? ''), '/');
         $summaryFilePath = $relativePath !== ''
             ? storage_path($relativePath)
-            : storage_path('logs/pipeline_runs/' . ($run['run_id'] ?? '') . '/run_summary.json');
+            : app(PipelineRunStore::class)->summaryPath((string) ($run['run_id'] ?? ''));
 
         if (!File::exists($summaryFilePath)) {
             return null;

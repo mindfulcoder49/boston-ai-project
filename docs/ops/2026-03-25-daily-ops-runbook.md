@@ -7,7 +7,8 @@ This is the initial daily operating procedure for PublicDataWatch backend data f
 It is intentionally based on the system as it exists today:
 - file-based pipeline logs
 - the admin pipeline UI
-- the existing Hostinger queue listener
+- the backend health dashboard
+- Laravel scheduling as the intended control plane in code
 - the current split between production ingestion and founder-local analysis
 
 This runbook is for daily data loading and daily health review first.
@@ -47,6 +48,7 @@ Use these existing surfaces first:
 
 Relevant current routes in the app:
 
+- `admin.backend-health.index`
 - `admin.pipeline.fileLogs.index`
 - `admin.pipeline.fileLogs.show`
 - `admin.cache-manager.index`
@@ -58,6 +60,13 @@ The pipeline log UI now surfaces these summary fields directly:
 - first failed command
 - stage summary
 - short failure excerpts
+- latest operational summary event per command
+
+New CLI surfaces for daily ops:
+
+- `php artisan app:check-ingestion-dependencies`
+- `php artisan app:dispatch-daily-pipeline --dry-run`
+- `php artisan app:evaluate-backend-health-alerts --dry-run`
 
 ## Daily Review Workflow
 
@@ -72,8 +81,9 @@ Expected:
 
 If there is no run in the last 24 hours:
 - treat that as a daily freshness failure
-- do not assume the queue listener covered it
-- the queue listener only processes queued jobs; it does not itself schedule the daily pipeline
+- do not assume the old Hostinger cron covered it
+- the intended model is now Laravel scheduler plus the scheduled long-queue worker
+- if production still has the old cron, treat that as an external cutover gap
 
 ### 2. Open the Latest Run Detail
 

@@ -89,9 +89,18 @@ Current audit and first runbook draft:
 - [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
 
 Current observability status:
-- Phase 1 is now implemented in the admin pipeline views and `run_summary.json`
-- operators can see freshness, core freshness, first failed command, and stage summaries without opening raw logs first
-- later phases still need command-level logging cleanup, dependency health checks, alerts, and scheduling consolidation
+- pipeline summary enrichment is implemented in the admin pipeline views and `run_summary.json`
+- summary-first operational logging is now implemented for the highest-value noisy daily commands:
+  - `app:download-boston-dataset-via-scraper`
+  - `app:download-everett-pdf-markdown`
+  - `app:download-cambridge-logs`
+  - `DataPointSeeder`
+  - `app:cache-metrics-data`
+- the backend health dashboard, dependency health command, lightweight alert path, and Laravel scheduler entries are now implemented in code
+- stale historical `running` pipeline entries no longer block the daily dispatch path forever; only recent active runs count as blockers
+- the main remaining backend-admin follow-up is external cutover:
+  - switch Hostinger from the old `queue:listen` cron to the scheduler-driven flow
+  - confirm the `sysadmin/` DNS sync runtime is publishing its S3 status artifact in the environment that actually runs it
 
 Current retention direction:
 - storage pressure on Hostinger is now an explicit backend-admin concern
@@ -109,18 +118,17 @@ Current first-pass closeout status:
 - first-pass completion criteria and remaining implementation work are tracked in [2026-03-25-backend-admin-first-pass-status.md](./2026-03-25-backend-admin-first-pass-status.md)
 - that document now also records the recommended implementation approach for each still-open first-pass issue
 - the concrete execution order, file targets, acceptance criteria, and test plan for those issues are tracked in [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
-- the most important remaining implementation areas are:
-  - scheduler consolidation
-  - queue runtime policy cleanup
-  - scraper and DNS dependency health checks
-  - summary-first logging for noisy daily commands
-  - a daily backend health dashboard
-  - a first lightweight alert path
+- the first-pass code implementation is now complete
+- the most important remaining follow-up areas are:
+  - Hostinger cron cutover to the single scheduler entry
+  - validation of worker heartbeat and DNS status artifact publishing in the real external runtimes
+  - the next manual storage-retention trial for `cambridge-socrata-datasets`
 
 ## Current Production Deploy
 
 - Production deploys currently run from `~/publicdatawatchdeploy.sh` on the Hostinger server.
 - The exact SSH user, port, and any host alias should be read from local `~/.ssh/config` rather than committed into the repo docs.
+- Laravel validation should be run through `./vendor/bin/sail ...` locally when Sail is available.
 - Standard release sequence is:
   - verify changes locally
   - commit to git locally

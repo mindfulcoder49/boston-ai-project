@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\OperationalSummaryLogger;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log; // Keep Log if you plan to use it, otherwise it can be removed if not used.
@@ -21,7 +22,7 @@ class DownloadEverettPDFMarkdown extends Command
         $this->pdfLinkExtractor = $pdfLinkExtractor;
     }
 
-    public function handle()
+    public function handle(): int
     {
         $config = config('everett_datasets');
         if (!$config || !isset($config['arrest_log_page_url_template']) || !isset($config['daily_log_page_url_template']) || !isset($config['years_to_process'])) {
@@ -87,6 +88,20 @@ class DownloadEverettPDFMarkdown extends Command
             // For now, let's assume the scraper handles content negotiation or the existing JSON parsing works.
         ];
 
+        $summary = [
+            'pages_total' => count($pages),
+            'pages_failed' => 0,
+            'pdf_links_found' => 0,
+            'markdown_saved' => 0,
+            'markdown_skipped_existing' => 0,
+            'markdown_failed' => 0,
+        ];
+
+        OperationalSummaryLogger::emit($this, $this->getName(), 'start', [
+            'page_count' => count($pages),
+            'output_directory' => $mdOutputDir,
+        ]);
+
         foreach ($pages as $pageUrl) {
             $this->info("Processing page: {$pageUrl} to find PDF links.");
             // Payload to get HTML content of the page itself
@@ -102,6 +117,7 @@ class DownloadEverettPDFMarkdown extends Command
                 if (!$response->successful()) {
                     $this->error("Failed to scrape page: {$pageUrl}. Status: {$response->status()}. Body: " . $response->body());
                     Log::error("Scraper service error for page URL {$pageUrl}: " . $response->body());
+                    $summary['pages_failed']++;
                     continue;
                 }
 
@@ -122,11 +138,13 @@ class DownloadEverettPDFMarkdown extends Command
 
                 if (empty($htmlContent)) {
                     $this->warn("Received empty or non-HTML content for page: {$pageUrl}. Skipping PDF link extraction.");
+                    $summary['pages_failed']++;
                     continue;
                 }
 
                 $pdfLinks = $this->pdfLinkExtractor->extractFromHtml($htmlContent, $pageUrl);
                 $this->info("Found " . count($pdfLinks) . " PDF links on {$pageUrl}");
+                $summary['pdf_links_found'] += count($pdfLinks);
 
                 foreach ($pdfLinks as $pdfLink) {
                     $this->info("Processing PDF link for Markdown: {$pdfLink}");
@@ -137,6 +155,7 @@ class DownloadEverettPDFMarkdown extends Command
 
                     if (isset($existingBaseFilenames[$currentPdfBaseFilename])) {
                         $this->info("Skipping PDF link as a version (based on filename pattern '{$currentPdfBaseFilename}_[timestamp].md') already exists: {$pdfLink}");
+                        $summary['markdown_skipped_existing']++;
                         continue; // Skip to the next PDF link
                     }
 
@@ -155,6 +174,7 @@ class DownloadEverettPDFMarkdown extends Command
                     if (!$mdResponse->successful()) {
                         $this->error("Failed to convert PDF to Markdown for: {$pdfLink}. Status: {$mdResponse->status()}. Body: " . $mdResponse->body());
                         Log::error("Scraper service error for PDF URL {$pdfLink}: " . $mdResponse->body());
+                        $summary['markdown_failed']++;
                         continue;
                     }
 
@@ -169,17 +189,27 @@ class DownloadEverettPDFMarkdown extends Command
 
                     File::put($filepath, $markdownText);
                     $this->info("Saved Markdown to {$filepath}");
+                    $summary['markdown_saved']++;
+                    OperationalSummaryLogger::emit($this, $this->getName(), 'markdown_saved', [
+                        'page_url' => $pageUrl,
+                        'pdf_url' => $pdfLink,
+                        'output_file' => $filepath,
+                        'bytes_written' => strlen($markdownText),
+                    ]);
                 }
             } catch (\Illuminate\Http\Client\RequestException $e) {
                 $this->error("HTTP Request Exception while processing {$pageUrl}: " . $e->getMessage());
                 Log::error("Scraper service request exception for URL {$pageUrl}: " . $e->getMessage());
+                $summary['pages_failed']++;
             } catch (\Exception $e) {
                 $this->error("An unexpected error occurred while processing {$pageUrl}: " . $e->getMessage());
                 Log::error("Unexpected error for URL {$pageUrl}: " . $e->getMessage());
+                $summary['pages_failed']++;
             }
         }
 
         $this->info("Processing complete.");
-        return 0;
+        OperationalSummaryLogger::emit($this, $this->getName(), 'complete', $summary, ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0) ? 'warning' : 'info');
+        return ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0) ? 1 : 0;
     }
 }

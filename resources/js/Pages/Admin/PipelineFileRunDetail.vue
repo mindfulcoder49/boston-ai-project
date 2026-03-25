@@ -84,6 +84,12 @@
             <div class="text-sm text-gray-700 mb-1">
               <strong class="text-gray-600">Duration:</strong> {{ command.duration_seconds }}s
             </div>
+            <div v-if="command.latest_summary_event" class="mb-2 rounded-md bg-slate-50 p-3 text-sm text-slate-800">
+              <div class="font-medium text-slate-900">
+                Summary: {{ command.latest_summary_event.component }} / {{ command.latest_summary_event.event }}
+              </div>
+              <pre class="mt-2 overflow-x-auto text-xs text-slate-700">{{ prettySummary(command.latest_summary_event) }}</pre>
+            </div>
             <div v-if="command.failure_excerpt" class="mb-2 rounded-md bg-red-50 p-3 text-sm text-red-800">
               {{ command.failure_excerpt }}
             </div>
@@ -179,6 +185,8 @@ const closeLogModal = () => {
   selectedLogFile.value = '';
   logContent.value = '';
 };
+
+const prettySummary = (summaryEvent) => JSON.stringify(summaryEvent, null, 2);
 
 // If you prefer defineOptions for layout:
 // import AdminLayout from '@/Layouts/AdminLayout.vue';

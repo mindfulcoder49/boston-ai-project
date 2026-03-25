@@ -6,6 +6,8 @@ load_dotenv()
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID") or None
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY") or None
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME") or None
+DNS_STATUS_S3_KEY = os.getenv("DNS_STATUS_S3_KEY", "ops/health/ec2_dns_status.json")
 
 EC2_INSTANCE_ID = os.getenv("EC2_INSTANCE_ID") or None
 EC2_NAME_TAG = os.getenv("EC2_NAME_TAG") or None

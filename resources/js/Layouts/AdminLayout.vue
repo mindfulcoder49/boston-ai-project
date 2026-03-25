@@ -41,6 +41,7 @@
       <!-- Sidebar -->
       <aside class="w-64 bg-white border-r border-gray-200 p-4 space-y-2 hidden md:block">
         <NavLink :href="route('admin.index')" :active="route().current('admin.index')">Dashboard</NavLink>
+        <NavLink :href="route('admin.backend-health.index')" :active="route().current('admin.backend-health.index')">Backend Health</NavLink>
         <NavLink :href="route('admin.maps.index')" :active="route().current('admin.maps.index') || route().current('admin.maps.edit')">Manage Maps</NavLink>
         <NavLink :href="route('admin.users.index')" :active="route().current('admin.users.index')">Manage Users</NavLink>
         <NavLink :href="route('admin.locations.index')" :active="route().current('admin.locations.index')">Manage Locations</NavLink>
@@ -55,6 +56,13 @@
 
       <!-- Main Content -->
       <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <div
+          v-if="$page.props.adminBackendAlert"
+          class="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900 shadow-sm"
+        >
+          <div class="font-semibold">{{ $page.props.adminBackendAlert.title }}</div>
+          <div class="mt-1 text-sm">{{ $page.props.adminBackendAlert.message }}</div>
+        </div>
         <slot />
       </main>
     </div>

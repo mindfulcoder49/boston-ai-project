@@ -15,6 +15,8 @@ class PipelineRunSummary
         foreach ($runSummary['commands'] as $index => $command) {
             $runSummary['commands'][$index]['stage_name'] = $command['stage_name'] ?? null;
             $runSummary['commands'][$index]['failure_excerpt'] = $command['failure_excerpt'] ?? null;
+            $runSummary['commands'][$index]['summary_events'] = array_values($command['summary_events'] ?? []);
+            $runSummary['commands'][$index]['latest_summary_event'] = $command['latest_summary_event'] ?? null;
         }
 
         $runSummary['command_counts'] = self::summarizeCounts($runSummary['commands']);

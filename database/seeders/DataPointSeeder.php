@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Support\OperationalSummaryLogger;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -41,29 +42,46 @@ class DataPointSeeder extends Seeder
         
     ];
 
+    private bool $encounteredFailure = false;
+
     public function run()
     {
         $this->command->info("Starting DataPointSeeder...");
         Log::info("DataPointSeeder: Run started.");
+        OperationalSummaryLogger::emit($this->command, 'DataPointSeeder', 'start', [
+            'models' => count(self::MODELS_TO_PROCESS),
+            'days_to_keep' => self::DAYS_TO_KEEP,
+        ]);
         $cutoffDate = Carbon::now()->subDays(self::DAYS_TO_KEEP)->toDateTimeString();
 
         try {
             $deletedCount = DB::table('data_points')->where('alcivartech_date', '<', $cutoffDate)->delete();
             $this->command->info("Successfully deleted {$deletedCount} old data points with alcivartech_date older than " . self::DAYS_TO_KEEP . " days.");
             Log::info("DataPointSeeder: Deleted {$deletedCount} old data points with alcivartech_date older than " . self::DAYS_TO_KEEP . " days.");
+            OperationalSummaryLogger::emit($this->command, 'DataPointSeeder', 'cleanup_complete', [
+                'deleted_rows' => $deletedCount,
+                'cutoff_date' => $cutoffDate,
+            ]);
         } catch (\Exception $e) {
+            $this->encounteredFailure = true;
             $this->command->error("Error deleting old data points: " . $e->getMessage());
             Log::error("DataPointSeeder: Error deleting old data points.", ['exception' => $e]);
+            OperationalSummaryLogger::emit($this->command, 'DataPointSeeder', 'cleanup_failed', [
+                'cutoff_date' => $cutoffDate,
+                'message' => $e->getMessage(),
+            ], 'error');
         }
 
         foreach (self::MODELS_TO_PROCESS as $modelClass) {
             if (!class_exists($modelClass)) {
+                $this->encounteredFailure = true;
                 $this->command->error("Model class not found: {$modelClass}. Skipping.");
                 Log::error("DataPointSeeder: Model class not found: {$modelClass}. Skipping.");
                 continue;
             }
             // Check if model uses Mappable trait
             if (!in_array(\App\Models\Concerns\Mappable::class, class_uses_recursive($modelClass))) {
+                $this->encounteredFailure = true;
                 $this->command->error("Model {$modelClass} does not use the Mappable trait. Skipping.");
                 Log::error("DataPointSeeder: Model {$modelClass} does not use the Mappable trait. Skipping.");
                 continue;
@@ -72,6 +90,13 @@ class DataPointSeeder extends Seeder
         }
         $this->command->info("DataPointSeeder finished.");
         Log::info("DataPointSeeder: Run finished.");
+        OperationalSummaryLogger::emit($this->command, 'DataPointSeeder', 'complete', [
+            'encountered_failure' => $this->encounteredFailure,
+        ], $this->encounteredFailure ? 'warning' : 'info');
+
+        if ($this->encounteredFailure) {
+            throw new \RuntimeException('DataPointSeeder completed with one or more model failures. Review operational summaries.');
+        }
     }
 
     private function syncDataPointsForModel(string $modelClass, string $cutoffDate)
@@ -103,8 +128,10 @@ class DataPointSeeder extends Seeder
                     &$totalProcessedCount, &$totalUpsertedCount, &$totalSkippedCount
                 ) {
                     
-                    $this->command->info("Processing chunk of " . $newDataChunk->count() . " records from {$sourceTableName}.");
-                    Log::info("DataPointSeeder: Processing chunk of " . $newDataChunk->count() . " records from '{$sourceTableName}'.");
+                    if ($this->command && $this->command->getOutput()->isVerbose()) {
+                        $this->command->info("Processing chunk of " . $newDataChunk->count() . " records from {$sourceTableName}.");
+                    }
+                    Log::debug("DataPointSeeder: Processing chunk of " . $newDataChunk->count() . " records from '{$sourceTableName}'.");
 
                     if ($newDataChunk->isEmpty()) {
                         $this->command->warn("Empty chunk encountered for {$sourceTableName}.");
@@ -170,12 +197,16 @@ class DataPointSeeder extends Seeder
                     
                     $totalSkippedCount += $chunkSkippedCount;
                     if ($chunkSkippedCount > 0) {
-                        $this->command->info("Skipped {$chunkSkippedCount} records from the current chunk of {$sourceTableName}.");
+                        if ($this->command && $this->command->getOutput()->isVerbose()) {
+                            $this->command->info("Skipped {$chunkSkippedCount} records from the current chunk of {$sourceTableName}.");
+                        }
                         Log::info("DataPointSeeder: Skipped {$chunkSkippedCount} records from the current chunk of '{$sourceTableName}'.");
                     }
 
                     if (!empty($batchInsert)) {
-                        $this->command->info("Preparing to upsert batch of " . count($batchInsert) . " valid records for {$sourceTableName}.");
+                        if ($this->command && $this->command->getOutput()->isVerbose()) {
+                            $this->command->info("Preparing to upsert batch of " . count($batchInsert) . " valid records for {$sourceTableName}.");
+                        }
                         Log::info("DataPointSeeder: Preparing to upsert batch of " . count($batchInsert) . " valid records for '{$sourceTableName}'.");
                         try {
                             DB::table('data_points')->upsert(
@@ -184,14 +215,19 @@ class DataPointSeeder extends Seeder
                                 ['location', 'updated_at', $specificFkColumnInDataPoints, 'alcivartech_date'] // Columns to update
                             );
                             $totalUpsertedCount += count($batchInsert);
-                            $this->command->info("Successfully upserted batch of " . count($batchInsert) . " records for {$sourceTableName}. Total upserted so far: {$totalUpsertedCount}");
+                            if ($this->command && $this->command->getOutput()->isVerbose()) {
+                                $this->command->info("Successfully upserted batch of " . count($batchInsert) . " records for {$sourceTableName}. Total upserted so far: {$totalUpsertedCount}");
+                            }
                             Log::info("DataPointSeeder: Successfully upserted batch of " . count($batchInsert) . " records for '{$sourceTableName}'. Total upserted so far for this model: {$totalUpsertedCount}");
                         } catch (\Exception $e) {
+                            $this->encounteredFailure = true;
                             $this->command->error("Error upserting batch for {$sourceTableName}: " . $e->getMessage());
                             Log::error("DataPointSeeder: Error upserting batch for '{$sourceTableName}'.", ['exception' => $e, 'batch_size' => count($batchInsert)]);
                         }
                     } else {
-                        $this->command->info("No valid records to insert in this batch for {$sourceTableName}.");
+                        if ($this->command && $this->command->getOutput()->isVerbose()) {
+                            $this->command->info("No valid records to insert in this batch for {$sourceTableName}.");
+                        }
                         Log::info("DataPointSeeder: No valid records to insert in this batch for '{$sourceTableName}'.");
                     }
                     return true; 
@@ -199,10 +235,22 @@ class DataPointSeeder extends Seeder
 
             $this->command->info("Finished processing for {$modelClass::getHumanName()}. Total records processed: {$totalProcessedCount}, Total records upserted: {$totalUpsertedCount}, Total records skipped: {$totalSkippedCount}.");
             Log::info("DataPointSeeder: Finished processing for '{$modelClass}'. Processed: {$totalProcessedCount}, Upserted: {$totalUpsertedCount}, Skipped: {$totalSkippedCount}.");
+            OperationalSummaryLogger::emit($this->command, 'DataPointSeeder', 'model_complete', [
+                'model' => $humanName,
+                'processed' => $totalProcessedCount,
+                'upserted' => $totalUpsertedCount,
+                'skipped' => $totalSkippedCount,
+                'cutoff_date' => $cutoffDate,
+            ]);
 
         } catch (\Exception $e) {
+            $this->encounteredFailure = true;
             $this->command->error("Failed to process data for model {$modelClass}: " . $e->getMessage());
             Log::error("DataPointSeeder: Failed to process data for model '{$modelClass}'.", ['exception' => $e]);
+            OperationalSummaryLogger::emit($this->command, 'DataPointSeeder', 'model_failed', [
+                'model' => $humanName,
+                'message' => $e->getMessage(),
+            ], 'error');
         }
         $this->command->info("Finished sync logic for model: {$modelClass::getHumanName()}");
         Log::info("DataPointSeeder: Finished sync logic for model '{$modelClass}'.");

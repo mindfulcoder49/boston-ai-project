@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\BackendHealthAlertEvaluator;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Illuminate\Support\Facades\Auth;
@@ -91,7 +92,20 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'status' => fn () => $request->session()->get('status'),
                 'status_error' => fn () => $request->session()->get('status_error'),
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'command_output' => fn () => $request->session()->get('command_output'),
             ],
+            'adminBackendAlert' => function () use ($request, $user) {
+                $isAdminRoute = $request->route()?->named('admin.*') ?? false;
+                $adminEmail = config('admin.email');
+
+                if (!$isAdminRoute || !$user || $user->email !== $adminEmail) {
+                    return null;
+                }
+
+                return app(BackendHealthAlertEvaluator::class)->topAlert();
+            },
             // h3_index → location_name lookup, cached for 1 hour, invalidated by the geocoding admin tool
             'h3LocationNames' => fn () => Cache::remember(
                 'h3_location_names_map',

@@ -12,6 +12,10 @@
       </div>
 
       <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Link :href="route('admin.backend-health.index')" class="block p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
+          <h2 class="text-lg font-semibold text-indigo-600">Backend Health</h2>
+          <p class="text-sm text-gray-500 mt-1">Review daily freshness, dependency health, alerts, and storage pressure.</p>
+        </Link>
         <Link :href="route('admin.maps.index')" class="block p-6 bg-white shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
           <h2 class="text-lg font-semibold text-indigo-600">Manage Maps</h2>
           <p class="text-sm text-gray-500 mt-1">View, edit, approve, and feature all maps.</p>

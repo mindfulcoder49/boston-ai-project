@@ -181,6 +181,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 
     
     Route::get('/', [AdminController::class, 'index'])->name('index');
+    Route::get('/backend-health', [AdminController::class, 'backendHealthIndex'])->name('backend-health.index');
 
     // Job Runs
     Route::get('/job-runs', [AdminController::class, 'jobRunsIndex'])->name('job-runs.index');

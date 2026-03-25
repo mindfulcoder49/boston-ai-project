@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\OperationalSummaryLogger;
 use Illuminate\Console\Command;
 use Symfony\Component\DomCrawler\Crawler;
 use Carbon\Carbon;
@@ -11,12 +12,15 @@ use DateInterval;
 
 class DownloadCambridgeLogs extends Command
 {
-    protected $signature = 'app:download-cambridge-logs';
+    protected $signature = 'app:download-cambridge-logs {--verbose-entries : Show per-entry Cambridge log parsing output}';
     protected $description = 'Scrapes Cambridge daily police logs for the last two months and outputs CSV files for seeding.';
+
+    private bool $verboseEntries = false;
 
     public function handle()
     {
-        $this->line("<fg=cyan>Starting to download Cambridge police logs for the last two months.</>");
+        $this->verboseEntries = (bool) $this->option('verbose-entries');
+        $this->info("Starting Cambridge police log download for the last two months.");
 
         $endDate = Carbon::today();
         $startDate = Carbon::today()->subMonths(2)->startOfDay();
@@ -32,10 +36,17 @@ class DownloadCambridgeLogs extends Command
         $daysProcessed = 0;
         $daysFailed = 0;
         $daysSkipped = 0;
+        $daysNoLogs = 0;
+
+        OperationalSummaryLogger::emit($this, $this->getName(), 'start', [
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
+            'verbose_entries' => $this->verboseEntries,
+        ]);
 
         foreach ($period as $dateObject) {
             $dateString = $dateObject->format('Y-m-d');
-            $this->line("<fg=magenta>--- Checking date: {$dateString} ---</>");
+            $this->verboseLine("<fg=magenta>--- Checking date: {$dateString} ---</>");
 
             // Construct the expected output file path
             [$Y, $m, $d] = explode('-', $dateString);
@@ -44,14 +55,13 @@ class DownloadCambridgeLogs extends Command
             $expectedFilePath = "{$outputDir}/{$outFileName}";
 
             if (file_exists($expectedFilePath)) {
-                $this->line("<fg=yellow>Logs for {$dateString} already exist at {$expectedFilePath}. Skipping.</>");
+                $this->verboseLine("<fg=yellow>Logs for {$dateString} already exist at {$expectedFilePath}. Skipping.</>");
                 $daysSkipped++;
-                $this->line("<fg=magenta>--- Finished checking for date: {$dateString} ---</>");
-                $this->line(""); // Add a blank line for readability
+                $this->verboseLine("<fg=magenta>--- Finished checking for date: {$dateString} ---</>");
                 continue;
             }
             
-            $this->line("<fg=magenta>--- Processing date: {$dateString} ---</>");
+            $this->info("Processing Cambridge logs for {$dateString}.");
             
             $result = $this->processDate($dateString);
             
@@ -65,42 +75,48 @@ class DownloadCambridgeLogs extends Command
             } elseif ($result === 2) { // Specific code for no logs found/page not exist
                 $this->warn("No logs found or page did not exist for {$dateString}. Skipping.");
                 // Not necessarily an error, so overallStatus might not be set to 1
+                $daysNoLogs++;
             }
-            $this->line("<fg=magenta>--- Finished processing for date: {$dateString} ---</>");
-            $this->line(""); // Add a blank line for readability between dates
+            $this->verboseLine("<fg=magenta>--- Finished processing for date: {$dateString} ---</>");
         }
 
         $this->info("Log download process completed.");
         $this->info("Days processed successfully: {$daysProcessed}");
         $this->info("Days failed: {$daysFailed}");
         $this->info("Days skipped (already downloaded): {$daysSkipped}");
-        $this->info("Days with no logs/page not found: " . (iterator_count($period) - $daysProcessed - $daysFailed - $daysSkipped));
+        $this->info("Days with no logs/page not found: {$daysNoLogs}");
+        OperationalSummaryLogger::emit($this, $this->getName(), 'complete', [
+            'days_processed' => $daysProcessed,
+            'days_failed' => $daysFailed,
+            'days_skipped' => $daysSkipped,
+            'days_no_logs' => $daysNoLogs,
+        ], $daysFailed > 0 ? 'warning' : 'info');
 
         return $overallStatus;
     }
 
     private function processDate(string $date): int
     {
-        $this->line("<fg=cyan>Processing date: {$date}</>");
+        $this->verboseLine("<fg=cyan>Processing date: {$date}</>");
 
         [$Y, $m, $d] = explode('-', $date);
         $mmddyyyy = sprintf('%02d%02d%s', $m, $d, $Y);
         $url = "https://www.cambridgema.gov/Departments/cambridgepolice/News/{$Y}/{$m}/{$mmddyyyy}";
 
-        $this->info("Fetching logs from URL: {$url}");
+        $this->verboseLine("Fetching logs from URL: {$url}");
         $html = @file_get_contents($url);
         if (!$html) {
             $this->warn("Failed to fetch HTML content from {$url}. The page might not exist or there was a network issue. This day will be skipped.");
             return 2; // Special return code for page not found/no content
         }
-        $this->line("<fg=green>Successfully fetched HTML content.</>");
+        $this->verboseLine("<fg=green>Successfully fetched HTML content.</>");
 
         $crawler = new Crawler($html);
         $rows = [];
-        $this->line("Starting to process log entries for {$date}...");
+        $this->verboseLine("Starting to process log entries for {$date}...");
 
         $crawler->filter('ul.logEntries > li')->each(function(Crawler $li, $i) use (&$rows, $date) {
-            $this->line("<fg=yellow>--- Processing Log Entry #" . ($i + 1) . " for {$date} ---</>");
+            $this->verboseLine("<fg=yellow>--- Processing Log Entry #" . ($i + 1) . " for {$date} ---</>");
 
             $detailsNode = $li->filter('div.details');
             if (!$detailsNode->count()) {
@@ -262,7 +278,7 @@ class DownloadCambridgeLogs extends Command
             ];
             $rows[] = $rowData;
             // $this->line("Row added to batch: " . json_encode($rowData));
-            $this->line("<fg=yellow>--- Finished Log Entry #" . ($i + 1) . " for {$date} ---</>");
+            $this->verboseLine("<fg=yellow>--- Finished Log Entry #" . ($i + 1) . " for {$date} ---</>");
         });
 
         if (empty($rows)) {
@@ -271,21 +287,21 @@ class DownloadCambridgeLogs extends Command
         }
 
         $dir = storage_path("app/datasets/cambridge/logs");
-        $this->line("Ensuring output directory exists: {$dir}");
+        $this->verboseLine("Ensuring output directory exists: {$dir}");
         if (!is_dir($dir)) {
             if (mkdir($dir, 0755, true)) {
-                $this->line("<fg=green>Created directory: {$dir}</>");
+                $this->verboseLine("<fg=green>Created directory: {$dir}</>");
             } else {
                 $this->error("Failed to create directory: {$dir}");
                 return 1; // Error creating directory
             }
         } else {
-            $this->line("Output directory already exists.");
+            $this->verboseLine("Output directory already exists.");
         }
 
         $outFileName = "cambridge_{$Y}{$m}{$d}.csv";
         $out = "{$dir}/{$outFileName}";
-        $this->line("Preparing to write CSV to: {$out}");
+        $this->verboseLine("Preparing to write CSV to: {$out}");
 
         $fh = fopen($out, 'w');
         if ($fh === false) {
@@ -294,10 +310,10 @@ class DownloadCambridgeLogs extends Command
         }
 
         $headers = ['date_of_report','crime_date_time','file_number','crime','location','crime_details'];
-        $this->line("Writing CSV headers for {$date}: " . implode(',', $headers));
+        $this->verboseLine("Writing CSV headers for {$date}: " . implode(',', $headers));
         fputcsv($fh, $headers);
 
-        $this->line("Writing " . count($rows) . " data rows to CSV for {$date}...");
+        $this->verboseLine("Writing " . count($rows) . " data rows to CSV for {$date}...");
         foreach ($rows as $r) {
             fputcsv($fh, $r);
         }
@@ -306,6 +322,18 @@ class DownloadCambridgeLogs extends Command
         $numEntries = count($rows);
         $message = "Wrote " . $out . " (" . $numEntries . " entries)";
         $this->info("<fg=green>{$message}</>");
+        OperationalSummaryLogger::emit($this, $this->getName(), 'date_complete', [
+            'date' => $date,
+            'entries_written' => $numEntries,
+            'output_file' => $out,
+        ]);
         return 0; // Success for this date
+    }
+
+    private function verboseLine(string $message): void
+    {
+        if ($this->verboseEntries || $this->output->isVerbose()) {
+            $this->line($message);
+        }
     }
 }
