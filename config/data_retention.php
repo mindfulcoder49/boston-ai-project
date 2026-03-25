@@ -1,6 +1,97 @@
 <?php
 
 return [
+    'file_targets' => [
+        [
+            'slug' => 'logs',
+            'name' => 'All Logs',
+            'default' => true,
+            'paths' => [
+                storage_path('logs'),
+            ],
+        ],
+        [
+            'slug' => 'pipeline-runs',
+            'name' => 'Pipeline Run Logs',
+            'default' => false,
+            'paths' => [
+                storage_path('logs/pipeline_runs'),
+            ],
+        ],
+        [
+            'slug' => 'datasets',
+            'name' => 'All Downloaded Datasets',
+            'default' => true,
+            'paths' => [
+                storage_path('app/datasets'),
+            ],
+        ],
+        [
+            'slug' => 'cambridge-datasets',
+            'name' => 'Cambridge Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/cambridge'),
+            ],
+        ],
+        [
+            'slug' => 'chicago-datasets',
+            'name' => 'Chicago Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/chicago'),
+            ],
+        ],
+        [
+            'slug' => 'montgomery-county-md-datasets',
+            'name' => 'Montgomery County MD Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/montgomery_county_md'),
+            ],
+        ],
+        [
+            'slug' => 'massachusetts-datasets',
+            'name' => 'Massachusetts Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/massachusetts'),
+            ],
+        ],
+        [
+            'slug' => 'san-francisco-datasets',
+            'name' => 'San Francisco Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/san_francisco'),
+            ],
+        ],
+        [
+            'slug' => 'seattle-datasets',
+            'name' => 'Seattle Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/seattle'),
+            ],
+        ],
+        [
+            'slug' => 'new-york-datasets',
+            'name' => 'New York Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/new_york'),
+            ],
+        ],
+        [
+            'slug' => 'everett-datasets',
+            'name' => 'Everett Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/everett'),
+            ],
+        ],
+    ],
+
     'database_rules' => [
         [
             'name' => 'Shared Data Points',

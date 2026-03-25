@@ -52,6 +52,9 @@ Current scope:
 
 Command:
 - `php artisan app:cleanup --dry-run-before=YYYY-MM-DD`
+- `php artisan app:cleanup --list-targets`
+- `php artisan app:cleanup --dry-run-before=YYYY-MM-DD --target=logs`
+- `php artisan app:cleanup --dry-run-before=YYYY-MM-DD --target=datasets`
 
 Purpose:
 - preview files that would be deleted from:
@@ -59,6 +62,15 @@ Purpose:
   - `storage/app/datasets`
 - show file count, estimated freed space, and sample file paths
 - delete nothing
+
+Current target model:
+- safe defaults are non-overlapping top-level targets:
+  - `logs`
+  - `datasets`
+- narrower trial targets exist for high-pressure areas like:
+  - `pipeline-runs`
+  - `cambridge-datasets`
+  - other city-specific dataset buckets
 
 ### 3. Approval Boundary
 
@@ -68,6 +80,20 @@ No new cleanup automation should happen until:
 3. the cleanup is trialed manually once
 
 Only after that should scheduled cleanup be considered.
+
+## Recommended Trial Order
+
+For the first manual cleanup trial, do not start with the full default scope.
+
+Recommended order:
+1. preview `pipeline-runs`
+2. preview `logs`
+3. preview `cambridge-datasets`
+4. preview all `datasets`
+
+Reason:
+- these are the largest and most obviously reproducible storage consumers
+- they let cleanup be reviewed in narrower slices before any broader delete action
 
 ## Recommended Next Phases
 
