@@ -35,6 +35,25 @@ return [
             ],
         ],
         [
+            'slug' => 'cambridge-socrata-datasets',
+            'name' => 'Cambridge Socrata Snapshots',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/cambridge'),
+            ],
+            'exclude_paths' => [
+                storage_path('app/datasets/cambridge/logs'),
+            ],
+        ],
+        [
+            'slug' => 'cambridge-logs',
+            'name' => 'Cambridge Daily Police Logs',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets/cambridge/logs'),
+            ],
+        ],
+        [
             'slug' => 'chicago-datasets',
             'name' => 'Chicago Datasets',
             'default' => false,

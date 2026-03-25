@@ -69,8 +69,14 @@ Current target model:
   - `datasets`
 - narrower trial targets exist for high-pressure areas like:
   - `pipeline-runs`
-  - `cambridge-datasets`
+  - `cambridge-socrata-datasets`
+  - `cambridge-logs`
   - other city-specific dataset buckets
+
+Important Cambridge distinction:
+- `cambridge-socrata-datasets` are full snapshot files downloaded by `app:download-city-dataset`
+- `cambridge-logs` are daily police log CSVs built by `app:download-cambridge-logs`
+- those should not be treated as the same retention class
 
 ### 3. Approval Boundary
 
@@ -88,7 +94,7 @@ For the first manual cleanup trial, do not start with the full default scope.
 Recommended order:
 1. preview `pipeline-runs`
 2. preview `logs`
-3. preview `cambridge-datasets`
+3. preview `cambridge-socrata-datasets`
 4. preview all `datasets`
 
 Reason:

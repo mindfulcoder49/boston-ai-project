@@ -326,6 +326,10 @@ class CleanupCommand extends Command
         foreach ($targets as $target) {
             $targetCount = 0;
             $targetSize = 0;
+            $excludedPaths = array_map(
+                fn (string $path) => rtrim($path, DIRECTORY_SEPARATOR),
+                $target['exclude_paths'] ?? []
+            );
 
             foreach ($target['paths'] as $path) {
                 if (!File::exists($path)) {
@@ -339,11 +343,16 @@ class CleanupCommand extends Command
                 }
 
                 foreach ($files as $file) {
+                    $filePath = $file->getPathname();
+
+                    if ($this->isExcludedPath($filePath, $excludedPaths)) {
+                        continue;
+                    }
+
                     if ($file->getMTime() >= $deleteTimestamp) {
                         continue;
                     }
 
-                    $filePath = $file->getPathname();
                     $size = $file->getSize();
 
                     if (!isset($uniqueCandidates[$filePath])) {
@@ -377,6 +386,27 @@ class CleanupCommand extends Command
             'target_summaries' => $targetSummaries,
             'total_size' => $totalSize,
         ];
+    }
+
+    protected function isExcludedPath(string $filePath, array $excludedPaths): bool
+    {
+        $normalizedFilePath = rtrim($filePath, DIRECTORY_SEPARATOR);
+
+        foreach ($excludedPaths as $excludedPath) {
+            if ($excludedPath === '') {
+                continue;
+            }
+
+            if ($normalizedFilePath === $excludedPath) {
+                return true;
+            }
+
+            if (str_starts_with($normalizedFilePath, $excludedPath . DIRECTORY_SEPARATOR)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
