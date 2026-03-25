@@ -100,6 +100,35 @@ Production deployment is currently external to Laravel backend commands:
 
 So deploy administration and data administration are related, but still separate flows.
 
+### 8. Live production validation exposed the real March 25 failure mode
+
+A live production validation was run on 2026-03-25 against the most recent pipeline run.
+
+Findings:
+- the latest production `app:run-all-data-pipeline` run was marked `failed`
+- the first and only failing command in that run was `CambridgeCrimeDataSeederMerge`
+- the failure was caused by a Cambridge CSV header mismatch:
+  - live file header used `File Number`
+  - the seeder assumed `file_number`
+- despite the top-level `failed` status, the core freshness path still completed:
+  - `DataPointSeeder` succeeded
+  - `app:cache-metrics-data` succeeded
+  - `reports:send` succeeded
+
+This matters operationally:
+- a top-level `failed` run is not always a total freshness failure
+- the operator needs to distinguish partial city-stage failure from core freshness failure
+
+Follow-up completed on 2026-03-25:
+- the Cambridge crime seeders were patched to normalize CSV headers defensively
+- `CambridgeCrimeDataSeederMerge` was rerun successfully on production and completed cleanly
+- production `.env` was also corrected from:
+  - `APP_ENV=local`
+  - `APP_DEBUG=true`
+  to:
+  - `APP_ENV=production`
+  - `APP_DEBUG=false`
+
 ## Command Inventory
 
 ### A. Ingestion And Seeding
