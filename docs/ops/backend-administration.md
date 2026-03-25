@@ -86,6 +86,7 @@ Current audit and first runbook draft:
 - [2026-03-25-daily-observability-plan.md](./2026-03-25-daily-observability-plan.md)
 - [2026-03-25-data-retention-plan.md](./2026-03-25-data-retention-plan.md)
 - [2026-03-25-backend-admin-first-pass-status.md](./2026-03-25-backend-admin-first-pass-status.md)
+- [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
 
 Current observability status:
 - Phase 1 is now implemented in the admin pipeline views and `run_summary.json`
@@ -107,6 +108,7 @@ Current retention direction:
 Current first-pass closeout status:
 - first-pass completion criteria and remaining implementation work are tracked in [2026-03-25-backend-admin-first-pass-status.md](./2026-03-25-backend-admin-first-pass-status.md)
 - that document now also records the recommended implementation approach for each still-open first-pass issue
+- the concrete execution order, file targets, acceptance criteria, and test plan for those issues are tracked in [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
 - the most important remaining implementation areas are:
   - scheduler consolidation
   - queue runtime policy cleanup

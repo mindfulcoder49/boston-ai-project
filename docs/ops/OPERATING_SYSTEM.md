@@ -20,6 +20,7 @@ Build a repeatable operating system where:
 
 3. Backend Administration And Data Operations
    Document and stabilize operational command flows, then gradually automate them.
+   Current execution plan: [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
 
 4. Monetization And Social Distribution
    Run pricing, content, and distribution work through recommendation plus founder execution.

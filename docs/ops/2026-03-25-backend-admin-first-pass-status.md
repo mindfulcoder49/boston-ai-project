@@ -9,6 +9,10 @@ This document answers one narrow question:
 It is not a long-term roadmap.
 It is the close-out checklist for the first serious visit to backend administration.
 
+Detailed implementation order, file targets, tests, and acceptance criteria now live in:
+
+- [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
+
 ## What This First Pass Already Accomplished
 
 Shipped or documented in this pass:
