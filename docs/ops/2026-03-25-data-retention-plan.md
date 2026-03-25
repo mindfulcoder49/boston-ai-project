@@ -69,6 +69,7 @@ Current target model:
   - `datasets`
 - narrower trial targets exist for high-pressure areas like:
   - `pipeline-runs`
+  - `boston-datasets`
   - `cambridge-socrata-datasets`
   - `cambridge-logs`
   - other city-specific dataset buckets
@@ -77,6 +78,10 @@ Important Cambridge distinction:
 - `cambridge-socrata-datasets` are full snapshot files downloaded by `app:download-city-dataset`
 - `cambridge-logs` are daily police log CSVs built by `app:download-cambridge-logs`
 - those should not be treated as the same retention class
+
+Important Boston distinction:
+- Boston full-refresh scraper downloads are stored at the top level of `storage/app/datasets`
+- `boston-datasets` isolates them by filename pattern so they can be reviewed without sweeping in every city subdirectory
 
 ### 3. Approval Boundary
 
@@ -93,13 +98,29 @@ For the first manual cleanup trial, do not start with the full default scope.
 
 Recommended order:
 1. preview `pipeline-runs`
-2. preview `logs`
+2. preview `boston-datasets`
 3. preview `cambridge-socrata-datasets`
-4. preview all `datasets`
+4. preview `logs`
+5. preview all `datasets`
 
 Reason:
 - these are the largest and most obviously reproducible storage consumers
 - they let cleanup be reviewed in narrower slices before any broader delete action
+
+## Current Production Dry-Run Findings
+
+Using a cutoff of `2026-02-24` on production:
+
+- `pipeline-runs`: `5,469` files, about `9.73 GB`
+- `boston-datasets`: `139` files, about `15.55 GB`
+- `cambridge-socrata-datasets`: `1,651` files, about `41.75 GB`
+- `cambridge-logs`: `265` files, about `1.53 MB`
+
+Interpretation:
+- `pipeline-runs` is still the safest first real delete trial
+- `boston-datasets` is the clearest next dataset cleanup candidate because those files are known full snapshots
+- `cambridge-socrata-datasets` is large and likely safe, but it stays behind Boston because Cambridge storage also contains a separate daily-log flow
+- `cambridge-logs` is too small to matter right now and should not drive early cleanup decisions
 
 ## Recommended Next Phases
 

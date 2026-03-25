@@ -95,6 +95,11 @@ Current retention direction:
 - storage pressure on Hostinger is now an explicit backend-admin concern
 - new cleanup work should be preview-first, with dry-run review before any new delete automation
 - aggregate table retention and file cleanup are the first safe areas to standardize
+- current file-cleanup priority is:
+  - `pipeline-runs` first
+  - `boston-datasets` second
+  - `cambridge-socrata-datasets` third
+- Cambridge daily police logs are explicitly separated from Cambridge full snapshots and are not an early cleanup priority because they only account for about `1.53 MB` in the current dry run
 
 ## Current Production Deploy
 
