@@ -106,6 +106,7 @@ Current retention direction:
 
 Current first-pass closeout status:
 - first-pass completion criteria and remaining implementation work are tracked in [2026-03-25-backend-admin-first-pass-status.md](./2026-03-25-backend-admin-first-pass-status.md)
+- that document now also records the recommended implementation approach for each still-open first-pass issue
 - the most important remaining implementation areas are:
   - scheduler consolidation
   - queue runtime policy cleanup

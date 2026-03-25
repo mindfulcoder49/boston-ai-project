@@ -45,6 +45,20 @@ What remains:
 - move Hostinger toward one cron entry running `php artisan schedule:run`
 - make the intended trigger time explicit in docs and code
 
+Recommended solution:
+- do not schedule the full long-running pipeline command directly from `schedule:run`
+- add a lightweight dispatch command such as `app:dispatch-daily-pipeline` that:
+  - checks for an existing recent running pipeline
+  - dispatches `RunArtisanCommandJob` for `app:run-all-data-pipeline`
+  - records a clear no-op message if a run is already active
+- schedule that dispatch command daily in `app/Console/Kernel.php`
+- move Hostinger to a single cron entry:
+  - `* * * * * /usr/bin/php /home/.../artisan schedule:run`
+
+Reason:
+- this keeps Laravel scheduling as the control plane without making `schedule:run` block for 10+ minutes
+- it fits the existing queue-backed admin execution model
+
 ### 2. Queue Runtime Policy
 
 Status:
@@ -65,6 +79,19 @@ What remains:
 - document restart behavior and expectations
 - align timeouts so the queue worker is not stricter than the jobs it runs
 
+Recommended solution:
+- stop using `queue:listen` for this path
+- move long-running admin orchestration onto a dedicated queue such as `admin-long`
+- dispatch `RunArtisanCommandJob` onto that queue explicitly
+- process it with a cron-invoked worker that drains and exits, for example:
+  - `php artisan queue:work database --queue=admin-long --stop-when-empty --timeout=7200 --tries=1 --sleep=3`
+- if Hostinger allows it, wrap the worker in a lock such as `flock` to avoid overlap
+- keep `--tries=1` for long orchestration jobs so failures are visible instead of silently retried
+
+Reason:
+- the current `500` second worker timeout is stricter than the `3600` second pipeline subprocess timeout and the `7200` second queued job timeout
+- automatic retries are high-risk for long ingestion orchestrators because they can duplicate noisy partial work
+
 ### 3. Dependency Health Checks
 
 Status:
@@ -80,6 +107,20 @@ What remains:
 - add DNS sync sanity checks
 - add queue-heartbeat or recent-worker-evidence checks
 - surface those checks in admin operations, not only in raw logs
+
+Recommended solution:
+- add a dedicated command such as `app:check-ingestion-dependencies`
+- have it produce one compact status object covering:
+  - scraper hostname resolution
+  - scraper HTTP reachability with a short timeout
+  - current DNS target versus current EC2 public IP
+  - recent queue worker evidence
+- run it as a preflight check before the daily pipeline dispatch and also expose it in admin
+- if the scraper service supports it, add a cheap `/health` endpoint on the helper service and check that instead of a heavy conversion route
+
+Reason:
+- Boston and Everett failures are currently detected too late
+- dependency health should be visible before a full pipeline run burns time and fails
 
 ### 4. Summary-First Logging For Noisy Commands
 
@@ -102,6 +143,26 @@ What remains:
 - push row-level verbosity behind explicit debug modes
 - make output file, record counts, and latest-source-date information easy to spot
 
+Recommended solution:
+- create a small shared logging convention or helper for operational commands
+- every critical daily command should emit:
+  - one start summary
+  - one completion summary
+  - one failure summary
+- standard fields should include:
+  - source or dataset name
+  - output file path
+  - bytes downloaded or written
+  - records attempted, inserted, skipped, and deleted
+  - latest source date seen
+  - warning count
+  - failure excerpt
+- move row-level or per-record diagnostics behind `-v` or an explicit debug mode
+
+Reason:
+- the problem is not lack of logs
+- the problem is that operators cannot quickly extract the one line that explains what happened
+
 ### 5. Daily Backend Health Dashboard
 
 Status:
@@ -119,6 +180,25 @@ What remains:
   - scraper dependency health
   - metrics freshness
   - last successful completion time
+
+Recommended solution:
+- add a dedicated admin route and page for backend health instead of overloading the pipeline log list
+- populate it from:
+  - the latest `pipeline_runs_history.json` entry
+  - the latest `run_summary.json`
+  - the new dependency-check command output
+  - lightweight queue and storage checks
+- keep the first version narrow:
+  - latest run card
+  - core freshness card
+  - first failed command card
+  - dependency health card
+  - metrics freshness card
+  - storage pressure card
+  - quick links to rerun, logs, cache manager, and cleanup review
+
+Reason:
+- the daily operator needs a decision surface, not another general-purpose log browser
 
 ### 6. Alert Path For True Failures
 
@@ -140,6 +220,21 @@ What remains:
   - admin warning banner
   - email
 
+Recommended solution:
+- start with two channels only:
+  - admin warning banner for anyone in the backend
+  - direct email to the founder/admin address for true freshness failures
+- trigger alerts only for:
+  - no successful run in 24 hours
+  - failed `DataPointSeeder`
+  - repeated failure of the same command across two daily runs
+  - failed Boston or Everett scraper-dependent acquisition
+- do not alert on every branch failure or every warning
+
+Reason:
+- the first alert path should be credible, not noisy
+- since `reports:send` already implies mail infrastructure is in use, email is the simplest first push channel
+
 ### 7. Finalize The Next Retention Trial
 
 Status:
@@ -158,6 +253,17 @@ Why it matters:
 What remains:
 - execute the Cambridge snapshot cleanup in a separate trial
 - only after that consider any broader cleanup automation
+
+Recommended solution:
+- keep the same preview-first manual workflow
+- run `cambridge-socrata-datasets` as the next narrow delete
+- after that, pause before broadening cleanup scope and decide whether:
+  - additional dataset families deserve their own scoped targets
+  - recurring automated cleanup is justified yet
+
+Reason:
+- the current workflow has already proven safe on two separate targets
+- there is no need to jump from narrow wins to broad destructive automation
 
 ## What Is Deliberately Deferred
 
