@@ -134,7 +134,21 @@ Executed on production on `2026-03-25`:
 Outcome:
 - the preview-first workflow worked as intended
 - scoped cleanup is safe enough to continue manually on the next narrow target
-- the next recommended manual trial is `boston-datasets`
+- the next recommended manual trial was `boston-datasets`
+
+## Second Live Cleanup Trial
+
+Executed on production on `2026-03-25`:
+
+- command: `php artisan app:cleanup --delete-before=2026-02-24 --target=boston-datasets`
+- result: `139` files deleted, `15.55 GB` freed
+- top-level files in `storage/app/datasets` dropped from about `21G` to `5.2G`
+- a repeat dry run for the same cutoff now returns `0` Boston candidate files
+
+Outcome:
+- the Boston filename-pattern target behaved correctly and did not sweep in other city subdirectories
+- the preview-first workflow is now validated on both log cleanup and dataset cleanup
+- the next recommended manual trial is `cambridge-socrata-datasets`
 
 ## Recommended Next Phases
 
