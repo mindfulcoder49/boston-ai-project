@@ -188,3 +188,34 @@ The first implementation pass should produce:
 - one freshness status per run
 
 That is enough to materially improve daily operations before touching the scheduler.
+
+## Phase 1 Shipped
+
+Implemented on March 25, 2026:
+- enriched `run_summary.json` with:
+  - `summary_version`
+  - `stage_name` on command entries
+  - `failure_excerpt` on failed commands
+  - stage summaries and stage counts
+  - first failed command extraction
+  - failed command counts
+  - derived `core_freshness` status
+- updated the admin pipeline list page to show:
+  - freshness badge
+  - core freshness badge
+  - first failed command summary
+- updated the admin pipeline detail page to show:
+  - freshness status and age
+  - core freshness summary
+  - first failed command card
+  - stage summary section
+  - per-command failure excerpts
+
+Backward-compatibility note:
+- older historical summaries do not contain stage names or failure excerpts, so those fields may be blank on runs created before this change
+
+Still deferred to later phases:
+- standardized per-command summary logging
+- scraper/DNS dependency health checks
+- alerting
+- scheduler consolidation

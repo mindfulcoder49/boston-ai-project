@@ -13,6 +13,7 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Console\Input\InputOption;
 use App\Support\AdminPipelineConfig;
+use App\Support\PipelineRunSummary;
 
 class RunAllDataPipelineCommand extends Command
 {
@@ -50,12 +51,14 @@ class RunAllDataPipelineCommand extends Command
         $stagesInName = $stagesOption ? ' (' . $stagesOption . ')' : '';
 
         $this->runSummary = [
+            'summary_version' => 2,
             'run_id' => $this->runId,
             'name' => 'app:run-all-data-pipeline' . $stagesInName,
             'start_time' => Carbon::now()->toIso8601String(),
             'end_time' => null,
             'status' => 'running',
             'commands' => [],
+            'stages' => [],
             'summary_file_path' => $this->runLogDir . '/run_summary.json',
         ];
         $this->writeRunSummary();
@@ -63,6 +66,7 @@ class RunAllDataPipelineCommand extends Command
 
     private function writeRunSummary(): void
     {
+        $this->runSummary = PipelineRunSummary::enrich($this->runSummary);
         File::put($this->runLogDir . '/run_summary.json', json_encode($this->runSummary, JSON_PRETTY_PRINT));
     }
 
@@ -73,15 +77,11 @@ class RunAllDataPipelineCommand extends Command
             $history = json_decode(File::get($this->historyFilePath), true) ?: [];
         }
 
-        $runEntry = [
-            'run_id' => $this->runSummary['run_id'],
-            'name' => $this->runSummary['name'],
-            'start_time' => $this->runSummary['start_time'],
-            'status' => $this->runSummary['status'],
-            'summary_file_path' => str_replace(storage_path(), '', $this->runSummary['summary_file_path']), // Relative path
-        ];
+        $runEntry = PipelineRunSummary::historyEntry($this->runSummary);
         if ($isFinalUpdate) {
              $runEntry['end_time'] = $this->runSummary['end_time'];
+        } else {
+             unset($runEntry['end_time']);
         }
 
 
@@ -229,6 +229,17 @@ class RunAllDataPipelineCommand extends Command
     {
         $this->logPipelineInfo("--- Starting Stage: {$stageName} ---");
         $stageSuccess = true;
+        $stageStartTime = Carbon::now();
+
+        $this->runSummary['stages'][] = [
+            'stage_name' => $stageName,
+            'start_time' => $stageStartTime->toIso8601String(),
+            'end_time' => null,
+            'duration_seconds' => null,
+            'status' => 'running',
+        ];
+        $stageIndex = count($this->runSummary['stages']) - 1;
+        $this->writeRunSummary();
 
         foreach ($commands as $item) {
             $commandName = $item['command'];
@@ -241,12 +252,14 @@ class RunAllDataPipelineCommand extends Command
 
             $currentCommandDetails = [
                 'command_name' => $commandName,
+                'stage_name' => $stageName,
                 'parameters' => $params,
                 'start_time' => $commandStartTime->toIso8601String(),
                 'end_time' => null,
                 'duration_seconds' => null,
                 'status' => 'running', // Initial status
                 'log_file' => $commandLogFileName,
+                'failure_excerpt' => null,
             ];
             
             $this->runSummary['commands'][] = $currentCommandDetails;
@@ -275,11 +288,17 @@ class RunAllDataPipelineCommand extends Command
                 $this->logPipelineError("Command {$commandName} in stage '{$stageName}' failed.");
                 File::append($commandLogFilePath, $exception->getMessage() . "\n" . $exception->getProcess()->getErrorOutput()); 
                 $this->runSummary['commands'][$currentCommandIndex]['status'] = 'failed';
+                $this->runSummary['commands'][$currentCommandIndex]['failure_excerpt'] = $this->buildFailureExcerpt(
+                    $exception->getProcess()->getErrorOutput(),
+                    $exception->getProcess()->getOutput(),
+                    $exception->getMessage()
+                );
                 $stageSuccess = false;
             } catch (Exception $e) {
                 $this->logPipelineError("Command {$commandName} in stage '{$stageName}' failed with general exception: " . $e->getMessage());
                 File::append($commandLogFilePath, "General Exception: " . $e->getMessage() . "\n" . $e->getTraceAsString());
                 $this->runSummary['commands'][$currentCommandIndex]['status'] = 'failed';
+                $this->runSummary['commands'][$currentCommandIndex]['failure_excerpt'] = Str::limit(trim($e->getMessage()), 240);
                 $stageSuccess = false;
             }
             
@@ -292,13 +311,52 @@ class RunAllDataPipelineCommand extends Command
             $this->writeRunSummary(); // Write summary after each command's details are finalized.
 
             if (!$stageSuccess) { // If this command failed
+                 $this->finalizeStage($stageIndex, 'failed', $stageStartTime);
                  $this->logPipelineError("--- Stage '{$stageName}' failed due to error in command '{$commandName}'. Halting stage. ---");
                  return false; // Stop current stage and report failure
             }
         } // End of foreach ($commands as $item)
 
         // If the loop completes without returning false, the stage was successful
+        $this->finalizeStage($stageIndex, 'success', $stageStartTime);
         $this->logPipelineInfo("--- Stage '{$stageName}' completed successfully. ---");
         return true;
+    }
+
+    private function finalizeStage(int $stageIndex, string $status, Carbon $stageStartTime): void
+    {
+        $stageEndTime = Carbon::now();
+        $this->runSummary['stages'][$stageIndex]['status'] = $status;
+        $this->runSummary['stages'][$stageIndex]['end_time'] = $stageEndTime->toIso8601String();
+        $this->runSummary['stages'][$stageIndex]['duration_seconds'] = $stageEndTime->diffInSeconds($stageStartTime);
+        $this->writeRunSummary();
+    }
+
+    private function buildFailureExcerpt(string ...$segments): ?string
+    {
+        $combined = trim(implode("\n", array_filter(array_map(function (string $segment) {
+            return trim(preg_replace('/\x1B\[[0-9;]*[A-Za-z]/', '', $segment));
+        }, $segments))));
+
+        if ($combined === '') {
+            return null;
+        }
+
+        $lines = array_values(array_filter(
+            array_map('trim', preg_split('/\R+/', $combined) ?: []),
+            fn (string $line) => $line !== ''
+        ));
+
+        $keywords = ['error', 'exception', 'failed', 'undefined', 'not found'];
+        foreach (array_reverse($lines) as $line) {
+            $lower = Str::lower($line);
+            foreach ($keywords as $keyword) {
+                if (Str::contains($lower, $keyword)) {
+                    return Str::limit($line, 240);
+                }
+            }
+        }
+
+        return Str::limit(end($lines) ?: $combined, 240);
     }
 }

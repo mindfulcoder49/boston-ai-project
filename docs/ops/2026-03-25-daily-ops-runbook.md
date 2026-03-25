@@ -49,6 +49,13 @@ Relevant current routes in the app:
 - `admin.cache-manager.index`
 - `admin.job-dispatcher.index`
 
+The pipeline log UI now surfaces these summary fields directly:
+- freshness badge (`Fresh`, `Aging`, `Stale`, `Running`)
+- core freshness badge
+- first failed command
+- stage summary
+- short failure excerpts
+
 ## Daily Review Workflow
 
 ### 1. Check for a Recent Pipeline Run
@@ -58,6 +65,7 @@ Open the pipeline log viewer and review the most recent run.
 Expected:
 - there is a run from the last 24 hours
 - its status is `completed`
+- freshness should normally read `Fresh`
 
 If there is no run in the last 24 hours:
 - treat that as a daily freshness failure
@@ -68,6 +76,8 @@ If there is no run in the last 24 hours:
 
 Review:
 - run status
+- freshness
+- core freshness
 - start time
 - end time
 - command list
@@ -82,6 +92,7 @@ Expected:
 
 If the run status is `failed`:
 - identify the first failed command
+- check whether the core freshness badge still says `Core freshness preserved`
 - do not read every raw log first
 - use the run detail page to narrow the problem to one command or one stage
 

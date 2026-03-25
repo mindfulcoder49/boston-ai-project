@@ -85,6 +85,11 @@ Current audit and first runbook draft:
 - [2026-03-25-daily-ops-runbook.md](./2026-03-25-daily-ops-runbook.md)
 - [2026-03-25-daily-observability-plan.md](./2026-03-25-daily-observability-plan.md)
 
+Current observability status:
+- Phase 1 is now implemented in the admin pipeline views and `run_summary.json`
+- operators can see freshness, core freshness, first failed command, and stage summaries without opening raw logs first
+- later phases still need command-level logging cleanup, dependency health checks, alerts, and scheduling consolidation
+
 ## Current Production Deploy
 
 - Production deploys currently run from `~/publicdatawatchdeploy.sh` on the Hostinger server.

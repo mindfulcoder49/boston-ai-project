@@ -18,7 +18,50 @@
           </div>
           <div><strong class="text-gray-600">Start Time:</strong> {{ formatDateTime(runDetails.start_time) }}</div>
           <div><strong class="text-gray-600">End Time:</strong> {{ runDetails.end_time ? formatDateTime(runDetails.end_time) : 'N/A' }}</div>
+          <div v-if="runDetails.freshness">
+            <strong class="text-gray-600">Freshness:</strong>
+            <span :class="freshnessClass(runDetails.freshness.status)" class="ml-2 px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full">{{ runDetails.freshness.label }}</span>
+            <span class="ml-2 text-gray-700">{{ runDetails.freshness.age_human }}</span>
+          </div>
+          <div v-if="runDetails.core_freshness">
+            <strong class="text-gray-600">Core Freshness:</strong>
+            <span :class="coreFreshnessClass(runDetails.core_freshness.status)" class="ml-2 px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full">{{ runDetails.core_freshness.label }}</span>
+          </div>
+          <div v-if="runDetails.command_counts"><strong class="text-gray-600">Command Counts:</strong> {{ runDetails.command_counts.total }} total / {{ runDetails.command_counts.failed }} failed</div>
+          <div v-if="runDetails.stage_counts"><strong class="text-gray-600">Stage Counts:</strong> {{ runDetails.stage_counts.total }} total / {{ runDetails.stage_counts.failed }} failed</div>
           <div class="md:col-span-2 break-all"><strong class="text-gray-600">Summary File:</strong> {{ runDetails.summary_file_path }}</div>
+        </div>
+      </div>
+
+      <div v-if="runDetails?.first_failed_command" class="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6 border border-red-200">
+        <h2 class="text-xl font-semibold text-red-700 mb-4">First Failed Command</h2>
+        <div class="space-y-2 text-sm">
+          <div><strong class="text-gray-600">Command:</strong> {{ runDetails.first_failed_command.command_name }}</div>
+          <div v-if="runDetails.first_failed_command.stage_name"><strong class="text-gray-600">Stage:</strong> {{ runDetails.first_failed_command.stage_name }}</div>
+          <div v-if="runDetails.first_failed_command.duration_seconds !== null"><strong class="text-gray-600">Duration:</strong> {{ runDetails.first_failed_command.duration_seconds }}s</div>
+          <div v-if="runDetails.first_failed_command.failure_excerpt" class="rounded-md bg-red-50 p-3 text-red-800">
+            {{ runDetails.first_failed_command.failure_excerpt }}
+          </div>
+        </div>
+      </div>
+
+      <div v-if="runDetails?.stages?.length" class="bg-white shadow-md rounded-lg p-4 sm:p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Stage Summary</h2>
+        <div class="space-y-4">
+          <div v-for="(stage, index) in runDetails.stages" :key="`${stage.stage_name}-${index}`" class="border border-gray-200 rounded-md p-4">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+              <h3 class="text-md font-semibold text-gray-800">{{ stage.stage_name }}</h3>
+              <span :class="statusClass(stage.status)" class="mt-1 sm:mt-0 px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full self-start sm:self-center sm:ml-2">
+                {{ stage.status }}
+              </span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              <div><strong class="text-gray-600">Start:</strong> {{ formatDateTime(stage.start_time) }}</div>
+              <div><strong class="text-gray-600">End:</strong> {{ stage.end_time ? formatDateTime(stage.end_time) : 'N/A' }}</div>
+              <div><strong class="text-gray-600">Duration:</strong> {{ stage.duration_seconds ?? 'N/A' }}s</div>
+              <div><strong class="text-gray-600">Commands:</strong> {{ stage.command_count ?? 0 }} total / {{ stage.failed_count ?? 0 }} failed</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -32,11 +75,17 @@
                 {{ command.status }}
               </span>
             </div>
+            <div v-if="command.stage_name" class="text-sm text-gray-700 mb-1">
+              <strong class="text-gray-600">Stage:</strong> {{ command.stage_name }}
+            </div>
             <div class="text-xs text-gray-500 mb-1 truncate break-all" :title="JSON.stringify(command.parameters)">
               <strong class="text-gray-600">Params:</strong> {{ JSON.stringify(command.parameters) }}
             </div>
             <div class="text-sm text-gray-700 mb-1">
               <strong class="text-gray-600">Duration:</strong> {{ command.duration_seconds }}s
+            </div>
+            <div v-if="command.failure_excerpt" class="mb-2 rounded-md bg-red-50 p-3 text-sm text-red-800">
+              {{ command.failure_excerpt }}
             </div>
             <div class="text-sm">
               <strong class="text-gray-600">Log File:</strong>
@@ -93,6 +142,22 @@ const statusClass = (status) => {
   if (status === 'completed' || status === 'success') return 'bg-green-100 text-green-800';
   if (status === 'failed') return 'bg-red-100 text-red-800';
   if (status === 'running') return 'bg-yellow-100 text-yellow-800';
+  return 'bg-gray-100 text-gray-800';
+};
+
+const freshnessClass = (status) => {
+  if (status === 'fresh') return 'bg-emerald-100 text-emerald-800';
+  if (status === 'aging') return 'bg-amber-100 text-amber-800';
+  if (status === 'stale') return 'bg-orange-100 text-orange-800';
+  if (status === 'running') return 'bg-blue-100 text-blue-800';
+  return 'bg-gray-100 text-gray-800';
+};
+
+const coreFreshnessClass = (status) => {
+  if (status === 'preserved') return 'bg-green-100 text-green-800';
+  if (status === 'failed') return 'bg-red-100 text-red-800';
+  if (status === 'pending') return 'bg-yellow-100 text-yellow-800';
+  if (status === 'partial') return 'bg-amber-100 text-amber-800';
   return 'bg-gray-100 text-gray-800';
 };
 

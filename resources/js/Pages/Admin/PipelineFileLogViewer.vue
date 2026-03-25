@@ -18,12 +18,20 @@
         <div v-for="run in pipelineRuns" :key="run.run_id" class="bg-white shadow-md rounded-lg p-4">
           <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-3">
             <h2 class="text-lg font-semibold text-indigo-700 truncate min-w-0 break-words" :title="run.run_id">Run ID: {{ run.run_id }}</h2>
-            <span :class="statusClass(run.status)" class="px-2 py-0.5 mt-1 sm:mt-0 inline-flex text-xs leading-5 font-semibold rounded-full self-start sm:self-center sm:ml-2">
-              {{ run.status }}
-            </span>
+            <div class="flex flex-wrap gap-2 mt-1 sm:mt-0">
+              <span :class="statusClass(run.status)" class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full">
+                {{ run.status }}
+              </span>
+              <span v-if="run.freshness" :class="freshnessClass(run.freshness.status)" class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full">
+                {{ run.freshness.label }}
+              </span>
+              <span v-if="run.core_freshness" :class="coreFreshnessClass(run.core_freshness.status)" class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full">
+                {{ run.core_freshness.label }}
+              </span>
+            </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm mb-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 text-sm mb-3">
             <div>
               <strong class="text-gray-600">Name:</strong>
               <p class="text-gray-800">{{ run.name }}</p>
@@ -36,6 +44,20 @@
               <strong class="text-gray-600">End Time:</strong>
               <p class="text-gray-800">{{ formatDate(run.end_time) }}</p>
             </div>
+            <div v-if="run.command_counts">
+              <strong class="text-gray-600">Commands:</strong>
+              <p class="text-gray-800">{{ run.command_counts.total }} total, {{ run.command_counts.failed }} failed</p>
+            </div>
+            <div v-if="run.freshness">
+              <strong class="text-gray-600">Age:</strong>
+              <p class="text-gray-800">{{ run.freshness.age_human }}</p>
+            </div>
+          </div>
+
+          <div v-if="run.first_failed_command" class="mb-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm">
+            <p class="font-medium text-red-800">First failed command: {{ run.first_failed_command.command_name }}</p>
+            <p v-if="run.first_failed_command.stage_name" class="text-red-700">Stage: {{ run.first_failed_command.stage_name }}</p>
+            <p v-if="run.first_failed_command.failure_excerpt" class="mt-1 text-red-700">{{ run.first_failed_command.failure_excerpt }}</p>
           </div>
 
           <div class="mt-4 flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
@@ -70,6 +92,22 @@ const statusClass = (status) => {
   if (status === 'completed') return 'bg-green-100 text-green-800';
   if (status === 'failed') return 'bg-red-100 text-red-800';
   if (status === 'running') return 'bg-yellow-100 text-yellow-800';
+  return 'bg-gray-100 text-gray-800';
+};
+
+const freshnessClass = (status) => {
+  if (status === 'fresh') return 'bg-emerald-100 text-emerald-800';
+  if (status === 'aging') return 'bg-amber-100 text-amber-800';
+  if (status === 'stale') return 'bg-orange-100 text-orange-800';
+  if (status === 'running') return 'bg-blue-100 text-blue-800';
+  return 'bg-gray-100 text-gray-800';
+};
+
+const coreFreshnessClass = (status) => {
+  if (status === 'preserved') return 'bg-green-100 text-green-800';
+  if (status === 'failed') return 'bg-red-100 text-red-800';
+  if (status === 'pending') return 'bg-yellow-100 text-yellow-800';
+  if (status === 'partial') return 'bg-amber-100 text-amber-800';
   return 'bg-gray-100 text-gray-800';
 };
 

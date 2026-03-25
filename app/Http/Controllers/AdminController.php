@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Artisan;
 use App\Models\ThreeOneOneCase;
 use Illuminate\Support\Facades\DB;
 use App\Support\AdminPipelineConfig;
+use App\Support\PipelineRunSummary;
 
 class AdminController extends Controller
 {
@@ -217,6 +219,7 @@ class AdminController extends Controller
             usort($runs, function ($a, $b) {
                 return strtotime($b['start_time']) - strtotime($a['start_time']);
             });
+            $runs = array_map(fn (array $run) => $this->enrichPipelineHistoryRun($run), $runs);
         }
         return Inertia::render('Admin/PipelineFileLogViewer', [
             'pipelineRuns' => $runs,
@@ -237,6 +240,8 @@ class AdminController extends Controller
             abort(404, 'Pipeline run summary not found.');
         }
         $runDetails = json_decode(File::get($summaryFilePath), true);
+        $runDetails = PipelineRunSummary::enrich($runDetails);
+        $runDetails['freshness'] = PipelineRunSummary::freshness($runDetails, Carbon::now());
 
         return Inertia::render('Admin/PipelineFileRunDetail', [
             'runDetails' => $runDetails,
@@ -283,6 +288,35 @@ class AdminController extends Controller
             return redirect()->route('admin.pipeline.fileLogs.index')->with('success', 'Pipeline run logs deleted successfully.');
         }
         return redirect()->back()->with('error', 'Pipeline run log directory not found.');
+    }
+
+    private function enrichPipelineHistoryRun(array $run): array
+    {
+        $summary = $this->loadPipelineSummaryFromHistoryEntry($run);
+        if ($summary) {
+            $run = array_merge($run, PipelineRunSummary::historyEntry($summary));
+            $run['freshness'] = PipelineRunSummary::freshness($summary, Carbon::now());
+            return $run;
+        }
+
+        $run['freshness'] = PipelineRunSummary::freshness($run, Carbon::now());
+        return $run;
+    }
+
+    private function loadPipelineSummaryFromHistoryEntry(array $run): ?array
+    {
+        $relativePath = ltrim((string) ($run['summary_file_path'] ?? ''), '/');
+        $summaryFilePath = $relativePath !== ''
+            ? storage_path($relativePath)
+            : storage_path('logs/pipeline_runs/' . ($run['run_id'] ?? '') . '/run_summary.json');
+
+        if (!File::exists($summaryFilePath)) {
+            return null;
+        }
+
+        $decoded = json_decode(File::get($summaryFilePath), true);
+
+        return is_array($decoded) ? $decoded : null;
     }
 
     // User Management
