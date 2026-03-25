@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 use League\Csv\Reader;
 use App\Services\CambridgeAddressLookupService;
@@ -56,6 +57,7 @@ class CambridgeCrimeDataSeederMerge extends Seeder
 
             $recordsReadFromFile = 0;
             foreach ($fileRecordsIterator as $record) {
+                $record = $this->normalizeCsvRecordKeys($record);
                 if (empty(array_filter($record))) continue;
 
                 $recordsChunk[] = $record;
@@ -133,13 +135,13 @@ class CambridgeCrimeDataSeederMerge extends Seeder
         foreach ($rawCsvRecords as $record) {
             $currentRecordIndexInChunk++;
 
-            $fileNumberExternal = ($record['file_number'] === '') ? null : ($record['file_number'] ?? null);
+            $fileNumberExternal = $this->recordValue($record, 'file_number');
             if (empty($fileNumberExternal)) {
                 $this->command->warn("[Merge] Skipping record with empty file_number: " . json_encode($record));
                 continue; 
             }
 
-            $crimeDateTimeRaw = trim($record['crime_date_time'] ?? '');
+            $crimeDateTimeRaw = $this->recordValue($record, 'crime_date_time') ?? '';
             $crime_start_val = null;
             $crime_end_val = null; 
 
@@ -161,7 +163,7 @@ class CambridgeCrimeDataSeederMerge extends Seeder
                 $crime_end_val = $crime_start_val; 
             }
             
-            $raw_location_from_csv = trim($record['location'] ?? '');
+            $raw_location_from_csv = $this->recordValue($record, 'location') ?? '';
             $coords = ['latitude' => null, 'longitude' => null];
             
             if (!empty($raw_location_from_csv)) {
@@ -181,13 +183,13 @@ class CambridgeCrimeDataSeederMerge extends Seeder
 
             $dataBatch[] = [
                 'file_number_external'  => $fileNumberExternal,
-                'date_of_report'        => $this->formatDate($record['date_of_report'] ?? null),
+                'date_of_report'        => $this->formatDate($this->recordValue($record, 'date_of_report')),
                 'crime_datetime_raw'    => ($crimeDateTimeRaw === '') ? null : $crimeDateTimeRaw,
                 'crime_start_time'      => $crime_start_val,
                 'crime_end_time'        => $crime_end_val,
-                'crime'                 => ($record['crime'] === '') ? null : ($record['crime'] ?? null),
-                'reporting_area'        => ($record['reporting_area'] === '') ? null : ($record['reporting_area'] ?? null),
-                'neighborhood'          => ($record['neighborhood'] === '') ? null : ($record['neighborhood'] ?? null),
+                'crime'                 => $this->recordValue($record, 'crime'),
+                'reporting_area'        => $this->recordValue($record, 'reporting_area'),
+                'neighborhood'          => $this->recordValue($record, 'neighborhood'),
                 'location_address'      => ($raw_location_from_csv === '') ? null : $raw_location_from_csv,
                 'latitude'              => $coords['latitude'] ? round((float)$coords['latitude'], 7) : null,
                 'longitude'             => $coords['longitude'] ? round((float)$coords['longitude'], 7) : null,
@@ -228,5 +230,41 @@ class CambridgeCrimeDataSeederMerge extends Seeder
             ['file_number_external'],
             array_values($updateColumns)
         );
+    }
+
+    private function normalizeCsvRecordKeys(array $record): array
+    {
+        $normalized = [];
+
+        foreach ($record as $key => $value) {
+            if (!is_string($key)) {
+                $normalized[$key] = $value;
+                continue;
+            }
+
+            $cleanKey = preg_replace('/[^A-Za-z0-9]+/', ' ', trim($key));
+            $normalizedKey = Str::snake(trim($cleanKey));
+
+            if ($normalizedKey === '') {
+                continue;
+            }
+
+            $normalized[$normalizedKey] = $value;
+        }
+
+        return $normalized;
+    }
+
+    private function recordValue(array $record, string $key): ?string
+    {
+        $value = $record[$key] ?? null;
+
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 }
