@@ -27,6 +27,24 @@ return [
             ],
         ],
         [
+            'slug' => 'boston-datasets',
+            'name' => 'Boston Full Snapshot Datasets',
+            'default' => false,
+            'paths' => [
+                storage_path('app/datasets'),
+            ],
+            'include_patterns' => [
+                '311-service-requests-2025_*.csv',
+                '311-service-requests-2026_*.csv',
+                'construction-off-hours_*.csv',
+                'building-permits_*.csv',
+                'crime-incident-reports_*.csv',
+                'trash-schedules-by-address_*.csv',
+                'property-violations_*.csv',
+                'food-inspections_*.csv',
+            ],
+        ],
+        [
             'slug' => 'cambridge-datasets',
             'name' => 'Cambridge Datasets',
             'default' => false,

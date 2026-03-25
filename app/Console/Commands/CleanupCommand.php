@@ -85,35 +85,30 @@ class CleanupCommand extends Command
         $seenDirectoryPaths = [];
 
         foreach ($targets as $target) {
-            foreach ($target['paths'] as $path) {
-                if (!File::isDirectory($path)) {
+            foreach ($this->getTargetFiles($target) as $file) {
+                $filePath = $file->getPathname();
+                if (isset($seenFilePaths[$filePath])) {
                     continue;
                 }
 
-                foreach (File::allFiles($path) as $file) {
-                    $filePath = $file->getPathname();
-                    if (isset($seenFilePaths[$filePath])) {
-                        continue;
-                    }
+                $seenFilePaths[$filePath] = true;
+                $size = $file->getSize();
 
-                    $seenFilePaths[$filePath] = true;
-                    $files[] = [
-                        'path' => $filePath,
-                        'size' => $file->getSize(),
-                    ];
-                }
+                $files[] = [
+                    'path' => $filePath,
+                    'size' => $size,
+                ];
 
-                foreach (File::directories($path) as $directory) {
-                    if (isset($seenDirectoryPaths[$directory])) {
-                        continue;
-                    }
-
-                    $seenDirectoryPaths[$directory] = true;
+                $directoryPath = dirname($filePath);
+                if (!isset($seenDirectoryPaths[$directoryPath])) {
+                    $seenDirectoryPaths[$directoryPath] = count($directories);
                     $directories[] = [
-                        'path' => $directory,
-                        'size' => $this->getDirectorySize($directory),
+                        'path' => $directoryPath,
+                        'size' => 0,
                     ];
                 }
+
+                $directories[$seenDirectoryPaths[$directoryPath]]['size'] += $size;
             }
         }
 
@@ -326,51 +321,29 @@ class CleanupCommand extends Command
         foreach ($targets as $target) {
             $targetCount = 0;
             $targetSize = 0;
-            $excludedPaths = array_map(
-                fn (string $path) => rtrim($path, DIRECTORY_SEPARATOR),
-                $target['exclude_paths'] ?? []
-            );
-
-            foreach ($target['paths'] as $path) {
-                if (!File::exists($path)) {
+            foreach ($this->getTargetFiles($target) as $file) {
+                if ($file->getMTime() >= $deleteTimestamp) {
                     continue;
                 }
 
-                if (File::isFile($path)) {
-                    $files = [new \SplFileInfo($path)];
-                } else {
-                    $files = File::allFiles($path);
+                $filePath = $file->getPathname();
+                $size = $file->getSize();
+
+                if (!isset($uniqueCandidates[$filePath])) {
+                    $uniqueCandidates[$filePath] = [
+                        'path' => $filePath,
+                        'size_bytes' => $size,
+                        'size' => $this->formatSize($size),
+                        'last_modified' => date('Y-m-d H:i:s', $file->getMTime()),
+                        'targets' => [$target['slug']],
+                    ];
+                    $totalSize += $size;
+                } elseif (!in_array($target['slug'], $uniqueCandidates[$filePath]['targets'], true)) {
+                    $uniqueCandidates[$filePath]['targets'][] = $target['slug'];
                 }
 
-                foreach ($files as $file) {
-                    $filePath = $file->getPathname();
-
-                    if ($this->isExcludedPath($filePath, $excludedPaths)) {
-                        continue;
-                    }
-
-                    if ($file->getMTime() >= $deleteTimestamp) {
-                        continue;
-                    }
-
-                    $size = $file->getSize();
-
-                    if (!isset($uniqueCandidates[$filePath])) {
-                        $uniqueCandidates[$filePath] = [
-                            'path' => $filePath,
-                            'size_bytes' => $size,
-                            'size' => $this->formatSize($size),
-                            'last_modified' => date('Y-m-d H:i:s', $file->getMTime()),
-                            'targets' => [$target['slug']],
-                        ];
-                        $totalSize += $size;
-                    } elseif (!in_array($target['slug'], $uniqueCandidates[$filePath]['targets'], true)) {
-                        $uniqueCandidates[$filePath]['targets'][] = $target['slug'];
-                    }
-
-                    $targetCount++;
-                    $targetSize += $size;
-                }
+                $targetCount++;
+                $targetSize += $size;
             }
 
             $targetSummaries[] = [
@@ -388,6 +361,50 @@ class CleanupCommand extends Command
         ];
     }
 
+    protected function getTargetFiles(array $target): array
+    {
+        $excludedPaths = array_map(
+            fn (string $path) => rtrim($path, DIRECTORY_SEPARATOR),
+            $target['exclude_paths'] ?? []
+        );
+        $includePatterns = $target['include_patterns'] ?? [];
+        $matchingFiles = [];
+        $seenFilePaths = [];
+
+        foreach ($target['paths'] as $path) {
+            if (!File::exists($path)) {
+                continue;
+            }
+
+            if (File::isFile($path)) {
+                $files = [new \SplFileInfo($path)];
+            } else {
+                $files = File::allFiles($path);
+            }
+
+            foreach ($files as $file) {
+                $filePath = $file->getPathname();
+
+                if ($this->isExcludedPath($filePath, $excludedPaths)) {
+                    continue;
+                }
+
+                if (!$this->matchesIncludePatterns($filePath, $includePatterns)) {
+                    continue;
+                }
+
+                if (isset($seenFilePaths[$filePath])) {
+                    continue;
+                }
+
+                $seenFilePaths[$filePath] = true;
+                $matchingFiles[] = $file;
+            }
+        }
+
+        return $matchingFiles;
+    }
+
     protected function isExcludedPath(string $filePath, array $excludedPaths): bool
     {
         $normalizedFilePath = rtrim($filePath, DIRECTORY_SEPARATOR);
@@ -402,6 +419,23 @@ class CleanupCommand extends Command
             }
 
             if (str_starts_with($normalizedFilePath, $excludedPath . DIRECTORY_SEPARATOR)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function matchesIncludePatterns(string $filePath, array $includePatterns): bool
+    {
+        if (empty($includePatterns)) {
+            return true;
+        }
+
+        $filename = basename($filePath);
+
+        foreach ($includePatterns as $pattern) {
+            if (fnmatch($pattern, $filename)) {
                 return true;
             }
         }
