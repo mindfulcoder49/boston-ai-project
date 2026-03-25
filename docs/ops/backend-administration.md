@@ -85,6 +85,7 @@ Current audit and first runbook draft:
 - [2026-03-25-daily-ops-runbook.md](./2026-03-25-daily-ops-runbook.md)
 - [2026-03-25-daily-observability-plan.md](./2026-03-25-daily-observability-plan.md)
 - [2026-03-25-data-retention-plan.md](./2026-03-25-data-retention-plan.md)
+- [2026-03-25-backend-admin-first-pass-status.md](./2026-03-25-backend-admin-first-pass-status.md)
 
 Current observability status:
 - Phase 1 is now implemented in the admin pipeline views and `run_summary.json`
@@ -102,6 +103,16 @@ Current retention direction:
 - Cambridge daily police logs are explicitly separated from Cambridge full snapshots and are not an early cleanup priority because they only account for about `1.53 MB` in the current dry run
 - the first live cleanup trial deleted `5,469` old pipeline-run files and freed `9.73 GB`, which validates the preview-first retention workflow for further narrow manual trials
 - the second live cleanup trial deleted `139` old Boston full-snapshot files and freed `15.55 GB`, which validates filename-pattern scoped dataset cleanup as the next step toward broader storage relief
+
+Current first-pass closeout status:
+- first-pass completion criteria and remaining implementation work are tracked in [2026-03-25-backend-admin-first-pass-status.md](./2026-03-25-backend-admin-first-pass-status.md)
+- the most important remaining implementation areas are:
+  - scheduler consolidation
+  - queue runtime policy cleanup
+  - scraper and DNS dependency health checks
+  - summary-first logging for noisy daily commands
+  - a daily backend health dashboard
+  - a first lightweight alert path
 
 ## Current Production Deploy
 
