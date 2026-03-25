@@ -41,6 +41,7 @@ Build a repeatable operating system where:
 - Do not treat vanity engagement as evidence of product traction.
 - Separate low-risk autonomous work from high-risk approval-required work.
 - Keep the repo, remote branch, and production state aligned whenever shipping changes.
+- For new cleanup or retention automation, require dry-run review first and founder approval before enabling destructive automation.
 
 ## Delivery Loop
 

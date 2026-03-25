@@ -219,3 +219,8 @@ Still deferred to later phases:
 - scraper/DNS dependency health checks
 - alerting
 - scheduler consolidation
+
+Retention and storage follow-up:
+- cleanup review is now explicitly dry-run-first
+- file cleanup preview and database retention preview should feed later storage-pressure observability
+- storage pressure should eventually surface alongside pipeline freshness because Hostinger limits are now an operational constraint

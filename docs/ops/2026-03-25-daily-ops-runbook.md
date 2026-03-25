@@ -12,6 +12,9 @@ It is intentionally based on the system as it exists today:
 
 This runbook is for daily data loading and daily health review first.
 
+Related retention policy:
+- see [2026-03-25-data-retention-plan.md](./2026-03-25-data-retention-plan.md)
+
 ## Daily Objective
 
 By the end of the daily check, you should know:
@@ -262,6 +265,19 @@ Current state:
 For now, analysis review can be weekly or even monthly if the public trends/scoring surfaces are still low-traffic.
 
 Do not let analysis maintenance crowd out daily ingestion health.
+
+## Storage Pressure Review
+
+Storage pressure is now a real operational concern.
+
+Use dry-run review before any new cleanup is approved:
+- `php artisan app:review-data-retention`
+- `php artisan app:cleanup --dry-run-before=YYYY-MM-DD`
+
+Current policy:
+- preview candidate deletions first
+- review the output
+- get founder approval before any new delete path is applied or automated
 
 ## Current Known Fragilities
 

@@ -84,11 +84,17 @@ Current audit and first runbook draft:
 - [2026-03-25-data-flow-report.md](./2026-03-25-data-flow-report.md)
 - [2026-03-25-daily-ops-runbook.md](./2026-03-25-daily-ops-runbook.md)
 - [2026-03-25-daily-observability-plan.md](./2026-03-25-daily-observability-plan.md)
+- [2026-03-25-data-retention-plan.md](./2026-03-25-data-retention-plan.md)
 
 Current observability status:
 - Phase 1 is now implemented in the admin pipeline views and `run_summary.json`
 - operators can see freshness, core freshness, first failed command, and stage summaries without opening raw logs first
 - later phases still need command-level logging cleanup, dependency health checks, alerts, and scheduling consolidation
+
+Current retention direction:
+- storage pressure on Hostinger is now an explicit backend-admin concern
+- new cleanup work should be preview-first, with dry-run review before any new delete automation
+- aggregate table retention and file cleanup are the first safe areas to standardize
 
 ## Current Production Deploy
 

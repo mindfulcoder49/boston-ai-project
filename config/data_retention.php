@@ -1,0 +1,60 @@
+<?php
+
+return [
+    'database_rules' => [
+        [
+            'name' => 'Shared Data Points',
+            'group' => 'aggregated_data_points',
+            'connection' => 'mysql',
+            'table' => 'data_points',
+            'date_field' => 'alcivartech_date',
+            'retention_days' => 183,
+            'sample_columns' => ['type', 'generic_foreign_id', 'alcivartech_date'],
+        ],
+        [
+            'name' => 'Chicago Data Points',
+            'group' => 'aggregated_data_points',
+            'connection' => 'chicago_db',
+            'table' => 'chicago_data_points',
+            'date_field' => 'alcivartech_date',
+            'retention_days' => 183,
+            'sample_columns' => ['type', 'generic_foreign_id', 'alcivartech_date'],
+        ],
+        [
+            'name' => 'San Francisco Data Points',
+            'group' => 'aggregated_data_points',
+            'connection' => 'san_francisco_db',
+            'table' => 'san_francisco_data_points',
+            'date_field' => 'alcivartech_date',
+            'retention_days' => 183,
+            'sample_columns' => ['type', 'generic_foreign_id', 'alcivartech_date'],
+        ],
+        [
+            'name' => 'Seattle Data Points',
+            'group' => 'aggregated_data_points',
+            'connection' => 'seattle_db',
+            'table' => 'seattle_data_points',
+            'date_field' => 'alcivartech_date',
+            'retention_days' => 183,
+            'sample_columns' => ['type', 'generic_foreign_id', 'alcivartech_date'],
+        ],
+        [
+            'name' => 'Montgomery County MD Data Points',
+            'group' => 'aggregated_data_points',
+            'connection' => 'montgomery_county_md_db',
+            'table' => 'montgomery_county_md_data_points',
+            'date_field' => 'alcivartech_date',
+            'retention_days' => 183,
+            'sample_columns' => ['type', 'generic_foreign_id', 'alcivartech_date'],
+        ],
+        [
+            'name' => 'New York Data Points',
+            'group' => 'aggregated_data_points',
+            'connection' => 'new_york_db',
+            'table' => 'new_york_data_points',
+            'date_field' => 'alcivartech_date',
+            'retention_days' => 183,
+            'sample_columns' => ['type', 'generic_foreign_id', 'alcivartech_date'],
+        ],
+    ],
+];

@@ -13,7 +13,11 @@ class CleanupCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:cleanup {--report} {--delete-before=}';
+    protected $signature = 'app:cleanup
+                            {--report : Show the largest files and directories}
+                            {--dry-run-before= : Preview files that would be deleted before a date}
+                            {--delete-before= : Delete files modified before a date}
+                            {--sample=20 : Number of files to sample in dry-run mode}';
 
     /**
      * The console command description.
@@ -27,12 +31,30 @@ class CleanupCommand extends Command
      */
     public function handle()
     {
-        if ($this->option('report')) {
+        $report = (bool) $this->option('report');
+        $dryRunDate = $this->option('dry-run-before');
+        $deleteDate = $this->option('delete-before');
+
+        $selectedModes = count(array_filter([
+            $report,
+            $dryRunDate !== null,
+            $deleteDate !== null,
+        ]));
+
+        if ($selectedModes !== 1) {
+            $this->error('Specify exactly one of --report, --dry-run-before=<YYYY-MM-DD>, or --delete-before=<YYYY-MM-DD>.');
+            return 1;
+        }
+
+        if ($report) {
             $this->generateReport();
-        } elseif ($date = $this->option('delete-before')) {
-            $this->deleteFilesBefore($date);
+        } elseif ($dryRunDate !== null) {
+            $this->previewFilesBefore($dryRunDate, max((int) $this->option('sample'), 1));
+        } elseif ($deleteDate !== null) {
+            $this->deleteFilesBefore($deleteDate);
         } else {
-            $this->info('Please specify either --report or --delete-before=<YYYY-MM-DD>');
+            $this->error('Unknown cleanup mode.');
+            return 1;
         }
 
         return 0;
@@ -154,6 +176,68 @@ class CleanupCommand extends Command
         $this->info("\nCleanup complete.");
         $this->line("Total files deleted: <fg=green>{$deletedFilesCount}</>");
         $this->line("Total space freed: <fg=green>{$this->formatSize($totalFreedSpace)}</>");
+    }
+
+    protected function previewFilesBefore(string $date, int $sampleSize): void
+    {
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $this->error('Invalid date format. Please use YYYY-MM-DD.');
+            return;
+        }
+
+        $deleteTimestamp = strtotime($date);
+        $pathsToClean = [
+            storage_path('logs'),
+            storage_path('app/datasets'),
+        ];
+
+        $candidates = [];
+        $totalCandidateSize = 0;
+
+        foreach ($pathsToClean as $path) {
+            if (!File::isDirectory($path)) {
+                continue;
+            }
+
+            foreach (File::allFiles($path) as $file) {
+                if ($file->getMTime() >= $deleteTimestamp) {
+                    continue;
+                }
+
+                $size = $file->getSize();
+                $candidates[] = [
+                    'path' => $file->getPathname(),
+                    'size_bytes' => $size,
+                    'size' => $this->formatSize($size),
+                    'last_modified' => date('Y-m-d H:i:s', $file->getMTime()),
+                ];
+                $totalCandidateSize += $size;
+            }
+        }
+
+        usort($candidates, fn (array $a, array $b) => strcmp($a['last_modified'], $b['last_modified']));
+
+        $this->info("Dry run for files modified before {$date}");
+        $this->line('Candidate file count: <fg=yellow>' . count($candidates) . '</>');
+        $this->line('Estimated space to free: <fg=yellow>' . $this->formatSize($totalCandidateSize) . '</>');
+
+        if (empty($candidates)) {
+            $this->info('No files would be deleted.');
+            return;
+        }
+
+        $sampleRows = array_map(
+            fn (array $candidate) => [
+                $candidate['last_modified'],
+                $candidate['size'],
+                $candidate['path'],
+            ],
+            array_slice($candidates, 0, $sampleSize)
+        );
+
+        $this->newLine();
+        $this->line('<fg=yellow;options=bold>Oldest candidate files:</>');
+        $this->table(['Last Modified', 'Size', 'Path'], $sampleRows);
     }
 
     /**
