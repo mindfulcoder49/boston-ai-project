@@ -13,6 +13,12 @@ It is intentionally based on the system as it exists today:
 
 This runbook is for daily data loading and daily health review first.
 
+Environment default for broad checks:
+- production first
+- start from production admin pages, production artisan commands, or production runtime artifacts
+- do not treat local `storage/logs` or local artisan output as the default source of truth for a broad system-health question
+- if production access is unavailable and you fall back to local or dev evidence, label the result clearly as non-production
+
 Related retention policy:
 - see [2026-03-25-data-retention-plan.md](./2026-03-25-data-retention-plan.md)
 
@@ -45,6 +51,7 @@ Use these existing surfaces first:
 - Admin pipeline run detail page
 - Admin cache manager
 - Laravel storage logs on the server only if the admin pages are not enough
+- direct production `php artisan` checks over SSH when you need to verify live runtime state outside the admin UI
 
 Relevant current routes in the app:
 
@@ -174,6 +181,11 @@ Next check:
 - inspect that command log
 - if the rest of the ingestion succeeded, this is still important but narrower than a failed raw-data acquisition run
 
+Interpretation note:
+- the backend health metrics-freshness card now reflects the latest source timestamp stored in `metrics_snapshots.last_updated_at`
+- that card is about source-data recency, not just whether the command ran
+- so an aging metrics-freshness value can coexist with a successful `app:cache-metrics-data` command
+
 #### If `reports:send` failed
 
 Impact:
@@ -182,6 +194,11 @@ Impact:
 Next check:
 - inspect the `reports:send` command log
 - this is downstream of ingestion, so first confirm whether ingestion itself succeeded
+
+Interpretation note:
+- a successful `reports:send` command means the report email jobs were dispatched to the queue
+- it does not by itself prove the queued report jobs were already processed
+- if report delivery looks delayed, verify that the scheduled queue worker is servicing the queues that `reports:send` uses
 
 ### 4. Decide Whether to Re-Run
 
@@ -291,20 +308,18 @@ Current policy:
 
 ## Current Known Fragilities
 
-- the daily pipeline is not yet scheduled inside Laravel
-- the queue listener does not replace a scheduler trigger
-- queue timeout policy may not match long-running command envelopes
+- production Hostinger cron is confirmed to be the scheduler entry `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
+- the remaining uncertainty is whether the scheduler-driven queue-worker path is publishing clean heartbeat evidence in the live runtime
+- queue timeout policy outside the intended scheduled `admin-long` worker may not match long-running command envelopes
 - Boston and Everett rely on an external scraper helper
 - that scraper helper relies on the EC2-to-Hostinger DNS sync loop
-- raw log verbosity varies too much from command to command
+- the real worker-heartbeat and DNS-status evidence still need confirmation in the live external runtimes
 
 ## What This Runbook Does Not Yet Solve
 
-This runbook does not yet provide:
-- automatic stale-run alerts
-- a concise failure digest
-- per-command error extraction
-- dependency heartbeat reporting
-- machine-readable freshness status
+This runbook does not yet guarantee:
+- that the scheduler-driven worker path is publishing clean heartbeat evidence
+- that the external sysadmin runtime is publishing clean DNS status evidence
+- that storage-pressure review is surfaced in the same one-page view as freshness health
 
-Those are the next observability improvements, not current capabilities.
+Those are the main remaining external-runtime follow-ups, not missing code features inside Laravel.

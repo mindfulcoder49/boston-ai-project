@@ -17,6 +17,10 @@ return [
     'long_running_queue' => env('BACKEND_ADMIN_LONG_QUEUE', 'admin-long'),
 
     'queue_worker' => [
+        'queues' => env(
+            'BACKEND_ADMIN_WORKER_QUEUES',
+            trim(env('BACKEND_ADMIN_LONG_QUEUE', 'admin-long') . ',default', ',')
+        ),
         'timeout' => (int) env('BACKEND_ADMIN_QUEUE_WORKER_TIMEOUT', 7200),
         'tries' => (int) env('BACKEND_ADMIN_QUEUE_WORKER_TRIES', 1),
     ],

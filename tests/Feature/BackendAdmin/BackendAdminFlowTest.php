@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\BackendAdmin;
 
+use App\Console\Commands\RunAdminLongWorkerCommand;
 use App\Jobs\RunArtisanCommandJob;
 use App\Mail\BackendHealthAlertMail;
 use App\Support\BackendHealthSnapshot;
@@ -46,11 +47,40 @@ class BackendAdminFlowTest extends TestCase
     public function test_schedule_list_includes_backend_admin_runtime_commands(): void
     {
         $this->artisan('schedule:list')
-            ->expectsOutputToContain('queue:work --stop-when-empty --queue=admin-long --timeout=7200 --tries=1')
+            ->expectsOutputToContain('app:run-admin-long-worker')
             ->expectsOutputToContain('app:check-ingestion-dependencies')
             ->expectsOutputToContain('app:dispatch-daily-pipeline')
             ->expectsOutputToContain('app:evaluate-backend-health-alerts')
             ->assertExitCode(0);
+    }
+
+    public function test_admin_long_worker_command_records_scheduler_heartbeat(): void
+    {
+        Artisan::shouldReceive('call')
+            ->once()
+            ->with('queue:work', \Mockery::on(function (array $parameters) {
+                return ($parameters['--stop-when-empty'] ?? false) === true
+                    && ($parameters['--queue'] ?? null) === 'admin-long,default'
+                    && ($parameters['--timeout'] ?? null) === 7200
+                    && ($parameters['--tries'] ?? null) === 1;
+            }))
+            ->andReturn(0);
+
+        $exitCode = app(RunAdminLongWorkerCommand::class)->handle();
+
+        $this->assertSame(0, $exitCode);
+
+        $heartbeat = json_decode(
+            File::get(config('backend_admin.dependency_health.worker_heartbeat_path')),
+            true
+        );
+
+        $this->assertSame('queue:work', $heartbeat['command'] ?? null);
+        $this->assertSame('completed', $heartbeat['status'] ?? null);
+        $this->assertSame('admin-long,default', $heartbeat['queue'] ?? null);
+        $this->assertSame(7200, $heartbeat['timeout'] ?? null);
+        $this->assertSame(1, $heartbeat['tries'] ?? null);
+        $this->assertArrayHasKey('last_seen_at', $heartbeat);
     }
 
     public function test_dispatch_daily_pipeline_blocks_on_dependency_failure_and_dispatches_when_forced(): void

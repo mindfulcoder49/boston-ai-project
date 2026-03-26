@@ -43,6 +43,18 @@ Build a repeatable operating system where:
 - Separate low-risk autonomous work from high-risk approval-required work.
 - Keep the repo, remote branch, and production state aligned whenever shipping changes.
 - For new cleanup or retention automation, require dry-run review first and founder approval before enabling destructive automation.
+- Treat broad health or status checks as production checks by default unless the founder explicitly asks for local, dev, or staging.
+- When production access is unavailable and a local or dev fallback is used, label the result explicitly as non-production.
+
+## Current Confirmed Facts
+
+- As of March 24, 2026, local GA4 access is available through `tools/analytics` for GA4 property `properties/490826923` (`PublicDataWatch`).
+- As of March 24, 2026, that GA4 property's timezone was updated to `America/New_York`.
+- As of March 24, 2026, Search Console API access is available through `tools/analytics` for `sc-domain:publicdatawatch.com`, and `https://publicdatawatch.com/sitemap.xml` was submitted successfully.
+- As of March 25, 2026, Laravel scheduler entries for the scheduled `admin-long` worker, dependency checks, daily pipeline dispatch, and backend alert evaluation are implemented in code.
+- As of March 26, 2026, the founder confirmed Hostinger production is using a single cron entry:
+  - `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
+- The remaining backend-admin follow-up is confirming that the scheduler-driven worker heartbeat and DNS status artifact are visible in the live runtimes.
 
 ## Delivery Loop
 
@@ -127,9 +139,11 @@ Monthly:
 
 ## Access Checklist
 
+Confirmed local access today:
+- Google Analytics 4 via `tools/analytics`
+- Google Search Console via `tools/analytics`
+
 Needed over time:
-- Google Analytics
-- Google Search Console
 - Stripe
 - frontend test reports
 - deployment/build logs
@@ -139,7 +153,7 @@ Needed over time:
 
 ## Open Questions
 
-- Which analytics platform and property structure are current?
+- Is internal traffic and environment separation configured cleanly in GA4 property `properties/490826923`?
 - Which Stripe products and prices are currently active?
 - Which external social accounts already exist versus need to be created?
-- Which backend command sequences are considered production-critical today?
+- Why is the live worker-heartbeat evidence stale even though Hostinger production is already on the scheduler cron?

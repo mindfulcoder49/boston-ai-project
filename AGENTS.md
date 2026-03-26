@@ -14,6 +14,9 @@ At the beginning of every session, before doing substantial work:
    - [docs/ops/growth-monetization.md](docs/ops/growth-monetization.md)
    - [docs/ops/social-distribution.md](docs/ops/social-distribution.md)
 3. Use [CLAUDE.md](CLAUDE.md) for repo architecture, commands, and implementation details.
+4. If the task touches local ops tooling, also read the relevant workspace doc:
+   - [tools/analytics/README.md](tools/analytics/README.md) for GA4 and Search Console work
+   - [tools/exoskeleton/README.md](tools/exoskeleton/README.md) for founder action queue work
 
 ## Operating Expectations
 
@@ -33,6 +36,66 @@ At the beginning of every session, before doing substantial work:
   - founder-review actions
   - founder-required actions
 
+## Default System Check
+
+When the founder asks a broad status question such as:
+- `how is the system?`
+- `check on the system`
+- `give me the morning check`
+
+treat that as a request for the default system check unless they narrow the scope.
+
+Default scope:
+
+- production first
+- for backend health, use live production evidence first:
+  - production admin surfaces
+  - production `php artisan ...` checks over SSH on Hostinger
+  - production logs or runtime artifacts
+- for analytics and search, use the live GA4 and Search Console properties
+- do not answer a broad system-check request from local or dev-state evidence unless the founder explicitly asks for the dev/local system or production access is unavailable
+- if you must fall back to local or dev checks, say that explicitly and label the result as non-production
+
+Default review order:
+
+1. Backend health first.
+   - confirm you are looking at the production system before interpreting backend freshness
+   - check the latest pipeline run
+   - check whether it completed in the last 24 hours
+   - identify the first failed command if not
+   - check core freshness:
+     - `DataPointSeeder`
+     - `app:cache-metrics-data`
+     - `reports:send`
+   - check ingestion dependencies, alerts, and storage-pressure concerns
+   - note whether any issue is a true freshness failure, a partial city/source degradation, or an external-runtime cutover problem
+
+2. Analytics sanity second.
+   - use `tools/analytics` for GA4 checks
+   - look for obvious traffic anomalies and key-event breakage
+   - treat GA4 property `properties/490826923` as the default live property unless the task surfaces a current config problem
+   - if analytics instrumentation or GA4 settings changed recently, split the review into:
+     - a post-change validation window anchored to the production deploy or the last 24 to 72 hours
+     - a broader 14 to 30 day context window that is labeled as mixed historical data
+   - do not conclude that a newly added event is missing, or that a legacy event still reflects the current frontend, until you check a post-change window first
+   - always state the exact GA4 window used when interpreting recent analytics changes
+
+3. Search visibility third when useful.
+   - use `tools/analytics` for Search Console checks
+   - treat `sc-domain:publicdatawatch.com` as the default property
+   - focus on notable search changes, sitemap/indexation issues, or query/page movement if data exists
+
+Default response shape:
+- short metrics/status summary
+- ranked issues or anomalies
+- recommended actions
+- founder-review actions
+- founder-required actions
+
+Always state the checked environment if there is any realistic chance of ambiguity.
+
+If the check surfaces a `founder_review` or `founder_required` external action, create or update the task in `tools/exoskeleton` before handing back the result.
+
 ## Deliverable Bias
 
 When doing product or ops-oriented work, favor outputs that match the operating system:
@@ -46,4 +109,6 @@ When doing product or ops-oriented work, favor outputs that match the operating 
 ## Notes
 
 - If `docs/ops/` and code behavior disagree, inspect the code, note the discrepancy, and surface it explicitly.
-- Do not assume access to external systems such as Google Analytics, Search Console, Stripe, or social accounts unless confirmed.
+- Documented local access exists for Google Analytics 4 and Google Search Console through `tools/analytics`.
+- Treat GA4 property `properties/490826923` and Search Console property `sc-domain:publicdatawatch.com` as available through that tooling unless the task surfaces a current credential or runtime failure.
+- Do not assume access to other external systems such as Stripe or social accounts unless confirmed.

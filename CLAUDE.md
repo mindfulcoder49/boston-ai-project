@@ -32,6 +32,32 @@ php artisan test
 php artisan queue:work
 ```
 
+## Standalone Local Tooling
+
+This repo also has local-first support workspaces that should be used instead of pushing everything into Laravel:
+
+- `tools/analytics`
+  - GA4 and Search Console access/reporting via `pdw-analytics`
+  - documented current properties:
+    - GA4: `properties/490826923` (`PublicDataWatch`)
+    - Search Console: `sc-domain:publicdatawatch.com`
+- `tools/exoskeleton`
+  - founder action queue for `founder_review` and `founder_required` handoffs
+- `city-generator`
+  - LangGraph-based scaffolding tool for adding new cities from Socrata datasets
+
+## Current Backend Ops State
+
+As of March 25, 2026:
+
+- Laravel scheduler entries are implemented in code for:
+  - `app:run-admin-long-worker` which wraps `queue:work --stop-when-empty --queue=admin-long,default --timeout=7200 --tries=1`
+  - `app:check-ingestion-dependencies`
+  - `app:dispatch-daily-pipeline`
+  - `app:evaluate-backend-health-alerts`
+- Hostinger production is confirmed to use `php artisan schedule:run`
+- the remaining backend-admin follow-up is mostly external-runtime confirmation, not missing Laravel code
+
 ## Data Pipeline Architecture
 
 The data pipeline is orchestrated by `RunAllDataPipelineCommand` (`app:run-all-data-pipeline`) which runs stages sequentially:

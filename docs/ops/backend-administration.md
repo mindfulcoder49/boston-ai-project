@@ -53,6 +53,12 @@ Target state:
 - automated reporting on failures, stale data, and suspicious output
 - founder reviewing summaries rather than manually reconstructing the system
 
+Default environment for broad health review:
+- production first
+- use production admin surfaces, production Laravel commands, or production runtime artifacts before local logs or local artisan output
+- use local or dev state only when the founder explicitly asks for it or production access is unavailable
+- if a local or dev fallback is used, label it clearly as non-production
+
 ## Inputs Required From Founder
 
 - explanation of the current production-critical command flows
@@ -99,9 +105,12 @@ Current observability status:
 - the backend health dashboard, dependency health command, lightweight alert path, and Laravel scheduler entries are now implemented in code
 - `app:cache-metrics-data` now stores the public metrics artifact in the `metrics_snapshots` table instead of rewriting `config/metrics.php`, which avoids Laravel `config:cache` drift
 - metrics freshness should derive from the latest non-future source timestamp across the configured city model set, and platform totals should reflect the configured city coverage rather than a hard-coded legacy subset
+- backend health `metricsFreshness` should be interpreted as source-data recency from `metrics_snapshots.last_updated_at`, not as proof that `app:cache-metrics-data` failed; a successful cache refresh can still show an aging timestamp if the newest source data is older
 - stale historical `running` pipeline entries no longer block the daily dispatch path forever; only recent active runs count as blockers
-- the main remaining backend-admin follow-up is external cutover:
-  - switch Hostinger from the old `queue:listen` cron to the scheduler-driven flow
+- the Hostinger production cron is confirmed to be the single scheduler entry:
+  - `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
+- the main remaining backend-admin follow-up is live runtime evidence:
+  - confirm the scheduler-driven worker heartbeat reflects the real queue-worker path
   - confirm the `sysadmin/` DNS sync runtime is publishing its S3 status artifact in the environment that actually runs it
 - the sysadmin runtime must have `S3_BUCKET_NAME` configured if you want DNS sync evidence published to `ops/health/ec2_dns_status.json`, but missing DNS evidence is now informational rather than a backend-health warning
 - the scraper backend now exposes `GET /health` in the `opportunityHarvester` service, and Laravel now probes that path directly and requires a successful HTTP response for scraper health
@@ -126,7 +135,6 @@ Current first-pass closeout status:
 - the concrete execution order, file targets, acceptance criteria, and test plan for those issues are tracked in [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
 - the first-pass code implementation is now complete
 - the most important remaining follow-up areas are:
-  - Hostinger cron cutover to the single scheduler entry
   - validation of worker heartbeat and DNS status artifact publishing in the real external runtimes
   - the next manual storage-retention trial for `cambridge-socrata-datasets`
 

@@ -16,7 +16,7 @@ Detailed work order, file targets, and test coverage still live in:
 Implemented on March 25, 2026:
 
 - scheduler consolidation in Laravel
-  - scheduled `queue:work --stop-when-empty --queue=admin-long --timeout=7200 --tries=1`
+  - scheduled `app:run-admin-long-worker`, which wraps `queue:work --stop-when-empty --queue=admin-long,default --timeout=7200 --tries=1`
   - scheduled `app:check-ingestion-dependencies`
   - scheduled `app:dispatch-daily-pipeline`
   - scheduled `app:evaluate-backend-health-alerts`
@@ -58,16 +58,14 @@ Validated on March 25, 2026:
 ### 1. Hostinger Cron Cutover
 
 Status:
-- founder-required
+- complete as of March 26, 2026
 
-What remains:
-- replace the old Hostinger cron with the scheduler entry:
-  - `* * * * * /usr/bin/php /home/.../artisan schedule:run`
-- stop relying on the old `queue:listen --timeout=500 --tries=3` cron for the daily control loop
+Confirmed production cron:
+- `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
 
 Why it matters:
 - the Laravel scheduler is now the intended control plane
-- the code is ready, but production will not fully use it until the cron changes
+- production is using the intended cron entry, so remaining investigation is now about runtime evidence rather than cron setup
 
 ### 2. External Runtime Signal Validation
 
