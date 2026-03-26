@@ -108,8 +108,10 @@ class IngestionDependencyHealth
         try {
             $response = Http::timeout($timeout)->get($probeUrl);
             $httpStatus = $response->status();
-            $reachable = true;
-            $message = 'Scraper responded to HTTP probe.';
+            $reachable = $response->successful();
+            $message = $reachable
+                ? 'Scraper health probe returned a successful response.'
+                : "Scraper health probe returned HTTP {$httpStatus}.";
         } catch (Throwable $exception) {
             $message = $exception->getMessage();
         }

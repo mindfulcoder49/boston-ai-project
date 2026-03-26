@@ -140,6 +140,30 @@ class BackendAdminFlowTest extends TestCase
         $this->assertSame('1.2.3.4', $snapshot['dns_sync']['dns_ip']);
     }
 
+    public function test_scraper_probe_requires_successful_health_response(): void
+    {
+        Storage::fake('s3');
+        Http::fake([
+            'http://127.0.0.1/health' => Http::response('error', 500),
+        ]);
+
+        File::put(
+            config('backend_admin.dependency_health.worker_heartbeat_path'),
+            json_encode([
+                'last_seen_at' => Carbon::now()->toIso8601String(),
+                'command' => 'app:run-all-data-pipeline',
+                'status' => 'completed',
+            ], JSON_PRETTY_PRINT)
+        );
+
+        $snapshot = app(IngestionDependencyHealth::class)->check();
+
+        $this->assertSame('failed', $snapshot['overall_status']);
+        $this->assertFalse($snapshot['scraper']['reachable']);
+        $this->assertSame(500, $snapshot['scraper']['http_status']);
+        $this->assertSame(['scraper_unreachable'], $snapshot['blocking_issues']);
+    }
+
     public function test_missing_dns_status_is_informational_when_scraper_is_healthy(): void
     {
         Storage::fake('s3');

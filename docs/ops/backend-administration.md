@@ -102,7 +102,7 @@ Current observability status:
   - switch Hostinger from the old `queue:listen` cron to the scheduler-driven flow
   - confirm the `sysadmin/` DNS sync runtime is publishing its S3 status artifact in the environment that actually runs it
 - the sysadmin runtime must have `S3_BUCKET_NAME` configured if you want DNS sync evidence published to `ops/health/ec2_dns_status.json`, but missing DNS evidence is now informational rather than a backend-health warning
-- the scraper backend now exposes `GET /health` in the `opportunityHarvester` service for manual checks and future explicit probes, but Laravel still treats a direct reachability ping to the scraper base URL as sufficient for now
+- the scraper backend now exposes `GET /health` in the `opportunityHarvester` service, and Laravel now probes that path directly and requires a successful HTTP response for scraper health
 
 Current retention direction:
 - storage pressure on Hostinger is now an explicit backend-admin concern
