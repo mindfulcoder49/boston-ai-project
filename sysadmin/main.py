@@ -61,6 +61,11 @@ def sync_ec2_dns_cmd(dry_run, json_output, no_publish_status):
     publish = result.get("status_publish")
     if publish and publish.get("published"):
         click.echo(f"Published DNS status: s3://{publish['bucket']}/{publish['key']}")
+    elif publish:
+        click.echo(
+            f"DNS status was not published ({publish.get('reason', 'unknown_reason')}).",
+            err=True,
+        )
 
 
 @cli.command("check-ec2-dns")
@@ -86,6 +91,15 @@ def check_ec2_dns_cmd(json_output, publish_status):
         click.echo(f"DNS mismatch: {result['old_ip']} -> {result['new_ip']}")
     else:
         click.echo(f"DNS already correct: {result['ip']}")
+
+    publish = result.get("status_publish")
+    if publish and publish.get("published"):
+        click.echo(f"Published DNS status: s3://{publish['bucket']}/{publish['key']}")
+    elif publish:
+        click.echo(
+            f"DNS status was not published ({publish.get('reason', 'unknown_reason')}).",
+            err=True,
+        )
 
 
 @cli.command("schedule")
@@ -114,6 +128,11 @@ def schedule_cmd(interval):
             publish = result.get("status_publish")
             if publish and publish.get("published"):
                 click.echo(f"Published DNS status: s3://{publish['bucket']}/{publish['key']}")
+            elif publish:
+                click.echo(
+                    f"DNS status was not published ({publish.get('reason', 'unknown_reason')}).",
+                    err=True,
+                )
         except Exception as exc:
             click.echo(f"Error during sync: {exc}", err=True)
 

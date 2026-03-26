@@ -101,6 +101,7 @@ Current observability status:
 - the main remaining backend-admin follow-up is external cutover:
   - switch Hostinger from the old `queue:listen` cron to the scheduler-driven flow
   - confirm the `sysadmin/` DNS sync runtime is publishing its S3 status artifact in the environment that actually runs it
+  - the sysadmin runtime must have `S3_BUCKET_NAME` configured or it will repair DNS but skip publishing `ops/health/ec2_dns_status.json`, which leaves backend health stuck at `dns_sync_unknown`
 
 Current retention direction:
 - storage pressure on Hostinger is now an explicit backend-admin concern
