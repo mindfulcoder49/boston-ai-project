@@ -10,7 +10,7 @@ class CheckIngestionDependenciesCommand extends Command
     protected $signature = 'app:check-ingestion-dependencies
                             {--json : Output the snapshot as JSON}';
 
-    protected $description = 'Checks scraper, DNS sync, and queue-worker evidence for daily ingestion dependencies.';
+    protected $description = 'Checks scraper reachability, optional DNS sync evidence, and queue-worker evidence for daily ingestion dependencies.';
 
     public function __construct(private readonly IngestionDependencyHealth $dependencyHealth)
     {
@@ -38,6 +38,10 @@ class CheckIngestionDependenciesCommand extends Command
 
         if (!empty($snapshot['warnings'])) {
             $this->warn('Warnings: ' . implode(', ', $snapshot['warnings']));
+        }
+
+        if (!empty($snapshot['informational_issues'])) {
+            $this->line('Informational: ' . implode(', ', $snapshot['informational_issues']));
         }
 
         return $snapshot['overall_status'] === 'failed' ? 1 : 0;

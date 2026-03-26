@@ -21,17 +21,18 @@ class IngestionDependencyHealth
 
         $blockingIssues = [];
         $warnings = [];
+        $informationalIssues = [];
 
         if (($snapshot['scraper']['status'] ?? null) === 'failed') {
             $blockingIssues[] = 'scraper_unreachable';
         }
 
         if (($snapshot['dns_sync']['status'] ?? null) === 'failed') {
-            $warnings[] = 'dns_sync_mismatch';
+            $informationalIssues[] = 'dns_sync_mismatch';
         }
 
         if (($snapshot['dns_sync']['status'] ?? null) === 'unknown') {
-            $warnings[] = 'dns_sync_unknown';
+            $informationalIssues[] = 'dns_sync_unknown';
         }
 
         if (($snapshot['queue_worker']['status'] ?? null) === 'warning') {
@@ -44,6 +45,7 @@ class IngestionDependencyHealth
 
         $snapshot['blocking_issues'] = $blockingIssues;
         $snapshot['warnings'] = $warnings;
+        $snapshot['informational_issues'] = $informationalIssues;
         $snapshot['overall_status'] = !empty($blockingIssues)
             ? 'failed'
             : (!empty($warnings) ? 'warning' : 'healthy');
