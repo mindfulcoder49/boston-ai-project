@@ -8,7 +8,7 @@
                 Explore the depth and breadth of data available on our platform.
             </p>
             <p class="text-center text-sm text-gray-500 mb-8 sm:mb-10">
-                Last updated: {{ new Date(lastUpdated).toLocaleString() }}
+                Last updated: {{ formatDateTime(lastUpdated) }}
             </p>
 
             <div v-if="metricsData && metricsData.length > 0" class="space-y-10 sm:space-y-12">
@@ -103,6 +103,17 @@ const formatCurrency = (num) => {
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
+const formatDateTime = (dateString) => {
+    if (!dateString) return 'Unknown';
+
+    const parsed = new Date(dateString);
+    if (Number.isNaN(parsed.getTime())) {
+        return 'Unknown';
+    }
+
+    return parsed.toLocaleString();
 };
 
 const formatChartData = (dataArray, labelKey, valueKey) => {

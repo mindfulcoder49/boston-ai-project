@@ -296,9 +296,9 @@ This is the step that turns per-source raw tables into the shared browsing/searc
 This command:
 - calculates summary counts and date freshness across key models
 - computes model-specific summary metrics
-- writes the result to `config/metrics.php`
+- writes the result to the `metrics_snapshots` table
 
-This is the current metrics cache artifact. It is file-based, not Redis-backed.
+This is the current metrics snapshot artifact. It is database-backed, not Redis-backed.
 
 ### 4.2 Reporting
 
@@ -351,9 +351,9 @@ These are the main public-facing unified location/event layers.
 ### 5.4 Metrics Cache Artifact
 
 After aggregation:
-- `app:cache-metrics-data` writes `config/metrics.php`
+- `app:cache-metrics-data` writes the current row in `metrics_snapshots`
 
-This file becomes the cached snapshot for dashboard/stat pages that consume metrics.
+That row becomes the cached snapshot for dashboard/stat pages that consume metrics.
 
 ### 5.5 Pipeline Log Artifacts
 

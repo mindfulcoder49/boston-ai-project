@@ -252,20 +252,21 @@ const CommandResult = {
             <CommandResult v-if="hotspotOutput" :result="hotspotOutput" label="app:materialize-hotspot-findings" />
           </div>
 
-          <!-- Warm Metrics -->
+          <!-- Metrics Snapshot -->
           <div class="px-6 py-5 space-y-3">
             <div class="flex items-start justify-between gap-6">
               <div class="flex-1 min-w-0">
-                <h3 class="font-medium text-gray-900">Warm Dashboard Metrics Cache</h3>
+                <h3 class="font-medium text-gray-900">Rebuild Dashboard Metrics Snapshot</h3>
                 <p class="text-sm text-gray-500 mt-1">
-                  Pre-computes and caches the statistical summary numbers shown on the main dashboard.
+                  Recomputes the statistical summary snapshot stored in the
+                  <code class="bg-gray-100 px-1 rounded">metrics_snapshots</code> table.
                   Runs automatically at the end of the data pipeline. Run manually if dashboard metrics
-                  look stale after a seeding run.
+                  or homepage totals look stale after a seeding run.
                 </p>
               </div>
               <button @click="runWarmMetrics" :disabled="metricsRunning"
                 class="shrink-0 px-4 py-2 text-sm font-medium rounded-lg bg-gray-700 text-white hover:bg-gray-800 disabled:bg-gray-400 transition-colors">
-                {{ metricsRunning ? 'Running…' : 'Warm Metrics' }}
+                {{ metricsRunning ? 'Running…' : 'Rebuild Metrics' }}
               </button>
             </div>
             <CommandResult v-if="metricsOutput" :result="metricsOutput" label="app:cache-metrics-data" />
@@ -389,4 +390,3 @@ const CommandResult = {
     </div>
   </PageTemplate>
 </template>
-

@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\MetricsSnapshotStore;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 class HomeController extends Controller
 {
+    public const HOME_PAGE_CACHE_KEY = 'home_page_data_v3';
+
     /**
      * Models that are geocoding helpers, not user-facing data types.
      */
@@ -76,11 +79,11 @@ class HomeController extends Controller
         'Car Crash' => 'Motor vehicle crash reports with injury and fatality data.',
     ];
 
-    public function index()
+    public function index(MetricsSnapshotStore $metricsSnapshotStore)
     {
-        $homeData = Cache::remember('home_page_data_v2', 3600, function () {
+        $homeData = Cache::remember(self::HOME_PAGE_CACHE_KEY, 3600, function () use ($metricsSnapshotStore) {
             $cities = config('cities.cities', []);
-            $metricsData = config('metrics.data', []);
+            $metricsData = $metricsSnapshotStore->currentPayload()['data'] ?? [];
 
             $areas = $this->buildAreas($cities);
             $dataCategories = $this->buildDataCategories($cities);

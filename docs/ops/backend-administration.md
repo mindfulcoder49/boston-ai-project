@@ -97,6 +97,8 @@ Current observability status:
   - `DataPointSeeder`
   - `app:cache-metrics-data`
 - the backend health dashboard, dependency health command, lightweight alert path, and Laravel scheduler entries are now implemented in code
+- `app:cache-metrics-data` now stores the public metrics artifact in the `metrics_snapshots` table instead of rewriting `config/metrics.php`, which avoids Laravel `config:cache` drift
+- metrics freshness should derive from the latest non-future source timestamp across the configured city model set, and platform totals should reflect the configured city coverage rather than a hard-coded legacy subset
 - stale historical `running` pipeline entries no longer block the daily dispatch path forever; only recent active runs count as blockers
 - the main remaining backend-admin follow-up is external cutover:
   - switch Hostinger from the old `queue:listen` cron to the scheduler-driven flow

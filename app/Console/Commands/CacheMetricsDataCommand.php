@@ -2,12 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Http\Controllers\HomeController;
 use App\Support\OperationalSummaryLogger;
+use App\Support\MetricsSnapshotStore;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
 
 // Import Models
 use App\Models\CrimeData;
@@ -19,54 +21,39 @@ use App\Models\BuildingPermit;
 class CacheMetricsDataCommand extends Command
 {
     protected $signature = 'app:cache-metrics-data';
-    protected $description = 'Calculates and caches all data metrics to a configuration file.';
+    protected $description = 'Calculates and stores the current dashboard metrics snapshot.';
 
-    protected $mappableModels = [
-        CrimeData::class,
-        ThreeOneOneCase::class,
-        FoodInspection::class,
-        PropertyViolation::class,
-        BuildingPermit::class,
-
-        \App\Models\ConstructionOffHour::class,
-
-        \App\Models\EverettCrimeData::class,
-
-        // Cambridge Models
-        \App\Models\CambridgeThreeOneOneCase::class,
-        \App\Models\CambridgeBuildingPermitData::class,
-        \App\Models\CambridgeCrimeReportData::class,
-        \App\Models\CambridgeHousingViolationData::class,
-        \App\Models\CambridgeSanitaryInspectionData::class,
-    ];
-
-    public function handle()
+    public function handle(MetricsSnapshotStore $metricsSnapshotStore)
     {
+        $mappableModels = $this->metricModelClasses();
+        $metricsComputedAt = Carbon::now();
+
         $this->info('Starting to calculate and cache metrics data...');
         OperationalSummaryLogger::emit($this, $this->getName(), 'start', [
-            'model_count' => count($this->mappableModels),
+            'model_count' => count($mappableModels),
         ]);
 
         $allMetrics = [];
         $overallPageLastUpdated = null;
 
-        foreach ($this->mappableModels as $modelClassString) {
+        foreach ($mappableModels as $modelClassString) {
             $modelInstance = new $modelClassString();
             $modelName = $modelInstance::getHumanName();
             $dateField = $modelInstance::getDateField();
 
-            $currentTotalRecords = $modelInstance::count();
+            $currentTotalRecords = $modelClassString::query()->count();
             $currentDbMaxDateString = null;
-            $currentModelUpdateTime = Carbon::now(); // Default to now, will be updated if max date is found
+            $currentModelUpdateTime = null;
+            $boundedDateQuery = null;
 
             if ($dateField && $currentTotalRecords > 0) {
                 try {
-                    $currentDbMaxDate = $modelInstance::max($dateField);
-                    if ($currentDbMaxDate) {
-                        $parsedDate = Carbon::parse($currentDbMaxDate);
-                        $currentDbMaxDateString = $parsedDate->toIso8601String();
-                        $currentModelUpdateTime = $parsedDate;
-                    }
+                    $boundedDateQuery = $modelClassString::query()
+                        ->whereNotNull($dateField)
+                        ->where($dateField, '<=', $metricsComputedAt);
+                    $currentDbMaxDate = (clone $boundedDateQuery)->max($dateField);
+                    $currentModelUpdateTime = $this->normalizeMetricTimestamp($currentDbMaxDate, $metricsComputedAt, $modelName);
+                    $currentDbMaxDateString = $currentModelUpdateTime?->toIso8601String();
                 } catch (\Exception $e) {
                     Log::error("Error fetching max date for {$modelName}: " . $e->getMessage());
                 }
@@ -81,13 +68,20 @@ class CacheMetricsDataCommand extends Command
 
             if ($newlyCalculatedMetrics['totalRecords'] > 0 && $dateField) {
                 try {
-                    $minDateVal = $modelInstance::min($dateField);
-                    $newlyCalculatedMetrics['minDate'] = $minDateVal ? Carbon::parse($minDateVal)->toDateString() : null;
-                    $newlyCalculatedMetrics['maxDate'] = $currentDbMaxDateString ? Carbon::parse($currentDbMaxDateString)->toDateString() : null;
+                    $minDateVal = $boundedDateQuery ? (clone $boundedDateQuery)->min($dateField) : null;
+                    $normalizedMinDate = $this->normalizeMetricTimestamp($minDateVal, $metricsComputedAt, $modelName);
 
-                    $newlyCalculatedMetrics['recordsLast30Days'] = $modelInstance::where($dateField, '>=', Carbon::now()->subDays(30))->count();
-                    $newlyCalculatedMetrics['recordsLast90Days'] = $modelInstance::where($dateField, '>=', Carbon::now()->subDays(90))->count();
-                    $newlyCalculatedMetrics['recordsLast1Year'] = $modelInstance::where($dateField, '>=', Carbon::now()->subYear())->count();
+                    $newlyCalculatedMetrics['minDate'] = $normalizedMinDate?->toDateString();
+                    $newlyCalculatedMetrics['maxDate'] = $currentModelUpdateTime?->toDateString();
+                    $newlyCalculatedMetrics['recordsLast30Days'] = $boundedDateQuery
+                        ? (clone $boundedDateQuery)->where($dateField, '>=', $metricsComputedAt->copy()->subDays(30))->count()
+                        : 0;
+                    $newlyCalculatedMetrics['recordsLast90Days'] = $boundedDateQuery
+                        ? (clone $boundedDateQuery)->where($dateField, '>=', $metricsComputedAt->copy()->subDays(90))->count()
+                        : 0;
+                    $newlyCalculatedMetrics['recordsLast1Year'] = $boundedDateQuery
+                        ? (clone $boundedDateQuery)->where($dateField, '>=', $metricsComputedAt->copy()->subYear())->count()
+                        : 0;
                 } catch (\Exception $e) {
                     Log::error("Error calculating general date metrics for {$modelName}: " . $e->getMessage());
                     $newlyCalculatedMetrics['minDate'] = 'Error';
@@ -158,9 +152,9 @@ class CacheMetricsDataCommand extends Command
             }
         }
 
-        $pageLastUpdatedTimestamp = $overallPageLastUpdated ? $overallPageLastUpdated->toDateTimeString() : Carbon::now()->toDateTimeString();
+        $pageLastUpdatedTimestamp = $overallPageLastUpdated ? $overallPageLastUpdated->toDateTimeString() : null;
 
-        // Ensure $allMetrics contains only arrays before var_export
+        // Normalize any remaining collection/stdClass values before persisting the snapshot.
         $allMetricsClean = [];
         foreach ($allMetrics as $metricSet) {
             $cleanSet = [];
@@ -188,37 +182,73 @@ class CacheMetricsDataCommand extends Command
             $allMetricsClean[] = $cleanSet;
         }
 
-        $configContent = "<?php\n\nreturn " . var_export([
-            'last_updated' => $pageLastUpdatedTimestamp,
-            'data' => $allMetricsClean,
-        ], true) . ";\n";
-        
-        // More robust preg_replace for stdClass::__set_state, just in case
-        // This aims to convert stdClass::__set_state(array(...)) to array(...)
-        $configContent = preg_replace('/stdClass::__set_state\s*\((array\s*\(.*?\))\s*\)/s', '$1', $configContent);
-        
-        // General cleanup for any remaining Eloquent model __set_state calls if they somehow slip through
-        // This aims to convert Model::__set_state(array(...)) to array(...)
-        $configContent = preg_replace('/\\\App\\\Models\\\[a-zA-Z]+::__set_state\s*\((array\s*\(.*?\))\s*\)/s', '$1', $configContent);
-
         try {
-            File::put(config_path('metrics.php'), $configContent);
-            $this->info('Successfully cached metrics data to config/metrics.php.');
+            $metricsSnapshotStore->replaceCurrent($allMetricsClean, $overallPageLastUpdated, $metricsComputedAt);
+            Cache::forget(HomeController::HOME_PAGE_CACHE_KEY);
+
+            $this->info('Successfully cached metrics data to metrics_snapshots.');
             OperationalSummaryLogger::emit($this, $this->getName(), 'complete', [
                 'models_processed' => count($allMetricsClean),
-                'output_file' => config_path('metrics.php'),
+                'output_table' => 'metrics_snapshots',
+                'snapshot_key' => MetricsSnapshotStore::CURRENT_SNAPSHOT_KEY,
                 'last_updated' => $pageLastUpdatedTimestamp,
             ]);
         } catch (\Exception $e) {
-            $this->error('Failed to write metrics data to config/metrics.php: ' . $e->getMessage());
-            Log::error('Failed to write metrics data to config/metrics.php: ' . $e->getMessage());
+            $this->error('Failed to write metrics data to metrics_snapshots: ' . $e->getMessage());
+            Log::error('Failed to write metrics data to metrics_snapshots: ' . $e->getMessage());
             OperationalSummaryLogger::emit($this, $this->getName(), 'failed', [
-                'output_file' => config_path('metrics.php'),
+                'output_table' => 'metrics_snapshots',
+                'snapshot_key' => MetricsSnapshotStore::CURRENT_SNAPSHOT_KEY,
                 'message' => $e->getMessage(),
             ], 'error');
             return 1;
         }
         
         return 0;
+    }
+
+    /**
+     * Derive metrics coverage from the configured city model set instead of a
+     * hard-coded legacy subset.
+     *
+     * @return array<class-string>
+     */
+    protected function metricModelClasses(): array
+    {
+        return collect(config('cities.cities', []))
+            ->flatMap(fn (array $cityConfig) => $cityConfig['models'] ?? [])
+            ->filter(fn ($modelClass) => is_string($modelClass) && $modelClass !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    protected function normalizeMetricTimestamp(mixed $rawDate, Carbon $capturedAt, string $modelName): ?Carbon
+    {
+        if (!$rawDate) {
+            return null;
+        }
+
+        try {
+            $parsed = Carbon::parse($rawDate);
+        } catch (\Throwable $throwable) {
+            Log::warning("Unable to parse metrics timestamp for {$modelName}.", [
+                'raw_date' => $rawDate,
+                'message' => $throwable->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        if ($parsed->gt($capturedAt)) {
+            Log::warning("Future-dated metrics timestamp detected for {$modelName}; clamping to command time.", [
+                'raw_date' => $parsed->toIso8601String(),
+                'captured_at' => $capturedAt->toIso8601String(),
+            ]);
+
+            return $capturedAt->copy();
+        }
+
+        return $parsed;
     }
 }

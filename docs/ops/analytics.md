@@ -11,63 +11,71 @@ The app already has a Google Analytics integration via `vue-gtag`.
 Current implementation found in the repo:
 - GA is initialized in [resources/js/app.js](/home/briarmoss/Documents/boston-ai-project/resources/js/app.js)
 - `tagId` comes from `VITE_GA_ID`
-- shared page-view and click tracking currently live in [resources/js/Components/PageTemplate.vue](/home/briarmoss/Documents/boston-ai-project/resources/js/Components/PageTemplate.vue)
-- banner click tracking exists in [resources/js/Components/FeaturedUserMapsBanner.vue](/home/briarmoss/Documents/boston-ai-project/resources/js/Components/FeaturedUserMapsBanner.vue)
+- shared analytics helpers and route gating live in [resources/js/Utils/analytics.js](/home/briarmoss/Documents/boston-ai-project/resources/js/Utils/analytics.js)
+- shared Inertia page-view tracking lives in [resources/js/Components/PageTemplate.vue](/home/briarmoss/Documents/boston-ai-project/resources/js/Components/PageTemplate.vue)
+- city-landing, explore-map, signup, and pricing instrumentation now live in page-specific Vue components
+- banner click tracking still exists as a direct `vue-gtag` event in [resources/js/Components/FeaturedUserMapsBanner.vue](/home/briarmoss/Documents/boston-ai-project/resources/js/Components/FeaturedUserMapsBanner.vue)
 
 ## What Is Currently Tracked
 
 From code inspection, the current analytics baseline includes:
 
-1. Page views
+1. Shared page and context events
 - initial `page_view` on mount in `PageTemplate.vue`
 - subsequent `page_view` events on Inertia route change
+- `city_page_view` on city landing pages
+- `explore_map_view` on the radial explore map
+- `pricing_page_view` on the subscription page
 
-2. Logout
-- `logout` event on successful logout in `PageTemplate.vue`
+2. Product interaction events
+- `use_my_location_clicked`
+- `address_search_started`
+- `address_search_completed`
+- `map_marker_selected`
+- `translation_requested`
+- `translation_completed`
+- `translation_failed`
+- `explore_map_clicked`
 
-3. Global click tracking
-- a generic `click_event` listener attached to the whole document in `PageTemplate.vue`
-- labels are inferred from button text, link text, title, or alt text
+3. Account and billing events
+- `signup_started`
+- `signup_completed`
+- `checkout_started`
+- `checkout_completed`
+- `subscription_canceled`
+- `logout`
 
-4. Featured banner clicks
-- a `click` event with category `engagement` from `FeaturedUserMapsBanner.vue`
+4. Edge and legacy instrumentation
+- featured banner clicks emit a direct `click` event from `FeaturedUserMapsBanner.vue`
 
 ## Current Problems
 
 The existing setup is useful as a baseline, but not yet strong enough for product decisions.
 
-### 1. Too much generic click noise
+### 1. `page_view` can fragment by query string
 
-The global document click listener in `PageTemplate.vue` likely creates a large amount of low-signal event traffic.
+Initial loads use `window.location.pathname`, but Inertia route changes use `$page.url` directly for `page_path`.
 
 Problems:
-- hard to interpret
-- event labels may be inconsistent
-- many clicks are not meaningful funnel steps
-- difficult to build reliable dashboards from generic click labels
+- one logical page can split into multiple GA rows
+- `session_id`, `types`, and similar query params can create noisy page variants
+- weekly landing-page reporting becomes harder to normalize
 
-### 2. Missing product-specific funnel events
+### 2. Instrumentation is inconsistent at the edges
 
-There is no evidence yet of dedicated tracking for key user actions such as:
-- `/everett` page visit as a city-page-specific event
-- geolocation button click
-- address search start
-- address search success
-- marker click on city pages
-- translation request
-- translation success/failure
-- explore-map handoff click
-- signup started
-- checkout started
-- checkout completed
+Known inconsistencies:
+- `FeaturedUserMapsBanner.vue` bypasses `trackAnalyticsEvent`
+- those banner events miss shared route gating and common parameters
+- report-route exclusions are inconsistent
+- `/reports/yearly-comparison/{jobId}` remains tracked while similar report surfaces are excluded
 
-### 3. No clear event taxonomy
+### 3. The live GA property still has not been audited
 
-There is no documented analytics spec that defines:
-- canonical event names
-- required parameters
-- user properties
-- when to use GA recommended events versus custom events
+The repo instrumentation is broader than the original baseline, but we still do not know from code alone:
+- which events are actually arriving
+- whether internal traffic is filtered
+- whether multiple properties or environments exist
+- whether GA recommended-event conventions are being used consistently in the property
 
 ### 4. No documented dashboard or KPI layer
 
@@ -76,6 +84,18 @@ The codebase does not currently document:
 - funnel definitions
 - source/medium reporting conventions
 - city/page segmentation standards
+
+### 5. Documentation drift created false negatives in the ops playbook
+
+This file previously described:
+- a document-wide generic click tracker in `PageTemplate.vue`
+- missing funnel events for city search, map interaction, signup, and checkout
+
+That description was outdated. The repo now has explicit city/search/signup/checkout instrumentation, so this playbook must stay aligned with:
+- [resources/js/Utils/analytics.js](/home/briarmoss/Documents/boston-ai-project/resources/js/Utils/analytics.js)
+- [resources/js/Pages/CityMapLite.vue](/home/briarmoss/Documents/boston-ai-project/resources/js/Pages/CityMapLite.vue)
+- [resources/js/Pages/RadialMap.vue](/home/briarmoss/Documents/boston-ai-project/resources/js/Pages/RadialMap.vue)
+- [resources/js/Pages/Subscription.vue](/home/briarmoss/Documents/boston-ai-project/resources/js/Pages/Subscription.vue)
 
 ## Desired End State
 
@@ -180,20 +200,17 @@ These should become the weekly reporting baseline:
 - whether internal traffic filtering exists
 - whether enhanced measurement is enabled
 
-2. Reduce reliance on generic click tracking
-- decide whether to keep, narrow, or remove the document-wide `click_event`
+2. Normalize `page_view` paths
+- strip or whitelist query-string params before sending `page_path`
+- decide which query params, if any, are analytically meaningful
 
-3. Add explicit product events to the Everett flow
-- `city_page_view`
-- `use_my_location_clicked`
-- `address_search_completed`
-- `map_marker_selected`
-- `translation_requested`
-- `translation_completed`
-- `explore_map_clicked`
+3. Move banner clicks onto the shared analytics wrapper
+- route all banner events through `trackAnalyticsEvent`
+- ensure route gating and common params are applied consistently
 
-4. Define a single event naming convention
-- documented in this file or a dedicated analytics spec
+4. Align exclusions for public report surfaces
+- decide whether report viewers should be tracked at all
+- keep exclusion behavior consistent across similar report routes
 
 5. Create a weekly dashboard definition
 - traffic
@@ -231,4 +248,3 @@ That review should populate:
 - noisy/untrusted events
 - missing funnel steps
 - first analytics implementation tasks
-

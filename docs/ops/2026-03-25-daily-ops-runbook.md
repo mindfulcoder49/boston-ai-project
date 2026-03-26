@@ -168,7 +168,7 @@ Next check:
 #### If `app:cache-metrics-data` failed
 
 Impact:
-- public metrics snapshot in `config/metrics.php` may be stale
+- public metrics snapshot in the `metrics_snapshots` table may be stale
 
 Next check:
 - inspect that command log

@@ -7,49 +7,23 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str; // Added Str facade
+use Illuminate\Support\Str;
 
 class DataPointSeeder extends Seeder
 {
     private const DAYS_TO_KEEP = 183; // Approx 6 months
     private const BATCH_SIZE = 1000; // Number of records to process/upsert in each batch
 
-    /**
-     * Define the Mappable models to process.
-     * Each entry should be the fully qualified class name of the model.
-     */
-    private const MODELS_TO_PROCESS = [ 
-        // Boston Models (ensure these implement Mappable)
-        \App\Models\CrimeData::class,
-        \App\Models\ThreeOneOneCase::class,
-        \App\Models\PropertyViolation::class,
-        // \App\Models\ConstructionOffHour::class, // Assuming model name, replace if different
-        \App\Models\BuildingPermit::class, // Boston Building Permits
-        \App\Models\FoodInspection::class,
-
-        // Everett Models
-        \App\Models\EverettCrimeData::class,
-
-        // Cambridge Models
-        \App\Models\CambridgeThreeOneOneCase::class,
-        \App\Models\CambridgeBuildingPermitData::class,
-        \App\Models\CambridgeCrimeReportData::class,
-        \App\Models\CambridgeHousingViolationData::class,
-        \App\Models\CambridgeSanitaryInspectionData::class,
-         
-        // New Model
-        \App\Models\PersonCrashData::class,
-        
-    ];
-
     private bool $encounteredFailure = false;
 
     public function run()
     {
+        $modelsToProcess = $this->modelsToProcess();
+
         $this->command->info("Starting DataPointSeeder...");
         Log::info("DataPointSeeder: Run started.");
         OperationalSummaryLogger::emit($this->command, 'DataPointSeeder', 'start', [
-            'models' => count(self::MODELS_TO_PROCESS),
+            'models' => count($modelsToProcess),
             'days_to_keep' => self::DAYS_TO_KEEP,
         ]);
         $cutoffDate = Carbon::now()->subDays(self::DAYS_TO_KEEP)->toDateTimeString();
@@ -72,7 +46,7 @@ class DataPointSeeder extends Seeder
             ], 'error');
         }
 
-        foreach (self::MODELS_TO_PROCESS as $modelClass) {
+        foreach ($modelsToProcess as $modelClass) {
             if (!class_exists($modelClass)) {
                 $this->encounteredFailure = true;
                 $this->command->error("Model class not found: {$modelClass}. Skipping.");
@@ -97,6 +71,26 @@ class DataPointSeeder extends Seeder
         if ($this->encounteredFailure) {
             throw new \RuntimeException('DataPointSeeder completed with one or more model failures. Review operational summaries.');
         }
+    }
+
+    /**
+     * Keep the shared data-point aggregation aligned with the configured cities
+     * that write into the main `data_points` table.
+     *
+     * @return array<class-string>
+     */
+    protected function modelsToProcess(): array
+    {
+        return collect(config('cities.cities', []))
+            ->filter(function (array $cityConfig): bool {
+                return ($cityConfig['data_points_table'] ?? null) === 'data_points'
+                    && ($cityConfig['db_connection'] ?? 'mysql') === 'mysql';
+            })
+            ->flatMap(fn (array $cityConfig) => $cityConfig['models'] ?? [])
+            ->filter(fn ($modelClass) => is_string($modelClass) && $modelClass !== '')
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function syncDataPointsForModel(string $modelClass, string $cutoffDate)

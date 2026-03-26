@@ -40,6 +40,25 @@ This work should favor low-breakage changes:
 - content structure for city pages like `/everett`
 - whether public pages communicate value clearly to both humans and search systems
 
+## Current Repo Finding
+
+Public analysis and scoring pages are currently indexable with generic metadata.
+
+What the code does today:
+- `SeoMetadata` only forces `noindex, nofollow` for admin, auth, and profile surfaces
+- public report routes such as `/reports/statistical-analysis/{jobId}`, `/reports/yearly-comparison/{jobId}`, and `/scoring-reports/{jobId}/{artifactName}` stay `index, follow`
+- the affected page components mostly provide title-only page metadata
+- no dedicated structured data exists for those report viewers
+
+Why this matters:
+- operational or artifact-style pages can enter search indices
+- snippets are likely weak because descriptions are generic or absent
+- search inventory can drift away from the intended landing/news/help surfaces
+
+Near-term decision required:
+- either promote those report pages as deliberate SEO surfaces with dedicated titles, descriptions, and schema
+- or mark them `noindex` so indexation stays focused on city pages, help content, pricing, and news
+
 ## LLM Discoverability
 
 Treat LLM discoverability as adjacent to SEO:
@@ -82,4 +101,3 @@ Treat LLM discoverability as adjacent to SEO:
 - city-page SEO recommendations
 - low-risk frontend SEO backlog
 - search measurement checklist
-

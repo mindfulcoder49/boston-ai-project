@@ -18,7 +18,7 @@ Top-level navigation exposes: Home, Map, Data Metrics, Trends, Yearly Comparison
 - **Vue Page**: `Pages/Home.vue`
 - **Data passed**: `cities[]`, `dataCategories[]`, `stats{totalRecords, cityCount, dataCategoryCount}`
 - **Purpose**: Landing page. Shows city cards (Boston, Cambridge, Everett, Chicago) with data type counts and a link to the relevant map. Shows data category cards. Shows aggregate stats.
-- **Data source**: `config/cities.php`, `config/metrics.php` (pre-cached, 1hr TTL)
+- **Data source**: `config/cities.php`, `metrics_snapshots` table (homepage response cached for 1 hour)
 - **UX notes**: Entry point for all users. City cards link to `/data-map/{dataType}` or `/combined-map?types=...`. Needs clear CTAs and a coherent visual hierarchy.
 
 ---
@@ -79,7 +79,7 @@ Top-level navigation exposes: Home, Map, Data Metrics, Trends, Yearly Comparison
 - **Route**: `GET /data-metrics`
 - **Controller**: `MetricsController::index()`
 - **Vue Page**: `Pages/DataMetrics.vue`
-- **Data passed**: `metricsData[]` (from `config/metrics.php`), `lastUpdated`
+- **Data passed**: `metricsData[]` and `lastUpdated` from the current row in `metrics_snapshots` (falls back to `config/metrics.php` only if the table is unavailable or empty)
 - **Purpose**: Dashboard showing dataset statistics (record counts, date ranges) per model/city.
 - **Components**: `Components/Metrics/` subdirectory
 - **UX notes**: Static/cached data. Useful for transparency. Should communicate how often data is refreshed.
