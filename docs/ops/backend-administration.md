@@ -104,6 +104,7 @@ Current observability status:
 - the sysadmin runtime must have `S3_BUCKET_NAME` configured if you want DNS sync evidence published to `ops/health/ec2_dns_status.json`, but missing DNS evidence is now informational rather than a backend-health warning
 - the scraper backend now exposes `GET /health` in the `opportunityHarvester` service, and Laravel now probes that path directly and requires a successful HTTP response for scraper health
 - the Montgomery County MD crime seeder now remaps the current source CSV headers to the canonical schema fields and filters against the live table columns before upsert, which fixes the recurring `Unknown column 'block_address'` failure caused by source-schema drift
+- the Everett PDF markdown downloader now treats individual `404` historical source PDFs as warnings instead of failing the whole daily run; non-`404` scraper/PDF conversion failures still fail the command
 
 Current retention direction:
 - storage pressure on Hostinger is now an explicit backend-admin concern

@@ -95,6 +95,7 @@ class DownloadEverettPDFMarkdown extends Command
             'markdown_saved' => 0,
             'markdown_skipped_existing' => 0,
             'markdown_failed' => 0,
+            'markdown_missing_source' => 0,
         ];
 
         OperationalSummaryLogger::emit($this, $this->getName(), 'start', [
@@ -172,6 +173,17 @@ class DownloadEverettPDFMarkdown extends Command
                                       ->post($scraperEndpoint, $pdfToMarkdownPayload);
 
                     if (!$mdResponse->successful()) {
+                        if ($mdResponse->status() === 404) {
+                            $this->warn("Skipping missing Everett PDF source: {$pdfLink}");
+                            Log::warning("Missing Everett PDF source for Markdown conversion.", [
+                                'pdf_url' => $pdfLink,
+                                'status' => $mdResponse->status(),
+                                'body' => $mdResponse->body(),
+                            ]);
+                            $summary['markdown_missing_source']++;
+                            continue;
+                        }
+
                         $this->error("Failed to convert PDF to Markdown for: {$pdfLink}. Status: {$mdResponse->status()}. Body: " . $mdResponse->body());
                         Log::error("Scraper service error for PDF URL {$pdfLink}: " . $mdResponse->body());
                         $summary['markdown_failed']++;
@@ -209,7 +221,8 @@ class DownloadEverettPDFMarkdown extends Command
         }
 
         $this->info("Processing complete.");
-        OperationalSummaryLogger::emit($this, $this->getName(), 'complete', $summary, ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0) ? 'warning' : 'info');
+        OperationalSummaryLogger::emit($this, $this->getName(), 'complete', $summary, ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0 || $summary['markdown_missing_source'] > 0) ? 'warning' : 'info');
+
         return ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0) ? 1 : 0;
     }
 }
