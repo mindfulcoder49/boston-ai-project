@@ -8,13 +8,14 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use App\Models\AnalysisReportSnapshot;
 use App\Models\Trend;
+use App\Services\StatisticalAnalysisViewService;
+use Illuminate\Http\Request;
 
 class StatisticalAnalysisReportController extends Controller
 {
     public function show(string $jobId)
     {
-        // Resolve artifact data: snapshot table first, S3 fallback
-        $reportData = AnalysisReportSnapshot::resolve($jobId, 'stage4_h3_anomaly.json');
+        $reportData = null;
 
         $modelClass = null;
         $columnName = null;
@@ -24,7 +25,12 @@ class StatisticalAnalysisReportController extends Controller
         if ($trend && class_exists($trend->model_class)) {
             $modelClass = $trend->model_class;
             $columnName = $trend->column_name;
-        } elseif ($reportData) {
+        } else {
+            // Resolve artifact data only when the Trend row is unavailable.
+            $reportData = AnalysisReportSnapshot::resolve($jobId, 'stage4_h3_anomaly.json');
+        }
+
+        if (!$trend && $reportData) {
             $params     = $reportData['parameters'] ?? [];
             $modelClass = $params['model_class'] ?? null;
             $columnName = $params['column_name'] ?? 'unified';
@@ -65,9 +71,26 @@ class StatisticalAnalysisReportController extends Controller
         return Inertia::render('Reports/StatisticalAnalysisViewer', [
             'jobId' => $jobId,
             'apiBaseUrl' => config('services.analysis_api.url'),
-            'reportData' => $reportData,
+            'reportSummary' => StatisticalAnalysisViewService::summarize($jobId, $reportData),
             'reportTitle' => $reportTitle,
             'relatedScoringReports' => $relatedScoringReports,
         ]);
+    }
+
+    public function groupDetail(Request $request, string $jobId)
+    {
+        $secondaryGroup = trim((string) $request->query('secondary_group', ''));
+
+        if ($secondaryGroup === '') {
+            return response()->json(['error' => 'secondary_group is required.'], 422);
+        }
+
+        $detail = StatisticalAnalysisViewService::groupDetail($jobId, $secondaryGroup);
+
+        if ($detail === null) {
+            return response()->json(['error' => 'Analysis detail not found.'], 404);
+        }
+
+        return response()->json($detail);
     }
 }

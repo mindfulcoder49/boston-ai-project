@@ -33,6 +33,9 @@
                 <!-- Map and Controls Column -->
                 <div class="lg:col-span-2 space-y-4">
                     <div id="map" class="h-[600px] min-h-[300px] w-full border rounded-lg shadow-md resize-y overflow-auto"></div>
+                    <div v-if="isLoadingResolution" class="text-sm text-gray-500">
+                        Loading resolution data...
+                    </div>
                     <ReportResolutionControl
                         v-if="reportGroup.length > 0"
                         :report-group="reportGroup"
@@ -166,6 +169,7 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import PageTemplate from '@/Components/PageTemplate.vue';
 import { useH3Names } from '@/composables/useH3Names';
+import { ensureGeoJsonBoundaries, getGeoJsonBoundary } from '@/Utils/h3Boundaries';
 const { getName } = useH3Names();
 import GoogleAddressSearch from '@/Components/GoogleAddressSearch.vue';
 import ReportResolutionControl from '@/Components/ReportResolutionControl.vue';
@@ -202,6 +206,8 @@ let addressMarker = null;
 const editableWeights = ref({});
 const isRecalculating = ref(false);
 let sourceAnalysisDataCache = null; // Cache for stage4 data
+const isLoadingResolution = ref(false);
+let drawRequestId = 0;
 
 // New state for multi-resolution support
 const baseResolution = ref(props.initialReport.resolution);
@@ -224,14 +230,7 @@ const PALETTE = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#ffffbf
 onMounted(() => {
     console.log("Viewer.vue: Component mounted.");
 
-    // Process and store report data by resolution
-    props.reportGroup.forEach(report => {
-        reportDataByResolution.value[report.resolution] = {
-            ...report,
-            // Keep a copy of original results for resets
-            original_results: JSON.parse(JSON.stringify(report.scoring_data.results)),
-        };
-    });
+    storeLoadedReport(props.initialReport);
 
     let initialCenter = [42.3601, -71.0589]; // Default to Boston
     if (currentReportData.value?.results?.length > 0) {
@@ -261,12 +260,83 @@ onMounted(() => {
     }
 });
 
-watch(baseResolution, (newRes) => {
+watch(baseResolution, async (newRes) => {
     console.log(`Base resolution changed to: ${newRes}`);
+    await ensureResolutionLoaded(newRes);
     resetAndDrawMap();
 });
 
-watch(colorSteps, () => drawMap());
+watch(colorSteps, () => {
+    void drawMap();
+});
+
+function cloneResults(results) {
+    return JSON.parse(JSON.stringify(results ?? []));
+}
+
+function processLoadedReport(report) {
+    const originalResults = cloneResults(report.scoring_data?.results);
+    const originalLookup = Object.fromEntries(originalResults.map(result => [result.h3_index, result]));
+
+    return {
+        ...report,
+        original_results: originalResults,
+        original_lookup: originalLookup,
+        result_lookup: Object.fromEntries(originalResults.map(result => [result.h3_index, result])),
+    };
+}
+
+function storeLoadedReport(report) {
+    const processed = processLoadedReport(report);
+    reportDataByResolution.value[processed.resolution] = processed;
+    return processed;
+}
+
+function updateReportResults(report, newResults) {
+    report.scoring_data.results = newResults;
+    report.result_lookup = Object.fromEntries(newResults.map(result => [result.h3_index, result]));
+}
+
+function hasModifiedWeights(report) {
+    const baseWeights = report?.scoring_data?.parameters?.group_weights ?? {};
+    const activeWeights = editableWeights.value ?? {};
+    const keys = [...new Set([...Object.keys(baseWeights), ...Object.keys(activeWeights)])];
+
+    return keys.some(key => (activeWeights[key] ?? null) !== (baseWeights[key] ?? null));
+}
+
+async function ensureResolutionLoaded(resolution) {
+    if (reportDataByResolution.value[resolution]) {
+        return reportDataByResolution.value[resolution];
+    }
+
+    const reportMeta = props.reportGroup.find(report => report.resolution === resolution);
+    if (!reportMeta) {
+        return null;
+    }
+
+    isLoadingResolution.value = true;
+    try {
+        const response = await axios.get(route('scoring-reports.report-data', {
+            jobId: reportMeta.job_id,
+            artifactName: reportMeta.artifact_name,
+        }));
+
+        const report = storeLoadedReport(response.data);
+
+        if (Object.keys(editableWeights.value).length > 0 && hasModifiedWeights(report)) {
+            if (report.scoring_data.parameters.group_score_formula) {
+                await recalculateAnomalyScores(report);
+            } else {
+                recalculateHistoricalScores(report);
+            }
+        }
+
+        return report;
+    } finally {
+        isLoadingResolution.value = false;
+    }
+}
 
 function getColor(score, minScore, maxScore, numSteps) {
     // Special case: 0.00 is always the first color (purple)
@@ -276,7 +346,7 @@ function getColor(score, minScore, maxScore, numSteps) {
 
     // For scores > 0, use the rest of the palette
     const paletteForPositive = PALETTE.slice(1);
-    if (maxScore === minScore) return paletteForPositive[paletteForPositive.length - 1];
+    if (maxScore === minScore) return paletteForPositive[paletteForPositive.length - 1] ?? PALETTE[PALETTE.length - 1];
     
     const value = (score - minScore) / (maxScore - minScore);
     const index = Math.min(numSteps - 1, Math.floor(value * numSteps));
@@ -284,8 +354,9 @@ function getColor(score, minScore, maxScore, numSteps) {
     return paletteForPositive[paletteIndex];
 }
 
-function drawMap() {
+async function drawMap() {
     console.log("Viewer.vue: drawMap() called.");
+    const requestId = ++drawRequestId;
     const results = displayHexagons.value;
     if (!results || results.length === 0) {
         console.warn("Viewer.vue: drawMap() - No displayHexagons to draw.");
@@ -310,10 +381,15 @@ function drawMap() {
     if (geojsonLayer) map.removeLayer(geojsonLayer);
     if (legend) map.removeControl(legend);
 
+    await ensureGeoJsonBoundaries(results.map(item => item.h3_index));
+    if (requestId !== drawRequestId) {
+        return;
+    }
+
     const features = results.map(item => ({
         type: "Feature",
         properties: { h3_index: item.h3_index, score: item.score, resolution: item.resolution },
-        geometry: { type: "Polygon", coordinates: [h3.cellToBoundary(item.h3_index, true)] }
+        geometry: { type: "Polygon", coordinates: [getGeoJsonBoundary(item.h3_index)] }
     }));
 
     geojsonLayer = L.geoJson(features, {
@@ -325,7 +401,7 @@ function drawMap() {
         }),
         onEachFeature: (feature, layer) => {
             layer.on('click', () => {
-                handleHexagonClick(feature.properties.h3_index, feature.properties.resolution);
+                void handleHexagonClick(feature.properties.h3_index, feature.properties.resolution);
             });
             layer.bindPopup(`<b>${getName(feature.properties.h3_index)}</b><br><span style="font-family:monospace;font-size:11px;color:#6b7280">${feature.properties.h3_index}</span><br><b>Score:</b> ${feature.properties.score?.toFixed(2) ?? 'N/A'}`);
         }
@@ -351,29 +427,31 @@ function drawMap() {
     legend.addTo(map);
 }
 
-function handleHexagonClick(h3Index, resolution) {
+async function handleHexagonClick(h3Index, resolution) {
     if (mapMode.value === 'select') {
-        handleHexagonSelection(h3Index, resolution);
+        await handleHexagonSelection(h3Index, resolution);
     } else if (mapMode.value === 'explode') {
-        explodeHexagon(h3Index, resolution);
+        await explodeHexagon(h3Index, resolution);
     }
 }
 
-function explodeHexagon(h3Index, resolution) {
-    const availableResolutions = Object.keys(reportDataByResolution.value).map(Number).sort((a, b) => a - b);
-    const currentResIndex = availableResolutions.indexOf(resolution);
+async function explodeHexagon(h3Index, resolution) {
+    const availableResolutions = [...new Set(props.reportGroup.map(report => Number(report.resolution)))].sort((a, b) => a - b);
+    const currentResIndex = availableResolutions.indexOf(Number(resolution));
     const nextRes = availableResolutions[currentResIndex + 1];
 
     if (!nextRes) {
         console.log("No finer resolution to explode into.");
-        handleHexagonSelection(h3Index, resolution); // Fallback to select
+        await handleHexagonSelection(h3Index, resolution); // Fallback to select
         return;
     }
+
+    await ensureResolutionLoaded(nextRes);
 
     const children = h3.cellToChildren(h3Index, nextRes);
     const childrenData = children.map(childIndex => {
         const reportForRes = reportDataByResolution.value[nextRes];
-        const hexData = reportForRes.scoring_data.results.find(r => r.h3_index === childIndex);
+        const hexData = reportForRes.result_lookup[childIndex];
         return {
             h3_index: childIndex,
             score: hexData?.score ?? 0,
@@ -385,11 +463,12 @@ function explodeHexagon(h3Index, resolution) {
     displayHexagons.value = displayHexagons.value.filter(h => h.h3_index !== h3Index);
     displayHexagons.value.push(...childrenData);
 
-    drawMap();
+    await drawMap();
 }
 
 async function handleHexagonSelection(h3Index, resolution) {
     console.log(`Viewer.vue: handleHexagonSelection for H3 index: ${h3Index} at res ${resolution}`);
+    await ensureResolutionLoaded(resolution);
     const reportForRes = reportDataByResolution.value[resolution];
     if (!reportForRes) {
         console.error(`No report data found for resolution ${resolution}`);
@@ -399,7 +478,7 @@ async function handleHexagonSelection(h3Index, resolution) {
     const isHistorical = !reportForRes.scoring_data.parameters.group_score_formula;
 
     if (isHistorical) {
-        const scoreDetails = reportForRes.scoring_data.results.find(r => r.h3_index === h3Index);
+        const scoreDetails = reportForRes.result_lookup[h3Index];
         selectedHexagon.value = {
             h3_index: h3Index,
             score_details: scoreDetails,
@@ -417,7 +496,7 @@ async function handleHexagonSelection(h3Index, resolution) {
             job_id: reportForRes.job_id,
             artifact_name: reportForRes.artifact_name,
         });
-        const scoreDetails = reportForRes.scoring_data.results.find(r => r.h3_index === h3Index);
+        const scoreDetails = reportForRes.result_lookup[h3Index];
         response.data.score_details = scoreDetails;
         response.data.resolution = resolution;
         selectedHexagon.value = response.data;
@@ -426,7 +505,7 @@ async function handleHexagonSelection(h3Index, resolution) {
         console.error("Error fetching details for hexagon:", error);
         selectedHexagon.value = {
             h3_index: h3Index,
-            score_details: reportForRes.scoring_data.results.find(r => r.h3_index === h3Index),
+            score_details: reportForRes.result_lookup[h3Index],
             analysis_details: [],
             analysis_parameters: null,
             resolution: resolution,
@@ -444,7 +523,7 @@ async function handleAddressSelection({ lat, lng, address }) {
     const h3Index = h3.latLngToCell(lat, lng, baseResolution.value);
     console.log(`Viewer.vue: handleAddressSelection - Resolved address to H3 index: ${h3Index} at base resolution.`);
 
-    handleHexagonClick(h3Index, baseResolution.value);
+    await handleHexagonClick(h3Index, baseResolution.value);
 }
 
 function searchByHexagonId() {
@@ -460,7 +539,7 @@ function searchByHexagonId() {
             return;
         }
 
-        handleHexagonClick(h3Index, res);
+        void handleHexagonClick(h3Index, res);
         
         try {
             const [lat, lng] = h3.cellToLatLng(h3Index);
@@ -483,11 +562,15 @@ function zeroOutWeights() {
 }
 
 function resetWeights() {
+    if (!currentReportData.value?.parameters?.group_weights) {
+        return;
+    }
+
     editableWeights.value = JSON.parse(JSON.stringify(currentReportData.value.parameters.group_weights));
     // Reset all resolutions to their original scores
     for (const res in reportDataByResolution.value) {
         const report = reportDataByResolution.value[res];
-        report.scoring_data.results = JSON.parse(JSON.stringify(report.original_results));
+        updateReportResults(report, cloneResults(report.original_results));
     }
     resetAndDrawMap();
 }
@@ -496,7 +579,7 @@ function resetAndDrawMap() {
     const report = reportDataByResolution.value[baseResolution.value];
     if (!report) return;
     displayHexagons.value = report.scoring_data.results.map(r => ({ ...r, resolution: baseResolution.value }));
-    drawMap();
+    void drawMap();
 }
 
 async function recalculateAllScores() {
@@ -516,13 +599,13 @@ async function recalculateAllScores() {
     // After recalculating all, we need to update the displayHexagons with new scores
     displayHexagons.value = displayHexagons.value.map(hex => {
         const report = reportDataByResolution.value[hex.resolution];
-        const updatedHex = report.scoring_data.results.find(r => r.h3_index === hex.h3_index);
+        const updatedHex = report.result_lookup[hex.h3_index];
         return { ...hex, score: updatedHex?.score ?? hex.score };
     });
 
-    drawMap();
+    await drawMap();
     if (selectedHexagon.value) {
-        handleHexagonSelection(selectedHexagon.value.h3_index, selectedHexagon.value.resolution);
+        await handleHexagonSelection(selectedHexagon.value.h3_index, selectedHexagon.value.resolution);
     }
     isRecalculating.value = false;
 }
@@ -538,7 +621,7 @@ function recalculateHistoricalScores(report) {
 
         return { ...hexagon, score: newScore };
     });
-    report.scoring_data.results = newResults;
+    updateReportResults(report, newResults);
 }
 
 async function recalculateAnomalyScores(report) {
@@ -600,7 +683,7 @@ async function recalculateAnomalyScores(report) {
             }
         }
         
-        const originalHex = report.original_results.find(r => r.h3_index === h3Index) || { lat: 0, lon: 0 };
+        const originalHex = report.original_lookup[h3Index] || { lat: 0, lon: 0 };
         newResults.push({
             h3_index: h3Index,
             score: finalH3Score,
@@ -608,7 +691,7 @@ async function recalculateAnomalyScores(report) {
             lon: originalHex.lon,
         });
     }
-    report.scoring_data.results = newResults;
+    updateReportResults(report, newResults);
 }
 
 const scoreExplanation = computed(() => {

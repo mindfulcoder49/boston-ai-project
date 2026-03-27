@@ -53,6 +53,9 @@ Route::get('/hotspots/{citySlug}', [HotspotController::class, 'show'])->name('ho
 Route::get('/reports/statistical-analysis/{jobId}', [StatisticalAnalysisReportController::class, 'show'])
     ->where('jobId', '[^/]+')
     ->name('reports.statistical-analysis.show');
+Route::get('/api/reports/statistical-analysis/{jobId}/group-detail', [StatisticalAnalysisReportController::class, 'groupDetail'])
+    ->where('jobId', '[^/]+')
+    ->name('reports.statistical-analysis.group-detail');
 
 Route::get('/yearly-comparisons', [YearlyCountComparisonController::class, 'index'])->name('yearly-comparisons.index');
 Route::middleware(['auth', 'verified'])->post('/yearly-comparisons/refresh', [YearlyCountComparisonController::class, 'refresh'])->name('yearly-comparisons.refresh');
@@ -67,6 +70,9 @@ Route::get('/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::
     ->where('artifactName', '.*') // Allow dots in filename
     ->name('scoring-reports.show');
 
+Route::get('/api/scoring-reports/{jobId}/{artifactName}', [ScoringReportController::class, 'getReportData'])
+    ->where('artifactName', '.*')
+    ->name('scoring-reports.report-data');
 Route::post('/api/scoring-reports/score-for-location', [ScoringReportController::class, 'getScoreForLocation'])->name('scoring-reports.score-for-location');
 Route::get('/api/scoring-reports/source-analysis/{jobId}', [ScoringReportController::class, 'getSourceAnalysisData'])->name('scoring-reports.source-analysis');
 

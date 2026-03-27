@@ -158,24 +158,17 @@ class ScoringReportController extends Controller
             return redirect()->route('scoring-reports.index')->with('status', 'Report index was refreshed. Please try again.');
         }
 
-        $reportsWithData = [];
-        foreach ($reportGroup as $reportItem) {
-            $scoringData = AnalysisReportSnapshot::resolve($reportItem['job_id'], $reportItem['artifact_name']);
-            if ($scoringData !== null) {
-                $reportItem['scoring_data'] = $scoringData;
-                $reportsWithData[] = $reportItem;
-            }
-        }
+        $reportGroup = array_values($reportGroup ?? []);
+        usort($reportGroup, fn($a, $b) => ($a['resolution'] ?? 99) <=> ($b['resolution'] ?? 99));
 
-        if (empty($reportsWithData)) {
+        $initialData = AnalysisReportSnapshot::resolve($targetReport['job_id'], $targetReport['artifact_name']);
+        if ($initialData === null) {
             abort(404, 'Scoring report data not found.');
         }
-
-        // Sort by resolution ascending
-        usort($reportsWithData, fn($a, $b) => ($a['resolution'] ?? 99) <=> ($b['resolution'] ?? 99));
+        $initial = $targetReport;
+        $initial['scoring_data'] = $initialData;
 
         // Look up the source Stage 4 analysis for cross-linking
-        $initial = collect($reportsWithData)->firstWhere('artifact_name', $artifactName);
         $sourceJobId = $initial['scoring_data']['source_job_id'] ?? null;
         $sourceTrend = null;
         if ($sourceJobId) {
@@ -201,7 +194,7 @@ class ScoringReportController extends Controller
         }
 
         return Inertia::render('Reports/Scoring/Viewer', [
-            'reportGroup' => $reportsWithData,
+            'reportGroup' => $reportGroup,
             'initialReport' => $initial,
             'reportTitle' => 'Neighborhood Scoring Report Viewer',
             'sourceTrend' => $sourceTrend,
@@ -258,6 +251,29 @@ class ScoringReportController extends Controller
         }
 
         return response()->json(['error' => 'Source analysis data not found.'], 404);
+    }
+
+    /**
+     * API endpoint to get a full scoring artifact for one resolution on demand.
+     */
+    public function getReportData(string $jobId, string $artifactName)
+    {
+        $scoringData = AnalysisReportSnapshot::resolve($jobId, $artifactName);
+
+        if ($scoringData === null) {
+            return response()->json(['error' => 'Scoring report not found.'], 404);
+        }
+
+        $parameters = $scoringData['parameters'] ?? ($scoringData['config'] ?? []);
+
+        return response()->json([
+            'job_id' => $jobId,
+            'artifact_name' => $artifactName,
+            'parameters' => $parameters,
+            'resolution' => $parameters['h3_resolution'] ?? null,
+            'source_job_id' => $scoringData['source_job_id'] ?? null,
+            'scoring_data' => $scoringData,
+        ]);
     }
 
     /**

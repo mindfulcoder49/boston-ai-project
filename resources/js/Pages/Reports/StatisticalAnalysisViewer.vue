@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import axios from 'axios';
 import PageTemplate from '@/Components/PageTemplate.vue';
 import { useH3Names } from '@/composables/useH3Names';
+import { ensureGeoJsonBoundaries, getGeoJsonBoundary } from '@/Utils/h3Boundaries';
 const { getName } = useH3Names();
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
-import * as h3 from 'h3-js';
 
 // Fix for default icon path issues with Vite/Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -25,7 +26,7 @@ const props = defineProps({
     jobId: String,
     apiBaseUrl: String,
     reportTitle: String,
-    reportData: {
+    reportSummary: {
         type: Object,
         required: false,
         default: null,
@@ -39,429 +40,334 @@ const props = defineProps({
 const isLoading = ref(false);
 const error = ref(null);
 const activeSecondaryGroup = ref(null);
+const loadingSecondaryGroup = ref(false);
+const groupDetails = ref({});
 
 let mapAnomaliesInstances = {};
 let mapTrendsInstances = {};
-let h3Layers = {}; // To store references to H3 polygon layers
+let h3Layers = {};
 
-const P_VALUE_ANOMALY = computed(() => props.reportData?.parameters?.p_value_anomaly || 0.05);
-const P_VALUE_TREND = computed(() => props.reportData?.parameters?.p_value_trend || 0.05);
-const TREND_WINDOWS = computed(() => props.reportData?.parameters?.analysis_weeks_trend || []);
+const parameters = computed(() => props.reportSummary?.parameters ?? {
+    h3_resolution: 8,
+    p_value_anomaly: 0.05,
+    p_value_trend: 0.05,
+    analysis_weeks_trend: [],
+});
+const TREND_WINDOWS = computed(() => parameters.value.analysis_weeks_trend ?? []);
+const h3Key = computed(() => `h3_index_${parameters.value.h3_resolution}`);
+
+const anomalySortKey = ref('z_score');
+const trendSortKey = ref('slope');
+
+const setAnomalySort = (key) => { anomalySortKey.value = key; };
+const setTrendSort = (key) => { trendSortKey.value = key; };
+
+const groupCounts = computed(() => props.reportSummary?.group_counts ?? {});
+const sortedSecondaryGroups = computed(() => props.reportSummary?.group_order ?? Object.keys(groupCounts.value));
+
+const topAnomalyFindings = computed(() => {
+    const findings = [...(props.reportSummary?.top_anomalies ?? [])];
+    const comparators = {
+        z_score: (a, b) => (b.week_details.z_score ?? 0) - (a.week_details.z_score ?? 0),
+        p_value: (a, b) => (a.week_details.anomaly_p_value ?? 1) - (b.week_details.anomaly_p_value ?? 1),
+        count: (a, b) => (b.week_details.count ?? 0) - (a.week_details.count ?? 0),
+        week: (a, b) => (b.week_details.week ?? '').localeCompare(a.week_details.week ?? ''),
+    };
+
+    return findings.sort(comparators[anomalySortKey.value] ?? comparators.z_score);
+});
+
+const topTrendsByWindow = computed(() => {
+    const compare = {
+        slope: (a, b) => Math.abs(b.trend_details.slope ?? 0) - Math.abs(a.trend_details.slope ?? 0),
+        p_value: (a, b) => (a.trend_details.p_value ?? 1) - (b.trend_details.p_value ?? 1),
+        category: (a, b) => (a.details.secondary_group ?? '').localeCompare(b.details.secondary_group ?? ''),
+    }[trendSortKey.value] ?? ((a, b) => Math.abs(b.trend_details.slope ?? 0) - Math.abs(a.trend_details.slope ?? 0));
+
+    const grouped = {};
+    Object.entries(props.reportSummary?.top_trends_by_window ?? {}).forEach(([window, findings]) => {
+        grouped[window] = [...findings].sort(compare);
+    });
+
+    return grouped;
+});
+
+const groupsWithAnomalies = computed(() =>
+    sortedSecondaryGroups.value.filter(group => (groupCounts.value[group]?.anomaly_count ?? 0) > 0)
+);
+
+const groupsWithTrends = computed(() =>
+    sortedSecondaryGroups.value.filter(group => (groupCounts.value[group]?.trend_count ?? 0) > 0)
+);
+
+const currentGroupDetail = computed(() =>
+    activeSecondaryGroup.value ? groupDetails.value[activeSecondaryGroup.value] ?? null : null
+);
+
+const filteredAnomalyFindings = computed(() => currentGroupDetail.value?.anomalies ?? []);
+const filteredTrendsByWindow = computed(() => currentGroupDetail.value?.trends_by_window ?? {});
+const filteredFindingsByH3 = computed(() => currentGroupDetail.value?.findings_by_h3 ?? {});
+const activeTrendWindows = computed(() => {
+    const windows = Object.keys(currentGroupDetail.value?.trends_by_window ?? {});
+    return windows.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+});
 
 onMounted(async () => {
-    if (!props.reportData) {
+    if (!props.reportSummary) {
         error.value = 'Failed to load report data. The analysis results might not be available.';
         return;
     }
 
-    try {
-        processAndDisplayData();
-        // Auto-activate the most significant category so reporters land on something useful
-        await nextTick();
-        if (sortedSecondaryGroups.value.length > 0) {
-            const topGroup = sortedSecondaryGroups.value[0];
-            activeSecondaryGroup.value = topGroup;
-            await nextTick();
-            initializeMapsForGroup(topGroup);
-        }
-    } catch (e) {
-        console.error('Failed to process report data:', e);
-        error.value = `Failed to process report data. (${e.message})`;
+    if (sortedSecondaryGroups.value.length > 0) {
+        await setActiveSecondaryGroup(sortedSecondaryGroups.value[0]);
     }
 });
 
-const initializeMapsForGroup = (secGroup) => {
-    if (!secGroup || !findingsBySecondaryGroup.value[secGroup]) return;
+function sanitizeForFilename(name) {
+    return String(name).replace(/[\\/*?:"<>|]/g, "");
+}
+
+function destroyGroupMaps(secGroup) {
+    mapAnomaliesInstances[secGroup]?.remove();
+    delete mapAnomaliesInstances[secGroup];
+
+    Object.values(mapTrendsInstances[secGroup] ?? {}).forEach(map => map.remove());
+    delete mapTrendsInstances[secGroup];
+    delete h3Layers[secGroup];
+}
+
+async function loadSecondaryGroup(secGroup) {
+    if (!secGroup) {
+        return null;
+    }
+
+    if (groupDetails.value[secGroup]) {
+        return groupDetails.value[secGroup];
+    }
+
+    loadingSecondaryGroup.value = true;
+    try {
+        const response = await axios.get(route('reports.statistical-analysis.group-detail', { jobId: props.jobId }), {
+            params: { secondary_group: secGroup },
+        });
+
+        groupDetails.value = {
+            ...groupDetails.value,
+            [secGroup]: response.data,
+        };
+
+        return response.data;
+    } catch (err) {
+        console.error('Failed to load group detail:', err);
+        error.value = 'Could not load detailed findings for this category.';
+        return null;
+    } finally {
+        loadingSecondaryGroup.value = false;
+    }
+}
+
+async function initializeMapsForGroup(secGroup) {
+    const detail = groupDetails.value[secGroup];
+    if (!detail) {
+        return;
+    }
 
     const sanitizedSecGroup = sanitizeForFilename(secGroup);
-    if (!h3Layers[secGroup]) {
-        h3Layers[secGroup] = { anomalies: {}, trends: {} };
-    }
-    if (!mapTrendsInstances[secGroup]) {
-        mapTrendsInstances[secGroup] = {};
-    }
+    h3Layers[secGroup] ??= { anomalies: {}, trends: {} };
+    mapTrendsInstances[secGroup] ??= {};
 
-    // Initialize Anomaly Map for the group
     const anomalyContainerId = `map-anomalies-${sanitizedSecGroup}`;
     const anomalyContainer = document.getElementById(anomalyContainerId);
-    if (anomalyContainer && !mapAnomaliesInstances[secGroup]) {
+    if (anomalyContainer && !mapAnomaliesInstances[secGroup] && (detail.anomaly_cells?.length ?? 0) > 0) {
         const map = L.map(anomalyContainer).setView([42.3601, -71.0589], 12);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         }).addTo(map);
         mapAnomaliesInstances[secGroup] = map;
-        updateAnomaliesMap(secGroup);
+        await updateAnomaliesMap(secGroup);
     }
 
-    // Initialize Trend Maps for the group for each window
-    TREND_WINDOWS.value.forEach(window => {
-        const trendWindowKey = `${window}_weeks`;
-        const trendContainerId = `map-trends-${sanitizedSecGroup}-${trendWindowKey}`;
+    for (const window of activeTrendWindows.value) {
+        const trendContainerId = `map-trends-${sanitizedSecGroup}-${window}`;
         const trendContainer = document.getElementById(trendContainerId);
-        if (trendContainer && !mapTrendsInstances[secGroup][trendWindowKey]) {
+        const cells = detail.trend_cells_by_window?.[window] ?? [];
+
+        if (trendContainer && !mapTrendsInstances[secGroup][window] && cells.length > 0) {
             const map = L.map(trendContainer).setView([42.3601, -71.0589], 12);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             }).addTo(map);
-            mapTrendsInstances[secGroup][trendWindowKey] = map;
-            updateTrendsMap(secGroup, trendWindowKey);
+            mapTrendsInstances[secGroup][window] = map;
+            await updateTrendsMap(secGroup, window);
         }
-    });
-};
+    }
+}
 
-const toggleSecondaryGroup = async (secGroup) => {
+async function setActiveSecondaryGroup(secGroup) {
     const prevGroup = activeSecondaryGroup.value;
-    const newActiveGroup = prevGroup === secGroup ? null : secGroup;
-
-    // Destroy old Leaflet instances before the shared DOM container changes group
     if (prevGroup) {
-        mapAnomaliesInstances[prevGroup]?.remove();
-        delete mapAnomaliesInstances[prevGroup];
-        Object.values(mapTrendsInstances[prevGroup] ?? {}).forEach(m => m.remove());
-        delete mapTrendsInstances[prevGroup];
-        delete h3Layers[prevGroup];
+        destroyGroupMaps(prevGroup);
     }
 
-    activeSecondaryGroup.value = newActiveGroup;
-
-    if (newActiveGroup) {
-        await nextTick();
-        initializeMapsForGroup(newActiveGroup);
+    activeSecondaryGroup.value = secGroup;
+    if (!secGroup) {
+        return;
     }
-};
 
-// Used by top-findings rows: always activates (never deactivates) and scrolls into view
-const activateAndScrollTo = async (secGroup) => {
+    const detail = await loadSecondaryGroup(secGroup);
+    if (!detail) {
+        return;
+    }
+
+    await nextTick();
+    await initializeMapsForGroup(secGroup);
+}
+
+async function toggleSecondaryGroup(secGroup) {
+    if (activeSecondaryGroup.value === secGroup) {
+        if (activeSecondaryGroup.value) {
+            destroyGroupMaps(activeSecondaryGroup.value);
+        }
+        activeSecondaryGroup.value = null;
+        return;
+    }
+
+    await setActiveSecondaryGroup(secGroup);
+}
+
+async function activateAndScrollTo(secGroup) {
     if (activeSecondaryGroup.value !== secGroup) {
-        await toggleSecondaryGroup(secGroup);
+        await setActiveSecondaryGroup(secGroup);
     }
+
     await nextTick();
     document.getElementById(`analysis-${sanitizeForFilename(secGroup)}`)
         ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
+}
 
-const allFindings = ref([]);
-const anomalyFindings = ref([]);
-const trendFindings = ref([]);
-const findingsByH3 = ref({});
-
-const findingsBySecondaryGroup = computed(() => {
-    const grouped = {};
-    allFindings.value.forEach(finding => {
-        const secGroup = finding.details.secondary_group;
-        if (!secGroup) return;
-
-        if (!grouped[secGroup]) {
-            grouped[secGroup] = {
-                anomalies: [],
-                trends: [],
-            };
-        }
-        if (finding.type === 'Anomaly') {
-            grouped[secGroup].anomalies.push(finding);
-        } else if (finding.type === 'Trend') {
-            grouped[secGroup].trends.push(finding);
-        }
-    });
-    return grouped;
-});
-
-// Top individual findings — sortable
-const anomalySortKey = ref('z_score');   // 'z_score' | 'p_value' | 'count' | 'week'
-const trendSortKey   = ref('slope');     // 'slope' | 'p_value' | 'category'
-
-const setAnomalySort = (key) => { anomalySortKey.value = key; };
-const setTrendSort   = (key) => { trendSortKey.value   = key; };
-
-const topAnomalyFindings = computed(() => {
-    const comparators = {
-        z_score:  (a, b) => (b.week_details.z_score ?? 0) - (a.week_details.z_score ?? 0),
-        p_value:  (a, b) => (a.week_details.anomaly_p_value ?? 1) - (b.week_details.anomaly_p_value ?? 1),
-        count:    (a, b) => (b.week_details.count ?? 0) - (a.week_details.count ?? 0),
-        week:     (a, b) => (b.week_details.week ?? '').localeCompare(a.week_details.week ?? ''),
-    };
-    return [...anomalyFindings.value].sort(comparators[anomalySortKey.value] ?? comparators.z_score).slice(0, 8);
-});
-
-// Trends grouped by window, each window sorted independently
-const topTrendsByWindow = computed(() => {
-    const compare = {
-        slope:    (a, b) => Math.abs(b.trend_details.slope ?? 0) - Math.abs(a.trend_details.slope ?? 0),
-        p_value:  (a, b) => (a.trend_details.p_value ?? 1) - (b.trend_details.p_value ?? 1),
-        category: (a, b) => (a.details.secondary_group ?? '').localeCompare(b.details.secondary_group ?? ''),
-    }[trendSortKey.value] ?? ((a, b) => Math.abs(b.trend_details.slope ?? 0) - Math.abs(a.trend_details.slope ?? 0));
-
-    const byWindow = {};
-    for (const f of trendFindings.value) {
-        if (!byWindow[f.trend_window]) byWindow[f.trend_window] = [];
-        byWindow[f.trend_window].push(f);
-    }
-    const result = {};
-    for (const w of Object.keys(byWindow).sort((a, b) => parseInt(a) - parseInt(b))) {
-        result[w] = [...byWindow[w]].sort(compare).slice(0, 8);
-    }
-    return result;
-});
-
-const formatPValue = (p) => {
-    if (p == null) return 'N/A';
-    if (p === 0)   return '< 1e-15';
-    if (p < 0.001) return p.toExponential(2);
-    if (p < 0.01)  return p.toFixed(4);
-    return p.toFixed(3);
-};
-
-// Secondary groups sorted by total findings descending — so the most significant appears first
-const sortedSecondaryGroups = computed(() => {
-    return Object.keys(findingsBySecondaryGroup.value).sort((a, b) => {
-        const totalA = (findingsBySecondaryGroup.value[a].anomalies.length + findingsBySecondaryGroup.value[a].trends.length);
-        const totalB = (findingsBySecondaryGroup.value[b].anomalies.length + findingsBySecondaryGroup.value[b].trends.length);
-        return totalB - totalA;
-    });
-});
-
-// Separate lists for the split summary view
-const groupsWithAnomalies = computed(() =>
-    Object.keys(findingsBySecondaryGroup.value)
-        .filter(g => findingsBySecondaryGroup.value[g].anomalies.length > 0)
-        .sort((a, b) => findingsBySecondaryGroup.value[b].anomalies.length - findingsBySecondaryGroup.value[a].anomalies.length)
-);
-
-const groupsWithTrends = computed(() =>
-    Object.keys(findingsBySecondaryGroup.value)
-        .filter(g => findingsBySecondaryGroup.value[g].trends.length > 0)
-        .sort((a, b) => findingsBySecondaryGroup.value[b].trends.length - findingsBySecondaryGroup.value[a].trends.length)
-);
-
-const filteredFindings = computed(() => {
-    if (!activeSecondaryGroup.value) return [];
-    return allFindings.value.filter(f => f.details.secondary_group === activeSecondaryGroup.value);
-});
-
-const filteredAnomalyFindings = computed(() =>
-    filteredFindings.value.filter(f => f.type === 'Anomaly')
-        .sort((a, b) => (b.week_details.z_score ?? 0) - (a.week_details.z_score ?? 0))
-);
-
-const filteredTrendsByWindow = computed(() => {
-    const byWindow = {};
-    for (const f of filteredFindings.value.filter(f => f.type === 'Trend')) {
-        if (!byWindow[f.trend_window]) byWindow[f.trend_window] = [];
-        byWindow[f.trend_window].push(f);
-    }
-    const result = {};
-    for (const w of Object.keys(byWindow).sort((a, b) => parseInt(a) - parseInt(b))) {
-        result[w] = byWindow[w].sort((a, b) =>
-            Math.abs(b.trend_details.slope ?? 0) - Math.abs(a.trend_details.slope ?? 0)
-        );
-    }
-    return result;
-});
-
-const filteredFindingsByH3 = computed(() => {
-    if (!activeSecondaryGroup.value) {
-        return {};
-    }
-    const filtered = {};
-    for (const h3Index in findingsByH3.value) {
-        const h3Data = findingsByH3.value[h3Index];
-        if (h3Data.findingsBySecGroup[activeSecondaryGroup.value]) {
-            filtered[h3Index] = {
-                findingsBySecGroup: {
-                    [activeSecondaryGroup.value]: h3Data.findingsBySecGroup[activeSecondaryGroup.value]
-                }
-            };
-        }
-    }
-    return filtered;
-});
-
-const processAndDisplayData = () => {
-    if (!props.reportData) return;
-
-    const params = props.reportData.parameters;
-    const h3Col = `h3_index_${params.h3_resolution}`;
-
-    const localAllFindings = [];
-    const localAnomalyFindings = [];
-    const localTrendFindings = [];
-
-    (props.reportData.results || []).forEach(row => {
-        if (row.trend_analysis) {
-            for (const trendWindow in row.trend_analysis) {
-                const trendDetails = row.trend_analysis[trendWindow];
-                const trendP = trendDetails.p_value;
-                if (trendP !== null && trendP < P_VALUE_TREND.value) {
-                    const finding = {
-                        type: 'Trend',
-                        details: row,
-                        trend_details: trendDetails,
-                        trend_window: trendWindow,
-                    };
-                    localAllFindings.push(finding);
-                    localTrendFindings.push(finding);
-                }
-            }
-        }
-        if (row.anomaly_analysis) {
-            row.anomaly_analysis.forEach(week => {
-                const anomalyP = week.anomaly_p_value;
-                if (anomalyP !== null && anomalyP < P_VALUE_ANOMALY.value) {
-                    if (row.historical_weekly_avg < 1 && week.count === 1) return;
-                    const finding = { type: 'Anomaly', details: row, week_details: week };
-                    localAllFindings.push(finding);
-                    localAnomalyFindings.push(finding);
-                }
-            });
-        }
-    });
-
-    localAllFindings.sort((a, b) => {
-        const pValA = a.type === 'Trend' ? a.trend_details.p_value : a.week_details.anomaly_p_value;
-        const pValB = b.type === 'Trend' ? b.trend_details.p_value : b.week_details.anomaly_p_value;
-        return (a.details[h3Col] || '').localeCompare(b.details[h3Col] || '') || pValA - pValB;
-    });
-
-    const localFindingsByH3 = {};
-    localAllFindings.forEach(f => {
-        const h3Index = f.details[h3Col];
-        if (!h3Index) return;
-        
-        if (!localFindingsByH3[h3Index]) {
-            localFindingsByH3[h3Index] = { findingsBySecGroup: {} };
-        }
-        
-        const secGroup = f.details.secondary_group;
-        if (!localFindingsByH3[h3Index].findingsBySecGroup[secGroup]) {
-             localFindingsByH3[h3Index].findingsBySecGroup[secGroup] = [];
-        }
-        localFindingsByH3[h3Index].findingsBySecGroup[secGroup].push(f);
-    });
-
-    allFindings.value = localAllFindings;
-    anomalyFindings.value = localAnomalyFindings;
-    trendFindings.value = localTrendFindings;
-    findingsByH3.value = localFindingsByH3;
-};
-
-const getAnomalyColor = (count) => {
+function getAnomalyColor(count) {
     if (count >= 1 && count <= 10) {
         const scale = ['#FFFFE5', '#FFF7BC', '#FEE391', '#FEC44F', '#FE9929', '#EC7014', '#CC4C02', '#993404', '#662506', '#E31A1C'];
         return scale[count - 1];
     }
     if (count > 10 && count <= 20) return '#800080';
     return '#000000';
-};
+}
 
-const getTrendColor = (slope) => (slope > 0 ? '#d73027' : '#4575b4');
-const sanitizeForFilename = (name) => String(name).replace(/[\\/*?:"<>|]/g, "");
+function getTrendColor(slope) {
+    return slope > 0 ? '#d73027' : '#4575b4';
+}
 
-const viewHexagonOnMap = (h3Index, findingType, secGroup, trendWindow = null) => {
+async function updateAnomaliesMap(secGroup) {
+    const mapInstance = mapAnomaliesInstances[secGroup];
+    const cells = groupDetails.value[secGroup]?.anomaly_cells ?? [];
+
+    if (!mapInstance || cells.length === 0) {
+        return;
+    }
+
+    const lats = cells.map(cell => cell.lat).filter(value => value !== null && value !== undefined);
+    const lons = cells.map(cell => cell.lon).filter(value => value !== null && value !== undefined);
+    if (lats.length > 0 && lons.length > 0) {
+        const avgLat = lats.reduce((sum, value) => sum + value, 0) / lats.length;
+        const avgLon = lons.reduce((sum, value) => sum + value, 0) / lons.length;
+        mapInstance.setView([avgLat, avgLon], 12);
+    }
+
+    await ensureGeoJsonBoundaries(cells.map(cell => cell.h3_index));
+
+    cells.forEach(cell => {
+        const boundary = getGeoJsonBoundary(cell.h3_index)?.map(point => [point[1], point[0]]);
+        if (!boundary) {
+            return;
+        }
+
+        let popupHtml = `<b>${getName(cell.h3_index)}</b><br><span style="font-family:monospace;font-size:11px;color:#6b7280">${cell.h3_index}</span><br><b>Anomalies:</b> ${cell.anomalies.length}<hr><ul>`;
+        cell.anomalies.forEach(anomaly => {
+            popupHtml += `<li>${anomaly.secondary_group} on ${anomaly.week}: Count ${anomaly.count} (p=${anomaly.anomaly_p_value?.toPrecision?.(2) ?? 'N/A'})</li>`;
+        });
+        popupHtml += '</ul>';
+
+        const polygon = L.polygon(boundary, {
+            color: 'black',
+            weight: 1,
+            fillColor: getAnomalyColor(cell.anomalies.length),
+            fillOpacity: 0.7,
+        }).addTo(mapInstance).bindPopup(popupHtml);
+
+        h3Layers[secGroup].anomalies[cell.h3_index] = polygon;
+    });
+}
+
+async function updateTrendsMap(secGroup, trendWindow) {
+    const mapInstance = mapTrendsInstances[secGroup]?.[trendWindow];
+    const cells = groupDetails.value[secGroup]?.trend_cells_by_window?.[trendWindow] ?? [];
+
+    if (!mapInstance || cells.length === 0) {
+        return;
+    }
+
+    const lats = cells.map(cell => cell.lat).filter(value => value !== null && value !== undefined);
+    const lons = cells.map(cell => cell.lon).filter(value => value !== null && value !== undefined);
+    if (lats.length > 0 && lons.length > 0) {
+        const avgLat = lats.reduce((sum, value) => sum + value, 0) / lats.length;
+        const avgLon = lons.reduce((sum, value) => sum + value, 0) / lons.length;
+        mapInstance.setView([avgLat, avgLon], 12);
+    }
+
+    await ensureGeoJsonBoundaries(cells.map(cell => cell.h3_index));
+
+    cells.forEach(cell => {
+        const boundary = getGeoJsonBoundary(cell.h3_index)?.map(point => [point[1], point[0]]);
+        if (!boundary) {
+            return;
+        }
+
+        let popupHtml = `<b>${getName(cell.h3_index)}</b><br><span style="font-family:monospace;font-size:11px;color:#6b7280">${cell.h3_index}</span><br><b>Trends:</b> ${cell.trends.length}<hr><ul>`;
+        cell.trends.forEach(trend => {
+            popupHtml += `<li><strong>${trend.secondary_group}</strong>: ${trend.description} (p=${trend.p_value?.toPrecision?.(2) ?? 'N/A'})</li>`;
+        });
+        popupHtml += '</ul>';
+
+        const polygon = L.polygon(boundary, {
+            color: 'black',
+            weight: 1,
+            fillColor: getTrendColor(cell.avg_slope),
+            fillOpacity: 0.7,
+        }).addTo(mapInstance).bindPopup(popupHtml);
+
+        h3Layers[secGroup].trends[trendWindow] ??= {};
+        h3Layers[secGroup].trends[trendWindow][cell.h3_index] = polygon;
+    });
+}
+
+function viewHexagonOnMap(h3Index, findingType, secGroup, trendWindow = null) {
     const sanitizedSecGroup = sanitizeForFilename(secGroup);
     const mapType = findingType === 'Anomaly' ? 'anomalies' : 'trends';
     const mapId = findingType === 'Trend'
         ? `map-${mapType}-${sanitizedSecGroup}-${trendWindow}`
         : `map-${mapType}-${sanitizedSecGroup}`;
-    
-    const mapElement = document.getElementById(mapId);
-    if (mapElement) {
-        mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+
+    document.getElementById(mapId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     const layer = findingType === 'Trend'
         ? h3Layers[secGroup]?.[mapType]?.[trendWindow]?.[h3Index]
         : h3Layers[secGroup]?.[mapType]?.[h3Index];
 
     if (layer) {
-        // Use a timeout to ensure scrolling is complete before opening popup
         setTimeout(() => {
             layer.openPopup();
-        }, 500); // Adjust delay if needed
+        }, 500);
     }
-};
+}
 
-const updateAnomaliesMap = (secGroup) => {
-    const mapInstance = mapAnomaliesInstances[secGroup];
-    const findings = findingsBySecondaryGroup.value[secGroup]?.anomalies || [];
-
-    if (findings.length === 0 || !mapInstance) return;
-
-    const h3Summary = {};
-    findings.forEach(finding => {
-        const h3Index = finding.details[`h3_index_${props.reportData.parameters.h3_resolution}`];
-        if (!h3Index) return;
-        if (!h3Summary[h3Index]) h3Summary[h3Index] = { anomalies: [] };
-        h3Summary[h3Index].anomalies.push(finding);
-    });
-
-    const allLats = findings.map(f => f.details.lat).filter(Boolean);
-    const allLons = findings.map(f => f.details.lon).filter(Boolean);
-    if (allLats.length > 0) {
-        const avgLat = allLats.reduce((a, b) => a + b, 0) / allLats.length;
-        const avgLon = allLons.reduce((a, b) => a + b, 0) / allLons.length;
-        mapInstance.setView([avgLat, avgLon], 12);
-    }
-
-    Object.keys(h3Summary).forEach(h3Index => {
-        const summary = h3Summary[h3Index];
-        const boundary = h3.cellToBoundary(h3Index, true).map(p => [p[1], p[0]]);
-        const numAnomalies = summary.anomalies.length;
-        let popupHtml = `<b>${getName(h3Index)}</b><br><span style="font-family:monospace;font-size:11px;color:#6b7280">${h3Index}</span><br><b>Anomalies:</b> ${numAnomalies}<hr><ul>`;
-        summary.anomalies.forEach(a => {
-            popupHtml += `<li>${a.details.secondary_group} on ${a.week_details.week}: Count ${a.week_details.count} (p=${a.week_details.anomaly_p_value.toPrecision(2)})</li>`
-        });
-        popupHtml += "</ul>";
-        const polygon = L.polygon(boundary, { color: 'black', weight: 1, fillColor: getAnomalyColor(numAnomalies), fillOpacity: 0.7 })
-            .addTo(mapInstance)
-            .bindPopup(popupHtml);
-        h3Layers[secGroup].anomalies[h3Index] = polygon;
-    });
-};
-
-const updateTrendsMap = (secGroup, trendWindowKey) => {
-    const mapInstance = mapTrendsInstances[secGroup]?.[trendWindowKey];
-    const findings = (findingsBySecondaryGroup.value[secGroup]?.trends || []).filter(f => f.trend_window === trendWindowKey);
-    
-    if (findings.length === 0 || !mapInstance) return;
-    
-    const h3Summary = {};
-    findings.forEach(finding => {
-        const h3Index = finding.details[`h3_index_${props.reportData.parameters.h3_resolution}`];
-        if(!h3Index) return;
-        if (!h3Summary[h3Index]) h3Summary[h3Index] = { trends: [], total_slope: 0 };
-        h3Summary[h3Index].trends.push(finding);
-        h3Summary[h3Index].total_slope += finding.trend_details.slope;
-    });
-
-    const allLats = findings.map(f => f.details.lat).filter(Boolean);
-    const allLons = findings.map(f => f.details.lon).filter(Boolean);
-    if (allLats.length > 0) {
-        const avgLat = allLats.reduce((a, b) => a + b, 0) / allLats.length;
-        const avgLon = allLons.reduce((a, b) => a + b, 0) / allLons.length;
-        mapInstance.setView([avgLat, avgLon], 12);
-    }
-
-    Object.keys(h3Summary).forEach(h3Index => {
-        const summary = h3Summary[h3Index];
-        const boundary = h3.cellToBoundary(h3Index, true).map(p => [p[1], p[0]]);
-        let popupHtml = `<b>${getName(h3Index)}</b><br><span style="font-family:monospace;font-size:11px;color:#6b7280">${h3Index}</span><br><b>Trends:</b> ${summary.trends.length}<hr><ul>`;
-        summary.trends.forEach(t => {
-            const trend = t.trend_details;
-            popupHtml += `<li><strong>${t.details.secondary_group}</strong>: ${trend.description} (p=${(trend.p_value || 0).toPrecision(2)})</li>`;
-        });
-        popupHtml += "</ul>";
-        const avgSlope = summary.total_slope / summary.trends.length;
-        const polygon = L.polygon(boundary, { color: 'black', weight: 1, fillColor: getTrendColor(avgSlope), fillOpacity: 0.7 })
-            .addTo(mapInstance)
-            .bindPopup(popupHtml);
-        
-        if (!h3Layers[secGroup].trends[trendWindowKey]) {
-            h3Layers[secGroup].trends[trendWindowKey] = {};
-        }
-        h3Layers[secGroup].trends[trendWindowKey][h3Index] = polygon;
-    });
-};
-
+function formatPValue(p) {
+    if (p == null) return 'N/A';
+    if (p === 0) return '< 1e-15';
+    if (p < 0.001) return p.toExponential(2);
+    if (p < 0.01) return p.toFixed(4);
+    return p.toFixed(3);
+}
 </script>
 
 <template>
@@ -475,11 +381,10 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                 <strong class="font-bold">Error!</strong>
                 <span class="block sm:inline">{{ error }}</span>
             </div>
-            <div v-else-if="reportData" class="space-y-12">
+            <div v-else-if="reportSummary" class="space-y-12">
                 <h1 class="text-4xl font-bold text-center text-gray-800">{{ reportTitle }}</h1>
                 <h2 class="text-lg text-center text-gray-500">Job ID: {{ jobId }}</h2>
 
-                <!-- Related scoring reports derived from this analysis -->
                 <div v-if="relatedScoringReports.length > 0" class="flex flex-wrap items-center justify-center gap-2">
                     <span class="text-sm text-gray-500">Scoring reports derived from this analysis:</span>
                     <Link
@@ -489,11 +394,8 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                         class="inline-flex items-center gap-1 text-sm px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200 hover:bg-indigo-100 transition-colors"
                     >{{ sr.city }} · res {{ sr.resolution }} →</Link>
                 </div>
-                
-                <!-- Top Findings: most significant individual anomalies and trends across all categories -->
-                <section v-if="topAnomalyFindings.length > 0 || Object.keys(topTrendsByWindow).length > 0" class="space-y-6">
 
-                    <!-- Anomalies table -->
+                <section v-if="topAnomalyFindings.length > 0 || Object.keys(topTrendsByWindow).length > 0" class="space-y-6">
                     <div v-if="topAnomalyFindings.length > 0" class="p-6 border border-amber-200 rounded-lg bg-amber-50/30">
                         <h2 class="text-lg font-semibold text-amber-800 border-b border-amber-200 pb-2 mb-3">
                             ⚠ Most Significant Anomalies
@@ -527,9 +429,9 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                     </td>
                                     <td class="py-1.5 pr-3 text-gray-800">{{ f.details.secondary_group }}</td>
                                     <td class="py-1.5 pr-3 text-xs">
-                                        <template v-if="f.details[`h3_index_${reportData.parameters.h3_resolution}`]">
-                                            <span class="text-gray-700">{{ getName(f.details[`h3_index_${reportData.parameters.h3_resolution}`]) }}</span><br>
-                                            <span class="font-mono text-gray-400">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</span>
+                                        <template v-if="f.details[h3Key]">
+                                            <span class="text-gray-700">{{ getName(f.details[h3Key]) }}</span><br>
+                                            <span class="font-mono text-gray-400">{{ f.details[h3Key] }}</span>
                                         </template>
                                         <span v-else class="text-gray-300">—</span>
                                     </td>
@@ -542,7 +444,6 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                         </table>
                     </div>
 
-                    <!-- Trends by window -->
                     <template v-for="(findings, window) in topTrendsByWindow" :key="`tw-${window}`">
                         <div class="p-6 border border-blue-200 rounded-lg bg-blue-50/30">
                             <h2 class="text-lg font-semibold text-blue-800 border-b border-blue-200 pb-2 mb-3">
@@ -577,9 +478,9 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                         </td>
                                         <td class="py-1.5 pr-3 text-gray-800">{{ f.details.secondary_group }}</td>
                                         <td class="py-1.5 pr-3 text-xs">
-                                            <template v-if="f.details[`h3_index_${reportData.parameters.h3_resolution}`]">
-                                                <span class="text-gray-700">{{ getName(f.details[`h3_index_${reportData.parameters.h3_resolution}`]) }}</span><br>
-                                                <span class="font-mono text-gray-400">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</span>
+                                            <template v-if="f.details[h3Key]">
+                                                <span class="text-gray-700">{{ getName(f.details[h3Key]) }}</span><br>
+                                                <span class="font-mono text-gray-400">{{ f.details[h3Key] }}</span>
                                             </template>
                                             <span v-else class="text-gray-300">—</span>
                                         </td>
@@ -592,65 +493,72 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                             </table>
                         </div>
                     </template>
-
                 </section>
 
-                <!-- Anomaly categories -->
                 <section v-if="groupsWithAnomalies.length > 0" class="p-6 border border-amber-200 rounded-lg bg-amber-50/20">
                     <h2 class="text-xl font-semibold text-amber-800 border-b border-amber-200 pb-2 mb-4">
                         ⚠ Categories with Anomalies
                         <span class="text-sm font-normal text-amber-600 ml-2">sorted by anomaly count</span>
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <div v-for="secGroup in groupsWithAnomalies" :key="`sa-${secGroup}`"
-                             class="p-3 border border-amber-100 rounded-lg bg-white hover:bg-amber-50 cursor-pointer transition-colors"
-                             :class="{ 'ring-2 ring-amber-400': activeSecondaryGroup === secGroup }"
-                             @click="toggleSecondaryGroup(secGroup)">
+                        <div
+                            v-for="secGroup in groupsWithAnomalies"
+                            :key="`sa-${secGroup}`"
+                            class="p-3 border border-amber-100 rounded-lg bg-white hover:bg-amber-50 cursor-pointer transition-colors"
+                            :class="{ 'ring-2 ring-amber-400': activeSecondaryGroup === secGroup }"
+                            @click="toggleSecondaryGroup(secGroup)"
+                        >
                             <h3 class="font-semibold text-sm text-gray-800 truncate" :title="secGroup">{{ secGroup }}</h3>
                             <div class="flex gap-2 mt-1.5">
                                 <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                                    ⚠ {{ findingsBySecondaryGroup[secGroup].anomalies.length }} anomal{{ findingsBySecondaryGroup[secGroup].anomalies.length === 1 ? 'y' : 'ies' }}
+                                    ⚠ {{ groupCounts[secGroup].anomaly_count }} anomal{{ groupCounts[secGroup].anomaly_count === 1 ? 'y' : 'ies' }}
                                 </span>
-                                <span v-if="findingsBySecondaryGroup[secGroup].trends.length > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                                    ↗ {{ findingsBySecondaryGroup[secGroup].trends.length }}
+                                <span v-if="groupCounts[secGroup].trend_count > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                                    ↗ {{ groupCounts[secGroup].trend_count }}
                                 </span>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Trend categories -->
                 <section v-if="groupsWithTrends.length > 0" class="p-6 border border-blue-200 rounded-lg bg-blue-50/20">
                     <h2 class="text-xl font-semibold text-blue-800 border-b border-blue-200 pb-2 mb-4">
                         ↗ Categories with Trends
                         <span class="text-sm font-normal text-blue-600 ml-2">sorted by trend count</span>
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <div v-for="secGroup in groupsWithTrends" :key="`st-${secGroup}`"
-                             class="p-3 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 cursor-pointer transition-colors"
-                             :class="{ 'ring-2 ring-blue-400': activeSecondaryGroup === secGroup }"
-                             @click="toggleSecondaryGroup(secGroup)">
+                        <div
+                            v-for="secGroup in groupsWithTrends"
+                            :key="`st-${secGroup}`"
+                            class="p-3 border border-blue-100 rounded-lg bg-white hover:bg-blue-50 cursor-pointer transition-colors"
+                            :class="{ 'ring-2 ring-blue-400': activeSecondaryGroup === secGroup }"
+                            @click="toggleSecondaryGroup(secGroup)"
+                        >
                             <h3 class="font-semibold text-sm text-gray-800 truncate" :title="secGroup">{{ secGroup }}</h3>
                             <div class="flex gap-2 mt-1.5">
                                 <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                                    ↗ {{ findingsBySecondaryGroup[secGroup].trends.length }} trend{{ findingsBySecondaryGroup[secGroup].trends.length === 1 ? '' : 's' }}
+                                    ↗ {{ groupCounts[secGroup].trend_count }} trend{{ groupCounts[secGroup].trend_count === 1 ? '' : 's' }}
                                 </span>
-                                <span v-if="findingsBySecondaryGroup[secGroup].anomalies.length > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                                    ⚠ {{ findingsBySecondaryGroup[secGroup].anomalies.length }}
+                                <span v-if="groupCounts[secGroup].anomaly_count > 0" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                    ⚠ {{ groupCounts[secGroup].anomaly_count }}
                                 </span>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <div v-if="allFindings.length > 0 && activeSecondaryGroup" class="space-y-12">
+                <div v-if="reportSummary.total_findings > 0 && activeSecondaryGroup" class="space-y-12">
                     <section :id="`analysis-${sanitizeForFilename(activeSecondaryGroup)}`" class="p-6 border rounded-lg bg-gray-50/50 scroll-mt-4">
                         <h2 class="text-3xl font-bold mb-4 text-gray-700">Detailed Analysis for: <span class="text-indigo-600">{{ activeSecondaryGroup }}</span></h2>
-                        
-                        <div class="space-y-8">
+
+                        <div v-if="loadingSecondaryGroup" class="text-center py-12 text-gray-500">
+                            Loading detailed findings...
+                        </div>
+
+                        <div v-else-if="currentGroupDetail" class="space-y-8">
                             <div>
                                 <h3 class="text-2xl font-semibold border-b pb-2 mb-4">Spatial Overview of Anomalies</h3>
-                                <div v-if="findingsBySecondaryGroup[activeSecondaryGroup].anomalies.length > 0">
+                                <div v-if="currentGroupDetail.anomaly_cells.length > 0">
                                     <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant anomalies. Color indicates the number of distinct anomaly types in a cell.</p>
                                     <div :id="`map-anomalies-${sanitizeForFilename(activeSecondaryGroup)}`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
                                 </div>
@@ -661,11 +569,11 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
 
                             <div>
                                 <h3 class="text-2xl font-semibold border-b pb-2 mb-4">Spatial Overview of Trends</h3>
-                                <div v-if="findingsBySecondaryGroup[activeSecondaryGroup].trends.length > 0" class="space-y-8">
-                                    <div v-for="window in TREND_WINDOWS" :key="`trend-map-${window}`">
-                                        <h4 class="text-xl font-medium mb-2">{{ window }}-Week Trend Analysis</h4>
-                                        <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant trends for the {{ window }}-week period. Red indicates an upward trend; blue indicates a downward trend.</p>
-                                        <div :id="`map-trends-${sanitizeForFilename(activeSecondaryGroup)}-${window}_weeks`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
+                                <div v-if="activeTrendWindows.length > 0" class="space-y-8">
+                                    <div v-for="window in activeTrendWindows" :key="`trend-map-${window}`">
+                                        <h4 class="text-xl font-medium mb-2">{{ window.replace('_', ' ') }} Trend Analysis</h4>
+                                        <p class="mb-4 text-gray-600">The map displays H3 cells with statistically significant trends for this period. Red indicates an upward trend; blue indicates a downward trend.</p>
+                                        <div :id="`map-trends-${sanitizeForFilename(activeSecondaryGroup)}-${window}`" class="h-[500px] w-full border rounded-lg shadow-md"></div>
                                     </div>
                                 </div>
                                 <div v-else class="flex items-center justify-center h-[500px] border rounded-lg bg-gray-100 text-gray-500">
@@ -675,10 +583,9 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                         </div>
                     </section>
 
-                    <section v-if="filteredFindings.length > 0" class="space-y-6">
+                    <section v-if="filteredAnomalyFindings.length > 0 || Object.keys(filteredTrendsByWindow).length > 0" class="space-y-6">
                         <h2 class="text-2xl font-semibold border-b pb-2">Summary of Significant Findings</h2>
 
-                        <!-- Anomalies -->
                         <div v-if="filteredAnomalyFindings.length > 0" class="overflow-x-auto rounded-lg border border-amber-200 bg-amber-50/20">
                             <table class="min-w-full text-base bg-white">
                                 <thead class="bg-amber-50">
@@ -701,8 +608,8 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                         </td>
                                         <td class="py-2 px-4 text-gray-800">{{ f.details.secondary_group }}</td>
                                         <td class="py-2 px-4">
-                                            <div class="text-sm text-gray-800">{{ getName(f.details[`h3_index_${reportData.parameters.h3_resolution}`]) }}</div>
-                                            <div class="font-mono text-xs text-gray-400">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</div>
+                                            <div class="text-sm text-gray-800">{{ getName(f.details[h3Key]) }}</div>
+                                            <div class="font-mono text-xs text-gray-400">{{ f.details[h3Key] }}</div>
                                         </td>
                                         <td class="py-2 px-4 whitespace-nowrap">{{ f.week_details.week }}</td>
                                         <td class="py-2 px-4 text-right tabular-nums font-semibold text-amber-700">{{ f.week_details.count }}</td>
@@ -710,14 +617,13 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                         <td class="py-2 px-4 text-right tabular-nums font-semibold text-amber-700">{{ (f.week_details.z_score ?? 0).toFixed(2) }}</td>
                                         <td class="py-2 px-4 text-right tabular-nums text-gray-500">{{ formatPValue(f.week_details.anomaly_p_value) }}</td>
                                         <td class="py-2 px-4">
-                                            <button @click="viewHexagonOnMap(f.details[`h3_index_${reportData.parameters.h3_resolution}`], 'Anomaly', f.details.secondary_group)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded whitespace-nowrap">Map</button>
+                                            <button @click="viewHexagonOnMap(f.details[h3Key], 'Anomaly', f.details.secondary_group)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded whitespace-nowrap">Map</button>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <!-- Trends by window -->
                         <template v-for="(findings, window) in filteredTrendsByWindow" :key="`ft-${window}`">
                             <div class="overflow-x-auto rounded-lg border border-blue-200 bg-blue-50/20">
                                 <table class="min-w-full text-base bg-white">
@@ -739,8 +645,8 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                             </td>
                                             <td class="py-2 px-4 text-gray-800">{{ f.details.secondary_group }}</td>
                                             <td class="py-2 px-4">
-                                                <div class="text-sm text-gray-800">{{ getName(f.details[`h3_index_${reportData.parameters.h3_resolution}`]) }}</div>
-                                                <div class="font-mono text-xs text-gray-400">{{ f.details[`h3_index_${reportData.parameters.h3_resolution}`] }}</div>
+                                                <div class="text-sm text-gray-800">{{ getName(f.details[h3Key]) }}</div>
+                                                <div class="font-mono text-xs text-gray-400">{{ f.details[h3Key] }}</div>
                                             </td>
                                             <td class="py-2 px-4 text-right tabular-nums font-semibold" :class="(f.trend_details.slope ?? 0) > 0 ? 'text-red-600' : 'text-blue-600'">
                                                 {{ f.trend_details.slope != null ? ((f.trend_details.slope > 0 ? '+' : '') + f.trend_details.slope.toFixed(2)) : '—' }}
@@ -748,7 +654,7 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                             <td class="py-2 px-4 text-right tabular-nums text-gray-500">{{ formatPValue(f.trend_details.p_value) }}</td>
                                             <td class="py-2 px-4 text-gray-600 text-sm">{{ f.trend_details.description }}</td>
                                             <td class="py-2 px-4">
-                                                <button @click="viewHexagonOnMap(f.details[`h3_index_${reportData.parameters.h3_resolution}`], 'Trend', f.details.secondary_group, f.trend_window)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded whitespace-nowrap">Map</button>
+                                                <button @click="viewHexagonOnMap(f.details[h3Key], 'Trend', f.details.secondary_group, f.trend_window)" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded whitespace-nowrap">Map</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -759,12 +665,12 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
 
                     <section>
                         <h2 class="text-2xl font-semibold border-b pb-2 mb-4">Detailed Analysis by H3 Cell</h2>
-                         <div class="space-y-6">
+                        <div class="space-y-6">
                             <div v-for="(h3Data, h3Index) in filteredFindingsByH3" :key="h3Index" :id="h3Index" class="p-4 border rounded-lg bg-gray-50 scroll-mt-4">
                                 <h4 class="text-xl font-bold mb-1">{{ getName(h3Index) }}</h4>
                                 <p class="font-mono text-xs text-gray-400 mb-3">{{ h3Index }}</p>
                                 <div class="space-y-4">
-                                   <div v-for="(findingsInGroup, secGroup) in h3Data.findingsBySecGroup" :key="secGroup" class="p-3 bg-white border rounded shadow-sm">
+                                    <div v-for="(findingsInGroup, secGroup) in h3Data.findingsBySecGroup" :key="secGroup" class="p-3 bg-white border rounded shadow-sm">
                                         <h5 class="font-semibold">Findings for '{{ secGroup }}'</h5>
                                         <ul>
                                             <li v-for="(finding, fIndex) in findingsInGroup" :key="fIndex">
@@ -775,18 +681,21 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
                                                 </button>
                                             </li>
                                         </ul>
-                                        <img :src="`${apiBaseUrl}/api/v1/jobs/${jobId}/results/plot_${h3Index}_${sanitizeForFilename(secGroup)}.png`" 
-                                             :alt="`Time series plot for ${secGroup} in ${h3Index}`" 
-                                             class="mt-4 rounded"
-                                             @error="($event) => $event.target.style.display='none'"/>
+                                        <img
+                                            :src="`${apiBaseUrl}/api/v1/jobs/${jobId}/results/plot_${h3Index}_${sanitizeForFilename(secGroup)}.png`"
+                                            :alt="`Time series plot for ${secGroup} in ${h3Index}`"
+                                            class="mt-4 rounded"
+                                            loading="lazy"
+                                            @error="($event) => $event.target.style.display='none'"
+                                        />
                                     </div>
                                 </div>
                             </div>
-                         </div>
+                        </div>
                     </section>
                 </div>
 
-                <div v-else-if="allFindings.length === 0" class="text-center py-6 text-gray-500">
+                <div v-else-if="reportSummary.total_findings === 0" class="text-center py-6 text-gray-500">
                     <p>No statistically significant trends or anomalies were detected based on the current parameters.</p>
                 </div>
             </div>
@@ -795,8 +704,7 @@ const updateTrendsMap = (secGroup, trendWindowKey) => {
 </template>
 
 <style>
-/* Add scroll-margin-top for better anchor link positioning with sticky headers */
 .scroll-mt-4 {
-    scroll-margin-top: 4rem; /* Adjust as needed */
+    scroll-margin-top: 4rem;
 }
 </style>
