@@ -158,7 +158,7 @@ class ScoringReportController extends Controller
             return redirect()->route('scoring-reports.index')->with('status', 'Report index was refreshed. Please try again.');
         }
 
-        $reportGroup = array_values($reportGroup ?? []);
+        $reportGroup = $this->normalizeReportGroup($reportGroup);
         usort($reportGroup, fn($a, $b) => ($a['resolution'] ?? 99) <=> ($b['resolution'] ?? 99));
 
         $initialData = AnalysisReportSnapshot::resolve($targetReport['job_id'], $targetReport['artifact_name']);
@@ -321,5 +321,10 @@ class ScoringReportController extends Controller
             'analysis_details' => $analysisResult,
             'analysis_parameters' => $analysisParameters, // Pass parameters to the frontend
         ]);
+    }
+
+    private function normalizeReportGroup($reportGroup): array
+    {
+        return collect($reportGroup ?? [])->values()->all();
     }
 }
