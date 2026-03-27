@@ -7,9 +7,10 @@
             <p class="text-center text-gray-600 mb-1 sm:mb-2 px-4">
                 Explore the depth and breadth of data available on our platform.
             </p>
-            <p class="text-center text-sm text-gray-500 mb-8 sm:mb-10">
-                Last updated: {{ formatDateTime(lastUpdated) }}
-            </p>
+            <div class="text-center text-sm text-gray-500 mb-8 sm:mb-10 space-y-1 px-4">
+                <p>Snapshot generated: {{ formatDateTime(generatedAt) }}</p>
+                <p>Newest source record seen: {{ formatDateTime(lastUpdated) }}</p>
+            </div>
 
             <div v-if="metricsData && metricsData.length > 0" class="space-y-10 sm:space-y-12">
                 <div v-for="(data, index) in metricsData" :key="index"
@@ -91,6 +92,7 @@ const ListCard = defineAsyncComponent(() => import('@/Components/Metrics/ListCar
 const props = defineProps({
     metricsData: Array,
     lastUpdated: String,
+    generatedAt: String,
 });
 
 const formatNumber = (num) => {

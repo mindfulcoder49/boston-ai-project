@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping();
 
         $schedule->command(DispatchDailyPipelineCommand::class)
-            ->dailyAt(config('backend_admin.daily_pipeline.time', '02:15'))
+            ->dailyAt(config('backend_admin.daily_pipeline.time', '07:00'))
             ->timezone(config('backend_admin.daily_pipeline.timezone', config('app.timezone')))
             ->withoutOverlapping();
 

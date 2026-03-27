@@ -12,6 +12,7 @@ class MetricsController extends Controller
         $snapshot = $metricsSnapshotStore->currentPayload();
         $allMetrics = $snapshot['data'] ?? [];
         $pageLastUpdatedTimestamp = $snapshot['last_updated'] ?? null;
+        $pageGeneratedAtTimestamp = $snapshot['generated_at'] ?? null;
 
         if (!is_array($allMetrics)) {
             $allMetrics = [];
@@ -20,6 +21,7 @@ class MetricsController extends Controller
         return Inertia::render('DataMetrics', [
             'metricsData' => $allMetrics,
             'lastUpdated' => $pageLastUpdatedTimestamp,
+            'generatedAt' => $pageGeneratedAtTimestamp,
         ]);
     }
 }

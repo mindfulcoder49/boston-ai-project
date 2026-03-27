@@ -104,11 +104,13 @@ Current observability status:
   - `app:cache-metrics-data`
 - the backend health dashboard, dependency health command, lightweight alert path, and Laravel scheduler entries are now implemented in code
 - `app:cache-metrics-data` now stores the public metrics artifact in the `metrics_snapshots` table instead of rewriting `config/metrics.php`, which avoids Laravel `config:cache` drift
+- the public `/data-metrics` page now reads the DB-backed `metrics_snapshots` payload and should show both `generated_at` and source-data `last_updated_at` so a fresh snapshot does not look stale just because the newest source record is older
 - metrics freshness should derive from the latest non-future source timestamp across the configured city model set, and platform totals should reflect the configured city coverage rather than a hard-coded legacy subset
 - backend health `metricsFreshness` should be interpreted as source-data recency from `metrics_snapshots.last_updated_at`, not as proof that `app:cache-metrics-data` failed; a successful cache refresh can still show an aging timestamp if the newest source data is older
 - stale historical `running` pipeline entries no longer block the daily dispatch path forever; only recent active runs count as blockers
 - the Hostinger production cron is confirmed to be the single scheduler entry:
   - `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
+- the default Laravel-scheduled daily pipeline dispatch time is now `07:00` in `America/New_York` so the daily run is more likely to include sources that publish around `05:00`
 - the main remaining backend-admin follow-up is live runtime evidence:
   - confirm the scheduler-driven worker heartbeat reflects the real queue-worker path
   - confirm the `sysadmin/` DNS sync runtime is publishing its S3 status artifact in the environment that actually runs it
