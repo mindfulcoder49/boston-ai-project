@@ -6,6 +6,7 @@ return [
     'pipeline_runs' => [
         'root_path' => storage_path('logs/pipeline_runs'),
         'history_path' => storage_path('logs/pipeline_runs_history.json'),
+        'stale_running_after_minutes' => (int) env('BACKEND_ADMIN_STALE_RUNNING_AFTER_MINUTES', 120),
     ],
 
     'daily_pipeline' => [
@@ -39,6 +40,10 @@ return [
         'state_path' => storage_path('app/backend_admin/backend_health_alert_state.json'),
         'email' => env('BACKEND_ADMIN_ALERT_EMAIL', env('ADMIN_EMAIL', 'admin@example.com')),
         'success_window_hours' => (int) env('BACKEND_ADMIN_SUCCESS_WINDOW_HOURS', 24),
+    ],
+
+    'metrics' => [
+        'specific_metrics_max_records' => (int) env('BACKEND_ADMIN_METRICS_SPECIFIC_MAX_RECORDS', 500000),
     ],
 
     'storage' => [

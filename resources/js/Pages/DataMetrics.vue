@@ -63,8 +63,11 @@
                             </div>
                         </div>
                     </div>
-                     <div v-else class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
-                        <p class="text-gray-500 italic">No specific insights available for this data type yet.</p>
+                    <div v-else class="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+                        <p v-if="data.specificMetricsDeferred" class="text-gray-500 italic">
+                            Detailed breakdowns were deferred in the daily snapshot to keep the metrics job lightweight.
+                        </p>
+                        <p v-else class="text-gray-500 italic">No specific insights available for this data type yet.</p>
                     </div>
                 </div>
             </div>

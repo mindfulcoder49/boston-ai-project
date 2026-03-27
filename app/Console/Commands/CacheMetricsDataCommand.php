@@ -7,6 +7,7 @@ use App\Support\OperationalSummaryLogger;
 use App\Support\MetricsSnapshotStore;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
@@ -41,23 +42,15 @@ class CacheMetricsDataCommand extends Command
             $modelName = $modelInstance::getHumanName();
             $dateField = $modelInstance::getDateField();
 
-            $currentTotalRecords = $modelClassString::query()->count();
-            $currentDbMaxDateString = null;
-            $currentModelUpdateTime = null;
-            $boundedDateQuery = null;
-
-            if ($dateField && $currentTotalRecords > 0) {
-                try {
-                    $boundedDateQuery = $modelClassString::query()
-                        ->whereNotNull($dateField)
-                        ->where($dateField, '<=', $metricsComputedAt);
-                    $currentDbMaxDate = (clone $boundedDateQuery)->max($dateField);
-                    $currentModelUpdateTime = $this->normalizeMetricTimestamp($currentDbMaxDate, $metricsComputedAt, $modelName);
-                    $currentDbMaxDateString = $currentModelUpdateTime?->toIso8601String();
-                } catch (\Exception $e) {
-                    Log::error("Error fetching max date for {$modelName}: " . $e->getMessage());
-                }
-            }
+            $aggregateMetrics = $this->collectAggregateMetrics(
+                $modelClassString,
+                $dateField,
+                $metricsComputedAt,
+                $modelName
+            );
+            $currentTotalRecords = $aggregateMetrics['totalRecords'];
+            $currentModelUpdateTime = $aggregateMetrics['maxDate'];
+            $currentDbMaxDateString = $currentModelUpdateTime?->toIso8601String();
             
             // Metrics will always be recalculated now
             if ($this->output->isVerbose()) {
@@ -67,29 +60,11 @@ class CacheMetricsDataCommand extends Command
             $newlyCalculatedMetrics['totalRecords'] = $currentTotalRecords;
 
             if ($newlyCalculatedMetrics['totalRecords'] > 0 && $dateField) {
-                try {
-                    $minDateVal = $boundedDateQuery ? (clone $boundedDateQuery)->min($dateField) : null;
-                    $normalizedMinDate = $this->normalizeMetricTimestamp($minDateVal, $metricsComputedAt, $modelName);
-
-                    $newlyCalculatedMetrics['minDate'] = $normalizedMinDate?->toDateString();
-                    $newlyCalculatedMetrics['maxDate'] = $currentModelUpdateTime?->toDateString();
-                    $newlyCalculatedMetrics['recordsLast30Days'] = $boundedDateQuery
-                        ? (clone $boundedDateQuery)->where($dateField, '>=', $metricsComputedAt->copy()->subDays(30))->count()
-                        : 0;
-                    $newlyCalculatedMetrics['recordsLast90Days'] = $boundedDateQuery
-                        ? (clone $boundedDateQuery)->where($dateField, '>=', $metricsComputedAt->copy()->subDays(90))->count()
-                        : 0;
-                    $newlyCalculatedMetrics['recordsLast1Year'] = $boundedDateQuery
-                        ? (clone $boundedDateQuery)->where($dateField, '>=', $metricsComputedAt->copy()->subYear())->count()
-                        : 0;
-                } catch (\Exception $e) {
-                    Log::error("Error calculating general date metrics for {$modelName}: " . $e->getMessage());
-                    $newlyCalculatedMetrics['minDate'] = 'Error';
-                    $newlyCalculatedMetrics['maxDate'] = 'Error';
-                    $newlyCalculatedMetrics['recordsLast30Days'] = 0;
-                    $newlyCalculatedMetrics['recordsLast90Days'] = 0;
-                    $newlyCalculatedMetrics['recordsLast1Year'] = 0;
-                }
+                $newlyCalculatedMetrics['minDate'] = $aggregateMetrics['minDate']?->toDateString();
+                $newlyCalculatedMetrics['maxDate'] = $currentModelUpdateTime?->toDateString();
+                $newlyCalculatedMetrics['recordsLast30Days'] = $aggregateMetrics['recordsLast30Days'];
+                $newlyCalculatedMetrics['recordsLast90Days'] = $aggregateMetrics['recordsLast90Days'];
+                $newlyCalculatedMetrics['recordsLast1Year'] = $aggregateMetrics['recordsLast1Year'];
             } else {
                 $newlyCalculatedMetrics['minDate'] = null;
                 $newlyCalculatedMetrics['maxDate'] = null;
@@ -98,45 +73,7 @@ class CacheMetricsDataCommand extends Command
                 $newlyCalculatedMetrics['recordsLast1Year'] = 0;
             }
 
-            // Model-Specific Metrics - Ensure all ->get() calls are followed by ->toArray()
-            if ($modelInstance instanceof CrimeData) {
-                $newlyCalculatedMetrics['offenseGroupDistribution'] = $modelInstance::select('offense_description', DB::raw('count(*) as total'))
-                    ->whereNotNull('offense_description')->groupBy('offense_description')->orderBy('total', 'desc')->take(10)->get()->toArray();
-                $newlyCalculatedMetrics['shootingIncidents'] = $modelInstance::where('shooting', '1')->count();
-            } elseif ($modelInstance instanceof ThreeOneOneCase) {
-                $newlyCalculatedMetrics['caseStatusDistribution'] = $modelInstance::select('case_status', DB::raw('count(*) as total'))
-                    ->whereNotNull('case_status')->groupBy('case_status')->orderBy('total', 'desc')->take(5)->get()->toArray();
-                $avgClosure = $modelInstance::whereNotNull('closed_dt')->whereNotNull('open_dt')
-                    ->select(DB::raw('AVG(TIMESTAMPDIFF(HOUR, open_dt, closed_dt)) as avg_closure_hours'))->value('avg_closure_hours');
-                $newlyCalculatedMetrics['averageClosureTimeHours'] = $avgClosure ? round($avgClosure, 2) : null;
-            } elseif ($modelInstance instanceof FoodInspection) {
-                $newlyCalculatedMetrics['resultDistribution'] = $modelInstance::select('result', DB::raw('count(*) as total'))
-                    ->whereNotNull('result')->groupBy('result')->orderBy('total', 'desc')->take(5)->get()->toArray();
-                
-                // Your working logic for violationLevelDistribution data retrieval
-                $distribution = $modelInstance::select(DB::raw("CASE WHEN TRIM(LOWER(viol_level)) = '*' THEN 'Low' WHEN TRIM(LOWER(viol_level)) = '**' THEN 'Medium' WHEN TRIM(LOWER(viol_level)) = '***' THEN 'High' WHEN TRIM(LOWER(viol_level)) = 'low' THEN 'Low' WHEN TRIM(LOWER(viol_level)) = 'medium' THEN 'Medium' WHEN TRIM(LOWER(viol_level)) = 'high' THEN 'High' ELSE 'Other' END as category_name"), DB::raw("COUNT(*) as total_count"))
-                    ->whereNotNull('viol_level')->whereRaw("TRIM(LOWER(viol_level)) != ''")->groupBy('category_name')->orderBy('total_count', 'desc')->take(4)->get();
-                
-                // This creates a Collection of stdClass objects, as per your original working snippet
-                $newlyCalculatedMetrics['violationLevelDistribution'] = $distribution->map(function ($item) {
-                    $m = new \stdClass();
-                    $m->viol_level = $item->category_name;
-                    $m->total = $item->total_count;
-                    return $m;
-                });
-
-            } elseif ($modelInstance instanceof PropertyViolation) {
-                $newlyCalculatedMetrics['statusDistribution'] = $modelInstance::select('status', DB::raw('count(*) as total'))
-                    ->whereNotNull('status')->groupBy('status')->orderBy('total', 'desc')->take(5)->get()->toArray();
-                $newlyCalculatedMetrics['topViolationCodes'] = $modelInstance::select('code', 'description', DB::raw('count(*) as total'))
-                    ->whereNotNull('code')->groupBy('code', 'description')->orderBy('total', 'desc')->take(10)->get()->toArray();
-            } elseif ($modelInstance instanceof BuildingPermit) {
-                $newlyCalculatedMetrics['workTypeDistribution'] = $modelInstance::select('worktype', DB::raw('count(*) as total'))
-                    ->whereNotNull('worktype')->groupBy('worktype')->orderBy('total', 'desc')->take(10)->get()->toArray();
-                $newlyCalculatedMetrics['permitStatusDistribution'] = $modelInstance::select('status', DB::raw('count(*) as total'))
-                    ->whereNotNull('status')->groupBy('status')->orderBy('total', 'desc')->take(5)->get()->toArray();
-                $newlyCalculatedMetrics['totalDeclaredValuation'] = (float) $modelInstance::sum('declared_valuation');
-            }
+            $this->appendSpecificMetrics($newlyCalculatedMetrics, $modelInstance, $currentTotalRecords);
 
             $modelMetricsData = $newlyCalculatedMetrics;
 
@@ -250,5 +187,146 @@ class CacheMetricsDataCommand extends Command
         }
 
         return $parsed;
+    }
+
+    protected function collectAggregateMetrics(
+        string $modelClassString,
+        ?string $dateField,
+        Carbon $metricsComputedAt,
+        string $modelName
+    ): array {
+        if (!$dateField) {
+            return [
+                'totalRecords' => $modelClassString::query()->count(),
+                'minDate' => null,
+                'maxDate' => null,
+                'recordsLast30Days' => 0,
+                'recordsLast90Days' => 0,
+                'recordsLast1Year' => 0,
+            ];
+        }
+
+        try {
+            $baseQuery = $modelClassString::query();
+            $wrappedDateField = $baseQuery->getQuery()->getGrammar()->wrap($dateField);
+            $capturedAt = $metricsComputedAt->toDateTimeString();
+            $days30Ago = $metricsComputedAt->copy()->subDays(30)->toDateTimeString();
+            $days90Ago = $metricsComputedAt->copy()->subDays(90)->toDateTimeString();
+            $yearAgo = $metricsComputedAt->copy()->subYear()->toDateTimeString();
+
+            $aggregate = $modelClassString::query()
+                ->selectRaw('COUNT(*) as total_records')
+                ->selectRaw(
+                    "MIN(CASE WHEN {$wrappedDateField} IS NOT NULL AND {$wrappedDateField} <= ? THEN {$wrappedDateField} END) as min_date",
+                    [$capturedAt]
+                )
+                ->selectRaw(
+                    "MAX(CASE WHEN {$wrappedDateField} IS NOT NULL AND {$wrappedDateField} <= ? THEN {$wrappedDateField} END) as max_date",
+                    [$capturedAt]
+                )
+                ->selectRaw(
+                    "SUM(CASE WHEN {$wrappedDateField} IS NOT NULL AND {$wrappedDateField} >= ? AND {$wrappedDateField} <= ? THEN 1 ELSE 0 END) as records_last_30_days",
+                    [$days30Ago, $capturedAt]
+                )
+                ->selectRaw(
+                    "SUM(CASE WHEN {$wrappedDateField} IS NOT NULL AND {$wrappedDateField} >= ? AND {$wrappedDateField} <= ? THEN 1 ELSE 0 END) as records_last_90_days",
+                    [$days90Ago, $capturedAt]
+                )
+                ->selectRaw(
+                    "SUM(CASE WHEN {$wrappedDateField} IS NOT NULL AND {$wrappedDateField} >= ? AND {$wrappedDateField} <= ? THEN 1 ELSE 0 END) as records_last_1_year",
+                    [$yearAgo, $capturedAt]
+                )
+                ->first();
+
+            return [
+                'totalRecords' => (int) ($aggregate->total_records ?? 0),
+                'minDate' => $this->normalizeMetricTimestamp($aggregate->min_date ?? null, $metricsComputedAt, $modelName),
+                'maxDate' => $this->normalizeMetricTimestamp($aggregate->max_date ?? null, $metricsComputedAt, $modelName),
+                'recordsLast30Days' => (int) ($aggregate->records_last_30_days ?? 0),
+                'recordsLast90Days' => (int) ($aggregate->records_last_90_days ?? 0),
+                'recordsLast1Year' => (int) ($aggregate->records_last_1_year ?? 0),
+            ];
+        } catch (\Throwable $throwable) {
+            Log::error("Error calculating aggregate metrics for {$modelName}: " . $throwable->getMessage());
+
+            return [
+                'totalRecords' => 0,
+                'minDate' => null,
+                'maxDate' => null,
+                'recordsLast30Days' => 0,
+                'recordsLast90Days' => 0,
+                'recordsLast1Year' => 0,
+            ];
+        }
+    }
+
+    protected function appendSpecificMetrics(array &$newlyCalculatedMetrics, Model $modelInstance, int $currentTotalRecords): void
+    {
+        if ($this->shouldDeferSpecificMetrics($modelInstance, $currentTotalRecords)) {
+            $newlyCalculatedMetrics['specificMetricsDeferred'] = true;
+            $newlyCalculatedMetrics['specificMetricsReason'] = 'Detailed breakdowns were skipped in the daily snapshot to keep the metrics job lightweight.';
+
+            OperationalSummaryLogger::emit($this, $this->getName(), 'specific_metrics_deferred', [
+                'model' => $modelInstance::getHumanName(),
+                'total_records' => $currentTotalRecords,
+                'threshold' => (int) config('backend_admin.metrics.specific_metrics_max_records', 500000),
+            ]);
+
+            return;
+        }
+
+        // Model-Specific Metrics - Ensure all ->get() calls are followed by ->toArray()
+        if ($modelInstance instanceof CrimeData) {
+            $newlyCalculatedMetrics['offenseGroupDistribution'] = $modelInstance::select('offense_description', DB::raw('count(*) as total'))
+                ->whereNotNull('offense_description')->groupBy('offense_description')->orderBy('total', 'desc')->take(10)->get()->toArray();
+            $newlyCalculatedMetrics['shootingIncidents'] = $modelInstance::where('shooting', '1')->count();
+        } elseif ($modelInstance instanceof ThreeOneOneCase) {
+            $newlyCalculatedMetrics['caseStatusDistribution'] = $modelInstance::select('case_status', DB::raw('count(*) as total'))
+                ->whereNotNull('case_status')->groupBy('case_status')->orderBy('total', 'desc')->take(5)->get()->toArray();
+            $avgClosure = $modelInstance::whereNotNull('closed_dt')->whereNotNull('open_dt')
+                ->select(DB::raw('AVG(TIMESTAMPDIFF(HOUR, open_dt, closed_dt)) as avg_closure_hours'))->value('avg_closure_hours');
+            $newlyCalculatedMetrics['averageClosureTimeHours'] = $avgClosure ? round($avgClosure, 2) : null;
+        } elseif ($modelInstance instanceof FoodInspection) {
+            $newlyCalculatedMetrics['resultDistribution'] = $modelInstance::select('result', DB::raw('count(*) as total'))
+                ->whereNotNull('result')->groupBy('result')->orderBy('total', 'desc')->take(5)->get()->toArray();
+
+            $distribution = $modelInstance::select(DB::raw("CASE WHEN TRIM(LOWER(viol_level)) = '*' THEN 'Low' WHEN TRIM(LOWER(viol_level)) = '**' THEN 'Medium' WHEN TRIM(LOWER(viol_level)) = '***' THEN 'High' WHEN TRIM(LOWER(viol_level)) = 'low' THEN 'Low' WHEN TRIM(LOWER(viol_level)) = 'medium' THEN 'Medium' WHEN TRIM(LOWER(viol_level)) = 'high' THEN 'High' ELSE 'Other' END as category_name"), DB::raw("COUNT(*) as total_count"))
+                ->whereNotNull('viol_level')->whereRaw("TRIM(LOWER(viol_level)) != ''")->groupBy('category_name')->orderBy('total_count', 'desc')->take(4)->get();
+
+            $newlyCalculatedMetrics['violationLevelDistribution'] = $distribution->map(function ($item) {
+                $m = new \stdClass();
+                $m->viol_level = $item->category_name;
+                $m->total = $item->total_count;
+                return $m;
+            });
+        } elseif ($modelInstance instanceof PropertyViolation) {
+            $newlyCalculatedMetrics['statusDistribution'] = $modelInstance::select('status', DB::raw('count(*) as total'))
+                ->whereNotNull('status')->groupBy('status')->orderBy('total', 'desc')->take(5)->get()->toArray();
+            $newlyCalculatedMetrics['topViolationCodes'] = $modelInstance::select('code', 'description', DB::raw('count(*) as total'))
+                ->whereNotNull('code')->groupBy('code', 'description')->orderBy('total', 'desc')->take(10)->get()->toArray();
+        } elseif ($modelInstance instanceof BuildingPermit) {
+            $newlyCalculatedMetrics['workTypeDistribution'] = $modelInstance::select('worktype', DB::raw('count(*) as total'))
+                ->whereNotNull('worktype')->groupBy('worktype')->orderBy('total', 'desc')->take(10)->get()->toArray();
+            $newlyCalculatedMetrics['permitStatusDistribution'] = $modelInstance::select('status', DB::raw('count(*) as total'))
+                ->whereNotNull('status')->groupBy('status')->orderBy('total', 'desc')->take(5)->get()->toArray();
+            $newlyCalculatedMetrics['totalDeclaredValuation'] = (float) $modelInstance::sum('declared_valuation');
+        }
+    }
+
+    protected function shouldDeferSpecificMetrics(Model $modelInstance, int $currentTotalRecords): bool
+    {
+        if (
+            !($modelInstance instanceof CrimeData)
+            && !($modelInstance instanceof ThreeOneOneCase)
+            && !($modelInstance instanceof FoodInspection)
+            && !($modelInstance instanceof PropertyViolation)
+            && !($modelInstance instanceof BuildingPermit)
+        ) {
+            return false;
+        }
+
+        $maxRecords = (int) config('backend_admin.metrics.specific_metrics_max_records', 500000);
+
+        return $maxRecords > 0 && $currentTotalRecords > $maxRecords;
     }
 }
