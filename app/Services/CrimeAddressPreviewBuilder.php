@@ -3,10 +3,7 @@
 namespace App\Services;
 
 use App\Http\Controllers\GenericMapController;
-use App\Models\AnalysisReportSnapshot;
-use App\Models\Trend;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -141,62 +138,12 @@ class CrimeAddressPreviewBuilder
 
     protected function resolveLatestScoreReport(?string $crimeModelClass): ?array
     {
-        if (!$crimeModelClass) {
-            return null;
-        }
-
-        $modelKey = Str::kebab(class_basename($crimeModelClass));
-        $snapshot = AnalysisReportSnapshot::query()
-            ->where('artifact_name', 'like', "stage6_historical_score_laravel-hist-score-{$modelKey}-%")
-            ->orderByDesc('s3_last_modified')
-            ->first();
-
-        if (!$snapshot) {
-            return null;
-        }
-
-        $payload = $snapshot->payload ?? [];
-        $parameters = $payload['parameters'] ?? ($payload['config'] ?? []);
-
-        return [
-            'job_id' => $snapshot->job_id,
-            'artifact_name' => $snapshot->artifact_name,
-            'resolution' => $parameters['h3_resolution'] ?? null,
-            'analysis_period_weeks' => $parameters['analysis_period_weeks'] ?? null,
-            'source_job_id' => $payload['source_job_id'] ?? null,
-        ];
+        return app(AnalysisArtifactLocator::class)->findPreferredScoreReport($crimeModelClass);
     }
 
     protected function resolveTrendContext(?string $crimeModelClass): ?array
     {
-        if (!$crimeModelClass) {
-            return null;
-        }
-
-        $trend = Trend::query()
-            ->where('model_class', $crimeModelClass)
-            ->orderByDesc('updated_at')
-            ->orderByDesc('h3_resolution')
-            ->first();
-
-        if (!$trend) {
-            return null;
-        }
-
-        $summary = TrendSummaryService::compute(
-            $trend->job_id,
-            (int) $trend->h3_resolution,
-            (float) $trend->p_value_anomaly,
-            (float) $trend->p_value_trend,
-        );
-
-        return [
-            'job_id' => $trend->job_id,
-            'column_name' => $trend->column_name,
-            'h3_resolution' => $trend->h3_resolution,
-            'updated_at' => optional($trend->updated_at)->toDateString(),
-            'summary' => $summary,
-        ];
+        return app(AnalysisArtifactLocator::class)->findPreferredTrendContext($crimeModelClass);
     }
 
     protected function buildPreviewReportSections(array $serviceability, array $incidentSummary, ?array $trendContext, ?array $scoreReport): array

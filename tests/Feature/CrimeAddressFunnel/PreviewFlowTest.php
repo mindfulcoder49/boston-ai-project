@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\CrimeAddressFunnel;
 
+use App\Models\AnalysisReportSnapshot;
+use App\Models\EverettCrimeData;
 use App\Services\CrimeAddressPreviewBuilder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -75,10 +77,35 @@ class PreviewFlowTest extends TestCase
             $table->json('raw_geocode_response')->nullable();
             $table->timestamps();
         });
+
+        Schema::create('analysis_report_snapshots', function (Blueprint $table) {
+            $table->id();
+            $table->string('job_id');
+            $table->string('artifact_name');
+            $table->json('payload')->nullable();
+            $table->unsignedBigInteger('s3_last_modified')->nullable();
+            $table->timestamp('pulled_at')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('trends', function (Blueprint $table) {
+            $table->id();
+            $table->string('model_class');
+            $table->string('column_name');
+            $table->string('job_id');
+            $table->unsignedInteger('h3_resolution');
+            $table->decimal('p_value_anomaly', 8, 6);
+            $table->decimal('p_value_trend', 8, 6);
+            $table->json('analysis_weeks_trend')->nullable();
+            $table->unsignedInteger('analysis_weeks_anomaly')->default(4);
+            $table->timestamps();
+        });
     }
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('trends');
+        Schema::dropIfExists('analysis_report_snapshots');
         Schema::dropIfExists('h3_location_names');
         Schema::dropIfExists('saved_maps');
         Schema::dropIfExists('subscriptions');
@@ -203,6 +230,125 @@ class PreviewFlowTest extends TestCase
             'matched_city_name' => 'Boston',
             'incident_summary' => [
                 'total_incidents' => 3,
+            ],
+        ]);
+    }
+
+    public function test_supported_address_surfaces_snapshot_backed_trend_and_score_context(): void
+    {
+        config()->set('cities.cities', [
+            'everett' => [
+                'name' => 'Everett',
+                'latitude' => 42.4084,
+                'longitude' => -71.0537,
+                'models' => [EverettCrimeData::class],
+                'serviceability' => [
+                    'crime_address_funnel_enabled' => true,
+                    'radius_miles' => 4,
+                    'supported_regions' => ['MA'],
+                    'supported_localities' => ['Everett'],
+                    'crime_model_locality_map' => [
+                        'everett' => EverettCrimeData::class,
+                    ],
+                ],
+            ],
+        ]);
+        config()->set('analysis_schedule.stage6.jobs', [
+            [
+                'model' => EverettCrimeData::class,
+                'column' => 'incident_type_group',
+            ],
+        ]);
+
+        AnalysisReportSnapshot::query()->create([
+            'job_id' => 'laravel-everett-crime-data-incident_type_group-res8-1772947509',
+            'artifact_name' => 'stage4_h3_anomaly.json',
+            'payload' => [
+                'parameters' => [
+                    'model_class' => EverettCrimeData::class,
+                    'column_name' => 'incident_type_group',
+                    'h3_resolution' => 8,
+                    'p_value_anomaly' => 0.05,
+                    'p_value_trend' => 0.05,
+                ],
+                'results' => [
+                    [
+                        'secondary_group' => 'Alarm Response',
+                        'h3_index_8' => '882a107289fffff',
+                        'historical_weekly_avg' => 1.0,
+                        'anomaly_analysis' => [
+                            [
+                                'week' => '2026-03-22',
+                                'count' => 3,
+                                'anomaly_p_value' => 0.01,
+                                'z_score' => 2.2,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            's3_last_modified' => 1772947838,
+        ]);
+
+        AnalysisReportSnapshot::query()->create([
+            'job_id' => 'laravel-hist-score-everett-crime-data-incident_type_group-res10-1772947512',
+            'artifact_name' => 'stage6_historical_score_laravel-hist-score-everett-crime-data-incident_type_group-res10-1772947512.json',
+            'payload' => [
+                'parameters' => [
+                    'model_class' => EverettCrimeData::class,
+                    'column_name' => 'incident_type_group',
+                    'h3_resolution' => 10,
+                    'analysis_period_weeks' => 52,
+                ],
+                'source_job_id' => 'laravel-everett-crime-data-incident_type_group-res10-1772947512',
+            ],
+            's3_last_modified' => 1772948400,
+        ]);
+
+        $this->app->bind(CrimeAddressPreviewBuilder::class, fn () => new class extends CrimeAddressPreviewBuilder
+        {
+            protected function fetchMapPayload(string $matchedCityKey, string $address, float $latitude, float $longitude, float $radius): array
+            {
+                return [
+                    'dataPoints' => [
+                        [
+                            'data_point_id' => 1,
+                            'latitude' => 42.4187,
+                            'longitude' => -71.0449,
+                            'alcivartech_type' => 'Crime',
+                            'alcivartech_date' => '2026-03-26 20:47:00',
+                            'everett_crime_data_data' => [
+                                'incident_type_group' => 'Alarm Response',
+                                'incident_description' => '2 WAY 911-ALARM SOUNDING',
+                                'incident_address' => '851 BROADWAY ST',
+                            ],
+                        ],
+                    ],
+                ];
+            }
+
+            protected function resolveCrimeModelClass(array $serviceability): ?string
+            {
+                return EverettCrimeData::class;
+            }
+        });
+
+        $response = $this->postJson(route('crime-address.preview'), [
+            'address' => '851 Broadway, Everett, MA 02149, USA',
+            'latitude' => 42.418742,
+            'longitude' => -71.04491,
+        ]);
+
+        $response->assertOk()->assertJson([
+            'supported' => true,
+            'matched_city_key' => 'everett',
+            'trend_context' => [
+                'job_id' => 'laravel-everett-crime-data-incident_type_group-res8-1772947509',
+                'column_name' => 'incident_type_group',
+            ],
+            'score_report' => [
+                'job_id' => 'laravel-hist-score-everett-crime-data-incident_type_group-res10-1772947512',
+                'resolution' => 10,
             ],
         ]);
     }

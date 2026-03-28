@@ -97,12 +97,23 @@
                     {{ incidentSummaryLine }}
                   </p>
                 </div>
-                <div class="rounded-2xl bg-slate-100 px-4 py-3 text-right">
+                <div
+                  class="rounded-2xl bg-slate-100 px-4 py-3 text-right"
+                  data-testid="crime-address-neighborhood-score-card"
+                >
                   <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Neighborhood Score</p>
-                  <p v-if="scoreContext?.score_details?.score !== undefined" class="mt-1 text-3xl font-black text-slate-900">
+                  <p
+                    v-if="scoreContext?.score_details?.score !== undefined"
+                    class="mt-1 text-3xl font-black text-slate-900"
+                    data-testid="crime-address-neighborhood-score-value"
+                  >
                     {{ Number(scoreContext.score_details.score).toFixed(1) }}
                   </p>
-                  <p v-else class="mt-1 text-sm text-slate-500">
+                  <p
+                    v-else
+                    class="mt-1 text-sm text-slate-500"
+                    data-testid="crime-address-neighborhood-score-unavailable"
+                  >
                     {{ scoreLoading ? 'Loading…' : 'Not available' }}
                   </p>
                 </div>
@@ -245,7 +256,11 @@
                 </p>
               </div>
 
-              <div v-if="preview.trend_context?.summary?.status === 'ok'" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div
+                v-if="preview.trend_context?.summary?.status === 'ok'"
+                class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
+                data-testid="crime-address-trend-context"
+              >
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">City Trend Context</p>
                 <div class="mt-4 grid grid-cols-3 gap-3">
                   <div class="rounded-2xl bg-slate-50 p-4">

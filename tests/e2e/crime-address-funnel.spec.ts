@@ -190,6 +190,8 @@ test.describe('crime-address funnel', () => {
 
     await expect(page.getByRole('heading', { name: '1 Beacon St, Boston, MA 02108, USA' })).toBeVisible();
     await expect(page.getByText('What happened nearby')).toBeVisible();
+    await expect(page.getByTestId('crime-address-trend-context')).toBeVisible();
+    await expect(page.getByTestId('crime-address-neighborhood-score-value')).toHaveText('82.4');
     await expect(page.getByRole('heading', { name: 'Neighborhood score', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Create free account' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Log in' })).toBeVisible();
@@ -281,6 +283,7 @@ test.describe('crime-address funnel', () => {
 
     await expect(page.getByRole('heading', { name: '851 Broadway, Everett, MA 02149, USA' })).toBeVisible();
     await expect(page.getByText('Everett • 1 recent incidents within 0.25 miles')).toBeVisible();
+    await expect(page.getByTestId('crime-address-neighborhood-score-unavailable')).toBeVisible();
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);
   });
