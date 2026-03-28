@@ -172,37 +172,53 @@ class GenericMapController extends Controller
         return "JSON_OBJECT(" . implode(', ', $jsonObjectParts) . ") as $jsonAlias";
     }
 
-    protected function resolveJoinMetadata(string $modelClass, string $queryConnectionName): array
+    protected function shouldDeferSourceLookup(string $modelClass, string $queryConnectionName): bool
     {
         $model = new $modelClass();
         $sourceConnectionName = $model->getConnectionName() ?: $queryConnectionName;
-        $sourceTable = $model->getTable();
-        $tableReference = sprintf('`%s`', str_replace('`', '``', $sourceTable));
-        $queryConfig = Config::get("database.connections.{$queryConnectionName}", []);
-        $sourceConfig = Config::get("database.connections.{$sourceConnectionName}", []);
 
-        $sameMysqlServer = ($queryConfig['driver'] ?? null) === 'mysql'
-            && ($sourceConfig['driver'] ?? null) === 'mysql'
-            && ($queryConfig['host'] ?? null) === ($sourceConfig['host'] ?? null)
-            && (string) ($queryConfig['port'] ?? '') === (string) ($sourceConfig['port'] ?? '')
-            && ($queryConfig['unix_socket'] ?? null) === ($sourceConfig['unix_socket'] ?? null);
+        return $sourceConnectionName !== $queryConnectionName;
+    }
 
-        if ($sameMysqlServer) {
-            $sourceDatabase = DB::connection($sourceConnectionName)->getDatabaseName();
+    protected function loadDeferredSourceData($dataPoints, array $deferredLookups): array
+    {
+        $loadedSourceData = [];
 
-            if (is_string($sourceDatabase) && $sourceDatabase !== '') {
-                $tableReference = sprintf(
-                    '`%s`.`%s`',
-                    str_replace('`', '``', $sourceDatabase),
-                    str_replace('`', '``', $sourceTable),
-                );
+        foreach ($deferredLookups as $sourceTableName => $lookup) {
+            $modelClass = $lookup['model_class'];
+            $model = new $modelClass();
+            $keyName = $model->getKeyName();
+            $foreignIds = $dataPoints
+                ->pluck($lookup['foreign_key_column'])
+                ->filter(fn ($value) => $value !== null && $value !== '')
+                ->map(fn ($value) => (string) $value)
+                ->unique()
+                ->values()
+                ->all();
+
+            if (empty($foreignIds)) {
+                $loadedSourceData[$sourceTableName] = [];
+                continue;
             }
+
+            $fields = $model->getFillable();
+            $fields[] = $keyName;
+
+            if (method_exists($modelClass, 'getDateField')) {
+                $fields[] = $modelClass::getDateField();
+            }
+
+            $fields = array_values(array_unique(array_filter($fields)));
+
+            $loadedSourceData[$sourceTableName] = $modelClass::query()
+                ->select($fields)
+                ->whereIn($keyName, $foreignIds)
+                ->get()
+                ->mapWithKeys(fn ($record) => [(string) $record->{$keyName} => $record->getAttributes()])
+                ->all();
         }
 
-        return [
-            'table_reference' => $tableReference,
-            'table_alias' => $this->getModelDataPointStem($modelClass) . '_source',
-        ];
+        return $loadedSourceData;
     }
 
     public function getRadialMapData(Request $request)
@@ -298,6 +314,8 @@ class GenericMapController extends Controller
                 $targetTable.'.alcivartech_date as data_point_alcivartech_date_from_dp_table'
             );
 
+        $deferredLookups = [];
+
         foreach ($linkableModels as $modelClass) {
             if (!class_exists($modelClass) || !in_array(\App\Models\Concerns\Mappable::class, class_uses_recursive($modelClass))) {
                 Log::warning("GenericMapController: Model {$modelClass} is not Mappable or does not exist. Skipping for JOIN/SELECT.");
@@ -308,16 +326,18 @@ class GenericMapController extends Controller
             $modelStem = $this->getModelDataPointStem($modelClass);
             $jsonAlias = $modelStem . '_json';
             $fkColumnInDataPoints = $modelStem . '_id';
-            $joinMetadata = $this->resolveJoinMetadata($modelClass, $dbConnection);
-            $joinAlias = $joinMetadata['table_alias'];
 
-            $query->addSelect(DB::raw($this->getJsonSelectForModel($modelClass, $jsonAlias, $joinAlias)));
-            $query->leftJoin(
-                DB::raw($joinMetadata['table_reference'] . " as `{$joinAlias}`"),
-                $targetTable.'.'.$fkColumnInDataPoints,
-                '=',
-                $joinAlias.'.'.$modelInstance->getKeyName()
-            );
+            if ($this->shouldDeferSourceLookup($modelClass, $dbConnection)) {
+                $query->addSelect($targetTable.'.'.$fkColumnInDataPoints);
+                $deferredLookups[$sourceTableName] = [
+                    'model_class' => $modelClass,
+                    'foreign_key_column' => $fkColumnInDataPoints,
+                ];
+                continue;
+            }
+
+            $query->addSelect(DB::raw($this->getJsonSelectForModel($modelClass, $jsonAlias)));
+            $query->leftJoin($sourceTableName, $targetTable.'.'.$fkColumnInDataPoints, '=', $sourceTableName.'.'.$modelInstance->getKeyName());
         }
 
         $query->whereRaw("ST_Distance_Sphere({$targetTable}.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters]);
@@ -327,8 +347,9 @@ class GenericMapController extends Controller
         }
 
         $dataPoints = $query->get();
+        $deferredSourceData = $this->loadDeferredSourceData($dataPoints, $deferredLookups);
 
-        $dataPoints = $dataPoints->map(function ($point) use ($linkableModels) {
+        $dataPoints = $dataPoints->map(function ($point) use ($linkableModels, $deferredLookups, $deferredSourceData) {
             $sourceTableName = $point->alcivartech_type_raw;
             $modelClass = $this->getModelClassFromTableName($sourceTableName, $linkableModels);
 
@@ -337,7 +358,13 @@ class GenericMapController extends Controller
                 $jsonAlias = $modelStem . '_json';
                 $dataObjectKey = $modelStem . '_data';
 
-                if (property_exists($point, $jsonAlias) && $point->{$jsonAlias}) {
+                if (isset($deferredLookups[$sourceTableName])) {
+                    $foreignKeyColumn = $deferredLookups[$sourceTableName]['foreign_key_column'];
+                    $foreignId = property_exists($point, $foreignKeyColumn) ? (string) $point->{$foreignKeyColumn} : null;
+                    $sourceRecord = $foreignId ? ($deferredSourceData[$sourceTableName][$foreignId] ?? null) : null;
+                    $point->{$dataObjectKey} = $sourceRecord ? (object) $sourceRecord : null;
+                    unset($point->{$foreignKeyColumn});
+                } elseif (property_exists($point, $jsonAlias) && $point->{$jsonAlias}) {
                     $point->{$dataObjectKey} = json_decode($point->{$jsonAlias});
                 } else {
                     $point->{$dataObjectKey} = null;
