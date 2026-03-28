@@ -610,6 +610,15 @@ async function startTrial() {
   }
 }
 
+async function reverseGeocodeLocation(latitude, longitude) {
+  const response = await axios.post(route('google-places.reverse-geocode'), {
+    latitude,
+    longitude,
+  });
+
+  return response.data.address;
+}
+
 function trackPreviewSignupStarted(method) {
   trackAnalyticsEvent('crime_address_preview_signup_started', {
     pageType: 'crime_address',
@@ -651,17 +660,24 @@ function useCurrentLocation() {
 
   geoLoading.value = true;
   geoError.value = null;
+  handleSearchStarted();
 
   navigator.geolocation.getCurrentPosition(
     async (position) => {
-      geoLoading.value = false;
       const latitude = Number(position.coords.latitude.toFixed(6));
       const longitude = Number(position.coords.longitude.toFixed(6));
-      const address = `Current location (${latitude}, ${longitude})`;
-      addressInput.value = address;
-      coverageForm.value.requested_address = address;
-      updateUrl(address, latitude, longitude);
-      await loadPreview(address, latitude, longitude);
+
+      try {
+        const address = await reverseGeocodeLocation(latitude, longitude);
+        geoLoading.value = false;
+        addressInput.value = address;
+        coverageForm.value.requested_address = address;
+        updateUrl(address, latitude, longitude);
+        await loadPreview(address, latitude, longitude);
+      } catch (error) {
+        geoLoading.value = false;
+        geoError.value = 'We found your coordinates, but could not resolve a street address. Please search your address instead.';
+      }
     },
     (error) => {
       geoLoading.value = false;

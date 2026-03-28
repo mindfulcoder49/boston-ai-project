@@ -197,6 +197,94 @@ test.describe('crime-address funnel', () => {
     expect(runtime.pageErrors).toEqual([]);
   });
 
+  test('uses browser geolocation to load a supported preview', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.context().grantPermissions(['geolocation']);
+    await page.context().setGeolocation({
+      latitude: 42.418742,
+      longitude: -71.04491,
+    });
+
+    await page.route('**/api/reverse-geocode-google-place', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          lat: 42.418742,
+          lng: -71.04491,
+          address: '851 Broadway, Everett, MA 02149, USA',
+        }),
+      });
+    });
+
+    await page.route('**/api/crime-address/preview', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          supported: true,
+          address: '851 Broadway, Everett, MA 02149, USA',
+          matched_city_key: 'everett',
+          matched_city_name: 'Everett',
+          latitude: 42.418742,
+          longitude: -71.04491,
+          radius: 0.25,
+          map_data: {
+            center: {
+              latitude: 42.418742,
+              longitude: -71.04491,
+            },
+            incidents: [
+              {
+                id: 1,
+                latitude: 42.4170608,
+                longitude: -71.0463439,
+                date: '2026-03-26',
+                category: 'Medical / Mental Health',
+                description: '2 WAY 911-60 YR OLD MALE DIFF. BREATHING',
+                location_label: '801 BROADWAY ST',
+              },
+            ],
+            incident_count: 1,
+          },
+          incident_summary: {
+            total_incidents: 1,
+            top_categories: [
+              { category: 'Medical / Mental Health', count: 1 },
+            ],
+            recent_incidents: [
+              {
+                date: '2026-03-26',
+                category: 'Medical / Mental Health',
+                description: '2 WAY 911-60 YR OLD MALE DIFF. BREATHING',
+                location_label: '801 BROADWAY ST',
+              },
+            ],
+          },
+          score_report: null,
+          trend_context: null,
+          preview_report: [
+            {
+              title: 'What happened nearby',
+              body: 'Found 1 crime incident within 0.25 miles of 851 Broadway, Everett, MA 02149, USA in the current preview window.',
+            },
+            {
+              title: 'Neighborhood score context',
+              body: 'Neighborhood scoring and city-level trend context are not currently available for this area yet. Recent incidents are shown below.',
+            },
+          ],
+        }),
+      });
+    });
+
+    await page.goto('/crime-address');
+    await page.getByRole('button', { name: 'Use my location' }).click();
+
+    await expect(page.getByRole('heading', { name: '851 Broadway, Everett, MA 02149, USA' })).toBeVisible();
+    await expect(page.getByText('Everett • 1 recent incidents within 0.25 miles')).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
   test('shows a clean zero-incident state for supported addresses', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 

@@ -177,4 +177,75 @@ class TrashScheduleByAddressController extends Controller
             return response()->json(['error' => 'An unexpected error occurred during geocoding.'], 500);
         }
     }
+
+    /**
+     * Reverse geocode coordinates using Google Geocoding API.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function reverseGeocodeGooglePlace(Request $request)
+    {
+        $validated = $request->validate([
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        $apiKey = Config::get('services.google_places.api_key');
+        if (!$apiKey) {
+            Log::error('Google Geocoding API key is not configured for reverse geocoding.');
+
+            return response()->json(['error' => 'Service configuration error.'], 500);
+        }
+
+        try {
+            $response = Http::get('https://maps.googleapis.com/maps/api/geocode/json', [
+                'latlng' => "{$validated['latitude']},{$validated['longitude']}",
+                'key' => $apiKey,
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Google reverse geocoding API request failed.', [
+                    'latitude' => $validated['latitude'],
+                    'longitude' => $validated['longitude'],
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+
+                return response()->json(['error' => 'Failed to reverse geocode coordinates.'], $response->status());
+            }
+
+            $data = $response->json();
+
+            if (($data['status'] ?? 'ERROR') === 'OK' && !empty($data['results'])) {
+                $result = $data['results'][0];
+                $location = $result['geometry']['location'] ?? [
+                    'lat' => (float) $validated['latitude'],
+                    'lng' => (float) $validated['longitude'],
+                ];
+
+                return response()->json([
+                    'lat' => $location['lat'],
+                    'lng' => $location['lng'],
+                    'address' => $result['formatted_address'],
+                ]);
+            }
+
+            Log::warning('Google reverse geocoding API error for coordinates.', [
+                'latitude' => $validated['latitude'],
+                'longitude' => $validated['longitude'],
+                'status' => $data['status'] ?? 'UNKNOWN_STATUS',
+                'error_message' => $data['error_message'] ?? 'No error message.',
+            ]);
+
+            return response()->json(['error' => 'Coordinates not found or reverse geocoding failed.'], 404);
+        } catch (\Exception $e) {
+            Log::error('Exception during Google reverse geocoding: ' . $e->getMessage(), [
+                'latitude' => $validated['latitude'],
+                'longitude' => $validated['longitude'],
+            ]);
+
+            return response()->json(['error' => 'An unexpected error occurred during reverse geocoding.'], 500);
+        }
+    }
 }

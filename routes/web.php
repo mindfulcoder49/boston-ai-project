@@ -96,6 +96,7 @@ Route::middleware('auth')->post('/api/crime-address/trial/start', [CrimeAddressF
 // Google Places API proxy routes
 Route::post('/api/google-places-autocomplete', [TrashScheduleByAddressController::class, 'googleAutocomplete']); // Or your preferred auth
 Route::post('/api/geocode-google-place', [TrashScheduleByAddressController::class, 'geocodeGooglePlace']); // Or your preferred auth
+Route::post('/api/reverse-geocode-google-place', [TrashScheduleByAddressController::class, 'reverseGeocodeGooglePlace'])->name('google-places.reverse-geocode');
 
 
 // Serve the Vue component directly

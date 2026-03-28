@@ -63,6 +63,20 @@ const supportedCases: SupportedCase[] = [
     expectedCityKey: 'montgomery_county_md',
   },
   {
+    label: 'Bethesda in Montgomery County, MD',
+    address: '4800 Hampden Ln, Bethesda, MD 20814, USA',
+    latitude: 38.9814,
+    longitude: -77.0962,
+    expectedCityKey: 'montgomery_county_md',
+  },
+  {
+    label: 'Silver Spring in Montgomery County, MD',
+    address: '1 Veterans Pl, Silver Spring, MD 20910, USA',
+    latitude: 38.9979,
+    longitude: -77.0261,
+    expectedCityKey: 'montgomery_county_md',
+  },
+  {
     label: 'Seattle',
     address: '600 4th Ave, Seattle, WA 98104, USA',
     latitude: 47.60345,
@@ -83,6 +97,12 @@ const unsupportedRegionalCases: UnsupportedCase[] = [
     address: '333 Washington St, Brookline, MA 02445, USA',
     latitude: 42.3318,
     longitude: -71.1212,
+  },
+  {
+    label: 'Chelsea should not borrow Everett coverage',
+    address: '500 Broadway, Chelsea, MA 02150, USA',
+    latitude: 42.3918,
+    longitude: -71.0328,
   },
   {
     label: 'Evanston should not borrow Chicago coverage',
@@ -165,6 +185,29 @@ test.describe('crime-address live regional coverage', () => {
       expect(runtime.pageErrors).toEqual([]);
     });
   }
+
+  test('supports Everett via browser geolocation', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.context().grantPermissions(['geolocation']);
+    await page.context().setGeolocation({
+      latitude: 42.418742,
+      longitude: -71.04491,
+    });
+
+    const previewResponsePromise = waitForPreviewResponse(page);
+
+    await page.goto('/crime-address');
+    await page.getByRole('button', { name: 'Use my location' }).click();
+
+    const previewResponse = await previewResponsePromise;
+
+    expect(previewResponse.supported).toBe(true);
+    expect(previewResponse.matched_city_key).toBe('everett');
+    await expect(page.getByRole('heading', { name: '851 Broadway, Everett, MA 02149, USA' })).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
 
   for (const scenario of unsupportedRegionalCases) {
     test(`rejects nearby unsupported locality: ${scenario.label}`, async ({ page }) => {
