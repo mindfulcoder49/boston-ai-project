@@ -182,4 +182,34 @@ class CrimeAddressPreviewBuilderTest extends TestCase
         $this->assertSame('2 CAR MVA', $preview['incident_summary']['recent_incidents'][0]['description']);
         $this->assertSame('760 BROADWAY ST', $preview['incident_summary']['recent_incidents'][0]['location_label']);
     }
+
+    public function test_build_reports_zero_incident_previews_cleanly(): void
+    {
+        $builder = new class extends CrimeAddressPreviewBuilder
+        {
+            protected function fetchMapPayload(string $matchedCityKey, string $address, float $latitude, float $longitude, float $radius): array
+            {
+                return [
+                    'dataPoints' => [],
+                ];
+            }
+
+            protected function resolveCrimeModelClass(array $serviceability): ?string
+            {
+                return null;
+            }
+        };
+
+        $preview = $builder->build([
+            'matched_city_key' => 'chicago',
+            'matched_city_name' => 'Chicago',
+            'normalized_address' => '121 N La Salle St, Chicago, IL 60602, USA',
+        ], '121 N La Salle St, Chicago, IL 60602, USA', 41.88386, -87.63238);
+
+        $this->assertSame(0, $preview['incident_summary']['total_incidents']);
+        $this->assertSame([], $preview['incident_summary']['top_categories']);
+        $this->assertSame([], $preview['incident_summary']['recent_incidents']);
+        $this->assertCount(2, $preview['preview_report']);
+        $this->assertStringContainsString('No recent crime incidents were found', $preview['preview_report'][0]['body']);
+    }
 }

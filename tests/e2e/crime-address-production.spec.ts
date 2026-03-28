@@ -99,6 +99,9 @@ test.describe('crime-address live regional coverage', () => {
 
       await expect(page.getByText('Address Report', { exact: true })).toBeVisible();
       await expect(page.getByText('Recent Incidents', { exact: true })).toBeVisible();
+      if (previewResponse.incident_summary.total_incidents === 0) {
+        await expect(page.getByText('No recent incidents were found within this preview radius.')).toBeVisible();
+      }
       await expect(page.getByRole('heading', { name: 'We do not serve your address yet.' })).toHaveCount(0);
     });
   }

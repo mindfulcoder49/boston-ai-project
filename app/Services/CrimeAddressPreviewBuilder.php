@@ -204,18 +204,25 @@ class CrimeAddressPreviewBuilder
         $address = $serviceability['normalized_address'] ?? 'this address';
         $cityName = $serviceability['matched_city_name'] ?? 'your area';
         $sections = [];
+        $incidentCount = (int) ($incidentSummary['total_incidents'] ?? 0);
 
         $sections[] = [
             'title' => 'What happened nearby',
-            'body' => sprintf(
-                'Found %d crime incidents within %.2f miles of %s in the current preview window.',
-                $incidentSummary['total_incidents'],
-                $incidentSummary['radius_miles'],
-                $address,
-            ),
+            'body' => $incidentCount > 0
+                ? sprintf(
+                    'Found %d crime incidents within %.2f miles of %s in the current preview window.',
+                    $incidentCount,
+                    $incidentSummary['radius_miles'],
+                    $address,
+                )
+                : sprintf(
+                    'No recent crime incidents were found within %.2f miles of %s in the current preview window.',
+                    $incidentSummary['radius_miles'],
+                    $address,
+                ),
         ];
 
-        if (!empty($incidentSummary['top_categories'])) {
+        if ($incidentCount > 0 && !empty($incidentSummary['top_categories'])) {
             $topCategoryText = collect($incidentSummary['top_categories'])
                 ->map(fn (array $category) => "{$category['category']} ({$category['count']})")
                 ->implode(', ');

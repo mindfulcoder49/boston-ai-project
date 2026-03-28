@@ -93,7 +93,7 @@
                   <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Preview</p>
                   <h2 class="mt-2 text-3xl font-bold text-slate-900">{{ preview.address }}</h2>
                   <p class="mt-2 text-sm text-slate-500">
-                    {{ preview.matched_city_name }} • {{ preview.incident_summary.total_incidents }} recent incidents within {{ preview.radius.toFixed(2) }} miles
+                    {{ incidentSummaryLine }}
                   </p>
                 </div>
                 <div class="rounded-2xl bg-slate-100 px-4 py-3 text-right">
@@ -118,7 +118,7 @@
             <aside class="space-y-4">
               <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">What stands out</p>
-                <ul class="mt-4 space-y-3">
+                <ul v-if="hasIncidents" class="mt-4 space-y-3">
                   <li
                     v-for="category in preview.incident_summary.top_categories"
                     :key="category.category"
@@ -128,6 +128,9 @@
                     <span class="text-sm font-bold text-slate-900">{{ category.count }}</span>
                   </li>
                 </ul>
+                <p v-else class="mt-4 text-sm leading-6 text-slate-600">
+                  No incident categories stand out because no recent incidents were found in this preview radius.
+                </p>
               </div>
 
               <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -224,7 +227,7 @@
             <div class="space-y-6">
               <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Recent Incidents</p>
-                <div class="mt-4 space-y-4">
+                <div v-if="hasIncidents" class="mt-4 space-y-4">
                   <article
                     v-for="incident in preview.incident_summary.recent_incidents"
                     :key="`${incident.date}-${incident.category}-${incident.location_label}`"
@@ -236,6 +239,9 @@
                     <p v-if="incident.location_label" class="mt-1 text-sm text-slate-500">{{ incident.location_label }}</p>
                   </article>
                 </div>
+                <p v-else class="mt-4 text-sm leading-6 text-slate-600">
+                  No recent incidents were found within this preview radius.
+                </p>
               </div>
 
               <div v-if="preview.trend_context?.summary?.status === 'ok'" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -325,6 +331,21 @@ const currentPlanTier = computed(() => page.props.auth?.currentPlan?.tier ?? pag
 const isPaidPlan = computed(() => ['basic', 'pro'].includes(currentPlanTier.value));
 const hasActiveTrial = computed(() => !isPaidPlan.value && trialState.value.active);
 const hasExpiredTrial = computed(() => !isPaidPlan.value && currentPlanTier.value === 'free' && trialState.value.used && !trialState.value.active);
+const hasIncidents = computed(() => (preview.value?.incident_summary?.total_incidents ?? 0) > 0);
+const incidentSummaryLine = computed(() => {
+  if (!preview.value) {
+    return '';
+  }
+
+  const radius = Number(preview.value.radius ?? 0.25).toFixed(2);
+  const incidentCount = Number(preview.value.incident_summary?.total_incidents ?? 0);
+
+  if (incidentCount === 0) {
+    return `${preview.value.matched_city_name} • No recent incidents found within ${radius} miles`;
+  }
+
+  return `${preview.value.matched_city_name} • ${incidentCount} recent incidents within ${radius} miles`;
+});
 const nextStepTitle = computed(() => {
   if (!isAuthenticated.value) {
     return 'Sign up to get this report in your email every day';

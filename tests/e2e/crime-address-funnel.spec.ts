@@ -157,6 +157,71 @@ test.describe('crime-address funnel', () => {
     await expect(page.getByRole('link', { name: 'Log in' })).toBeVisible();
   });
 
+  test('shows a clean zero-incident state for supported addresses', async ({ page }) => {
+    await page.route('**/api/crime-address/preview', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          supported: true,
+          address: '121 N La Salle St, Chicago, IL 60602, USA',
+          matched_city_key: 'chicago',
+          matched_city_name: 'Chicago',
+          latitude: 41.88386,
+          longitude: -87.63238,
+          radius: 0.25,
+          map_data: {
+            center: {
+              latitude: 41.88386,
+              longitude: -87.63238,
+            },
+            incidents: [],
+            incident_count: 0,
+          },
+          incident_summary: {
+            total_incidents: 0,
+            top_categories: [],
+            recent_incidents: [],
+          },
+          score_report: {
+            job_id: 'job-score-2',
+            artifact_name: 'stage6_historical_score_laravel-hist-score-chicago-crime.json',
+            resolution: 8,
+          },
+          trend_context: null,
+          preview_report: [
+            {
+              title: 'What happened nearby',
+              body: 'No recent crime incidents were found within 0.25 miles of 121 N La Salle St, Chicago, IL 60602, USA in the current preview window.',
+            },
+            {
+              title: 'Neighborhood score context',
+              body: 'A location-specific neighborhood score is available for this address and will load with the preview.',
+            },
+          ],
+        }),
+      });
+    });
+
+    await page.route('**/api/scoring-reports/score-for-location', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          score_details: {
+            score: 71.2,
+            score_composition: [],
+          },
+          analysis_details: [],
+        }),
+      });
+    });
+
+    await page.goto('/crime-address?address=121%20N%20La%20Salle%20St%2C%20Chicago%2C%20IL%2060602%2C%20USA&lat=41.88386&lng=-87.63238');
+
+    await expect(page.getByText('No recent incidents were found within this preview radius.')).toBeVisible();
+    await expect(page.getByText('No incident categories stand out because no recent incidents were found in this preview radius.')).toBeVisible();
+    await expect(page.getByText('No recent crime incidents were found within 0.25 miles of 121 N La Salle St, Chicago, IL 60602, USA in the current preview window.')).toBeVisible();
+  });
+
   test('registers from preview and returns to the same address before starting the trial', async ({ page }) => {
     await stubSupportedPreview(page);
     await page.route('**/api/crime-address/trial/start', async (route) => {
