@@ -192,6 +192,7 @@ class AnalysisArtifactLocatorTest extends TestCase
             'laravel-everett-crime-data-incident_type_group-res10-1772947512',
             $scoreReport['source_job_id'],
         );
+        $this->assertSame('stage6_artifact', $scoreReport['source']);
     }
 
     public function test_uses_trend_rows_when_they_are_available(): void
@@ -242,5 +243,32 @@ class AnalysisArtifactLocatorTest extends TestCase
         $this->assertNotNull($trendContext);
         $this->assertSame('laravel-everett-crime-data-incident_type_group-res8-1772947600', $trendContext['job_id']);
         $this->assertSame('ok', $trendContext['summary']['status']);
+    }
+
+    public function test_falls_back_to_stage4_for_preview_scoring_when_stage6_is_missing(): void
+    {
+        AnalysisReportSnapshot::query()->create([
+            'job_id' => 'laravel-everett-crime-data-incident_type_group-res9-1772947601',
+            'artifact_name' => 'stage4_h3_anomaly.json',
+            'payload' => [
+                'parameters' => [
+                    'model_class' => EverettCrimeData::class,
+                    'column_name' => 'incident_type_group',
+                    'h3_resolution' => 9,
+                    'p_value_anomaly' => 0.05,
+                    'p_value_trend' => 0.05,
+                ],
+                'results' => [],
+            ],
+            's3_last_modified' => 1772947601,
+        ]);
+
+        $scoreReport = app(AnalysisArtifactLocator::class)->findPreferredScoreReport(EverettCrimeData::class);
+
+        $this->assertNotNull($scoreReport);
+        $this->assertSame('stage4_fallback', $scoreReport['source']);
+        $this->assertSame('laravel-everett-crime-data-incident_type_group-res9-1772947601', $scoreReport['source_job_id']);
+        $this->assertSame(9, $scoreReport['resolution']);
+        $this->assertNull($scoreReport['artifact_name']);
     }
 }

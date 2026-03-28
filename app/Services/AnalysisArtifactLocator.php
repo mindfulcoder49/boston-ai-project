@@ -58,7 +58,25 @@ class AnalysisArtifactLocator
         );
 
         if (!$candidate) {
-            return null;
+            $trendCandidate = $this->selectPreferredCandidate(
+                $this->trendCandidatesForModel($modelClass),
+                $this->preferredAnalysisColumn($modelClass),
+            );
+
+            if (!$trendCandidate) {
+                return null;
+            }
+
+            return [
+                'job_id' => $trendCandidate['job_id'],
+                'artifact_name' => null,
+                'resolution' => $trendCandidate['h3_resolution'],
+                'analysis_period_weeks' => $this->stage6AnalysisWeeksForModel($modelClass),
+                'source_job_id' => $trendCandidate['job_id'],
+                'column_name' => $trendCandidate['column_name'],
+                'model_class' => $modelClass,
+                'source' => 'stage4_fallback',
+            ];
         }
 
         return [
@@ -67,6 +85,9 @@ class AnalysisArtifactLocator
             'resolution' => $candidate['h3_resolution'],
             'analysis_period_weeks' => $candidate['analysis_period_weeks'],
             'source_job_id' => $candidate['source_job_id'],
+            'column_name' => $candidate['column_name'],
+            'model_class' => $modelClass,
+            'source' => 'stage6_artifact',
         ];
     }
 
@@ -79,6 +100,17 @@ class AnalysisArtifactLocator
         }
 
         return null;
+    }
+
+    protected function stage6AnalysisWeeksForModel(string $modelClass): ?int
+    {
+        foreach (config('analysis_schedule.stage6.jobs', []) as $job) {
+            if (($job['model'] ?? null) === $modelClass) {
+                return (int) ($job['analysis_weeks'] ?? config('analysis_schedule.stage6.analysis_weeks', 52));
+            }
+        }
+
+        return (int) config('analysis_schedule.stage6.analysis_weeks', 52);
     }
 
     protected function trendCandidatesForModel(string $modelClass): Collection

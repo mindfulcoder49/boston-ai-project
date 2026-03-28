@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use App\Models\AnalysisReportSnapshot;
 use App\Models\Trend;
+use App\Services\HistoricalScoreFallbackService;
 
 class ScoringReportController extends Controller
 {
@@ -279,16 +280,38 @@ class ScoringReportController extends Controller
     /**
      * API endpoint to get score and analysis for a given H3 index.
      */
-    public function getScoreForLocation(Request $request)
+    public function getScoreForLocation(Request $request, HistoricalScoreFallbackService $historicalScoreFallbackService)
     {
         $request->validate([
             'h3_index'      => 'required|string',
-            'job_id'        => 'required|string',
-            'artifact_name' => 'required|string',
+            'job_id'        => 'nullable|string',
+            'artifact_name' => 'nullable|string',
+            'model_class'   => 'nullable|string',
+            'source_job_id' => 'nullable|string',
+            'column_name'   => 'nullable|string',
         ]);
 
         $h3Index     = $request->h3_index;
-        $scoringData = AnalysisReportSnapshot::resolve($request->job_id, $request->artifact_name);
+        $jobId = $request->job_id;
+        $artifactName = $request->artifact_name;
+        $scoringData = null;
+
+        if ($jobId && $artifactName) {
+            $scoringData = AnalysisReportSnapshot::resolve($jobId, $artifactName);
+        }
+
+        if (!$scoringData && $request->filled('model_class') && $request->filled('source_job_id')) {
+            $fallback = $historicalScoreFallbackService->scoreForLocation(
+                $request->string('model_class')->toString(),
+                $request->string('source_job_id')->toString(),
+                $h3Index,
+                $request->string('column_name')->toString() ?: null,
+            );
+
+            if ($fallback) {
+                return response()->json($fallback);
+            }
+        }
 
         if (!$scoringData) {
             return response()->json(['error' => 'Scoring report not found.'], 404);

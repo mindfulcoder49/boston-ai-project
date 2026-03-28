@@ -543,11 +543,20 @@ async function loadScoreContext() {
       preview.value.score_report.resolution,
     );
 
-    const response = await axios.post(route('scoring-reports.score-for-location'), {
+    const payload = {
       h3_index: h3Index,
-      job_id: preview.value.score_report.job_id,
-      artifact_name: preview.value.score_report.artifact_name,
-    });
+    };
+
+    if (preview.value.score_report.job_id && preview.value.score_report.artifact_name) {
+      payload.job_id = preview.value.score_report.job_id;
+      payload.artifact_name = preview.value.score_report.artifact_name;
+    } else if (preview.value.score_report.source === 'stage4_fallback') {
+      payload.model_class = preview.value.score_report.model_class ?? preview.value.crime_model_class;
+      payload.source_job_id = preview.value.score_report.source_job_id ?? preview.value.score_report.job_id;
+      payload.column_name = preview.value.score_report.column_name;
+    }
+
+    const response = await axios.post(route('scoring-reports.score-for-location'), payload);
 
     scoreContext.value = response.data;
   } catch (error) {
