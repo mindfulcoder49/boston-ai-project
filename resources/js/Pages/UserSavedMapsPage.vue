@@ -61,18 +61,18 @@
         <div v-if="!$page.props.auth.user" class="mt-4 pt-4 border-t border-blue-200">
           <p class="font-semibold text-indigo-700 mb-3">Want to create and share your own custom maps?</p>
           <div class="flex flex-col sm:flex-row gap-3 items-center">
-            <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('saved-maps.index')"
+            <a :href="googleLoginHref"
                class="w-full sm:w-auto flex items-center justify-center px-5 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
               <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
               Login with Google
             </a>
             <span class="text-gray-500 text-xs hidden sm:inline-block">or</span>
-            <Link :href="route('register') + '?redirect_to=' + route('saved-maps.index')" class="w-full sm:w-auto text-center px-5 py-2.5 border border-indigo-300 rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+            <Link :href="registerHref" class="w-full sm:w-auto text-center px-5 py-2.5 border border-indigo-300 rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
               Register Manually
             </Link>
           </div>
           <p class="mt-3 text-xs text-gray-600">
-            Already have an account? <Link :href="route('login') + '?redirect_to=' + route('saved-maps.index')" class="font-medium text-indigo-600 hover:text-indigo-500 hover:underline">Log in here</Link>.
+            Already have an account? <Link :href="loginHref" class="font-medium text-indigo-600 hover:text-indigo-500 hover:underline">Log in here</Link>.
           </p>
         </div>
       </div>
@@ -131,7 +131,13 @@
 <script setup>
 import PageTemplate from '@/Components/PageTemplate.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import {
+  buildGoogleAuthRedirectHref,
+  buildLoginRedirectHref,
+  buildRegisterRedirectHref,
+  getCurrentRelativeUrl,
+} from '@/Utils/authRedirects';
 
 const props = defineProps({
   userSavedMaps: Array,
@@ -139,6 +145,10 @@ const props = defineProps({
 });
 
 const page = usePage();
+const currentPath = computed(() => getCurrentRelativeUrl(route('saved-maps.index')));
+const googleLoginHref = computed(() => buildGoogleAuthRedirectHref(route, currentPath.value));
+const loginHref = computed(() => buildLoginRedirectHref(route, currentPath.value));
+const registerHref = computed(() => buildRegisterRedirectHref(route, currentPath.value));
 
 const showDeleteConfirmModal = ref(false);
 const mapToDelete = ref(null);

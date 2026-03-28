@@ -80,7 +80,7 @@
 
           <div class="grid gap-4">
             <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
-              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">What the first preview should answer</p>
+              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">What you get in one search</p>
               <ul class="mt-5 space-y-4 text-sm leading-7 text-slate-200">
                 <li v-for="promise in previewPromises" :key="promise.title" class="rounded-2xl border border-white/10 bg-slate-950/30 p-4">
                   <p class="font-semibold text-white">{{ promise.title }}</p>
@@ -112,7 +112,7 @@
           <div class="mx-auto max-w-6xl">
             <div class="max-w-2xl">
               <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">How It Works</p>
-              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Lead with one address. Expand only if the user wants more.</h2>
+              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Search once. Get a clear answer fast.</h2>
             </div>
             <div class="mt-8 grid gap-5 lg:grid-cols-3">
               <article
@@ -133,9 +133,9 @@
             <div class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
               <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">What The Preview Includes</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">The score only makes sense when it sits next to incidents and trends.</h2>
+                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Incidents, trends, and score context work better together.</h2>
                 <p class="mt-4 text-base leading-8 text-slate-600">
-                  The address preview is designed to answer one question clearly, then give the user just enough context to interpret it without dropping them into the full tool stack.
+                  One number by itself is not useful. The preview shows what happened nearby, how the surrounding city is behaving, and how this area compares locally so the address makes sense quickly.
                 </p>
               </div>
               <div class="grid gap-4 sm:grid-cols-3">
@@ -159,7 +159,7 @@
                 <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">Coverage</p>
                 <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Supported cities and regions</h2>
                 <p class="mt-3 max-w-2xl text-base leading-8 text-slate-600">
-                  Coverage is not uniform across every region. The homepage should make that clear before the user ever hits an unsupported address.
+                  Coverage varies by region. Check supported cities before you rely on the preview for one specific address.
                 </p>
               </div>
               <Link
@@ -183,7 +183,7 @@
                     <p class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">{{ city.dataTypeCount }} data {{ city.dataTypeCount === 1 ? 'type' : 'types' }}</p>
                   </div>
                   <div class="rounded-2xl bg-slate-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    {{ city.dataTypes.includes('Crime') ? 'Crime' : 'Data' }}
+                    {{ coverageFocusLabel(city) }}
                   </div>
                 </div>
 
@@ -206,9 +206,9 @@
           <div class="mx-auto max-w-6xl">
             <div class="max-w-2xl">
               <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">Explore Tools</p>
-              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Advanced workflows belong under one explore layer, not in the first user decision.</h2>
+              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Explore deeper when one address is not enough.</h2>
               <p class="mt-3 text-base leading-8 text-slate-600">
-                These tools still matter. They just should not compete with the address preview for attention on the first screen.
+                Use the full map, historical comparisons, and scoring tools when you need broader city context, multiple neighborhoods, or a reporting workflow.
               </p>
             </div>
 
@@ -234,9 +234,9 @@
             <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Next Step</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight">Start with the free address preview. Use the deeper tools after the preview earns it.</h2>
+                <h2 class="mt-3 text-3xl font-black tracking-tight">Want ongoing updates on one address?</h2>
                 <p class="mt-4 max-w-2xl text-base leading-8 text-slate-300">
-                  That is the cleanest path for residents, and it still leaves room for reporters, agents, and operators who need the broader map, trend, and scoring stack.
+                  Start with the free preview. If it helps, keep daily reports for one address or unlock the full map, trends, and neighborhood scores.
                 </p>
               </div>
               <div class="flex flex-wrap gap-3">
@@ -360,18 +360,26 @@ function categoryBadgeClass(name) {
   return badgeClasses[name] || 'bg-slate-100 text-slate-600';
 }
 
+function coverageFocusLabel(city) {
+  if (city.dataTypes.length === 1) {
+    return `${city.dataTypes[0]} focus`;
+  }
+
+  return city.dataTypes.includes('Crime') ? 'Mixed data' : 'Data overview';
+}
+
 const previewPromises = [
   {
-    title: 'Recent nearby crime',
-    body: 'Show what has happened near the address recently instead of asking the user to learn the full product first.',
+    title: 'Recent nearby incidents',
+    body: 'See the latest incidents near the address on a lightweight map with readable details.',
   },
   {
-    title: 'Readable context',
-    body: 'Summarize what stands out, what is common nearby, and what the trends suggest without overwhelming the user.',
+    title: 'Trends that add context',
+    body: 'Understand whether the surrounding city or region is showing unusual crime patterns right now.',
   },
   {
-    title: 'Score framing that makes sense',
-    body: 'Explain how the surrounding scored area compares with the city and nearby cells so the number means something.',
+    title: 'Score context you can interpret',
+    body: 'Compare the surrounding scored area with the rest of the city and nearby areas so the number means something.',
   },
 ];
 
@@ -379,17 +387,17 @@ const workflowSteps = [
   {
     step: 'Step 1',
     title: 'Search an address',
-    body: 'The first action should always be a concrete address lookup, not a tour of maps, metrics, and reports.',
+    body: 'Type an address or use your current location to check the places you care about.',
   },
   {
     step: 'Step 2',
     title: 'Read the local preview',
-    body: 'Show nearby incidents, trend context, and score framing in one stripped-down view that answers the user’s question quickly.',
+    body: 'Get nearby incidents, trend context, and score context in one page that answers the question quickly.',
   },
   {
     step: 'Step 3',
-    title: 'Decide if daily reports are worth it',
-    body: 'After the preview proves useful, offer the email-report workflow and the broader paid toolset.',
+    title: 'Choose ongoing updates if it helps',
+    body: 'If the preview is useful, start daily reports for one address or move into the full map and reporting workflow.',
   },
 ];
 

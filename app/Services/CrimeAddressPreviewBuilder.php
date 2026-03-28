@@ -15,8 +15,6 @@ class CrimeAddressPreviewBuilder
         $crimePoints = $this->extractCrimePoints($mapPayload);
         $incidentSummary = $this->buildIncidentSummary($crimePoints, $radius);
         $crimeModelClass = $this->resolveCrimeModelClass($serviceability);
-        $scoreReport = $this->resolveLatestScoreReport($crimeModelClass);
-        $trendContext = $this->resolveTrendContext($crimeModelClass);
 
         return [
             'supported' => true,
@@ -36,9 +34,24 @@ class CrimeAddressPreviewBuilder
                 'incident_count' => $crimePoints->count(),
             ],
             'incident_summary' => $incidentSummary,
+            'score_report' => null,
+            'trend_context' => null,
+            'preview_report' => $this->buildImmediatePreviewReportSections($serviceability, $incidentSummary),
+        ];
+    }
+
+    public function buildDeferredContext(array $serviceability): array
+    {
+        $crimeModelClass = $this->resolveCrimeModelClass($serviceability);
+        $scoreReport = $this->resolveLatestScoreReport($crimeModelClass);
+        $trendContext = $this->resolveTrendContext($crimeModelClass);
+
+        return [
+            'supported' => true,
+            'crime_model_class' => $crimeModelClass,
             'score_report' => $scoreReport,
             'trend_context' => $trendContext,
-            'preview_report' => $this->buildPreviewReportSections($serviceability, $incidentSummary, $trendContext, $scoreReport),
+            'preview_report' => $this->buildDeferredPreviewReportSections($serviceability, $trendContext, $scoreReport),
         ];
     }
 
@@ -146,10 +159,9 @@ class CrimeAddressPreviewBuilder
         return app(AnalysisArtifactLocator::class)->findPreferredTrendContext($crimeModelClass);
     }
 
-    protected function buildPreviewReportSections(array $serviceability, array $incidentSummary, ?array $trendContext, ?array $scoreReport): array
+    protected function buildImmediatePreviewReportSections(array $serviceability, array $incidentSummary): array
     {
         $address = $serviceability['normalized_address'] ?? 'this address';
-        $cityName = $serviceability['matched_city_name'] ?? 'your area';
         $sections = [];
         $incidentCount = (int) ($incidentSummary['total_incidents'] ?? 0);
 
@@ -175,27 +187,48 @@ class CrimeAddressPreviewBuilder
                 ->implode(', ');
 
             $sections[] = [
-                'title' => 'Most common incident categories',
-                'body' => $topCategoryText,
-            ];
-        }
-
-        if (($trendContext['summary']['status'] ?? null) === 'ok') {
-            $summary = $trendContext['summary'];
-            $sections[] = [
-                'title' => 'Trend context',
-                'body' => sprintf(
-                    '%s has %d significant recent findings across %d hexagons. The strongest categories right now are %s.',
-                    $cityName,
-                    $summary['total_findings'] ?? 0,
-                    $summary['affected_h3_count'] ?? 0,
-                    collect($summary['top_categories'] ?? [])->take(3)->implode(', ')
-                ),
+                'title' => 'What stands out nearby',
+                'body' => "The most common nearby incident categories were {$topCategoryText}.",
             ];
         }
 
         $sections[] = [
-            'title' => 'Neighborhood score context',
+            'title' => 'What loads next',
+            'body' => 'We are also checking citywide trend context and the local area score so you can compare this address with nearby parts of the city.',
+        ];
+
+        return $sections;
+    }
+
+    protected function buildDeferredPreviewReportSections(array $serviceability, ?array $trendContext, ?array $scoreReport): array
+    {
+        $cityName = $serviceability['matched_city_name'] ?? 'your area';
+        $sections = [];
+
+        if (($trendContext['summary']['status'] ?? null) === 'ok') {
+            $summary = $trendContext['summary'];
+            $topCategories = collect($summary['top_categories'] ?? [])
+                ->filter()
+                ->take(3)
+                ->implode(', ');
+
+            $sections[] = [
+                'title' => 'What city trends suggest',
+                'body' => $topCategories !== ''
+                    ? sprintf(
+                        '%s is showing a few unusual crime patterns right now, especially around %s.',
+                        $cityName,
+                        $topCategories,
+                    )
+                    : sprintf(
+                        '%s is showing a few unusual crime patterns right now.',
+                        $cityName,
+                    ),
+            ];
+        }
+
+        $sections[] = [
+            'title' => 'Area score context',
             'body' => $this->buildScoreContextBody($scoreReport, $trendContext),
         ];
 
@@ -205,14 +238,14 @@ class CrimeAddressPreviewBuilder
     protected function buildScoreContextBody(?array $scoreReport, ?array $trendContext): string
     {
         if ($scoreReport) {
-            return 'A location-specific neighborhood score is available for this address and will load with the preview.';
+            return 'An area score is available for this address. We compare it with the rest of the city and nearby areas so the number is easier to interpret.';
         }
 
         if (($trendContext['summary']['status'] ?? null) === 'ok') {
-            return 'Neighborhood scoring is not currently available for this area, but recent incidents and city-level trends are shown below.';
+            return 'A city trend summary is available for this address, but an area score is not ready for this location yet.';
         }
 
-        return 'Neighborhood scoring and city-level trend context are not currently available for this area yet. Recent incidents are shown below.';
+        return 'City trend and area score context are not available for this location yet. The nearby incident view is still shown below.';
     }
 
     protected function extractIncidentCategory(array $point): string

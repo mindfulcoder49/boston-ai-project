@@ -59,6 +59,36 @@ class CrimeAddressFunnelController extends Controller
         );
     }
 
+    public function context(
+        Request $request,
+        AddressServiceabilityService $serviceabilityService,
+        CrimeAddressPreviewBuilder $previewBuilder
+    ): JsonResponse {
+        $validated = $request->validate([
+            'address' => 'required|string|max:255',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        $serviceability = $serviceabilityService->determineSupport(
+            (float) $validated['latitude'],
+            (float) $validated['longitude'],
+            $validated['address'],
+        );
+
+        if (!$serviceability['supported']) {
+            return response()->json([
+                'supported' => false,
+                'message' => 'We do not serve your address yet. We will look into adding your area and notify you if we do.',
+                'serviceability' => $serviceability,
+            ]);
+        }
+
+        return response()->json(
+            $previewBuilder->buildDeferredContext($serviceability)
+        );
+    }
+
     public function startTrial(Request $request): JsonResponse
     {
         $validated = $request->validate([

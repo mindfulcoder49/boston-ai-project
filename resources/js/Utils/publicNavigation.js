@@ -1,7 +1,27 @@
+export const PUBLIC_CITY_NAV_ITEMS = [
+  { key: 'boston', label: 'Boston', routeName: 'city.landing.boston' },
+  { key: 'everett', label: 'Everett', routeName: 'city.landing.everett' },
+  { key: 'chicago', label: 'Chicago', routeName: 'city.landing.chicago' },
+  { key: 'san_francisco', label: 'San Francisco', routeName: 'city.landing.san_francisco' },
+  { key: 'seattle', label: 'Seattle', routeName: 'city.landing.seattle' },
+  { key: 'new_york', label: 'New York', routeName: 'city.landing.new_york' },
+  { key: 'montgomery_county_md', label: 'Montgomery County, MD', routeName: 'city.landing.montgomery_county_md' },
+];
+
+export const PUBLIC_CITY_ROUTE_NAME_BY_KEY = PUBLIC_CITY_NAV_ITEMS.reduce((carry, item) => {
+  carry[item.key] = item.routeName;
+  return carry;
+}, {});
+
 export function buildPublicNavigation(routeFn, isAuthenticated = false) {
   const homeHref = routeFn('home');
   const citiesOverviewHref = `${homeHref}#cities`;
   const exploreOverviewHref = `${homeHref}#explore-tools`;
+  const cityLinks = PUBLIC_CITY_NAV_ITEMS.map((item) => ({
+    label: item.label,
+    href: routeFn(item.routeName),
+  }));
+  const cityRouteNames = PUBLIC_CITY_NAV_ITEMS.map((item) => item.routeName);
 
   return {
     primary: [
@@ -18,22 +38,10 @@ export function buildPublicNavigation(routeFn, isAuthenticated = false) {
       {
         label: 'Cities',
         kind: 'dropdown',
-        routeNames: [
-          'city.landing.boston',
-          'city.landing.everett',
-          'city.landing.chicago',
-          'city.landing.san_francisco',
-          'city.landing.seattle',
-          'city.landing.montgomery_county_md',
-        ],
+        routeNames: cityRouteNames,
         items: [
           { label: 'Coverage overview', href: citiesOverviewHref },
-          { label: 'Boston', href: routeFn('city.landing.boston') },
-          { label: 'Everett', href: routeFn('city.landing.everett') },
-          { label: 'Chicago', href: routeFn('city.landing.chicago') },
-          { label: 'San Francisco', href: routeFn('city.landing.san_francisco') },
-          { label: 'Seattle', href: routeFn('city.landing.seattle') },
-          { label: 'Montgomery County, MD', href: routeFn('city.landing.montgomery_county_md') },
+          ...cityLinks,
         ],
       },
       {
@@ -92,12 +100,7 @@ export function buildPublicNavigation(routeFn, isAuthenticated = false) {
         title: 'Cities & Regions',
         links: [
           { label: 'Coverage overview', href: citiesOverviewHref },
-          { label: 'Boston', href: routeFn('city.landing.boston') },
-          { label: 'Everett', href: routeFn('city.landing.everett') },
-          { label: 'Chicago', href: routeFn('city.landing.chicago') },
-          { label: 'San Francisco', href: routeFn('city.landing.san_francisco') },
-          { label: 'Seattle', href: routeFn('city.landing.seattle') },
-          { label: 'Montgomery County, MD', href: routeFn('city.landing.montgomery_county_md') },
+          ...cityLinks,
         ],
       },
       {

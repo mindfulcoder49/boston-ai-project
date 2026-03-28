@@ -31,8 +31,8 @@
           <p v-if="sessionId" class="text-sm mt-2">
             {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.sessionId || 'Session ID' }}: {{ sessionId }}
           </p>
-          <Link :href="route('map.index')" class="mt-4 inline-block px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-            {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.goToDashboard || 'Go to Dashboard' }}
+          <Link :href="postCheckoutPrimaryHref" class="mt-4 inline-block px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            {{ postCheckoutPrimaryLabel }}
           </Link>
         </div>
   
@@ -44,8 +44,8 @@
           <p>
             {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscriptionCancelledMessage || 'Your subscription process was canceled. You can choose a plan below or return to the dashboard.' }}
           </p>
-           <Link :href="route('map.index')" class="mt-4 inline-block px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-            {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.goToDashboard || 'Go to Dashboard' }}
+           <Link :href="postCheckoutPrimaryHref" class="mt-4 inline-block px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+            {{ postCheckoutPrimaryLabel }}
           </Link>
         </div>
   
@@ -64,12 +64,12 @@
             </li>
           </ul>
           <div v-if="!isAuthenticated" class="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 items-center">
-            <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
+            <a :href="freeGoogleHref"
                class="flex items-center justify-center w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerWithGoogleButton || 'Register with Google' }}
             </a>
-            <Link :href="route('register') + '?redirect_to=' + route('map.index')" class="w-full sm:w-auto px-6 py-3 text-white bg-blue-500 rounded-md shadow-lg hover:bg-blue-600 transition-colors text-center">
+            <Link :href="freeRegisterHref" class="w-full sm:w-auto px-6 py-3 text-white bg-blue-500 rounded-md shadow-lg hover:bg-blue-600 transition-colors text-center">
                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerManuallyButton || 'Register Manually' }}
             </Link>
           </div>
@@ -102,12 +102,12 @@
                 {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscribeButton || 'Subscribe' }}
               </button>
               <div v-else-if="!isAuthenticated" class="flex flex-col space-y-2 items-center">
-                 <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('subscribe.checkout', { plan: 'basic' })"
+                 <a :href="basicGoogleHref"
                    class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                    <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
                    {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerWithGoogleToSubscribeButton || 'Login with Google to Subscribe' }}
                  </a>
-                 <Link :href="route('register') + '?redirect_to=' + route('subscribe.checkout', { plan: 'basic' })" class="text-sm text-blue-600 hover:underline">
+                 <Link :href="basicRegisterHref" class="text-sm text-blue-600 hover:underline">
                    {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerManuallyToSubscribeLink || 'Or register manually to subscribe' }}
                  </Link>
               </div>
@@ -143,12 +143,12 @@
                 {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscribeButton || 'Subscribe' }}
               </button>
               <div v-else-if="!isAuthenticated" class="flex flex-col space-y-2 items-center">
-                 <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('subscribe.checkout', { plan: 'pro' })"
+                 <a :href="proGoogleHref"
                    class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                    <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
                    {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerWithGoogleToSubscribeButton || 'Login with Google to Subscribe' }}
                  </a>
-                 <Link :href="route('register') + '?redirect_to=' + route('subscribe.checkout', { plan: 'pro' })" class="text-sm text-purple-600 hover:underline">
+                 <Link :href="proRegisterHref" class="text-sm text-purple-600 hover:underline">
                    {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.registerManuallyToSubscribeLink || 'Or register manually to subscribe' }}
                  </Link>
               </div>
@@ -176,6 +176,11 @@
   import { Head, Link, usePage } from '@inertiajs/vue3';
   import { computed, inject, onMounted, ref } from 'vue';
   import { trackAnalyticsEvent, trackOncePerSession } from '@/Utils/analytics';
+  import {
+    buildGoogleAuthRedirectHref,
+    buildRegisterRedirectHref,
+    getCurrentRelativeUrl,
+  } from '@/Utils/authRedirects';
   
   const props = defineProps({
     status: String, // 'success', 'cancel', or null
@@ -205,6 +210,30 @@
   const trialExpiredFromCrimeAddress = computed(
     () => showCrimeAddressContext.value && props.hasUsedCrimeAddressTrial && !props.hasCrimeAddressTrial && props.currentPlan !== 'basic' && props.currentPlan !== 'pro'
   );
+  const currentPricingHref = computed(() => getCurrentRelativeUrl(
+    route('subscription.index', {
+      source: props.sourceContext || undefined,
+      recommended: props.recommendedPlan || undefined,
+    }),
+  ));
+  const freeGoogleHref = computed(() => buildGoogleAuthRedirectHref(route, currentPricingHref.value));
+  const freeRegisterHref = computed(() => buildRegisterRedirectHref(route, currentPricingHref.value));
+  const basicCheckoutRedirectTarget = computed(() => route('subscribe.checkout', {
+    plan: 'basic',
+    source: props.sourceContext || undefined,
+  }));
+  const proCheckoutRedirectTarget = computed(() => route('subscribe.checkout', {
+    plan: 'pro',
+    source: props.sourceContext || undefined,
+  }));
+  const basicGoogleHref = computed(() => buildGoogleAuthRedirectHref(route, basicCheckoutRedirectTarget.value));
+  const basicRegisterHref = computed(() => buildRegisterRedirectHref(route, basicCheckoutRedirectTarget.value));
+  const proGoogleHref = computed(() => buildGoogleAuthRedirectHref(route, proCheckoutRedirectTarget.value));
+  const proRegisterHref = computed(() => buildRegisterRedirectHref(route, proCheckoutRedirectTarget.value));
+  const postCheckoutPrimaryHref = computed(() => showCrimeAddressContext.value ? route('crime-address.index') : route('map.index'));
+  const postCheckoutPrimaryLabel = computed(() => showCrimeAddressContext.value
+    ? 'Back to crime preview'
+    : (translations.LabelsByLanguageCode[getSingleLanguageCode.value]?.goToDashboard || 'Go to Dashboard'));
 
   const startCheckout = (plan) => {
     trackAnalyticsEvent('report_plan_selected', {

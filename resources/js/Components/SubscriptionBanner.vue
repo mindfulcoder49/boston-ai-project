@@ -21,12 +21,12 @@
         </template>
         <template v-else-if="!isAuthenticated">
           <div class="flex flex-col space-y-2 items-center">
-            <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
+            <a :href="googleLoginHref"
                class="flex items-center justify-center w-full px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-blue-600 bg-white hover:bg-gray-50">
               <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
               {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerRegisterWithGoogleButton || 'Login with Google' }}
             </a>
-            <Link :href="route('register') + '?redirect_to=' + route('map.index')" class="text-sm text-gray-100 hover:text-white hover:underline">
+            <Link :href="registerHref" class="text-sm text-gray-100 hover:text-white hover:underline">
               {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bannerRegisterManuallyLink || 'Or register manually' }}
             </Link>
              <Link :href="route('subscription.index')" class="mt-2 text-sm text-gray-100 hover:text-white hover:underline">
@@ -56,6 +56,11 @@
   <script setup>
   import { Link, usePage } from '@inertiajs/vue3';
   import { computed, inject, ref } from 'vue';
+  import {
+    buildGoogleAuthRedirectHref,
+    buildRegisterRedirectHref,
+    getCurrentRelativeUrl,
+  } from '@/Utils/authRedirects';
   
   const page = usePage();
   const isAuthenticated = computed(() => !!page.props.auth.user);
@@ -69,6 +74,9 @@
   
   const translations = inject('translations');
   const language_codes = ref(['en-US']); // Or get from a global store/user preferences
+  const currentPath = computed(() => getCurrentRelativeUrl(route('subscription.index')));
+  const googleLoginHref = computed(() => buildGoogleAuthRedirectHref(route, currentPath.value));
+  const registerHref = computed(() => buildRegisterRedirectHref(route, currentPath.value));
   
   const getSingleLanguageCode = computed(() => {
     return (translations.LabelsByLanguageCode && translations.LabelsByLanguageCode[language_codes.value[0]]) ? language_codes.value[0] : 'en-US';

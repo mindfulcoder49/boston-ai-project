@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class CrimeAddressPreviewBuilderTest extends TestCase
 {
-    public function test_build_includes_crime_incidents_score_and_trend_context(): void
+    public function test_build_returns_incident_first_preview_payload(): void
     {
         $builder = new class extends CrimeAddressPreviewBuilder
         {
@@ -87,10 +87,54 @@ class CrimeAddressPreviewBuilderTest extends TestCase
         $this->assertSame(2, $preview['map_data']['incident_count']);
         $this->assertSame(2, $preview['incident_summary']['total_incidents']);
         $this->assertSame('Larceny', $preview['incident_summary']['top_categories'][0]['category']);
-        $this->assertSame('job-score-1', $preview['score_report']['job_id']);
-        $this->assertSame('ok', $preview['trend_context']['summary']['status']);
-        $this->assertCount(4, $preview['preview_report']);
+        $this->assertNull($preview['score_report']);
+        $this->assertNull($preview['trend_context']);
+        $this->assertCount(3, $preview['preview_report']);
         $this->assertSame('What happened nearby', $preview['preview_report'][0]['title']);
+    }
+
+    public function test_build_deferred_context_includes_score_and_trend_context(): void
+    {
+        $builder = new class extends CrimeAddressPreviewBuilder
+        {
+            protected function resolveCrimeModelClass(array $serviceability): ?string
+            {
+                return CrimeData::class;
+            }
+
+            protected function resolveLatestScoreReport(?string $crimeModelClass): ?array
+            {
+                return [
+                    'job_id' => 'job-score-1',
+                    'artifact_name' => 'stage6_historical_score_laravel-hist-score-crime-data-boston.json',
+                    'resolution' => 8,
+                ];
+            }
+
+            protected function resolveTrendContext(?string $crimeModelClass): ?array
+            {
+                return [
+                    'job_id' => 'job-trend-1',
+                    'summary' => [
+                        'status' => 'ok',
+                        'total_findings' => 12,
+                        'affected_h3_count' => 5,
+                        'top_categories' => ['Larceny', 'Assault', 'Vandalism'],
+                    ],
+                ];
+            }
+        };
+
+        $context = $builder->buildDeferredContext([
+            'matched_city_key' => 'boston',
+            'matched_city_name' => 'Boston',
+            'normalized_address' => '1 Beacon St, Boston, MA 02108, USA',
+        ]);
+
+        $this->assertTrue($context['supported']);
+        $this->assertSame('job-score-1', $context['score_report']['job_id']);
+        $this->assertSame('ok', $context['trend_context']['summary']['status']);
+        $this->assertCount(2, $context['preview_report']);
     }
 
     public function test_build_degrades_gracefully_when_score_and_trend_context_are_missing(): void
@@ -132,10 +176,7 @@ class CrimeAddressPreviewBuilderTest extends TestCase
         $this->assertNull($preview['score_report']);
         $this->assertNull($preview['trend_context']);
         $this->assertSame(1, $preview['incident_summary']['total_incidents']);
-        $this->assertStringContainsString(
-            'Neighborhood scoring and city-level trend context are not currently available',
-            $preview['preview_report'][2]['body'],
-        );
+        $this->assertStringContainsString('What loads next', $preview['preview_report'][2]['title']);
     }
 
     public function test_build_extracts_everett_specific_fields_for_incident_content(): void

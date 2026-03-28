@@ -61,6 +61,29 @@ async function stubSupportedPreview(page) {
             },
           ],
         },
+        preview_report: [
+          {
+            title: 'What happened nearby',
+            body: 'Found 1 crime incident within 0.25 miles of 1 Beacon St, Boston, MA 02108, USA in the current preview window.',
+          },
+          {
+            title: 'What stands out nearby',
+            body: 'The most common nearby incident categories were Larceny (1).',
+          },
+          {
+            title: 'What loads next',
+            body: 'We are also checking citywide trend context and the local area score so you can compare this address with nearby parts of the city.',
+          },
+        ],
+      }),
+    });
+  });
+
+  await page.route('**/api/crime-address/context', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        supported: true,
         score_report: {
           job_id: 'job-score-1',
           artifact_name: 'stage6_historical_score_laravel-hist-score-crime-data-boston.json',
@@ -78,20 +101,12 @@ async function stubSupportedPreview(page) {
         },
         preview_report: [
           {
-            title: 'What happened nearby',
-            body: 'Found 1 crime incident within 0.25 miles of 1 Beacon St, Boston, MA 02108, USA.',
+            title: 'What city trends suggest',
+            body: 'Boston is showing a few unusual crime patterns right now, especially around Larceny, Assault.',
           },
           {
-            title: 'Most common incident categories',
-            body: 'Larceny (1)',
-          },
-          {
-            title: 'Trend context',
-            body: 'Boston has 8 significant recent findings across 4 hexagons.',
-          },
-          {
-            title: 'Neighborhood score context',
-            body: 'A location-specific neighborhood score is available for this address and will load with the preview.',
+            title: 'Area score context',
+            body: 'An area score is available for this address. We compare it with the rest of the city and nearby areas so the number is easier to interpret.',
           },
         ],
       }),
@@ -228,11 +243,144 @@ test.describe('crime-address funnel', () => {
     await expect(page.getByText('What happened nearby')).toBeVisible();
     await expect(page.getByTestId('crime-address-trend-context')).toBeVisible();
     await expect(page.getByTestId('crime-address-neighborhood-score-value')).toHaveText('82.4');
-    await expect(page.getByTestId('crime-address-score-context')).toContainText('82nd');
-    await expect(page.getByTestId('crime-address-score-context')).toContainText('Higher relative concern');
-    await expect(page.getByRole('heading', { name: 'Neighborhood score', exact: true })).toBeVisible();
+    await expect(page.getByTestId('crime-address-score-context')).toContainText('Higher than most of Boston');
+    await expect(page.getByTestId('crime-address-score-context')).toContainText('A little higher than nearby areas');
+    await expect(page.getByText('What the area score suggests')).toBeVisible();
+    await expect(page.getByText(/percentile/i)).toHaveCount(0);
+    await expect(page.getByText(/\bH3\b/)).toHaveCount(0);
     await expect(page.getByRole('complementary').getByRole('link', { name: 'Create free account' })).toBeVisible();
     await expect(page.getByRole('complementary').getByRole('link', { name: 'Log in' })).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
+  test('renders incident details before deferred context finishes loading', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.route('**/api/crime-address/preview', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          supported: true,
+          address: '1 Beacon St, Boston, MA 02108, USA',
+          matched_city_key: 'boston',
+          matched_city_name: 'Boston',
+          latitude: 42.3601,
+          longitude: -71.0589,
+          radius: 0.25,
+          map_data: {
+            center: {
+              latitude: 42.3601,
+              longitude: -71.0589,
+            },
+            incidents: [
+              {
+                id: 1,
+                latitude: 42.3603,
+                longitude: -71.0586,
+                date: '2026-03-26',
+                category: 'Larceny',
+                description: 'Wallet taken from parked car',
+                location_label: 'Beacon St',
+              },
+            ],
+            incident_count: 1,
+          },
+          incident_summary: {
+            total_incidents: 1,
+            top_categories: [
+              { category: 'Larceny', count: 1 },
+            ],
+            recent_incidents: [
+              {
+                date: '2026-03-26',
+                category: 'Larceny',
+                description: 'Wallet taken from parked car',
+                location_label: 'Beacon St',
+              },
+            ],
+          },
+          preview_report: [
+            {
+              title: 'What happened nearby',
+              body: 'Found 1 crime incident within 0.25 miles of 1 Beacon St, Boston, MA 02108, USA in the current preview window.',
+            },
+          ],
+        }),
+      });
+    });
+
+    await page.route('**/api/crime-address/context', async (route) => {
+      await page.waitForTimeout(1500);
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          supported: true,
+          score_report: {
+            job_id: 'job-score-1',
+            artifact_name: 'stage6_historical_score_laravel-hist-score-crime-data-boston.json',
+            resolution: 8,
+          },
+          trend_context: {
+            summary: {
+              status: 'ok',
+              total_findings: 8,
+              anomaly_count: 2,
+              trend_count: 6,
+              affected_h3_count: 4,
+              top_categories: ['Larceny', 'Assault'],
+            },
+          },
+          preview_report: [],
+        }),
+      });
+    });
+
+    await page.route('**/api/scoring-reports/score-for-location', async (route) => {
+      await page.waitForTimeout(1500);
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          score_details: {
+            score: 82.4,
+            score_composition: [],
+          },
+          score_context: {
+            score: 82.4,
+            percentile: 82,
+            band: {
+              label: 'Higher relative concern',
+              description: 'This address-area scores above most scored areas in the same city or region.',
+            },
+            distribution: {
+              count: 18,
+              median: 63.2,
+            },
+            nearby_peers: {
+              available: true,
+              count: 6,
+              median: 78.1,
+              current_vs_median: 4.3,
+            },
+            top_drivers: [],
+            methodology: {
+              source: 'stage6_artifact',
+              label: 'Historical neighborhood score',
+              analysis_period_weeks: 52,
+              resolution: 8,
+            },
+          },
+          analysis_details: [],
+        }),
+      });
+    });
+
+    await page.goto('/crime-address?address=1%20Beacon%20St%2C%20Boston%2C%20MA%2002108%2C%20USA&lat=42.3601&lng=-71.0589');
+
+    await expect(page.getByRole('heading', { name: '1 Beacon St, Boston, MA 02108, USA' })).toBeVisible();
+    await expect(page.getByText('Wallet taken from parked car')).toBeVisible();
+    await expect(page.getByTestId('crime-address-neighborhood-score-unavailable')).toHaveText('Loading…');
+    await expect(page.getByTestId('crime-address-neighborhood-score-value')).toHaveText('82.4');
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);
   });
@@ -300,16 +448,27 @@ test.describe('crime-address funnel', () => {
               },
             ],
           },
-          score_report: null,
-          trend_context: null,
           preview_report: [
             {
               title: 'What happened nearby',
               body: 'Found 1 crime incident within 0.25 miles of 851 Broadway, Everett, MA 02149, USA in the current preview window.',
             },
+          ],
+        }),
+      });
+    });
+
+    await page.route('**/api/crime-address/context', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          supported: true,
+          score_report: null,
+          trend_context: null,
+          preview_report: [
             {
-              title: 'Neighborhood score context',
-              body: 'Neighborhood scoring and city-level trend context are not currently available for this area yet. Recent incidents are shown below.',
+              title: 'Area score context',
+              body: 'City trend and area score context are not available for this location yet. The nearby incident view is still shown below.',
             },
           ],
         }),
@@ -353,6 +512,21 @@ test.describe('crime-address funnel', () => {
             top_categories: [],
             recent_incidents: [],
           },
+          preview_report: [
+            {
+              title: 'What happened nearby',
+              body: 'No recent crime incidents were found within 0.25 miles of 121 N La Salle St, Chicago, IL 60602, USA in the current preview window.',
+            },
+          ],
+        }),
+      });
+    });
+
+    await page.route('**/api/crime-address/context', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          supported: true,
           score_report: {
             job_id: 'job-score-2',
             artifact_name: 'stage6_historical_score_laravel-hist-score-chicago-crime.json',
@@ -361,12 +535,8 @@ test.describe('crime-address funnel', () => {
           trend_context: null,
           preview_report: [
             {
-              title: 'What happened nearby',
-              body: 'No recent crime incidents were found within 0.25 miles of 121 N La Salle St, Chicago, IL 60602, USA in the current preview window.',
-            },
-            {
-              title: 'Neighborhood score context',
-              body: 'A location-specific neighborhood score is available for this address and will load with the preview.',
+              title: 'Area score context',
+              body: 'An area score is available for this address. We compare it with the rest of the city and nearby areas so the number is easier to interpret.',
             },
           ],
         }),
@@ -430,7 +600,7 @@ test.describe('crime-address funnel', () => {
     await expect(page.getByRole('navigation').getByRole('button', { name: 'Cities' })).toBeVisible();
     await expect(page.getByRole('navigation').getByRole('button', { name: 'Explore' })).toBeVisible();
     await expect(page.getByText('Supported cities and regions')).toBeVisible();
-    await expect(page.getByText('Advanced workflows belong under one explore layer')).toBeVisible();
+    await expect(page.getByText('Explore deeper when one address is not enough.')).toBeVisible();
     await expect(page.getByText('Cities & Regions')).toBeVisible();
     await expect(page.getByText('Crime around your address first.')).toBeVisible();
 

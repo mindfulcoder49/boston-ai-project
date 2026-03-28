@@ -91,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/search-address', [TrashScheduleByAddressController::class, 'search']);
 Route::get('/crime-address', [CrimeAddressFunnelController::class, 'index'])->name('crime-address.index');
 Route::post('/api/crime-address/preview', [CrimeAddressFunnelController::class, 'preview'])->name('crime-address.preview');
+Route::post('/api/crime-address/context', [CrimeAddressFunnelController::class, 'context'])->name('crime-address.context');
 Route::middleware('auth')->post('/api/crime-address/trial/start', [CrimeAddressFunnelController::class, 'startTrial'])->name('crime-address.trial.start');
 
 // Google Places API proxy routes

@@ -183,14 +183,14 @@ test.describe('crime-address live regional coverage', () => {
       }
 
       if (scenario.expectTrendContext) {
-        expect(previewResponse.trend_context?.summary?.status).toBe('ok');
         await expect(page.getByTestId('crime-address-trend-context')).toBeVisible();
       }
 
       if (scenario.expectNeighborhoodScore) {
-        expect(previewResponse.score_report).toBeTruthy();
         await expect(page.getByTestId('crime-address-neighborhood-score-value')).toHaveText(/^\d+(\.\d+)?$/);
         await expect(page.getByTestId('crime-address-score-context')).toBeVisible();
+        await expect(page.getByText(/percentile/i)).toHaveCount(0);
+        await expect(page.getByText(/\bH3\b/)).toHaveCount(0);
       }
 
       await expect(page.getByText('Address Report', { exact: true })).toBeVisible();
@@ -225,6 +225,8 @@ test.describe('crime-address live regional coverage', () => {
     await expect(page.getByRole('heading', { name: '851 Broadway, Everett, MA 02149, USA' })).toBeVisible();
     await expect(page.getByTestId('crime-address-trend-context')).toBeVisible();
     await expect(page.getByTestId('crime-address-neighborhood-score-value')).toHaveText(/^\d+(\.\d+)?$/);
+    await expect(page.getByText(/percentile/i)).toHaveCount(0);
+    await expect(page.getByText(/\bH3\b/)).toHaveCount(0);
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);
   });
@@ -280,6 +282,7 @@ test.describe('crime-address live regional coverage', () => {
     await expect(page.getByRole('navigation').getByRole('button', { name: 'Explore' })).toBeVisible();
     await expect(page.getByText('Supported cities and regions')).toBeVisible();
     await expect(page.getByText('Cities & Regions')).toBeVisible();
+    await expect(page.getByText('The homepage should make that clear before the user ever hits an unsupported address.')).toHaveCount(0);
 
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);

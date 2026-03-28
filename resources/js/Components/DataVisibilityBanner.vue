@@ -8,12 +8,12 @@
       <div v-if="promptAction" class="mt-4 md:mt-0 flex flex-wrap gap-2 items-center">
         <Link
           v-if="!isAuthenticated"
-          :href="route('register')"
+          :href="registerHref"
           class="inline-block bg-sky-600 text-white text-sm px-4 py-2 rounded-md hover:bg-sky-700"
         >Sign Up</Link>
         <a
           v-if="!isAuthenticated"
-          :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
+          :href="googleLoginHref"
           class="inline-flex items-center justify-center bg-white text-sky-700 border border-sky-300 text-sm px-4 py-2 rounded-md hover:bg-sky-50"
         >
           <img class="h-4 w-4 md:mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
@@ -21,7 +21,7 @@
         </a>
         <Link
           v-if="!isAuthenticated"
-          :href="route('login')"
+          :href="loginHref"
           class="inline-block bg-slate-200 text-slate-800 text-sm px-4 py-2 rounded-md hover:bg-slate-300"
         >Log In</Link>
         <Link
@@ -52,12 +52,22 @@
 <script setup>
 import { computed } from 'vue'
 import { usePage, Link } from '@inertiajs/vue3'
+import {
+  buildGoogleAuthRedirectHref,
+  buildLoginRedirectHref,
+  buildRegisterRedirectHref,
+  getCurrentRelativeUrl,
+} from '@/Utils/authRedirects';
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
 const isAuthenticated = computed(() => !!user.value)
 const plan = computed(() => page.props.auth?.currentPlan?.name || (isAuthenticated.value ? 'Registered User' : 'Guest'))
 const isPro = computed(() => plan.value === 'Pro Insights')
+const currentPath = computed(() => getCurrentRelativeUrl(route('map.index')))
+const googleLoginHref = computed(() => buildGoogleAuthRedirectHref(route, currentPath.value))
+const loginHref = computed(() => buildLoginRedirectHref(route, currentPath.value))
+const registerHref = computed(() => buildRegisterRedirectHref(route, currentPath.value))
 
 const planLabel = computed(() => {
   if (plan.value === 'Resident Awareness') return 'Resident Awareness'

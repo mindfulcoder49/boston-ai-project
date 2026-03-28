@@ -100,7 +100,7 @@
           
           <p class="text-md mb-4 text-sky-700 font-medium">{{ LabelsByLanguageCode[getSingleLanguageCode].guestUnlockDetailsPrompt }}</p>
 
-          <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + route('map.index')"
+          <a :href="googleLoginHref"
             class="flex items-center justify-center w-full max-w-xs mx-auto mb-4 px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
             <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
             {{ LabelsByLanguageCode[getSingleLanguageCode].googleLoginButton }}
@@ -116,8 +116,8 @@
           
           <p class="mt-4 text-xs text-sky-600">
             {{ LabelsByLanguageCode[getSingleLanguageCode].manualLoginPrompt }}
-            <Link :href="route('login')" class="hover:underline font-medium">{{ LabelsByLanguageCode[getSingleLanguageCode].manualLoginLink }}</Link> / 
-            <Link :href="route('register')" class="hover:underline font-medium">{{ LabelsByLanguageCode[getSingleLanguageCode].manualRegisterLink }}</Link>.
+            <Link :href="loginHref" class="hover:underline font-medium">{{ LabelsByLanguageCode[getSingleLanguageCode].manualLoginLink }}</Link> / 
+            <Link :href="registerHref" class="hover:underline font-medium">{{ LabelsByLanguageCode[getSingleLanguageCode].manualRegisterLink }}</Link>.
           </p>
         </div>
       </div>
@@ -128,6 +128,12 @@
 <script setup>
 import { computed, defineProps, ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import {
+  buildGoogleAuthRedirectHref,
+  buildLoginRedirectHref,
+  buildRegisterRedirectHref,
+  getCurrentRelativeUrl,
+} from '@/Utils/authRedirects';
 
 const props = defineProps({
   dataPoints: {
@@ -145,6 +151,10 @@ const props = defineProps({
 });
 
 const isCollapsed = ref(true);
+const currentPath = computed(() => getCurrentRelativeUrl(route('map.index')));
+const googleLoginHref = computed(() => buildGoogleAuthRedirectHref(route, currentPath.value));
+const loginHref = computed(() => buildLoginRedirectHref(route, currentPath.value));
+const registerHref = computed(() => buildRegisterRedirectHref(route, currentPath.value));
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;

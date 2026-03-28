@@ -114,12 +114,12 @@
               {{ saving ? translations.LocationLabelsByLanguageCode[getSingleLanguageCode].saving : translations.LocationLabelsByLanguageCode[getSingleLanguageCode].saveLocation }}
             </button>
             <div v-else class="flex flex-col space-y-2 items-center">
-              <a :href="route('socialite.redirect', 'google') + '?redirect_to=' + currentPath"
+              <a :href="googleLoginHref"
                  class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                 <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
                 {{ translations.LocationLabelsByLanguageCode[getSingleLanguageCode].loginWithGoogleToSave || 'Login with Google to Save' }}
               </a>
-              <Link :href="route('login') + '?redirect_to=' + currentPath" class="text-sm text-blue-600 hover:underline">
+              <Link :href="loginHref" class="text-sm text-blue-600 hover:underline">
                 {{ translations.LocationLabelsByLanguageCode[getSingleLanguageCode].loginManuallyToSave || 'Or login manually to save' }}
               </Link>
             </div>
@@ -237,6 +237,11 @@
 import { ref, watch, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { usePage, Link } from '@inertiajs/vue3';
+import {
+  buildGoogleAuthRedirectHref,
+  buildLoginRedirectHref,
+  getCurrentRelativeUrl,
+} from '@/Utils/authRedirects';
 
 // Props
 const props = defineProps({
@@ -260,7 +265,9 @@ const emit = defineEmits(['load-location']);
 // Reactive States
 const page = usePage();
 const isAuthenticated = computed(() => !!page.props.auth.user);
-const currentPath = computed(() => window.location.pathname + window.location.search);
+const currentPath = computed(() => getCurrentRelativeUrl(route('map.index')));
+const googleLoginHref = computed(() => buildGoogleAuthRedirectHref(route, currentPath.value));
+const loginHref = computed(() => buildLoginRedirectHref(route, currentPath.value));
 
 const selectedName = ref('home');
 const isSaved = ref(false);
@@ -325,7 +332,7 @@ const saveLocation = async () => {
   if (!isAuthenticated.value) {
     // This case should ideally be handled by the UI showing login buttons,
     // but as a fallback, redirect.
-    window.location.href = route('login') + '?redirect_to=' + currentPath.value;
+    window.location.href = loginHref.value;
     return;
   }
 
@@ -348,7 +355,7 @@ const saveLocation = async () => {
     maxLocationsReached.value = false; // Reset on successful save
   } catch (error) {
     if (error.response && error.response.status === 401) {
-      window.location.href = route('login') + '?redirect_to=' + currentPath.value;
+      window.location.href = loginHref.value;
     } else if (error.response && error.response.status === 403) {
       maxLocationsReached.value = true;
     } else {
@@ -394,7 +401,9 @@ watch(() => location, checkIfSaved);
 
 // Lifecycle Hooks, onmounted fetchUserLocation and emit the first location
 onMounted(() => {
-  fetchUserLocations('set');
+  if (isAuthenticated.value) {
+    fetchUserLocations('set');
+  }
   //if props.location.report is not set, set it to 'off'
   if (!props.location.report) {
     props.location.report = 'off';

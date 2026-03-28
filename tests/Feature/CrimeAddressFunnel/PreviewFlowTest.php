@@ -211,6 +211,8 @@ class PreviewFlowTest extends TestCase
                     'incident_summary' => [
                         'total_incidents' => 3,
                     ],
+                    'score_report' => null,
+                    'trend_context' => null,
                     'preview_report' => [
                         ['title' => 'What happened nearby', 'body' => 'Found 3 crime incidents nearby.'],
                     ],
@@ -231,10 +233,12 @@ class PreviewFlowTest extends TestCase
             'incident_summary' => [
                 'total_incidents' => 3,
             ],
+            'score_report' => null,
+            'trend_context' => null,
         ]);
     }
 
-    public function test_supported_address_surfaces_snapshot_backed_trend_and_score_context(): void
+    public function test_context_endpoint_surfaces_snapshot_backed_trend_and_score_context(): void
     {
         config()->set('cities.cities', [
             'everett' => [
@@ -333,7 +337,7 @@ class PreviewFlowTest extends TestCase
             }
         });
 
-        $response = $this->postJson(route('crime-address.preview'), [
+        $response = $this->postJson(route('crime-address.context'), [
             'address' => '851 Broadway, Everett, MA 02149, USA',
             'latitude' => 42.418742,
             'longitude' => -71.04491,
@@ -341,7 +345,6 @@ class PreviewFlowTest extends TestCase
 
         $response->assertOk()->assertJson([
             'supported' => true,
-            'matched_city_key' => 'everett',
             'trend_context' => [
                 'job_id' => 'laravel-everett-crime-data-incident_type_group-res8-1772947509',
                 'column_name' => 'incident_type_group',
@@ -353,7 +356,7 @@ class PreviewFlowTest extends TestCase
         ]);
     }
 
-    public function test_supported_address_uses_stage4_score_fallback_when_stage6_artifact_is_missing(): void
+    public function test_context_endpoint_uses_stage4_score_fallback_when_stage6_artifact_is_missing(): void
     {
         config()->set('cities.cities', [
             'everett' => [
@@ -424,7 +427,7 @@ class PreviewFlowTest extends TestCase
             }
         });
 
-        $response = $this->postJson(route('crime-address.preview'), [
+        $response = $this->postJson(route('crime-address.context'), [
             'address' => '851 Broadway, Everett, MA 02149, USA',
             'latitude' => 42.418742,
             'longitude' => -71.04491,
@@ -432,7 +435,6 @@ class PreviewFlowTest extends TestCase
 
         $response->assertOk()->assertJson([
             'supported' => true,
-            'matched_city_key' => 'everett',
             'score_report' => [
                 'source' => 'stage4_fallback',
                 'source_job_id' => 'laravel-everett-crime-data-incident_type_group-res9-1772947509',
