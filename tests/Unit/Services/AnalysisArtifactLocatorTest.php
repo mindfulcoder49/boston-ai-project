@@ -271,4 +271,23 @@ class AnalysisArtifactLocatorTest extends TestCase
         $this->assertSame(9, $scoreReport['resolution']);
         $this->assertNull($scoreReport['artifact_name']);
     }
+
+    public function test_does_not_scan_s3_by_default_when_no_local_artifacts_exist(): void
+    {
+        $locator = new class extends AnalysisArtifactLocator
+        {
+            protected function stage4CandidatesFromS3(): array
+            {
+                throw new \RuntimeException('stage4 S3 scan should not run during preview discovery');
+            }
+
+            protected function stage6CandidatesFromS3(): array
+            {
+                throw new \RuntimeException('stage6 S3 scan should not run during preview discovery');
+            }
+        };
+
+        $this->assertNull($locator->findPreferredTrendContext(EverettCrimeData::class));
+        $this->assertNull($locator->findPreferredScoreReport(EverettCrimeData::class));
+    }
 }

@@ -218,6 +218,9 @@ class CrimeAddressPreviewBuilder
     protected function extractIncidentCategory(array $point): string
     {
         return $this->extractNestedField($point, [
+            'crimename2',
+            'crimename1',
+            'crimename3',
             'incident_type_group',
             'incident_type',
             'offense_code_group',
@@ -233,6 +236,8 @@ class CrimeAddressPreviewBuilder
     protected function extractIncidentDescription(array $point): ?string
     {
         return $this->extractNestedField($point, [
+            'crimename3',
+            'crimename2',
             'incident_description',
             'offense_description',
             'description',
@@ -247,6 +252,8 @@ class CrimeAddressPreviewBuilder
     protected function extractIncidentLocationLabel(array $point): ?string
     {
         return $this->extractNestedField($point, [
+            'location',
+            'address_street',
             'incident_address',
             'block',
             'street_name',

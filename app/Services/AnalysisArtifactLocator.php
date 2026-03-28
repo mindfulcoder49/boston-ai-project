@@ -17,14 +17,14 @@ class AnalysisArtifactLocator
     private const STAGE4_S3_CACHE_KEY = 'analysis_artifact_locator.stage4_s3_v1';
     private const STAGE6_S3_CACHE_KEY = 'analysis_artifact_locator.stage6_s3_v1';
 
-    public function findPreferredTrendContext(?string $modelClass): ?array
+    public function findPreferredTrendContext(?string $modelClass, bool $allowS3Fallback = false): ?array
     {
         if (!$modelClass) {
             return null;
         }
 
         $candidate = $this->selectPreferredCandidate(
-            $this->trendCandidatesForModel($modelClass),
+            $this->trendCandidatesForModel($modelClass, $allowS3Fallback),
             $this->preferredAnalysisColumn($modelClass),
         );
 
@@ -46,20 +46,20 @@ class AnalysisArtifactLocator
         ];
     }
 
-    public function findPreferredScoreReport(?string $modelClass): ?array
+    public function findPreferredScoreReport(?string $modelClass, bool $allowS3Fallback = false): ?array
     {
         if (!$modelClass) {
             return null;
         }
 
         $candidate = $this->selectPreferredCandidate(
-            $this->scoreCandidatesForModel($modelClass),
+            $this->scoreCandidatesForModel($modelClass, $allowS3Fallback),
             $this->preferredAnalysisColumn($modelClass),
         );
 
         if (!$candidate) {
             $trendCandidate = $this->selectPreferredCandidate(
-                $this->trendCandidatesForModel($modelClass),
+                $this->trendCandidatesForModel($modelClass, $allowS3Fallback),
                 $this->preferredAnalysisColumn($modelClass),
             );
 
@@ -113,7 +113,7 @@ class AnalysisArtifactLocator
         return (int) config('analysis_schedule.stage6.analysis_weeks', 52);
     }
 
-    protected function trendCandidatesForModel(string $modelClass): Collection
+    protected function trendCandidatesForModel(string $modelClass, bool $allowS3Fallback = false): Collection
     {
         $fromTrendRows = Trend::query()
             ->where('model_class', $modelClass)
@@ -133,7 +133,7 @@ class AnalysisArtifactLocator
             ))
             ->filter(fn (?array $candidate) => ($candidate['model_class'] ?? null) === $modelClass);
 
-        if ($fromSnapshots->isNotEmpty() || $fromTrendRows->isNotEmpty()) {
+        if ($fromSnapshots->isNotEmpty() || $fromTrendRows->isNotEmpty() || !$allowS3Fallback) {
             return $fromTrendRows->concat($fromSnapshots)->values();
         }
 
@@ -142,7 +142,7 @@ class AnalysisArtifactLocator
             ->values();
     }
 
-    protected function scoreCandidatesForModel(string $modelClass): Collection
+    protected function scoreCandidatesForModel(string $modelClass, bool $allowS3Fallback = false): Collection
     {
         $fromSnapshots = AnalysisReportSnapshot::query()
             ->where(function ($query) {
@@ -159,7 +159,7 @@ class AnalysisArtifactLocator
             ))
             ->filter(fn (?array $candidate) => ($candidate['model_class'] ?? null) === $modelClass);
 
-        if ($fromSnapshots->isNotEmpty()) {
+        if ($fromSnapshots->isNotEmpty() || !$allowS3Fallback) {
             return $fromSnapshots->values();
         }
 

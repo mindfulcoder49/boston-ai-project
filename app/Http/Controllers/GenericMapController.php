@@ -133,10 +133,10 @@ class GenericMapController extends Controller
         ];
     }
 
-    protected function getJsonSelectForModel($modelClass, $jsonAlias)
+    protected function getJsonSelectForModel($modelClass, $jsonAlias, ?string $tableAlias = null)
     {
         $model = new $modelClass;
-        $table = $model->getTable();
+        $tableIdentifier = $tableAlias ?: $model->getTable();
 
         $fields = $model->getFillable();
         $fields[] = $model->getKeyName();
@@ -166,10 +166,43 @@ class GenericMapController extends Controller
         $jsonObjectParts = [];
         foreach ($fields as $field) {
             $jsonObjectParts[] = "'$field'";
-            $jsonObjectParts[] = "`$table`.`$field`";
+            $jsonObjectParts[] = "`{$tableIdentifier}`.`{$field}`";
         }
 
         return "JSON_OBJECT(" . implode(', ', $jsonObjectParts) . ") as $jsonAlias";
+    }
+
+    protected function resolveJoinMetadata(string $modelClass, string $queryConnectionName): array
+    {
+        $model = new $modelClass();
+        $sourceConnectionName = $model->getConnectionName() ?: $queryConnectionName;
+        $sourceTable = $model->getTable();
+        $tableReference = sprintf('`%s`', str_replace('`', '``', $sourceTable));
+        $queryConfig = Config::get("database.connections.{$queryConnectionName}", []);
+        $sourceConfig = Config::get("database.connections.{$sourceConnectionName}", []);
+
+        $sameMysqlServer = ($queryConfig['driver'] ?? null) === 'mysql'
+            && ($sourceConfig['driver'] ?? null) === 'mysql'
+            && ($queryConfig['host'] ?? null) === ($sourceConfig['host'] ?? null)
+            && (string) ($queryConfig['port'] ?? '') === (string) ($sourceConfig['port'] ?? '')
+            && ($queryConfig['unix_socket'] ?? null) === ($sourceConfig['unix_socket'] ?? null);
+
+        if ($sameMysqlServer) {
+            $sourceDatabase = DB::connection($sourceConnectionName)->getDatabaseName();
+
+            if (is_string($sourceDatabase) && $sourceDatabase !== '') {
+                $tableReference = sprintf(
+                    '`%s`.`%s`',
+                    str_replace('`', '``', $sourceDatabase),
+                    str_replace('`', '``', $sourceTable),
+                );
+            }
+        }
+
+        return [
+            'table_reference' => $tableReference,
+            'table_alias' => $this->getModelDataPointStem($modelClass) . '_source',
+        ];
     }
 
     public function getRadialMapData(Request $request)
@@ -275,9 +308,16 @@ class GenericMapController extends Controller
             $modelStem = $this->getModelDataPointStem($modelClass);
             $jsonAlias = $modelStem . '_json';
             $fkColumnInDataPoints = $modelStem . '_id';
+            $joinMetadata = $this->resolveJoinMetadata($modelClass, $dbConnection);
+            $joinAlias = $joinMetadata['table_alias'];
 
-            $query->addSelect(DB::raw($this->getJsonSelectForModel($modelClass, $jsonAlias)));
-            $query->leftJoin($sourceTableName, $targetTable.'.'.$fkColumnInDataPoints, '=', $sourceTableName.'.'.$modelInstance->getKeyName());
+            $query->addSelect(DB::raw($this->getJsonSelectForModel($modelClass, $jsonAlias, $joinAlias)));
+            $query->leftJoin(
+                DB::raw($joinMetadata['table_reference'] . " as `{$joinAlias}`"),
+                $targetTable.'.'.$fkColumnInDataPoints,
+                '=',
+                $joinAlias.'.'.$modelInstance->getKeyName()
+            );
         }
 
         $query->whereRaw("ST_Distance_Sphere({$targetTable}.location, ST_GeomFromText(?)) <= ?", [$wktPoint, $radiusInMeters]);

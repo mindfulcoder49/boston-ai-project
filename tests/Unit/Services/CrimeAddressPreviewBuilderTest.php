@@ -183,6 +183,51 @@ class CrimeAddressPreviewBuilderTest extends TestCase
         $this->assertSame('760 BROADWAY ST', $preview['incident_summary']['recent_incidents'][0]['location_label']);
     }
 
+    public function test_build_extracts_montgomery_specific_fields_for_incident_content(): void
+    {
+        $builder = new class extends CrimeAddressPreviewBuilder
+        {
+            protected function fetchMapPayload(string $matchedCityKey, string $address, float $latitude, float $longitude, float $radius): array
+            {
+                return [
+                    'dataPoints' => [
+                        [
+                            'data_point_id' => 14417,
+                            'latitude' => 39.0825,
+                            'longitude' => -77.1448,
+                            'alcivartech_type' => 'Crime',
+                            'alcivartech_date' => '2026-03-16 12:28:25',
+                            'montgomery_county_md_crime_data' => [
+                                'crimename1' => 'Crime Against Society',
+                                'crimename2' => 'All Other Offenses',
+                                'crimename3' => 'MENTAL ILLNESS - EMERGENCY PETITION',
+                                'location' => '100 BLOCK OF MONROE ST',
+                            ],
+                        ],
+                    ],
+                ];
+            }
+
+            protected function resolveCrimeModelClass(array $serviceability): ?string
+            {
+                return null;
+            }
+        };
+
+        $preview = $builder->build([
+            'matched_city_key' => 'montgomery_county_md',
+            'matched_city_name' => 'Montgomery County, MD',
+            'normalized_address' => '101 Monroe St, Rockville, MD 20850, USA',
+        ], '101 Monroe St, Rockville, MD 20850, USA', 39.08373, -77.14893);
+
+        $this->assertSame('All Other Offenses', $preview['incident_summary']['top_categories'][0]['category']);
+        $this->assertSame('All Other Offenses', $preview['map_data']['incidents'][0]['category']);
+        $this->assertSame('MENTAL ILLNESS - EMERGENCY PETITION', $preview['map_data']['incidents'][0]['description']);
+        $this->assertSame('100 BLOCK OF MONROE ST', $preview['map_data']['incidents'][0]['location_label']);
+        $this->assertSame('MENTAL ILLNESS - EMERGENCY PETITION', $preview['incident_summary']['recent_incidents'][0]['description']);
+        $this->assertSame('100 BLOCK OF MONROE ST', $preview['incident_summary']['recent_incidents'][0]['location_label']);
+    }
+
     public function test_build_reports_zero_incident_previews_cleanly(): void
     {
         $builder = new class extends CrimeAddressPreviewBuilder

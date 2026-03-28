@@ -65,6 +65,7 @@ const supportedCases: SupportedCase[] = [
     latitude: 39.08373,
     longitude: -77.14893,
     expectedCityKey: 'montgomery_county_md',
+    expectRichIncidentContent: true,
   },
   {
     label: 'Bethesda in Montgomery County, MD',
@@ -72,6 +73,7 @@ const supportedCases: SupportedCase[] = [
     latitude: 38.9814,
     longitude: -77.0962,
     expectedCityKey: 'montgomery_county_md',
+    expectRichIncidentContent: true,
   },
   {
     label: 'Silver Spring in Montgomery County, MD',
@@ -79,6 +81,7 @@ const supportedCases: SupportedCase[] = [
     latitude: 38.9979,
     longitude: -77.0261,
     expectedCityKey: 'montgomery_county_md',
+    expectRichIncidentContent: true,
   },
   {
     label: 'Seattle',
