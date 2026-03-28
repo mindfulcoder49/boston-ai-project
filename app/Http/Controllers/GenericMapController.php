@@ -214,11 +214,24 @@ class GenericMapController extends Controller
                 ->select($fields)
                 ->whereIn($keyName, $foreignIds)
                 ->get()
-                ->mapWithKeys(fn ($record) => [(string) $record->{$keyName} => $record->getAttributes()])
+                ->mapWithKeys(fn ($record) => [
+                    (string) $record->{$keyName} => $this->sanitizeSourceRecord($record->getAttributes()),
+                ])
                 ->all();
         }
 
         return $loadedSourceData;
+    }
+
+    protected function sanitizeSourceRecord(array $attributes): array
+    {
+        foreach ($attributes as $key => $value) {
+            if (is_string($value) && !mb_check_encoding($value, 'UTF-8')) {
+                $attributes[$key] = null;
+            }
+        }
+
+        return $attributes;
     }
 
     public function getRadialMapData(Request $request)

@@ -251,9 +251,9 @@ class CrimeAddressPreviewBuilder
 
     protected function extractIncidentLocationLabel(array $point): ?string
     {
-        return $this->extractNestedField($point, [
+        $locationLabel = $this->extractNestedField($point, [
             'location',
-            'address_street',
+            'block_address',
             'incident_address',
             'block',
             'street_name',
@@ -261,6 +261,28 @@ class CrimeAddressPreviewBuilder
             'address',
             'location_description',
         ]);
+
+        if ($locationLabel) {
+            return $locationLabel;
+        }
+
+        foreach ($point as $key => $value) {
+            if (!Str::endsWith((string) $key, '_data') || !is_array($value)) {
+                continue;
+            }
+
+            $addressParts = array_filter([
+                isset($value['address_number']) ? trim((string) $value['address_number']) : null,
+                isset($value['address_street']) ? trim((string) $value['address_street']) : null,
+                isset($value['street_type']) ? trim((string) $value['street_type']) : null,
+            ]);
+
+            if (!empty($addressParts)) {
+                return implode(' ', $addressParts);
+            }
+        }
+
+        return null;
     }
 
     protected function extractNestedField(array $point, array $candidateFields): ?string

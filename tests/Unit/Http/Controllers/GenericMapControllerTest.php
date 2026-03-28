@@ -16,9 +16,33 @@ class GenericMapControllerTest extends TestCase
             {
                 return $this->shouldDeferSourceLookup($modelClass, $queryConnectionName);
             }
+
+            public function sanitize(array $attributes): array
+            {
+                return $this->sanitizeSourceRecord($attributes);
+            }
         };
 
         $this->assertTrue($controller->shouldDefer(TestExternalCrimeModel::class, 'generic_map_query_test'));
+    }
+
+    public function test_sanitize_source_record_strips_non_utf8_strings(): void
+    {
+        $controller = new class extends GenericMapController
+        {
+            public function sanitize(array $attributes): array
+            {
+                return $this->sanitizeSourceRecord($attributes);
+            }
+        };
+
+        $sanitized = $controller->sanitize([
+            'safe_text' => 'Main St',
+            'binary_blob' => "\xC3\x28",
+        ]);
+
+        $this->assertSame('Main St', $sanitized['safe_text']);
+        $this->assertNull($sanitized['binary_blob']);
     }
 }
 
