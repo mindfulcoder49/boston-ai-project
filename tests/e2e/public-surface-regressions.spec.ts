@@ -18,6 +18,57 @@ function installConsoleGuards(page) {
 }
 
 test.describe('public surface regressions', () => {
+  test('city landing pages use city-specific copy instead of one generic shell', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    const cases = [
+      {
+        path: '/boston',
+        tagline: 'Boston is the fullest PublicDataWatch city: crime, 311, permits, inspections, violations, and crashes in one place.',
+        focusLabel: '311',
+      },
+      {
+        path: '/everett',
+        tagline: 'Check recent Everett crime around an address fast.',
+        focusLabel: 'Fast block check',
+      },
+      {
+        path: '/chicago',
+        tagline: 'Check recent Chicago crime around an address before you commit to a block.',
+        focusLabel: 'Block-level first pass',
+      },
+      {
+        path: '/san-francisco',
+        tagline: 'See recent San Francisco crime around an address without jumping straight into the full map.',
+        focusLabel: 'Neighborhood check',
+      },
+      {
+        path: '/new-york',
+        tagline: 'See recent New York 311 requests around an address.',
+        focusLabel: 'Quality-of-life signals',
+      },
+      {
+        path: '/montgomery-county-md',
+        tagline: 'Check recent Montgomery County crime around an address across Bethesda, Rockville, Silver Spring, and nearby communities.',
+        focusLabel: 'Cross-community checks',
+      },
+      {
+        path: '/seattle',
+        tagline: 'Check recent Seattle crime around an address fast.',
+        focusLabel: 'Fast neighborhood scan',
+      },
+    ];
+
+    for (const cityCase of cases) {
+      await page.goto(cityCase.path);
+      await expect(page.getByText(cityCase.tagline)).toBeVisible();
+      await expect(page.locator('.focus-chip', { hasText: cityCase.focusLabel })).toBeVisible();
+    }
+
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
   test('homepage uses customer-facing copy and complete city navigation', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 

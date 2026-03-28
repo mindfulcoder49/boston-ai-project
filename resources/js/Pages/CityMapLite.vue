@@ -44,6 +44,16 @@
         <p class="tagline">{{ city.tagline }}</p>
         <p class="intro">{{ city.intro }}</p>
 
+        <div v-if="city.focusAreas?.length" class="focus-strip" aria-label="City focus areas">
+          <span
+            v-for="focusArea in city.focusAreas"
+            :key="`${city.key}-${focusArea}`"
+            class="focus-chip"
+          >
+            {{ focusArea }}
+          </span>
+        </div>
+
         <div class="language-strip" aria-label="Language options">
           <button
             v-for="option in languageOptions"
@@ -92,6 +102,7 @@
         <div v-if="searchOpen" class="search-shell">
           <GoogleAddressSearch
             :language_codes="[selectedLanguage]"
+            :placeholder_text="city.searchPlaceholder"
             @address-selected="handleAddressSelected"
             @search-started="handleAddressSearchStarted"
           />
@@ -172,6 +183,17 @@
         <p>{{ text.emptyState }}</p>
 
         <div class="city-guide">
+          <div v-if="city.highlights?.length" class="highlight-grid" aria-label="City landing highlights">
+            <article
+              v-for="highlight in city.highlights"
+              :key="`${city.key}-${highlight.title}`"
+              class="highlight-card"
+            >
+              <p class="detail-heading">{{ highlight.title }}</p>
+              <p>{{ highlight.body }}</p>
+            </article>
+          </div>
+
           <p class="detail-heading">What's included</p>
           <p>{{ city.overview }}</p>
 
@@ -1139,6 +1161,24 @@ h1 {
   font-size: 0.95rem;
 }
 
+.focus-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.focus-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.42rem 0.72rem;
+  background: #e5eee6;
+  color: #23443b;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
 .language-strip {
   display: flex;
   gap: 0.5rem;
@@ -1277,6 +1317,23 @@ h1 {
   margin-top: 0.9rem;
   padding-top: 0.9rem;
   border-top: 1px solid rgba(35, 68, 59, 0.08);
+}
+
+.highlight-grid {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.highlight-card {
+  padding: 0.75rem 0.8rem;
+  border-radius: 1rem;
+  background: #edf3ec;
+  border: 1px solid rgba(35, 68, 59, 0.08);
+}
+
+.highlight-card p:last-child {
+  margin-top: 0.35rem;
 }
 
 .guide-heading {
@@ -1485,6 +1542,16 @@ h1 {
     gap: 0.35rem;
   }
 
+  .focus-strip {
+    margin-top: 0.55rem;
+    gap: 0.35rem;
+  }
+
+  .focus-chip {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
+  }
+
   .language-chip {
     padding: 0.42rem 0.7rem;
     font-size: 0.84rem;
@@ -1574,6 +1641,14 @@ h1 {
   .related-link {
     font-size: 0.76rem;
     padding: 0.38rem 0.62rem;
+  }
+
+  .highlight-grid {
+    gap: 0.45rem;
+  }
+
+  .highlight-card {
+    padding: 0.65rem 0.7rem;
   }
 
   .detail-row {
