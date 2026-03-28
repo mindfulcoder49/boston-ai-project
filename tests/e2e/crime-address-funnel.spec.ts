@@ -1,5 +1,22 @@
 import { expect, test } from '@playwright/test';
 
+function installConsoleGuards(page) {
+  const consoleErrors = [];
+  const pageErrors = [];
+
+  page.on('console', (message) => {
+    if (message.type() === 'error') {
+      consoleErrors.push(message.text());
+    }
+  });
+
+  page.on('pageerror', (error) => {
+    pageErrors.push(error.message);
+  });
+
+  return { consoleErrors, pageErrors };
+}
+
 async function stubSupportedPreview(page) {
   await page.route('**/api/crime-address/preview', async (route) => {
     await route.fulfill({
@@ -110,6 +127,8 @@ async function stubSupportedPreview(page) {
 
 test.describe('crime-address funnel', () => {
   test('shows unsupported coverage request flow', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
     await page.route('**/api/crime-address/preview', async (route) => {
       await route.fulfill({
         contentType: 'application/json',
@@ -143,9 +162,13 @@ test.describe('crime-address funnel', () => {
     await page.getByPlaceholder('Email for updates').fill('alerts@example.com');
     await page.getByRole('button', { name: 'Notify me' }).click();
     await expect(page.locator('p.text-emerald-700')).toHaveText('We will look into adding your area and notify you if we do.');
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
   });
 
   test('shows supported preview flow', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
     await stubSupportedPreview(page);
 
     await page.goto('/crime-address?address=1%20Beacon%20St%2C%20Boston%2C%20MA%2002108%2C%20USA&lat=42.3601&lng=-71.0589');
@@ -155,9 +178,13 @@ test.describe('crime-address funnel', () => {
     await expect(page.getByRole('heading', { name: 'Neighborhood score', exact: true })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Create free account' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Log in' })).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
   });
 
   test('shows a clean zero-incident state for supported addresses', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
     await page.route('**/api/crime-address/preview', async (route) => {
       await route.fulfill({
         contentType: 'application/json',
@@ -220,9 +247,13 @@ test.describe('crime-address funnel', () => {
     await expect(page.getByText('No recent incidents were found within this preview radius.')).toBeVisible();
     await expect(page.getByText('No incident categories stand out because no recent incidents were found in this preview radius.')).toBeVisible();
     await expect(page.getByText('No recent crime incidents were found within 0.25 miles of 121 N La Salle St, Chicago, IL 60602, USA in the current preview window.')).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
   });
 
   test('registers from preview and returns to the same address before starting the trial', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
     await stubSupportedPreview(page);
     await page.route('**/api/crime-address/trial/start', async (route) => {
       await route.fulfill({
@@ -258,5 +289,7 @@ test.describe('crime-address funnel', () => {
 
     await page.getByRole('button', { name: 'Start 7-day free trial' }).click();
     await expect(page.getByText('Your 7-day free trial has started.')).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
   });
 });

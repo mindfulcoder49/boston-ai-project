@@ -74,11 +74,29 @@ async function waitForPreviewResponse(page) {
   return response.json();
 }
 
+function installConsoleGuards(page) {
+  const consoleErrors = [];
+  const pageErrors = [];
+
+  page.on('console', (message) => {
+    if (message.type() === 'error') {
+      consoleErrors.push(message.text());
+    }
+  });
+
+  page.on('pageerror', (error) => {
+    pageErrors.push(error.message);
+  });
+
+  return { consoleErrors, pageErrors };
+}
+
 test.describe('crime-address live regional coverage', () => {
   test.skip(!liveOnly, 'Set PLAYWRIGHT_LIVE=1 to run live production smoke.');
 
   for (const scenario of supportedCases) {
     test(`supports ${scenario.label}`, async ({ page }) => {
+      const runtime = installConsoleGuards(page);
       const previewResponsePromise = waitForPreviewResponse(page);
 
       await page.goto(
@@ -103,10 +121,13 @@ test.describe('crime-address live regional coverage', () => {
         await expect(page.getByText('No recent incidents were found within this preview radius.')).toBeVisible();
       }
       await expect(page.getByRole('heading', { name: 'We do not serve your address yet.' })).toHaveCount(0);
+      expect(runtime.consoleErrors).toEqual([]);
+      expect(runtime.pageErrors).toEqual([]);
     });
   }
 
   test('rejects unsupported address cleanly', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
     const previewResponsePromise = waitForPreviewResponse(page);
 
     await page.goto(
@@ -120,5 +141,7 @@ test.describe('crime-address live regional coverage', () => {
 
     await expect(page.getByRole('heading', { name: 'We do not serve your address yet.' })).toBeVisible();
     await expect(page.getByPlaceholder('Email for updates')).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
   });
 });
