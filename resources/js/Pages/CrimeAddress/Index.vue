@@ -27,6 +27,7 @@
                   :initial-search-query="addressInput"
                   :language_codes="['en-US']"
                   @address-selected="handleAddressSelected"
+                  @search-started="handleSearchStarted"
                 />
               </div>
               <button
@@ -446,6 +447,16 @@ async function handleAddressSelected(location) {
   coverageError.value = '';
   updateUrl(location.address, location.lat, location.lng);
   await loadPreview(location.address, location.lat, location.lng);
+}
+
+function handleSearchStarted() {
+  preview.value = null;
+  unsupportedState.value = null;
+  scoreContext.value = null;
+  coverageSuccess.value = '';
+  coverageError.value = '';
+  trialMessage.value = '';
+  trialError.value = '';
 }
 
 async function loadPreview(address, latitude, longitude) {

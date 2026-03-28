@@ -129,6 +129,15 @@ test.describe('crime-address funnel', () => {
   test('shows unsupported coverage request flow', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 
+    await page.route('**/api/google-places-autocomplete', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          suggestions: ['851 Broadway, Everett, MA'],
+        }),
+      });
+    });
+
     await page.route('**/api/crime-address/preview', async (route) => {
       await route.fulfill({
         contentType: 'application/json',
@@ -162,6 +171,12 @@ test.describe('crime-address funnel', () => {
     await page.getByPlaceholder('Email for updates').fill('alerts@example.com');
     await page.getByRole('button', { name: 'Notify me' }).click();
     await expect(page.locator('p.text-emerald-700')).toHaveText('We will look into adding your area and notify you if we do.');
+
+    const searchInput = page.locator('input').first();
+    await searchInput.fill('851 broadway Everett MA');
+    await expect(page.getByRole('heading', { name: 'We do not serve your address yet.' })).toHaveCount(0);
+    await expect(page.getByText('Enter an address to generate the crime preview')).toBeVisible();
+
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);
   });
