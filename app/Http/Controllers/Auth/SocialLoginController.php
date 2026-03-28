@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
+use App\Support\AuthRedirect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -13,11 +14,17 @@ use Illuminate\Validation\ValidationException; // For redirecting with errors
 
 class SocialLoginController extends Controller
 {
-    public function redirectToProvider(string $provider)
+    public function redirectToProvider(Request $request, string $provider)
     {
         if (!in_array($provider, ['google', 'github', 'facebook'])) { // Add your supported providers
             abort(404, "Provider not supported.");
         }
+
+        $redirectTo = AuthRedirect::sanitize($request->query('redirect_to'));
+        if ($redirectTo) {
+            $request->session()->put('socialite_redirect_to', $redirectTo);
+        }
+
         return Socialite::driver($provider)->redirect();
     }
 
@@ -26,6 +33,8 @@ class SocialLoginController extends Controller
         if (!in_array($provider, ['google', 'github', 'facebook'])) {
             abort(404, "Provider not supported.");
         }
+
+        $redirectTo = AuthRedirect::sanitize(session()->pull('socialite_redirect_to'));
 
         try {
             $socialUser = Socialite::driver($provider)->user();
@@ -41,7 +50,7 @@ class SocialLoginController extends Controller
         if ($user) {
             // User found with this social account, log them in
             Auth::login($user);
-            return redirect()->intended(route('map.index')); // Or your dashboard route
+            return redirect()->to($redirectTo ?: route('map.index')); // Or your dashboard route
         }
 
         // 2. If no user with this social account, check if an account with this email exists
@@ -58,7 +67,7 @@ class SocialLoginController extends Controller
                     'provider_avatar' => $existingUserWithEmail->provider_avatar ?: $socialUser->getAvatar(), // Keep existing avatar if already set
                 ]);
                 Auth::login($existingUserWithEmail);
-                return redirect()->intended(route('map.index'));
+                return redirect()->to($redirectTo ?: route('map.index'));
 
                 // Option B: If you want to prevent linking and show an error:
                 // return redirect()->route('login')->with('error', 'An account with the email ' . $socialUser->getEmail() . ' already exists. Please log in with your password or use your existing social login method.');
@@ -82,7 +91,7 @@ class SocialLoginController extends Controller
             ]);
 
             Auth::login($newUser);
-            return redirect()->intended(route('map.index'));
+            return redirect()->to($redirectTo ?: route('map.index'));
 
         } catch (\Illuminate\Database\QueryException $e) {
             // This catch is a fallback if the email was null from social but then an attempt to create

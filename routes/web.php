@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Auth\SocialLoginController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\CoverageRequestController;
 use App\Http\Controllers\ReportController; // Added
 use App\Http\Controllers\ReportMapController; // Added
 use App\Http\Controllers\ReportIndexController; // Added
@@ -42,6 +43,7 @@ use App\Http\Controllers\AdminS3BucketController;
 use App\Http\Controllers\AdminCacheController;
 use App\Http\Controllers\CityLandingController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\CrimeAddressFunnelController;
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
@@ -87,6 +89,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/search-address', [TrashScheduleByAddressController::class, 'search']);
+Route::get('/crime-address', [CrimeAddressFunnelController::class, 'index'])->name('crime-address.index');
+Route::post('/api/crime-address/preview', [CrimeAddressFunnelController::class, 'preview'])->name('crime-address.preview');
+Route::middleware('auth')->post('/api/crime-address/trial/start', [CrimeAddressFunnelController::class, 'startTrial'])->name('crime-address.trial.start');
 
 // Google Places API proxy routes
 Route::post('/api/google-places-autocomplete', [TrashScheduleByAddressController::class, 'googleAutocomplete']); // Or your preferred auth
@@ -123,6 +128,7 @@ Route::post('/api/city-landing/translate-record', [CityLandingController::class,
 Route::post('/api/ai-chat', [AiAssistantController::class, 'handleRequest'])->name('ai.assistant');
 // New API endpoint for streaming location-based reports
 Route::post('/api/stream-location-report', [AiAssistantController::class, 'streamLocationReport'])->name('ai.stream-location-report');
+Route::post('/api/crime-address/coverage-request', [CoverageRequestController::class, 'store'])->name('crime-address.coverage-request.store');
 
 
 
@@ -268,6 +274,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/subscribe/{plan}', function (Request $request, $plan) {
         $priceId = null;
+        $sourceContext = $request->query('source');
         if ($plan === 'basic') {
             $priceId = Config::get('stripe.prices.basic_plan'); // Ensure this is in config/stripe.php
         } elseif ($plan === 'pro') {
@@ -281,8 +288,15 @@ Route::middleware(['auth'])->group(function () {
         return $request->user()->newSubscription('default', $priceId)
             ->checkout([
                 // Pass status to the subscription index page
-                'success_url' => route('subscription.index', ['status' => 'success', 'session_id' => '{CHECKOUT_SESSION_ID}']),
-                'cancel_url' => route('subscription.index', ['status' => 'cancel']),
+                'success_url' => route('subscription.index', array_filter([
+                    'status' => 'success',
+                    'session_id' => '{CHECKOUT_SESSION_ID}',
+                    'source' => $sourceContext,
+                ])),
+                'cancel_url' => route('subscription.index', array_filter([
+                    'status' => 'cancel',
+                    'source' => $sourceContext,
+                ])),
                 'allow_promotion_codes' => true,
             ]);
     })->name('subscribe.checkout'); // Name changed slightly to be more generic, plan is a param

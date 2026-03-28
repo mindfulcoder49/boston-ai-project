@@ -5,14 +5,19 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import { computed } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     canResetPassword: {
         type: Boolean,
     },
     status: {
         type: String,
+    },
+    redirectTo: {
+        type: String,
+        default: null,
     },
 });
 
@@ -20,6 +25,23 @@ const form = useForm({
     email: '',
     password: '',
     remember: false,
+    redirect_to: props.redirectTo,
+});
+
+const registerHref = computed(() => {
+    if (!props.redirectTo) {
+        return route('register');
+    }
+
+    return `${route('register')}?redirect_to=${encodeURIComponent(props.redirectTo)}`;
+});
+
+const socialHref = computed(() => {
+    if (!props.redirectTo) {
+        return route('socialite.redirect', 'google');
+    }
+
+    return `${route('socialite.redirect', 'google')}?redirect_to=${encodeURIComponent(props.redirectTo)}`;
 });
 
 const submit = () => {
@@ -89,13 +111,19 @@ const submit = () => {
                     Log in
                 </PrimaryButton>
             </div>
+            <div class="mt-4 text-sm text-gray-600">
+                Need an account?
+                <Link :href="registerHref" class="font-medium text-indigo-600 hover:text-indigo-500 hover:underline">
+                    Register here
+                </Link>
+            </div>
         </form>
         <div class="my-4 flex items-center justify-center">
          <span class="px-3 text-gray-500">Or continue with</span>
      </div>
 
      <div class="flex flex-col space-y-2">
-         <a :href="route('socialite.redirect', 'google')"
+         <a :href="socialHref"
                class="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
              <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google logo">
              Sign in with Google

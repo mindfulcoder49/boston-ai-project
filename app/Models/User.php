@@ -27,6 +27,9 @@ class User extends Authenticatable
         'provider_name',     // Add
         'provider_avatar',   // Add
         'manual_subscription_tier', // Add this
+        'crime_address_trial_started_at',
+        'crime_address_trial_ends_at',
+        'crime_address_trial_location_id',
         'role', // Added for admin editability
     ];
 
@@ -48,6 +51,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'crime_address_trial_started_at' => 'datetime',
+        'crime_address_trial_ends_at' => 'datetime',
     ];
 
     public function chirps(): HasMany
@@ -84,6 +89,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(SavedMap::class);
     }
+
+    public function hasActiveCrimeAddressTrial(): bool
+    {
+        if (!$this->crime_address_trial_started_at || !$this->crime_address_trial_ends_at) {
+            return false;
+        }
+
+        return now()->between($this->crime_address_trial_started_at, $this->crime_address_trial_ends_at);
+    }
+
+    public function hasUsedCrimeAddressTrial(): bool
+    {
+        return $this->crime_address_trial_started_at !== null;
+    }
     /**
      * Get the effective subscription tier details for the user.
      * Prioritizes manual tier, then Stripe, then defaults to 'free'.
@@ -105,6 +124,9 @@ class User extends Authenticatable
             'endsAt' => null,
             'trialEndsAt' => null,
             'currentPeriodEnd' => null,
+            'hasCrimeAddressTrial' => $this->hasActiveCrimeAddressTrial(),
+            'hasUsedCrimeAddressTrial' => $this->hasUsedCrimeAddressTrial(),
+            'crimeAddressTrialEndsAt' => $this->crime_address_trial_ends_at?->format('F j, Y'),
         ];
 
         // 1. Check manual tier

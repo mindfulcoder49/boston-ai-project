@@ -81,6 +81,9 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar_url' => $user->provider_avatar, // Ensure this line is present and correct
+                    'has_crime_address_trial' => $user->hasActiveCrimeAddressTrial(),
+                    'has_used_crime_address_trial' => $user->hasUsedCrimeAddressTrial(),
+                    'crime_address_trial_ends_at' => $user->crime_address_trial_ends_at?->toDateString(),
                     // Add other user properties you need globally
                 ] : null,
                 'currentPlan' => $currentPlanData,

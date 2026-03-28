@@ -26,7 +26,7 @@
 
                     <!-- Address Search Bar -->
                     <div class="max-w-2xl mx-auto mb-10">
-                        <p class="text-sm text-slate-400 mb-3 font-medium">Search an address to explore nearby data on the Radial Map</p>
+                        <p class="text-sm text-slate-400 mb-3 font-medium">Search an address to see recent nearby crime first</p>
                         <div class="hero-search-wrapper rounded-2xl p-2 flex flex-col sm:flex-row gap-2">
                             <div class="flex-1 relative">
                                 <GoogleAddressSearch
@@ -52,6 +52,9 @@
                         <Link :href="route('data-map.combined')" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition-all shadow-xl shadow-black/20 text-sm">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
                             Full Data Map
+                        </Link>
+                        <Link :href="route('crime-address.index')" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 text-white font-bold rounded-xl border border-white/25 hover:bg-white/10 transition-all backdrop-blur-sm text-sm">
+                            Crime Preview
                         </Link>
                         <Link :href="route('subscription.index')" class="inline-flex items-center justify-center gap-2 px-7 py-3.5 text-white font-bold rounded-xl border border-white/25 hover:bg-white/10 transition-all backdrop-blur-sm text-sm">
                             View Plans
@@ -221,7 +224,11 @@ const geoError = ref(null);
 
 function handleAddressSelected(coordinates) {
     if (coordinates && coordinates.lat && coordinates.lng) {
-        router.visit(route('map.index', { lat: coordinates.lat, lng: coordinates.lng }));
+        router.visit(route('crime-address.index', {
+            address: coordinates.address,
+            lat: coordinates.lat,
+            lng: coordinates.lng,
+        }));
     }
 }
 
@@ -235,7 +242,8 @@ function useCurrentLocation() {
     navigator.geolocation.getCurrentPosition(
         (position) => {
             geoLoading.value = false;
-            router.visit(route('map.index', {
+            router.visit(route('crime-address.index', {
+                address: `Current location (${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)})`,
                 lat: position.coords.latitude.toFixed(6),
                 lng: position.coords.longitude.toFixed(6),
             }));

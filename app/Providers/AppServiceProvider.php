@@ -35,10 +35,15 @@ class AppServiceProvider extends ServiceProvider
             'auth' => function () {
                 $user = Auth::user();
                 if ($user) {
-                    $user->loadMissing('roles', 'permissions', 'subscriptions'); // Ensure subscriptions are loaded
+                    $user->loadMissing('subscriptions');
                     $currentPlan = $user->getEffectiveTierDetails(); // Uses your existing method
                     return [
-                        'user' => $user->toArray() + ['current_plan_details' => $currentPlan], // Include plan details
+                        'user' => $user->toArray() + [
+                            'current_plan_details' => $currentPlan,
+                            'has_crime_address_trial' => $user->hasActiveCrimeAddressTrial(),
+                            'has_used_crime_address_trial' => $user->hasUsedCrimeAddressTrial(),
+                            'crime_address_trial_ends_at' => $user->crime_address_trial_ends_at?->toDateString(),
+                        ], // Include plan details
                         'currentPlan' => $currentPlan, // Keep this for compatibility if used directly
                     ];
                 }

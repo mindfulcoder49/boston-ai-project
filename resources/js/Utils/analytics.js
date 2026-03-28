@@ -47,6 +47,10 @@ function inferPageType(path = '') {
     return 'explore_map';
   }
 
+  if (path.startsWith('/crime-address')) {
+    return 'crime_address';
+  }
+
   if (path.startsWith('/subscription')) {
     return 'pricing';
   }

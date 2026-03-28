@@ -87,3 +87,5 @@ Founder:
 - first content calendar
 - first pricing experiment plan
 - founder action queue for external systems
+- testing-first crime-address funnel plan:
+  [2026-03-27-crime-address-funnel-implementation-plan.md](./2026-03-27-crime-address-funnel-implementation-plan.md)

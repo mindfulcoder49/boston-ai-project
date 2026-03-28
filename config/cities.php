@@ -41,6 +41,15 @@ return [
             'longitude' => -71.0589,
             'data_points_table' => 'data_points',
             'db_connection' => 'mysql',
+            'serviceability' => [
+                'crime_address_funnel_enabled' => true,
+                'radius_miles' => 12,
+                'supported_regions' => ['MA'],
+                'crime_model_locality_map' => [
+                    'cambridge' => \App\Models\CambridgeCrimeReportData::class,
+                    'boston' => \App\Models\CrimeData::class,
+                ],
+            ],
             'models' => [
                 \App\Models\CrimeData::class,
                 \App\Models\ThreeOneOneCase::class,
@@ -63,6 +72,11 @@ return [
             'longitude' => -71.0537,
             'data_points_table' => 'data_points',
             'db_connection' => 'mysql',
+            'serviceability' => [
+                'crime_address_funnel_enabled' => true,
+                'radius_miles' => 4,
+                'supported_regions' => ['MA'],
+            ],
             'models' => [
                 \App\Models\EverettCrimeData::class,
             ],
@@ -74,6 +88,11 @@ return [
             'longitude' => -87.6298,
             'data_points_table' => 'chicago_data_points',
             'db_connection' => 'chicago_db',
+            'serviceability' => [
+                'crime_address_funnel_enabled' => true,
+                'radius_miles' => 16,
+                'supported_regions' => ['IL'],
+            ],
             'models' => [
                 \App\Models\ChicagoCrime::class,
             ],
@@ -85,6 +104,11 @@ return [
             'longitude' => -122.4194,
             'data_points_table' => 'san_francisco_data_points',
             'db_connection' => 'san_francisco_db',
+            'serviceability' => [
+                'crime_address_funnel_enabled' => true,
+                'radius_miles' => 8,
+                'supported_regions' => ['CA'],
+            ],
             'models' => [
                 \App\Models\SanFranciscoCrime::class,
             ],
@@ -98,6 +122,11 @@ return [
             'longitude' => -74.006,
             'data_points_table' => 'new_york_data_points',
             'db_connection' => 'new_york_db',
+            'serviceability' => [
+                'crime_address_funnel_enabled' => false,
+                'radius_miles' => 15,
+                'supported_regions' => ['NY'],
+            ],
             'models' => [
                 \App\Models\NewYork311::class,
             ],
@@ -109,6 +138,11 @@ return [
             'longitude' => -77.24,
             'data_points_table' => 'montgomery_county_md_data_points',
             'db_connection' => 'montgomery_county_md_db',
+            'serviceability' => [
+                'crime_address_funnel_enabled' => true,
+                'radius_miles' => 18,
+                'supported_regions' => ['MD'],
+            ],
             'models' => [
                 \App\Models\MontgomeryCountyMdCrime::class,
             ],
@@ -120,6 +154,11 @@ return [
             'longitude' => -122.3321,
             'data_points_table' => 'seattle_data_points',
             'db_connection' => 'seattle_db',
+            'serviceability' => [
+                'crime_address_funnel_enabled' => true,
+                'radius_miles' => 15,
+                'supported_regions' => ['WA'],
+            ],
             'models' => [
                 \App\Models\SeattleCrime::class,
             ],

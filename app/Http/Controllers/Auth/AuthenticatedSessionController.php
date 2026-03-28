@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
+use App\Support\AuthRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,7 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'redirectTo' => AuthRedirect::sanitize(request()->query('redirect_to')),
         ]);
     }
 
@@ -33,6 +35,11 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        $redirectTo = AuthRedirect::sanitize($request->input('redirect_to'));
+        if ($redirectTo) {
+            return redirect()->to($redirectTo);
+        }
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }

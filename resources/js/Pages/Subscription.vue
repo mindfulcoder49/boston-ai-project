@@ -6,6 +6,19 @@
         <h1 class="text-3xl font-bold text-center text-gray-800 mb-10">
           {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.subscriptionPageTitle || 'Choose Your Plan' }}
         </h1>
+
+        <div v-if="showCrimeAddressContext" class="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
+          <h2 class="text-xl font-semibold text-slate-900">
+            {{ trialExpiredFromCrimeAddress ? 'Your free trial has ended' : 'Choose how you want to keep using the crime address workflow' }}
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-slate-700">
+            {{
+              trialExpiredFromCrimeAddress
+                ? 'Choose $5/month to keep the one-address daily report going, or $15/month for the full map, trends, neighborhood scores, and broader professional use.'
+                : 'The $5 plan keeps the one-address daily report going. The $15 plan unlocks the full map, trend context, neighborhood scores, and broader multi-neighborhood work.'
+            }}
+          </p>
+        </div>
   
         <!-- Success Message -->
         <div v-if="status === 'success'" class="mb-8 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md shadow-md">
@@ -67,7 +80,7 @@
 
         <div class="grid md:grid-cols-2 gap-8">
           <!-- Basic Plan -->
-          <div class="border p-6 rounded-lg shadow-lg flex flex-col bg-white" :class="{'ring-2 ring-blue-500': currentPlan === 'basic'}">
+          <div class="border p-6 rounded-lg shadow-lg flex flex-col bg-white" :class="{'ring-2 ring-blue-500': currentPlan === 'basic' || recommendedPlan === 'basic'}">
             <h2 class="text-2xl font-semibold text-gray-700">
               {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.basicPlanTitle || 'Resident Awareness' }}
             </h2>
@@ -105,7 +118,7 @@
           </div>
   
           <!-- Pro Plan -->
-          <div class="border p-6 rounded-lg shadow-lg flex flex-col bg-white relative" :class="{'ring-2 ring-purple-500': currentPlan === 'pro'}">
+          <div class="border p-6 rounded-lg shadow-lg flex flex-col bg-white relative" :class="{'ring-2 ring-purple-500': currentPlan === 'pro' || recommendedPlan === 'pro'}">
             <div class="absolute top-0 right-0 bg-purple-500 text-white text-xs font-semibold px-3 py-1 rounded-bl-lg rounded-tr-lg">
                {{ translations.LabelsByLanguageCode[getSingleLanguageCode]?.bestValueBadge || 'Best Value' }}
             </div>
@@ -169,6 +182,10 @@
     sessionId: String,
     currentPlan: String, // 'basic', 'pro', or null
     isAuthenticated: Boolean,
+    sourceContext: String,
+    recommendedPlan: String,
+    hasCrimeAddressTrial: Boolean,
+    hasUsedCrimeAddressTrial: Boolean,
   });
   
   const translations = inject('translations');
@@ -184,16 +201,34 @@
     window.location.href = targetRoute;
   };
 
+  const showCrimeAddressContext = computed(() => props.sourceContext === 'crime-address');
+  const trialExpiredFromCrimeAddress = computed(
+    () => showCrimeAddressContext.value && props.hasUsedCrimeAddressTrial && !props.hasCrimeAddressTrial && props.currentPlan !== 'basic' && props.currentPlan !== 'pro'
+  );
+
   const startCheckout = (plan) => {
+    trackAnalyticsEvent('report_plan_selected', {
+      pageType: 'pricing',
+      isAuthenticated: props.isAuthenticated,
+      params: {
+        plan_name: plan,
+        source_context: props.sourceContext || 'default',
+      },
+    });
+
     trackAnalyticsEvent('checkout_started', {
       pageType: 'pricing',
       isAuthenticated: props.isAuthenticated,
       params: {
         plan_name: plan,
+        source_context: props.sourceContext || 'default',
       },
     });
 
-    window.location.href = route('subscribe.checkout', { plan });
+    window.location.href = route('subscribe.checkout', {
+      plan,
+      source: props.sourceContext || undefined,
+    });
   };
 
   onMounted(() => {
@@ -233,6 +268,20 @@
         }
       );
     }
+
+    if (trialExpiredFromCrimeAddress.value) {
+      trackOncePerSession(
+        `subscription-crime-address-expired:${props.currentPlan || 'free'}`,
+        'crime_address_trial_expired_pricing_view',
+        {
+          pageType: 'pricing',
+          isAuthenticated: props.isAuthenticated,
+          params: {
+            source_context: 'crime-address',
+          },
+        }
+      );
+    }
   });
   
   // Define features for each plan - these should be translatable
@@ -245,8 +294,8 @@
 
   const basicFeatures = computed(() => [
     { id:1, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.allFreeFeatures || 'All Registered User Features' },
-    { id:2, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.fullMapSixMonthsData || 'Full Map Access (Last 6 Months Data)' },
-    { id:3, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.dailyAIReport || 'Daily AI Report' },
+    { id:2, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.dailyCrimeAddressReport || 'Daily crime email report for 1 address' },
+    { id:3, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.fullMapSixMonthsData || 'Full Map Access (Last 6 Months Data)' },
     { id:4, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.radialMapAccess || 'Radial Map Access' },
     { id:5, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.saveThreeLocations || 'Save 3 Favorite Locations' },
   ]);
@@ -254,6 +303,7 @@
   const proFeatures = computed(() => [
     { id:1, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.allBasicFeatures || 'All Basic Plan Features' },
     { id:2, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.fullMapAllTimeData || 'Full Map Access (All Time Data)' },
+    { id:3, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.fullTrendsAndScores || 'Full trends and neighborhood score access' },
     { id:4, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.saveTenLocations || 'Save 10 Favorite Locations' },
     { id:5, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.advancedAIAssistant || 'Advanced AI Assistant' },
     { id:6, text: translations.FeatureTranslations[getSingleLanguageCode.value]?.csvExport || 'CSV Data Export' },
@@ -273,15 +323,15 @@
     subscriptionCancelledMessage: 'Your subscription process was canceled. You can choose a plan below or return to the dashboard.',
     
     freeTierTitle: 'Registered User Features (Free)',
-    freeTierDescription: 'By creating a free account, you get access to valuable local insights.',
+    freeTierDescription: 'Create a free account to save one location and start a no-card trial from the crime preview flow.',
     registerWithGoogleButton: 'Register with Google',
     registerManuallyButton: 'Register Manually',
     yourCurrentAccessInfo: 'These are your current features.',
 
     basicPlanTitle: 'Resident Awareness',
-    basicPlanDescription: 'Enhanced access for deeper local insights, including extended data history.',
+    basicPlanDescription: 'Keep the daily one-address email report going after the trial ends.',
     proPlanTitle: 'Pro Insights',
-    proPlanDescription: 'Comprehensive data access and advanced tools for power users and professionals.',
+    proPlanDescription: 'Unlock the full data map, trend context, neighborhood scores, and broader multi-neighborhood work.',
     bestValueBadge: 'Best Value',
     subscribeButton: 'Subscribe',
     currentPlanButton: 'Current Plan',
@@ -301,6 +351,7 @@
       
       // Basic Tier (includes free + more)
       allFreeFeatures: 'All Registered User Features',
+      dailyCrimeAddressReport: 'Daily crime email report for 1 address',
       fullMapSixMonthsData: 'Full Map Access (Last 6 Months Data)',
       dailyAIReport: 'Daily AI Report',
       saveThreeLocations: 'Save 3 Favorite Locations',
@@ -309,6 +360,7 @@
       // Pro Tier (includes basic + more)
       allBasicFeatures: 'All Basic Plan Features',
       fullMapAllTimeData: 'Full Map Access (All Time Data)',
+      fullTrendsAndScores: 'Full trends and neighborhood score access',
       saveTenLocations: 'Save 10 Favorite Locations',
       advancedAIAssistant: 'Advanced AI Assistant',
       csvExport: 'CSV Data Export',
@@ -326,6 +378,7 @@
 
       // Basic Tier
       allFreeFeatures: 'Todas las Funciones de Usuario Registrado',
+      dailyCrimeAddressReport: 'Reporte diario de crimen por correo para 1 dirección',
       fullMapSixMonthsData: 'Acceso al Mapa Completo (Datos de los Últimos 6 Meses)',
       dailyAIReport: 'Reporte Diario de IA',
       saveThreeLocations: 'Guardar 3 Ubicaciones Favoritas',
@@ -334,6 +387,7 @@
       // Pro Tier
       allBasicFeatures: 'Todas las Funciones del Plan Básico',
       fullMapAllTimeData: 'Acceso al Mapa Completo (Todos los Datos Históricos)',
+      fullTrendsAndScores: 'Acceso completo a tendencias y puntajes vecinales',
       saveTenLocations: 'Guardar 10 Ubicaciones Favoritas',
       advancedAIAssistant: 'Asistente de IA Avanzado',
       csvExport: 'Exportación de Datos CSV',
