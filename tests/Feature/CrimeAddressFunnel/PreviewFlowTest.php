@@ -105,6 +105,7 @@ class PreviewFlowTest extends TestCase
                     'crime_address_funnel_enabled' => true,
                     'radius_miles' => 10,
                     'supported_regions' => ['MA'],
+                    'supported_localities' => ['Boston', 'Cambridge'],
                 ],
             ],
         ]);
@@ -113,6 +114,34 @@ class PreviewFlowTest extends TestCase
             'address' => '200 N Spring St, Los Angeles, CA 90012, USA',
             'latitude' => 34.0522,
             'longitude' => -118.2437,
+        ]);
+
+        $response->assertOk()->assertJson([
+            'supported' => false,
+            'message' => 'We do not serve your address yet. We will look into adding your area and notify you if we do.',
+        ]);
+    }
+
+    public function test_nearby_but_unsupported_locality_returns_unsupported_state(): void
+    {
+        config()->set('cities.cities', [
+            'everett' => [
+                'name' => 'Everett',
+                'latitude' => 42.4084,
+                'longitude' => -71.0537,
+                'serviceability' => [
+                    'crime_address_funnel_enabled' => true,
+                    'radius_miles' => 4,
+                    'supported_regions' => ['MA'],
+                    'supported_localities' => ['Everett'],
+                ],
+            ],
+        ]);
+
+        $response = $this->postJson(route('crime-address.preview'), [
+            'address' => '93 Highland Ave, Somerville, MA 02143, USA',
+            'latitude' => 42.3874,
+            'longitude' => -71.0995,
         ]);
 
         $response->assertOk()->assertJson([
@@ -132,6 +161,7 @@ class PreviewFlowTest extends TestCase
                     'crime_address_funnel_enabled' => true,
                     'radius_miles' => 10,
                     'supported_regions' => ['MA'],
+                    'supported_localities' => ['Boston', 'Cambridge'],
                 ],
             ],
         ]);

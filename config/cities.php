@@ -45,6 +45,7 @@ return [
                 'crime_address_funnel_enabled' => true,
                 'radius_miles' => 12,
                 'supported_regions' => ['MA'],
+                'supported_localities' => ['Boston', 'Cambridge'],
                 'crime_model_locality_map' => [
                     'cambridge' => \App\Models\CambridgeCrimeReportData::class,
                     'boston' => \App\Models\CrimeData::class,
@@ -76,6 +77,7 @@ return [
                 'crime_address_funnel_enabled' => true,
                 'radius_miles' => 4,
                 'supported_regions' => ['MA'],
+                'supported_localities' => ['Everett'],
             ],
             'models' => [
                 \App\Models\EverettCrimeData::class,
@@ -92,6 +94,7 @@ return [
                 'crime_address_funnel_enabled' => true,
                 'radius_miles' => 16,
                 'supported_regions' => ['IL'],
+                'supported_localities' => ['Chicago'],
             ],
             'models' => [
                 \App\Models\ChicagoCrime::class,
@@ -108,6 +111,7 @@ return [
                 'crime_address_funnel_enabled' => true,
                 'radius_miles' => 8,
                 'supported_regions' => ['CA'],
+                'supported_localities' => ['San Francisco'],
             ],
             'models' => [
                 \App\Models\SanFranciscoCrime::class,
@@ -158,6 +162,7 @@ return [
                 'crime_address_funnel_enabled' => true,
                 'radius_miles' => 15,
                 'supported_regions' => ['WA'],
+                'supported_localities' => ['Seattle'],
             ],
             'models' => [
                 \App\Models\SeattleCrime::class,

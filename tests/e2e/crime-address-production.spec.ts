@@ -11,6 +11,13 @@ type SupportedCase = {
   expectRichIncidentContent?: boolean;
 };
 
+type UnsupportedCase = {
+  label: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+};
+
 const supportedCases: SupportedCase[] = [
   {
     label: 'Boston core',
@@ -61,6 +68,39 @@ const supportedCases: SupportedCase[] = [
     latitude: 47.60345,
     longitude: -122.32947,
     expectedCityKey: 'seattle',
+  },
+];
+
+const unsupportedRegionalCases: UnsupportedCase[] = [
+  {
+    label: 'Somerville should not borrow Everett coverage',
+    address: '93 Highland Ave, Somerville, MA 02143, USA',
+    latitude: 42.3874,
+    longitude: -71.0995,
+  },
+  {
+    label: 'Brookline should not borrow Boston coverage',
+    address: '333 Washington St, Brookline, MA 02445, USA',
+    latitude: 42.3318,
+    longitude: -71.1212,
+  },
+  {
+    label: 'Evanston should not borrow Chicago coverage',
+    address: '2100 Ridge Ave, Evanston, IL 60201, USA',
+    latitude: 42.0643,
+    longitude: -87.6862,
+  },
+  {
+    label: 'Daly City should not borrow San Francisco coverage',
+    address: '333 90th St, Daly City, CA 94015, USA',
+    latitude: 37.6895,
+    longitude: -122.4707,
+  },
+  {
+    label: 'Bellevue should not borrow Seattle coverage',
+    address: '450 110th Ave NE, Bellevue, WA 98004, USA',
+    latitude: 47.6144,
+    longitude: -122.1942,
   },
 ];
 
@@ -121,6 +161,27 @@ test.describe('crime-address live regional coverage', () => {
         await expect(page.getByText('No recent incidents were found within this preview radius.')).toBeVisible();
       }
       await expect(page.getByRole('heading', { name: 'We do not serve your address yet.' })).toHaveCount(0);
+      expect(runtime.consoleErrors).toEqual([]);
+      expect(runtime.pageErrors).toEqual([]);
+    });
+  }
+
+  for (const scenario of unsupportedRegionalCases) {
+    test(`rejects nearby unsupported locality: ${scenario.label}`, async ({ page }) => {
+      const runtime = installConsoleGuards(page);
+      const previewResponsePromise = waitForPreviewResponse(page);
+
+      await page.goto(
+        `/crime-address?address=${encodeURIComponent(scenario.address)}&lat=${scenario.latitude}&lng=${scenario.longitude}`,
+      );
+
+      const previewResponse = await previewResponsePromise;
+
+      expect(previewResponse.supported).toBe(false);
+      expect(previewResponse.message).toBe('We do not serve your address yet. We will look into adding your area and notify you if we do.');
+
+      await expect(page.getByRole('heading', { name: 'We do not serve your address yet.' })).toBeVisible();
+      await expect(page.getByPlaceholder('Email for updates')).toBeVisible();
       expect(runtime.consoleErrors).toEqual([]);
       expect(runtime.pageErrors).toEqual([]);
     });

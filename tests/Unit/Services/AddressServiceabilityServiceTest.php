@@ -18,6 +18,7 @@ class AddressServiceabilityServiceTest extends TestCase
                     'crime_address_funnel_enabled' => true,
                     'radius_miles' => 10,
                     'supported_regions' => ['MA'],
+                    'supported_localities' => ['Boston', 'Cambridge'],
                 ],
             ],
         ]);
@@ -43,6 +44,7 @@ class AddressServiceabilityServiceTest extends TestCase
                     'crime_address_funnel_enabled' => true,
                     'radius_miles' => 12,
                     'supported_regions' => ['IL'],
+                    'supported_localities' => ['Chicago'],
                 ],
             ],
         ]);
@@ -66,6 +68,7 @@ class AddressServiceabilityServiceTest extends TestCase
                     'crime_address_funnel_enabled' => true,
                     'radius_miles' => 10,
                     'supported_regions' => ['MA'],
+                    'supported_localities' => ['Boston'],
                 ],
             ],
         ]);
@@ -79,6 +82,32 @@ class AddressServiceabilityServiceTest extends TestCase
         $this->assertSame('outside_configured_coverage', $result['reason']);
     }
 
+    public function test_address_within_radius_but_outside_supported_locality_returns_unsupported_response(): void
+    {
+        config()->set('cities.cities', [
+            'everett' => [
+                'name' => 'Everett',
+                'latitude' => 42.4084,
+                'longitude' => -71.0537,
+                'serviceability' => [
+                    'crime_address_funnel_enabled' => true,
+                    'radius_miles' => 4,
+                    'supported_regions' => ['MA'],
+                    'supported_localities' => ['Everett'],
+                ],
+            ],
+        ]);
+
+        $service = new AddressServiceabilityService();
+
+        $result = $service->determineSupport(42.3874, -71.0995, '93 Highland Ave, Somerville, MA 02143, USA');
+
+        $this->assertFalse($result['supported']);
+        $this->assertNull($result['matched_city_key']);
+        $this->assertSame('outside_configured_coverage', $result['reason']);
+        $this->assertSame('everett', $result['nearest_city_key']);
+    }
+
     public function test_service_does_not_silently_coerce_unsupported_coordinates_to_nearest_city(): void
     {
         config()->set('cities.cities', [
@@ -90,6 +119,7 @@ class AddressServiceabilityServiceTest extends TestCase
                     'crime_address_funnel_enabled' => true,
                     'radius_miles' => 5,
                     'supported_regions' => ['WA'],
+                    'supported_localities' => ['Seattle'],
                 ],
             ],
             'new_york' => [
