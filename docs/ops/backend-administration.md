@@ -111,6 +111,7 @@ Current observability status:
 - the Hostinger production cron is confirmed to be the single scheduler entry:
   - `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
 - the default Laravel-scheduled daily pipeline dispatch time is now `07:00` in `America/New_York` so the daily run is more likely to include sources that publish around `05:00`
+- the scheduler now defaults that daily pipeline timezone directly to `America/New_York` instead of inheriting `app.timezone`, because the Hostinger app runtime itself is still `UTC`
 - the main remaining backend-admin follow-up is live runtime evidence:
   - confirm the scheduler-driven worker heartbeat reflects the real queue-worker path
   - confirm the `sysadmin/` DNS sync runtime is publishing its S3 status artifact in the environment that actually runs it

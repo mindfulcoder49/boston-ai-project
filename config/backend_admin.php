@@ -11,7 +11,7 @@ return [
 
     'daily_pipeline' => [
         'time' => env('BACKEND_ADMIN_DAILY_PIPELINE_TIME', '07:00'),
-        'timezone' => env('BACKEND_ADMIN_TIMEZONE', config('app.timezone', 'America/New_York')),
+        'timezone' => env('BACKEND_ADMIN_TIMEZONE', 'America/New_York'),
         'active_run_max_age_hours' => (int) env('BACKEND_ADMIN_ACTIVE_RUN_MAX_AGE_HOURS', 6),
     ],
 
