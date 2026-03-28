@@ -123,6 +123,10 @@ class AnalysisArtifactLocator
 
         $fromSnapshots = AnalysisReportSnapshot::query()
             ->where('artifact_name', 'stage4_h3_anomaly.json')
+            ->where(function ($query) use ($modelClass) {
+                $query->whereJsonContains('payload->parameters->model_class', $modelClass)
+                    ->orWhereJsonContains('payload->config->model_class', $modelClass);
+            })
             ->get()
             ->map(fn (AnalysisReportSnapshot $snapshot) => $this->buildTrendCandidateFromPayload(
                 $snapshot->job_id,
@@ -131,7 +135,7 @@ class AnalysisArtifactLocator
                 $snapshot->s3_last_modified,
                 optional($snapshot->updated_at)->timestamp,
             ))
-            ->filter(fn (?array $candidate) => ($candidate['model_class'] ?? null) === $modelClass);
+            ->filter();
 
         if ($fromSnapshots->isNotEmpty() || $fromTrendRows->isNotEmpty() || !$allowS3Fallback) {
             return $fromTrendRows->concat($fromSnapshots)->values();
@@ -149,6 +153,10 @@ class AnalysisArtifactLocator
                 $query->where('artifact_name', 'like', 'stage6%')
                     ->orWhere('artifact_name', 'like', 'scoring_results%');
             })
+            ->where(function ($query) use ($modelClass) {
+                $query->whereJsonContains('payload->parameters->model_class', $modelClass)
+                    ->orWhereJsonContains('payload->config->model_class', $modelClass);
+            })
             ->get()
             ->map(fn (AnalysisReportSnapshot $snapshot) => $this->buildScoreCandidateFromPayload(
                 $snapshot->job_id,
@@ -157,7 +165,7 @@ class AnalysisArtifactLocator
                 $snapshot->s3_last_modified,
                 optional($snapshot->updated_at)->timestamp,
             ))
-            ->filter(fn (?array $candidate) => ($candidate['model_class'] ?? null) === $modelClass);
+            ->filter();
 
         if ($fromSnapshots->isNotEmpty() || !$allowS3Fallback) {
             return $fromSnapshots->values();
