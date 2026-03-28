@@ -242,17 +242,30 @@ class CrimeAddressPreviewBuilder
 
         $sections[] = [
             'title' => 'Neighborhood score context',
-            'body' => $scoreReport
-                ? 'A location-specific neighborhood score is available for this address and will load with the preview.'
-                : 'Neighborhood scoring is not currently available for this area, but recent incidents and city-level trends are shown below.',
+            'body' => $this->buildScoreContextBody($scoreReport, $trendContext),
         ];
 
         return $sections;
     }
 
+    protected function buildScoreContextBody(?array $scoreReport, ?array $trendContext): string
+    {
+        if ($scoreReport) {
+            return 'A location-specific neighborhood score is available for this address and will load with the preview.';
+        }
+
+        if (($trendContext['summary']['status'] ?? null) === 'ok') {
+            return 'Neighborhood scoring is not currently available for this area, but recent incidents and city-level trends are shown below.';
+        }
+
+        return 'Neighborhood scoring and city-level trend context are not currently available for this area yet. Recent incidents are shown below.';
+    }
+
     protected function extractIncidentCategory(array $point): string
     {
         return $this->extractNestedField($point, [
+            'incident_type_group',
+            'incident_type',
             'offense_code_group',
             'primary_type',
             'offense_category',
@@ -266,18 +279,21 @@ class CrimeAddressPreviewBuilder
     protected function extractIncidentDescription(array $point): ?string
     {
         return $this->extractNestedField($point, [
+            'incident_description',
             'offense_description',
             'description',
             'incident_subcategory',
             'crime_details',
             'offense',
             'location_description',
+            'crime_details_concatenated',
         ]);
     }
 
     protected function extractIncidentLocationLabel(array $point): ?string
     {
         return $this->extractNestedField($point, [
+            'incident_address',
             'block',
             'street_name',
             'street',

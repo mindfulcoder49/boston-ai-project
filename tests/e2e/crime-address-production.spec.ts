@@ -8,6 +8,7 @@ type SupportedCase = {
   latitude: number;
   longitude: number;
   expectedCityKey: string;
+  expectRichIncidentContent?: boolean;
 };
 
 const supportedCases: SupportedCase[] = [
@@ -31,6 +32,7 @@ const supportedCases: SupportedCase[] = [
     latitude: 42.40879,
     longitude: -71.05368,
     expectedCityKey: 'everett',
+    expectRichIncidentContent: true,
   },
   {
     label: 'Chicago',
@@ -87,6 +89,13 @@ test.describe('crime-address live regional coverage', () => {
 
       expect(previewResponse.supported).toBe(true);
       expect(previewResponse.matched_city_key).toBe(scenario.expectedCityKey);
+
+      if (scenario.expectRichIncidentContent) {
+        expect(previewResponse.incident_summary.total_incidents).toBeGreaterThan(0);
+        expect(previewResponse.incident_summary.top_categories[0].category).not.toBe('Crime incident');
+        expect(previewResponse.incident_summary.recent_incidents[0].description).toBeTruthy();
+        expect(previewResponse.incident_summary.recent_incidents[0].location_label).toBeTruthy();
+      }
 
       await expect(page.getByText('Address Report', { exact: true })).toBeVisible();
       await expect(page.getByText('Recent Incidents', { exact: true })).toBeVisible();
