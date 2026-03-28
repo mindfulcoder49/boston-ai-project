@@ -13,16 +13,19 @@ Build a repeatable operating system where:
 ## Current Priorities
 
 1. Analytics Foundation
-   Make measurement trustworthy before optimizing anything else.
+   Keep measurement trustworthy before optimizing anything else.
 
-2. SEO And Low-Risk Frontend Growth
+2. Address-First Funnel And City Landing Program
+   Improve the public wedge around `/crime-address` and the city landing pages that feed it.
+
+3. SEO And Low-Risk Frontend Growth
    Improve discoverability and conversion using changes unlikely to break core flows.
 
-3. Backend Administration And Data Operations
+4. Backend Administration And Data Operations
    Document and stabilize operational command flows, then gradually automate them.
    Current execution plan: [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
 
-4. Monetization And Social Distribution
+5. Monetization And Social Distribution
    Run pricing, content, and distribution work through recommendation plus founder execution.
 
 ## Domain Playbooks
@@ -51,9 +54,12 @@ Build a repeatable operating system where:
 - As of March 24, 2026, local GA4 access is available through `tools/analytics` for GA4 property `properties/490826923` (`PublicDataWatch`).
 - As of March 24, 2026, that GA4 property's timezone was updated to `America/New_York`.
 - As of March 24, 2026, Search Console API access is available through `tools/analytics` for `sc-domain:publicdatawatch.com`, and `https://publicdatawatch.com/sitemap.xml` was submitted successfully.
+- As of March 28, 2026, the public site now leads with the address-first crime preview funnel at `/crime-address`, supported by city and region landing pages.
+- As of March 28, 2026, city landing pages are live for Boston, Everett, Chicago, San Francisco, New York, Montgomery County, MD, and Seattle with city-specific copy instead of a generic shell.
 - As of March 25, 2026, Laravel scheduler entries for the scheduled `admin-long` worker, dependency checks, daily pipeline dispatch, and backend alert evaluation are implemented in code.
 - As of March 26, 2026, the founder confirmed Hostinger production is using a single cron entry:
   - `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
+- As of March 28, 2026, the daily pipeline is configured to run at `07:00` in `America/New_York`.
 - The remaining backend-admin follow-up is confirming that the scheduler-driven worker heartbeat and DNS status artifact are visible in the live runtimes.
 
 ## Delivery Loop

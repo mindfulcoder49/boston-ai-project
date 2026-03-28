@@ -42,10 +42,10 @@
                                 <section id="overview">
                                     <h2>Platform Overview</h2>
                                     <p>
-                                        <strong>PublicDataWatch</strong> by AlcivarTech LLC is a civic data intelligence platform that aggregates, analyzes, and visualizes public data from multiple U.S. cities. The platform transforms raw municipal open data into actionable insights through interactive maps, automated statistical analysis, AI-generated reports, and neighborhood scoring.
+                                        <strong>PublicDataWatch</strong> by AlcivarTech LLC is a civic data intelligence platform that aggregates, analyzes, and visualizes public data from multiple U.S. cities and regions. The platform now leads with an address-first public preview, then expands into city landing pages, deeper maps, automated statistical analysis, AI-generated reports, and neighborhood scoring.
                                     </p>
                                     <p>
-                                        PublicDataWatch operates as a SaaS subscription platform, serving individual users, real estate professionals, researchers, and municipalities who need to understand neighborhood-level conditions across multiple data categories.
+                                        PublicDataWatch operates as a SaaS subscription platform for residents, real estate professionals, researchers, municipalities, and operators who need to understand neighborhood-level conditions without starting from raw open-data portals.
                                     </p>
                                 </section>
 
@@ -94,7 +94,7 @@
 
                                 <section id="business-model">
                                     <h2>Business Model</h2>
-                                    <p>PublicDataWatch operates a freemium SaaS model with three tiers:</p>
+                                    <p>PublicDataWatch currently uses an address-first trial and subscription model:</p>
 
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full text-sm">
@@ -106,14 +106,14 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr><td class="py-2 px-3 font-medium">Free</td><td class="py-2 px-3">$0/mo</td><td class="py-2 px-3">2-week data window, 1 saved location, basic AI features</td></tr>
-                                                <tr><td class="py-2 px-3 font-medium">Basic</td><td class="py-2 px-3">$5/mo</td><td class="py-2 px-3">6-month data window, 3 locations, daily AI reports</td></tr>
-                                                <tr><td class="py-2 px-3 font-medium">Pro</td><td class="py-2 px-3">$15/mo</td><td class="py-2 px-3">Full historical data, 10 locations, advanced AI, CSV export, model choice</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Registered / Trial</td><td class="py-2 px-3">$0</td><td class="py-2 px-3">Free account plus no-card address-preview entry into the one-address report workflow</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Basic</td><td class="py-2 px-3">$5/mo</td><td class="py-2 px-3">Keeps the one-address recurring report workflow going, plus deeper everyday local usage</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Pro</td><td class="py-2 px-3">$15/mo</td><td class="py-2 px-3">Full map, trends, neighborhood scores, exports, and broader professional use</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
 
-                                    <p class="mt-4">Additional revenue opportunities include municipal partnership licensing and enterprise/API access for real estate platforms and insurance providers.</p>
+                                    <p class="mt-4">Additional revenue opportunities include municipal partnership licensing and enterprise/API access for real estate platforms, media, and insurance-adjacent workflows.</p>
                                 </section>
 
                                 <hr class="my-8" />
@@ -121,8 +121,9 @@
                                 <section id="capabilities">
                                     <h2>Product Capabilities</h2>
                                     <ul>
-                                        <li><strong>Interactive radial map search</strong> &mdash; Explore data around any address with configurable radius, across 7+ cities.</li>
-                                        <li><strong>8+ data categories</strong> &mdash; Crime, 311 service requests, building permits, property violations, food inspections, construction off-hours, traffic crashes, and more.</li>
+                                        <li><strong>Address-first acquisition funnel</strong> &mdash; Start with one address, answer the immediate crime question, then expand into deeper tools.</li>
+                                        <li><strong>City landing page network</strong> &mdash; Region-specific pages explain what data is actually available instead of forcing one generic story onto every city.</li>
+                                        <li><strong>8+ public regions and multiple data categories</strong> &mdash; Crime, 311 service requests, building permits, property violations, food inspections, construction off-hours, traffic crashes, and more.</li>
                                         <li><strong>Automated statistical analysis</strong> &mdash; Trend detection (linear regression) and anomaly detection (Poisson/Negative Binomial models) run automatically on all data.</li>
                                         <li><strong>AI-generated reports</strong> &mdash; Streaming location reports in 15+ languages, powered by Google Gemini and OpenAI.</li>
                                         <li><strong>Neighborhood scoring</strong> &mdash; Composite safety and livability scores using H3 hexagonal spatial indexing with configurable weights.</li>
@@ -151,10 +152,11 @@
                                 <section id="coverage">
                                     <h2>Current Coverage</h2>
                                     <ul>
-                                        <li><strong>7 cities:</strong> Boston, Cambridge, Everett, Chicago, San Francisco, Seattle, Montgomery County MD.</li>
+                                        <li><strong>8 cities and regions:</strong> Boston, Cambridge, Everett, Chicago, San Francisco, New York, Montgomery County MD, and Seattle.</li>
                                         <li><strong>16+ data models</strong> spanning crime, civic services, permits, violations, and inspections.</li>
                                         <li><strong>Automated daily refresh</strong> of all data pipelines.</li>
                                         <li><strong>Multiple data acquisition strategies:</strong> REST API, CSV download, and PDF scraping to handle different municipal data publishing approaches.</li>
+                                        <li><strong>Dataset-specific positioning:</strong> Boston is multi-dataset, several regions are crime-first, and New York is currently 311-first.</li>
                                     </ul>
                                 </section>
 

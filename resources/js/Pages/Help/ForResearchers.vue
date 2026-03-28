@@ -52,18 +52,19 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr><td class="py-2 px-3">Boston, MA</td><td class="py-2 px-3">Analyze Boston</td><td class="py-2 px-3">8 datasets: crime, 311, building permits, property violations, food inspections, construction off-hours, trash schedules</td></tr>
+                                                <tr><td class="py-2 px-3">Boston, MA</td><td class="py-2 px-3">Analyze Boston</td><td class="py-2 px-3">Crime, 311, building permits, property violations, food inspections, construction off-hours, car crashes, and supporting geocoding datasets</td></tr>
                                                 <tr><td class="py-2 px-3">Cambridge, MA</td><td class="py-2 px-3">Cambridge Open Data + Police Logs</td><td class="py-2 px-3">Crime, 311, building permits, housing violations, sanitary inspections</td></tr>
                                                 <tr><td class="py-2 px-3">Everett, MA</td><td class="py-2 px-3">Police Dept. PDF Reports</td><td class="py-2 px-3">Crime (NLP-extracted from PDF)</td></tr>
                                                 <tr><td class="py-2 px-3">Chicago, IL</td><td class="py-2 px-3">Chicago Data Portal</td><td class="py-2 px-3">Crime</td></tr>
                                                 <tr><td class="py-2 px-3">San Francisco, CA</td><td class="py-2 px-3">DataSF</td><td class="py-2 px-3">Crime</td></tr>
+                                                <tr><td class="py-2 px-3">New York, NY</td><td class="py-2 px-3">NYC Open Data</td><td class="py-2 px-3">311 / service requests</td></tr>
                                                 <tr><td class="py-2 px-3">Seattle, WA</td><td class="py-2 px-3">Seattle Open Data</td><td class="py-2 px-3">Crime</td></tr>
                                                 <tr><td class="py-2 px-3">Montgomery County, MD</td><td class="py-2 px-3">dataMontgomery</td><td class="py-2 px-3">Crime</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
 
-                                    <p class="mt-4">Data refresh pipelines run daily. Boston datasets are identified by specific resource IDs configured in the application. Cambridge police log data is scraped from PDF publications and converted to structured data using NLP processing.</p>
+                                    <p class="mt-4">Data refresh pipelines run daily. Boston datasets are identified by specific resource IDs configured in the application. Cambridge and Everett include PDF- or log-derived acquisition paths in addition to portal-style ingestion.</p>
                                 </section>
 
                                 <hr class="my-8" />
@@ -209,7 +210,7 @@
 
                                 <section id="pipeline">
                                     <h2>Data Pipeline Architecture</h2>
-                                    <p>The data pipeline is orchestrated as an 8-stage sequential process:</p>
+                                    <p>The data pipeline is orchestrated as a staged sequential process with city-specific acquisition and seeding steps before aggregation and reporting:</p>
                                     <ol>
                                         <li><strong>Boston Data Acquisition</strong> &mdash; Downloads datasets from Analyze Boston via scraper service.</li>
                                         <li><strong>Boston Data Seeding</strong> &mdash; Processes CSVs into database tables using batch upsert (500-1000 records per batch).</li>
@@ -217,8 +218,10 @@
                                         <li><strong>Cambridge Data Seeding</strong> &mdash; Processes and geocodes Cambridge data.</li>
                                         <li><strong>Everett Data Acquisition & Processing</strong> &mdash; Downloads police PDFs, converts to structured data via NLP.</li>
                                         <li><strong>Everett Data Seeding</strong> &mdash; Loads processed Everett data.</li>
+                                        <li><strong>Chicago, San Francisco, Seattle, and Montgomery County seeding</strong> &mdash; Loads additional regional datasets into their city-specific tables.</li>
+                                        <li><strong>New York seeding</strong> &mdash; Loads 311 / service-request data for the New York regional surface.</li>
                                         <li><strong>Post-Seeding Aggregation</strong> &mdash; Populates the unified <code>data_points</code> table and caches metrics.</li>
-                                        <li><strong>Reporting</strong> &mdash; Dispatches location-based email reports to subscribed users.</li>
+                                        <li><strong>Reporting</strong> &mdash; Dispatches recurring location-based email reports and address-preview follow-up workflows.</li>
                                     </ol>
 
                                     <h3>Multi-Database Architecture</h3>
@@ -243,7 +246,7 @@
 
                                     <div class="bg-gray-50 p-4 rounded-lg border text-sm font-mono">
                                         <p class="mb-2">Original data: [City Name] Open Data Portal, [Dataset Name], accessed via PublicDataWatch.</p>
-                                        <p>Analysis: PublicDataWatch by AlcivarTech LLC, publicdatawatch.app</p>
+                                        <p>Analysis: PublicDataWatch by AlcivarTech LLC, publicdatawatch.com</p>
                                     </div>
 
                                     <h3>Limitations & Caveats</h3>

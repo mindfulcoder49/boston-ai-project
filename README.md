@@ -1,173 +1,127 @@
-<img src="https://github.com/mindfulcoder49/bodc-dei/blob/main/public/images/logo.png" alt="BODC-DEI Logo" width="200"/>
+<img src="https://github.com/mindfulcoder49/boston-ai-project/blob/main/public/images/logo.png" alt="PublicDataWatch Logo" width="200"/>
 
+# PublicDataWatch
 
-# Boston AI Project
+PublicDataWatch is a Laravel + Vue civic-data product built around one simple question:
 
-This project contains tools for analyzing civic data and generating news articles from the analysis results.
+`What is happening around this address right now?`
 
-## Features
+The public experience starts with an address-first crime preview, then expands into city landing pages, the full explore map, trend reports, neighborhood scoring, and recurring email reports.
 
-- **About Page:** Describes the mission and objectives of BODC-DEI.
-- **Contact Page:** Provides information on how to connect with the project via GitHub.
-- **Crime Map:** A web application that displays crime data in Boston using a map interface.
-- **Dashboard:** A comprehensive dashboard with components for crime reporting and GitHub analysis.
-- **Projects Page:** Showcases various open-source projects related to AI and ML.
-- **The Boston App Demo:** A demonstration of an app that generates personalized location-based reports.
-- **311 Case List:** Displays a list of 311 cases with detailed predictions and insights.
-- **311 Demo:** A code demo for the 311 project.
-- **311 Model Tracker:** Tracks the accuracy of different predictive models used in the 311 project.
-- **Welcome Page:** The home page of the BODC-DEI website.
+## Current Product Surface
 
-## Technologies Used
+- `GET /` — address-first homepage
+- `GET /crime-address` — lightweight crime preview funnel
+- `GET /{city}` — city and region landing pages for supported coverage areas
+- `GET /map/{lat?}/{lng?}` — radial explore map
+- `GET /combined-map` — full multi-dataset map
+- `GET /trends` — statistical trend reports
+- `GET /yearly-comparisons` — year-over-year comparison reports
+- `GET /scoring-reports` — neighborhood scoring tools
+- `GET /subscription` — pricing and paid plan conversion
 
-- **Laravel:** A PHP framework for building robust web applications.
-- **Inertia.js:** A library that allows you to build single-page applications using classic server-side routing and controllers.
-- **Vue.js:** A progressive JavaScript framework for building user interfaces.
-- **Tailwind CSS:** A utility-first CSS framework for styling the application.
+## Supported Cities And Regions
 
-## Installation
+- Boston, MA
+- Cambridge, MA
+- Everett, MA
+- Chicago, IL
+- San Francisco, CA
+- New York, NY
+- Montgomery County, MD
+- Seattle, WA
 
-To get started with the BODC-DEI project, follow these steps:
+Coverage is not uniform across every region. Boston has the broadest multi-dataset mix. Several other regions are crime-first. New York is currently 311-first.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/mindfulcoder49/BODC-DEI.git
-   cd BODC-DEI
-   ```
+## Stack
 
-2. **Install dependencies:**
-   ```bash
-   composer install
-   npm install
-   ```
+- Laravel 10
+- Vue 3 + Inertia.js
+- MySQL / MariaDB
+- Redis queues and caching
+- Leaflet for maps
+- H3 for spatial indexing
+- Stripe via Laravel Cashier
+- OpenAI and Google Gemini integrations
+- Playwright for browser coverage
 
-3. **Set up environment variables:**
-   Copy the `.env.example` file to `.env` and update the necessary environment variables.
+## Local Development
 
-4. **Generate application key:**
-   ```bash
-   php artisan key:generate
-   ```
+Install dependencies:
 
-5. **Run database migrations:**
-   ```bash
-   php artisan migrate
-   ```
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+```
 
-6. **Build assets:**
-   ```bash
-   npm run dev
-   ```
+Start the Laravel app with Sail when available:
 
-7. **Serve the application:**
-   ```bash
-   php artisan serve
-   ```
+```bash
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate
+npm run dev
+```
 
-## Generating a News Article (for Testing)
+If you are not using Sail:
 
-This guide explains how to generate a single news article from an existing analysis report. This is useful for testing the end-to-end generation and viewing pipeline.
+```bash
+php artisan migrate
+php artisan serve
+npm run dev
+```
 
-### Prerequisites
+## Testing
 
-1.  **Completed Analysis Job:** You must have already run a statistical analysis job (e.g., using `app:dispatch-statistical-analysis-jobs`) and have a corresponding report record in your database (e.g., in the `trends` table).
-2.  **Running Local AI Service:** The Python analysis API, which includes the Ollama completion service, must be running and accessible.
-3.  **Configured Environment:** Your Laravel `.env` file must have the correct URL for the analysis API (`ANALYSIS_API_URL`).
+Backend:
 
-### Steps
+```bash
+./vendor/bin/sail test
+```
 
-1.  **Find a Report to Generate From**
+Targeted browser coverage:
 
-    First, you need to find the ID of a report you want to use as the source for your article. You can find this by looking in your database. For this example, we'll find a `Trend` report.
+```bash
+npx playwright test tests/e2e/public-surface-regressions.spec.ts
+```
 
-    You can use `php artisan tinker` to find one:
+Production build:
 
-    ```bash
-    php artisan tinker
-    ```
+```bash
+npm run build
+```
 
-    Inside tinker, run:
-    ```php
-    // Find the first available Trend report
-    App\Models\Trend::first();
-    ```
+## Production Deploy
 
-    This will output the details of a `Trend` report. Note its `id` and `model_class` (`App\Models\Trend`). Let's assume the ID is `123`.
+Standard deploy flow:
 
-2.  **Dispatch the News Article Generation Job**
+```bash
+git push origin main
+ssh <host-alias-from-ssh-config> '~/publicdatawatchdeploy.sh'
+```
 
-    Use the `app:dispatch-news-article-generation-jobs` command with the `--report-class`, `--report-id`, and `--local` flags. The `--local` flag tells the system to use your local AI service for generation.
+That deploy script currently:
 
-    Open your terminal and run the following command, replacing `123` with the actual ID you found:
+- hard-resets production to `origin/main`
+- runs Composer install
+- runs `npm run build`
+- copies the built assets to `public_html`
+- runs `php artisan route:cache`
 
-    ```bash
-    php artisan app:dispatch-news-article-generation-jobs --report-class="App\Models\Trend" --report-id=123 --local
-    ```
+The exact SSH user, port, and host alias should be read from local `~/.ssh/config` rather than hard-coded into repo docs.
 
-    You should see output indicating that a `NewsArticle` record was created and a local generation job was dispatched.
+## Key Docs
 
-3.  **Monitor the Local AI Service**
-
-    Check the logs of your Python/Celery service. You should see a completion task being received and processed by a worker in the `completions` queue. This task sends the report data to your local Ollama instance and saves the result to S3.
-
-4.  **View the Generated Article**
-
-    Once the job is complete, the `NewsArticle` will be published. You can find its URL by looking at the `news_articles` table in your database or by visiting the main news index page of the application (usually `/news`).
-
-    The `show` page for the article will fetch the content generated by the local AI service from the S3 bucket and display it. The first time it's viewed, the content will also be saved to the database.
-
-## Project Structure
-
-The project follows a standard Laravel structure with additional Vue.js components. Here are some of the important files and directories:
-
-- **/resources/js/Pages:** Contains the Vue.js components for each page.
-  - `About.vue`
-  - `Contact.vue`
-  - `CrimeMap.vue`
-  - `Dashboard.vue`
-  - `Projects.vue`
-  - `TheBostonAppDemo.vue`
-  - `ThreeOneOneCaseList.vue`
-  - `ThreeOneOneDemo.vue`
-  - `ThreeOneOneModelList.vue`
-  - `ThreeOneOneProject.vue`
-  - `Welcome.vue`
-
-- **/resources/js/Components:** Contains reusable Vue.js components.
-  - `CrimeMapComponent.vue`
-  - `PageTemplate.vue`
-
-- **/resources/views:** Contains the Blade templates used by Laravel Breeze.
-  - `app.blade.php`
-  - `welcome.blade.php`
-
-- **/routes/web.php:** Defines the web routes for the application.
-
-## Contributing
-
-We welcome contributions from the community. If you would like to contribute to the project, please follow these steps:
-
-1. **Fork the repository.**
-2. **Create a new branch:**
-   ```bash
-   git checkout -b my-feature-branch
-   ```
-3. **Make your changes and commit them:**
-   ```bash
-   git commit -m "Add new feature"
-   ```
-4. **Push to the branch:**
-   ```bash
-   git push origin my-feature-branch
-   ```
-5. **Submit a pull request.**
-
-## License
-
-This project is open-source and licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Contact
-
-If you have any questions or need further assistance, please open an issue on GitHub or contact us via the Contact page on the website.
-
-Thank you for your interest in the BODC-DEI project! Together, we can make a positive impact through open technology and data.
+- [AGENTS.md](./AGENTS.md)
+- [CLAUDE.md](./CLAUDE.md)
+- [docs/PAGES_AND_UX.md](./docs/PAGES_AND_UX.md)
+- [docs/ADDING_A_CITY.md](./docs/ADDING_A_CITY.md)
+- [docs/CHICAGO_INTEGRATION_GUIDE.md](./docs/CHICAGO_INTEGRATION_GUIDE.md)
+- [docs/ops/OPERATING_SYSTEM.md](./docs/ops/OPERATING_SYSTEM.md)
+- [docs/ops/analytics.md](./docs/ops/analytics.md)
+- [docs/ops/seo.md](./docs/ops/seo.md)
+- [docs/ops/growth-monetization.md](./docs/ops/growth-monetization.md)
+- [docs/ops/social-distribution.md](./docs/ops/social-distribution.md)
+- [tools/analytics/README.md](./tools/analytics/README.md)
+- [tools/exoskeleton/README.md](./tools/exoskeleton/README.md)

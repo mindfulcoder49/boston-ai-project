@@ -23,8 +23,8 @@
                                 <h2 class="font-semibold text-gray-900 mb-3">Contents</h2>
                                 <nav class="space-y-1 text-sm">
                                     <a href="#getting-started" class="block text-blue-600 hover:text-blue-800 py-1">Getting Started</a>
-                                    <a href="#radial-map" class="block text-blue-600 hover:text-blue-800 py-1">The Radial Map</a>
-                                    <a href="#full-data-map" class="block text-blue-600 hover:text-blue-800 py-1">Full Data Map</a>
+                                    <a href="#crime-preview" class="block text-blue-600 hover:text-blue-800 py-1">Crime Preview</a>
+                                    <a href="#full-data-map" class="block text-blue-600 hover:text-blue-800 py-1">Explore Tools</a>
                                     <a href="#ai-assistant" class="block text-blue-600 hover:text-blue-800 py-1">AI Assistant</a>
                                     <a href="#data-types" class="block text-blue-600 hover:text-blue-800 py-1">Data Types Explained</a>
                                     <a href="#cities" class="block text-blue-600 hover:text-blue-800 py-1">Cities & Coverage</a>
@@ -52,26 +52,27 @@
                                         You can create a PublicDataWatch account in two ways:
                                     </p>
                                     <ul>
-                                        <li><strong>Email registration</strong> &mdash; Click "Register" in the navigation bar and fill in your name, email, and password.</li>
+                                        <li><strong>Email registration</strong> &mdash; Click "Create Account" or follow a signup prompt from the crime preview or pricing page.</li>
                                         <li><strong>Google login</strong> &mdash; Click the Google icon to sign in with your Google account. An account will be created automatically on your first login.</li>
                                     </ul>
 
                                     <h3>Understanding Subscription Tiers</h3>
-                                    <p>PublicDataWatch offers three tiers with increasing data depth and features:</p>
+                                    <p>PublicDataWatch currently has a free registered state, a no-card preview-to-trial path, and two paid plans:</p>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full text-sm">
                                             <thead>
                                                 <tr>
                                                     <th class="text-left py-2 px-3">Feature</th>
-                                                    <th class="text-left py-2 px-3">Free</th>
+                                                    <th class="text-left py-2 px-3">Free / Trial</th>
                                                     <th class="text-left py-2 px-3">Basic ($5/mo)</th>
                                                     <th class="text-left py-2 px-3">Pro ($15/mo)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr><td class="py-2 px-3">Data window</td><td class="py-2 px-3">2 weeks</td><td class="py-2 px-3">6 months</td><td class="py-2 px-3">All time</td></tr>
+                                                <tr><td class="py-2 px-3">Best use</td><td class="py-2 px-3">Free preview and account access</td><td class="py-2 px-3">Keep one address on a daily report</td><td class="py-2 px-3">Full map, trends, scores, and broader work</td></tr>
                                                 <tr><td class="py-2 px-3">Saved locations</td><td class="py-2 px-3">1</td><td class="py-2 px-3">3</td><td class="py-2 px-3">10</td></tr>
-                                                <tr><td class="py-2 px-3">AI reports</td><td class="py-2 px-3">Limited</td><td class="py-2 px-3">Daily</td><td class="py-2 px-3">Unlimited</td></tr>
+                                                <tr><td class="py-2 px-3">Recurring report workflow</td><td class="py-2 px-3">Trial / limited</td><td class="py-2 px-3">1 address</td><td class="py-2 px-3">Broader professional use</td></tr>
+                                                <tr><td class="py-2 px-3">Full map, trends, scores</td><td class="py-2 px-3">Preview and limited browsing</td><td class="py-2 px-3">Limited</td><td class="py-2 px-3">Yes</td></tr>
                                                 <tr><td class="py-2 px-3">CSV export</td><td class="py-2 px-3">No</td><td class="py-2 px-3">No</td><td class="py-2 px-3">Yes</td></tr>
                                                 <tr><td class="py-2 px-3">AI model choice</td><td class="py-2 px-3">Default</td><td class="py-2 px-3">Default</td><td class="py-2 px-3">Multiple models</td></tr>
                                             </tbody>
@@ -86,42 +87,35 @@
 
                                 <hr class="my-8" />
 
-                                <!-- Radial Map -->
-                                <section id="radial-map">
-                                    <h2>The Radial Map (Home Page)</h2>
+                                <!-- Crime Preview -->
+                                <section id="crime-preview">
+                                    <h2>Crime Preview</h2>
                                     <p>
-                                        The homepage now starts with the crime-address preview funnel rather than dropping every user directly into the radial map. The radial map remains a deeper exploration tool once you already know which area you want to investigate.
+                                        The homepage now starts with the crime-address preview funnel rather than dropping every user directly into the radial map. This is the fastest way to answer the normal person question: what is happening around this address right now?
                                     </p>
-                                    <h3>Setting Your Center Location</h3>
-                                    <p>Use the address search bar to enter an address or place name. You can also click directly on the map to set your center point.</p>
+                                    <h3>Searching An Address</h3>
+                                    <p>Use the address search bar or “Use my location” to run the preview. If the address is supported, PublicDataWatch builds a lightweight results page. If it is unsupported, you can ask to be notified when coverage expands.</p>
 
-                                    <h3>Adjusting the Search Radius</h3>
-                                    <p>Use the radius slider to expand or contract your search area. The circle on the map updates in real time to show the covered area.</p>
+                                    <h3>What Loads First</h3>
+                                    <p>Incident-level information loads first. Trend and score context are layered in to help you interpret the area without making the first screen feel like a technical dashboard.</p>
 
-                                    <h3>Understanding Data Markers</h3>
-                                    <p>Each data type appears as a differently colored marker on the map. Markers are clustered when zoomed out and expand as you zoom in. Click any marker or cluster to see details.</p>
-
-                                    <h3>Filtering Data</h3>
+                                    <h3>Understanding The Preview</h3>
                                     <ul>
-                                        <li><strong>By data type</strong> &mdash; Toggle categories on/off (Crime, 311, Permits, Violations, Food Inspections, etc.)</li>
-                                        <li><strong>By date range</strong> &mdash; Set start and end dates to narrow results to a specific time period.</li>
+                                        <li><strong>Recent nearby incidents</strong> &mdash; What happened nearby recently.</li>
+                                        <li><strong>Readable summary</strong> &mdash; A plain-language explanation of what stands out.</li>
+                                        <li><strong>Trend context</strong> &mdash; Whether the surrounding city or region is showing meaningful shifts.</li>
+                                        <li><strong>Score context</strong> &mdash; A simplified area score with city-relative and nearby-relative framing.</li>
                                     </ul>
 
-                                    <h3>Viewing Marker Details</h3>
-                                    <p>Clicking a marker opens a popup card showing key details about that data point, including dates, categories, descriptions, and status information.</p>
-
-                                    <h3>Statistics Panel</h3>
-                                    <p>The statistics panel shows aggregate counts and breakdowns for all data currently displayed on your map.</p>
-
-                                    <h3>Saving & Loading Locations</h3>
-                                    <p>Registered users can save locations (e.g., "Home", "Work") to quickly return to areas of interest. Your tier determines how many locations you can save.</p>
+                                    <h3>Next Step</h3>
+                                    <p>If the preview proves useful, you can create an account and move into the daily-report workflow or open the deeper map and analysis tools.</p>
                                 </section>
 
                                 <hr class="my-8" />
 
                                 <!-- Full Data Map -->
                                 <section id="full-data-map">
-                                    <h2>Full Data Map</h2>
+                                    <h2>Explore Tools</h2>
                                     <h3>Single Data Type View</h3>
                                     <p>Access individual data type maps to see all records of a specific type (e.g., all crime incidents, all building permits) across the entire city.</p>
 
@@ -147,7 +141,7 @@
                                     <p>The AI chat assistant can answer questions about the data currently displayed on your map. Ask about patterns, comparisons, or specific incidents.</p>
 
                                     <h3>Generating Location Reports</h3>
-                                    <p>Generate comprehensive streaming reports for any location. Reports analyze all available data within your radius and provide insights, trends, and summaries.</p>
+                                    <p>Generate deeper reports for a location once the preview is not enough. These reports analyze the records around the selected area and provide longer summaries, patterns, and context.</p>
 
                                     <h3>Choosing AI Models</h3>
                                     <p>Pro subscribers can choose between different AI models (OpenAI GPT and Google Gemini) depending on their preference for response style.</p>
@@ -205,17 +199,18 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr><td class="py-2 px-3 font-medium">Boston, MA</td><td class="py-2 px-3">Crime, 311, Building Permits, Property Violations, Food Inspections, Construction Off-Hours</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">Boston, MA</td><td class="py-2 px-3">Crime, 311, Building Permits, Property Violations, Food Inspections, Construction Off-Hours, Car Crashes</td></tr>
                                                 <tr><td class="py-2 px-3 font-medium">Cambridge, MA</td><td class="py-2 px-3">Crime, 311, Building Permits, Housing Violations, Sanitary Inspections</td></tr>
                                                 <tr><td class="py-2 px-3 font-medium">Everett, MA</td><td class="py-2 px-3">Crime (from police PDF reports)</td></tr>
                                                 <tr><td class="py-2 px-3 font-medium">Chicago, IL</td><td class="py-2 px-3">Crime</td></tr>
                                                 <tr><td class="py-2 px-3 font-medium">San Francisco, CA</td><td class="py-2 px-3">Crime</td></tr>
+                                                <tr><td class="py-2 px-3 font-medium">New York, NY</td><td class="py-2 px-3">311 / service requests</td></tr>
                                                 <tr><td class="py-2 px-3 font-medium">Seattle, WA</td><td class="py-2 px-3">Crime</td></tr>
                                                 <tr><td class="py-2 px-3 font-medium">Montgomery County, MD</td><td class="py-2 px-3">Crime</td></tr>
                                             </tbody>
                                         </table>
                                     </div>
-                                    <p class="mt-4">More cities and data types are added regularly. If your city has an open data portal, <Link :href="route('help.contact')" class="text-blue-600 hover:text-blue-800">let us know</Link>!</p>
+                                    <p class="mt-4">City pages are intentionally different from one another. Boston is the broadest multi-dataset surface, several regions are crime-first, and New York is currently 311-first. If your city has an open data portal, <Link :href="route('help.contact')" class="text-blue-600 hover:text-blue-800">let us know</Link>.</p>
                                 </section>
 
                                 <hr class="my-8" />
@@ -264,7 +259,7 @@
                                     <p><Link :href="route('yearly-comparisons.index')" class="text-blue-600 hover:text-blue-800">Yearly Comparisons</Link> show how this year's data compares to previous years. See which categories are increasing or decreasing year-over-year with percentage changes.</p>
 
                                     <h3>Neighborhood Scoring</h3>
-                                    <p><Link :href="route('scoring-reports.index')" class="text-blue-600 hover:text-blue-800">Neighborhood Scores</Link> provide composite safety and livability scores for areas using H3 hexagonal indexing. Scores are calculated from weighted combinations of crime, violations, and service request data. You can drill down by resolution level to see scores at different geographic scales.</p>
+                                    <p><Link :href="route('scoring-reports.index')" class="text-blue-600 hover:text-blue-800">Neighborhood Scores</Link> provide composite area scores using H3 hexagonal indexing. On the crime preview page, those scores are intentionally simplified and shown with city-relative and nearby-relative context. The full scoring tools let you drill down by resolution and inspect the deeper methodology.</p>
 
                                     <h3>AI-Generated News</h3>
                                     <p>News articles are automatically generated from statistical analysis findings, turning data trends into readable narratives.</p>
@@ -332,14 +327,14 @@
                                     <h2>Subscription Plans</h2>
                                     <p>Visit the <Link :href="route('subscription.index')" class="text-blue-600 hover:text-blue-800">Subscription</Link> page to view full plan details and subscribe.</p>
 
-                                    <h3>Free Tier</h3>
-                                    <p>Access to all maps and features with a 2-week data window, 1 saved location, and basic AI features. No credit card required.</p>
+                                    <h3>Registered / Trial State</h3>
+                                    <p>Create an account for free, then start a no-card trial from the crime preview workflow when you want recurring daily reports for one address.</p>
 
                                     <h3>Basic ($5/month)</h3>
-                                    <p>6-month data window, 3 saved locations, and daily AI report generation.</p>
+                                    <p>Best for keeping one address on a recurring daily-report workflow, with deeper everyday local usage than the free state.</p>
 
                                     <h3>Pro ($15/month)</h3>
-                                    <p>Full historical data access, 10 saved locations, unlimited AI reports, CSV data export, and choice of AI models.</p>
+                                    <p>Best for reporters, agents, property operators, and other power users who need the full map, trends, neighborhood scores, exports, and broader multi-neighborhood work.</p>
 
                                     <h3>Managing Your Subscription</h3>
                                     <p>You can upgrade, downgrade, or cancel at any time through the Stripe billing portal. Changes take effect at the start of your next billing cycle.</p>

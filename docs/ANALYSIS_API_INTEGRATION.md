@@ -1,6 +1,6 @@
 # Analysis API Integration
 
-This document covers how the `boston-ai-project` Laravel app integrates with the `open-data-statistics` FastAPI service.
+This document covers how the PublicDataWatch Laravel app integrates with the `open-data-statistics` FastAPI service.
 
 ## Environment Configuration
 
@@ -18,7 +18,7 @@ Accessed in code via `config('services.analysis_api.url')`, configured in `confi
 ## Integration Architecture
 
 ```
-Laravel (boston-ai-project)
+Laravel (PublicDataWatch)
   │
   ├─ Artisan Commands (dispatch jobs) ──────────────────► open-data-statistics API
   │    app:dispatch-statistical-analysis-jobs               POST /api/v1/jobs

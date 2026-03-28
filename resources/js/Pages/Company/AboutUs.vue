@@ -9,7 +9,7 @@
                         About PublicDataWatch
                     </h1>
                     <p class="mt-6 text-xl text-gray-600">
-                        Empowering communities with data-driven insights into their cities.
+                        Helping people understand what is happening around an address before they commit to a place.
                     </p>
                 </div>
 
@@ -17,36 +17,36 @@
                     <section class="mb-10">
                         <h2>Our Mission with PublicDataWatch</h2>
                         <p>
-                            At PublicDataWatch, we believe that access to clear, timely, and comprehensive city data is essential for an engaged and informed community. Our mission is to empower residents, businesses, community organizations, and researchers by transforming complex public data into easily understandable and actionable insights.
+                            At PublicDataWatch, we believe public data is only useful when regular people can actually act on it. Our mission is to turn complex civic records into clear, practical neighborhood context for residents, businesses, reporters, researchers, and local decision-makers.
                         </p>
                         <p>
-                            We aim to provide a transparent window into the daily operations and evolving landscape of cities, fostering a greater understanding of neighborhood dynamics, civic engagement, and urban development. Whether you're looking to stay informed about safety in your area, track local development, or understand service requests, PublicDataWatch is designed to be your go-to resource.
+                            The product starts with one address and one practical question: what is happening around this place right now? From there, users can move into city pages, deeper maps, trend reports, neighborhood scoring, and recurring reports when they need more context.
                         </p>
                     </section>
 
                     <section class="mb-10">
                         <h2>What is PublicDataWatch?</h2>
                         <p>
-                            PublicDataWatch is an innovative web platform that aggregates, visualizes, and analyzes publicly available data from cities. Key features include:
+                            PublicDataWatch is a civic-data platform built around address-first local awareness. Key features include:
                         </p>
                         <ul class="list-disc pl-5 space-y-1">
-                            <li><strong>Interactive Mapping:</strong> Explore crime incidents, 311 service requests, building permits, and property violations on a user-friendly map centered on your location of interest.</li>
-                            <li><strong>AI-Powered Summaries:</strong> Leveraging advanced AI (like Google's Gemini), PublicDataWatch provides concise summaries of events and trends, making complex data more accessible.</li>
-                            <li><strong>Personalized Reports:</strong> Subscribers can receive automated email reports tailored to their saved locations and preferences, delivered in multiple languages.</li>
-                            <li><strong>Advanced Data Tools:</strong> For power users, we offer specialized maps with natural language querying for crime data and detailed search capabilities for 311 cases.</li>
+                            <li><strong>Crime preview around one address:</strong> A stripped-down first answer with incidents, readable summary, and supporting context.</li>
+                            <li><strong>City and region landing pages:</strong> Region-specific pages that reflect what data is actually available in Boston, Everett, Chicago, San Francisco, New York, Montgomery County, Seattle, and beyond.</li>
+                            <li><strong>Interactive maps and analysis tools:</strong> Full map workflows, trends, yearly comparisons, and neighborhood scoring for deeper investigation.</li>
+                            <li><strong>Recurring reports:</strong> Ongoing report workflows for people who want repeated updates instead of one-off browsing.</li>
                         </ul>
                         <p>
-                            We are continuously working to expand our data sources and enhance the features of PublicDataWatch to provide even greater value to our users.
+                            We are continuously working to expand regional coverage, improve clarity, and make local public data easier to use without pretending the data says more than it does.
                         </p>
                     </section>
 
                     <section class="mb-10">
                         <h2>About AlcivarTech LLC</h2>
                         <p>
-                            AlcivarTech LLC is the technology company proudly behind PublicDataWatch. Founded with a passion for urban innovation and data transparency, our core mission is to develop intelligent solutions that address modern urban challenges and enhance the quality of city life.
+                            AlcivarTech LLC is the technology company behind PublicDataWatch. Its work focuses on making complex civic and geospatial information easier to understand and easier to act on.
                         </p>
                         <p>
-                            We specialize in data aggregation, geospatial analysis, and the application of artificial intelligence to create meaningful tools for communities. At AlcivarTech, we believe in the power of technology to foster understanding, drive positive change, and build smarter, more responsive, and more livable cities for everyone.
+                            We specialize in data aggregation, geospatial analysis, and the careful use of AI to build tools that make local public information more legible to non-technical users.
                         </p>
                          <!-- Optional: Add a sentence about your location or founding story if relevant -->
                     </section>

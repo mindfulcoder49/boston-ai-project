@@ -43,10 +43,10 @@
                                         PublicDataWatch is a civic data intelligence platform that takes the public data your city already publishes through open data portals and makes it accessible, visual, and actionable for residents, researchers, and decision-makers.
                                     </p>
                                     <p>
-                                        Rather than requiring residents to navigate complex data portals or download raw CSV files, PublicDataWatch presents city data through interactive maps, automated statistical analysis, AI-generated reports, and neighborhood scoring &mdash; all accessible through a web browser.
+                                        Rather than requiring residents to navigate complex data portals or download raw CSV files, PublicDataWatch starts with an address-first public preview and then expands into city landing pages, interactive maps, automated statistical analysis, AI-generated reports, and neighborhood scoring.
                                     </p>
                                     <p>
-                                        PublicDataWatch currently covers <strong>7 cities</strong> across the United States: Boston, Cambridge, Everett, Chicago, San Francisco, Seattle, and Montgomery County, MD. The platform ingests crime incident reports, 311 service requests, building permits, property violations, food inspections, and more.
+                                        PublicDataWatch currently covers <strong>8 cities and regions</strong> across the United States: Boston, Cambridge, Everett, Chicago, San Francisco, New York, Montgomery County, MD, and Seattle. Coverage is dataset-specific by region: Boston is the broadest multi-dataset area, several cities are crime-first, and New York is currently 311-first.
                                     </p>
                                 </section>
 
@@ -67,7 +67,7 @@
                                         <li><strong>Processing</strong> &mdash; Cleans, normalizes, and geocodes records.</li>
                                         <li><strong>Aggregation</strong> &mdash; Creates unified data points for cross-category analysis.</li>
                                         <li><strong>Analysis</strong> &mdash; Runs statistical trend and anomaly detection.</li>
-                                        <li><strong>Visualization</strong> &mdash; Presents data on interactive maps with filtering and search.</li>
+                                        <li><strong>Visualization</strong> &mdash; Presents data through city landing pages, the crime preview funnel, and deeper map workflows.</li>
                                     </ol>
 
                                     <h3>Refresh Frequency</h3>
@@ -85,7 +85,7 @@
                                     <h2>Benefits for Municipalities</h2>
 
                                     <h3>Citizen Engagement</h3>
-                                    <p>Residents can visually explore their neighborhood's data without technical skills. Interactive maps make public data tangible and engaging, encouraging civic participation.</p>
+                                    <p>Residents can start with one address instead of a raw portal export. That lowers the barrier to exploring neighborhood conditions and makes public data more usable for non-technical audiences.</p>
 
                                     <h3>Transparency</h3>
                                     <p>PublicDataWatch transforms raw data files into accessible visualizations that non-technical audiences can understand, increasing the reach and impact of your open data program.</p>

@@ -87,6 +87,31 @@ test.describe('public surface regressions', () => {
     expect(runtime.pageErrors).toEqual([]);
   });
 
+  test('help surfaces reflect the address-first product and current coverage', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.goto('/help');
+    await expect(page.getByText('PublicDataWatch starts with one address, then expands into city landing pages, maps, trends, scores, and recurring reports.')).toBeVisible();
+    const quickLinksCard = page.getByRole('heading', { name: 'Quick Links' }).locator('..');
+    await expect(quickLinksCard.getByRole('link', { name: 'Crime Preview', exact: true })).toBeVisible();
+    await expect(quickLinksCard.getByRole('link', { name: 'Cities & Coverage', exact: true })).toBeVisible();
+
+    await page.goto('/help/users');
+    await expect(page.getByRole('heading', { name: 'Crime Preview' })).toBeVisible();
+    await expect(page.getByText('New York, NY')).toBeVisible();
+    await expect(page.getByText('Free / Trial')).toBeVisible();
+
+    await page.goto('/help/municipalities');
+    await expect(page.getByText('8 cities and regions')).toBeVisible();
+
+    await page.goto('/help/investors');
+    await expect(page.getByText('8 cities and regions:')).toBeVisible();
+    await expect(page.getByText('Address-first acquisition funnel')).toBeVisible();
+
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
   test('pricing page guest auth links preserve crime-address context', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 

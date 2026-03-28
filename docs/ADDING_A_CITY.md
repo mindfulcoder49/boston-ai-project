@@ -1,16 +1,39 @@
-# Adding a New City to BostonScope
+# Adding a New City to PublicDataWatch
 
-This document provides a comprehensive guide on how to integrate a new city into the BostonScope platform. The architecture is designed to be multi-city, with each city having its own isolated set of databases to ensure scalability and performance.
+This document provides the current guide for integrating a new city or region into PublicDataWatch. The architecture is multi-city, but the product is now also address-first, so onboarding a city means more than seeding a table and hoping the map finds it.
 
-The core concept involves a two-tiered database system for each city:
-1.  **Recent Data DB (`<cityname>_db`)**: Contains the last 6 months of data for all datasets in the city. This database powers the main map interface and is optimized for fast queries. It also contains the city's aggregated `data_points` table.
-2.  **Full Data DB (`<cityname>_data_db`)**: Contains the complete historical data for each dataset. This is used for archival, historical analysis, or future features that require a deep data dive.
+The current onboarding model has four parts:
 
-Let's use "Metropolis" as our example new city.
+1. **Data plumbing**: database connections, models, migrations, download config, and seeders.
+2. **Map plumbing**: aggregated `data_points` tables and model wiring for the radial/full map surfaces.
+3. **Product surfacing**: serviceability rules, city landing page copy, homepage coverage, and navigation exposure.
+4. **Verification**: backend tests, browser checks, and production validation.
+
+Use "Metropolis" as the example new city below.
 
 ---
 
-### Step 1: Database Setup
+## Step 1: Decide The Product Shape First
+
+Before writing migrations, decide what this new city actually is in the product:
+
+- crime-first preview city
+- multi-dataset city
+- 311-first or other dataset-specific city
+- standalone city vs county/region landing page
+
+At minimum, define:
+
+- landing-page slug
+- public-facing city name
+- supported localities
+- city center coordinates
+- which datasets will be public on day one
+- whether `/crime-address` should support the area
+
+That product decision is reflected in `config/cities.php`, the city landing controller content, homepage coverage copy, and tests.
+
+## Step 2: Database Setup
 
 First, you need to create two new databases for Metropolis and configure Laravel to connect to them.
 
@@ -50,7 +73,7 @@ First, you need to create two new databases for Metropolis and configure Laravel
 
 ---
 
-### Step 2: Data Acquisition
+## Step 3: Data Acquisition
 
 Configure the system to download the raw data for the new city.
 
@@ -83,11 +106,11 @@ Configure the system to download the raw data for the new city.
 
 ---
 
-### Step 3: Create the Data Model & Migrations
+## Step 4: Create The Models And Migrations
 
 Create an Eloquent model and the corresponding database table migrations for the new dataset.
 
-1.  **Create Model**: Create a new model, e.g., `app/Models/MetropolisCrime.php`. This model **must** use the `Mappable` trait and implement all its required static methods. It should point to the full data DB connection by default.
+1.  **Create Model**: Create a new model, e.g. `app/Models/MetropolisCrime.php`. This model should use the `Mappable` trait if it needs to appear on the map surfaces. Point it at the full-history DB connection by default.
 
 2.  **Create Migrations**: Create two migration files.
     *   **Full Data Table**: This migration creates the table in the `metropolis_data_db`.
@@ -140,7 +163,7 @@ Create an Eloquent model and the corresponding database table migrations for the
 
 ---
 
-### Step 4: Create the Data Seeder (ETL)
+## Step 5: Create The Data Seeder (ETL)
 
 Create a seeder to process the downloaded CSV and populate both databases.
 
@@ -148,13 +171,21 @@ Create a seeder to process the downloaded CSV and populate both databases.
 php artisan make:seeder MetropolisCrimeSeeder
 ```
 
-This seeder will read the CSV from `storage/app/datasets/metropolis/`, transform the data, and perform `upsert` operations into both the `metropolis_db.metropolis_crimes` table (for recent data) and the `metropolis_data_db.metropolis_crimes` table (for all data). Refer to `ChicagoCrimeSeeder.php` or `PersonCrashDataSeeder.php` for a detailed implementation example.
+This seeder should read the CSV from `storage/app/datasets/metropolis/`, transform the source schema into the app schema, and upsert into both the recent and historical tables where applicable.
+
+Current useful examples:
+
+- `database/seeders/ChicagoCrimeSeeder.php`
+- `database/seeders/SanFranciscoCrimeSeeder.php`
+- `database/seeders/SeattleCrimeSeeder.php`
+- `database/seeders/MontgomeryCountyMdCrimeSeeder.php`
+- `database/seeders/NewYork311Seeder.php`
 
 ---
 
-### Step 5: Create the City's DataPoint Infrastructure
+## Step 6: Create The City DataPoint Infrastructure
 
-This is the aggregation layer that powers the map.
+This is the aggregation layer that powers the radial map and several shared spatial queries.
 
 1.  **Create `DataPoint` Model**: Create a model for the city's aggregated data points, e.g., `app/Models/MetropolisDataPoint.php`.
 
@@ -190,52 +221,77 @@ This is the aggregation layer that powers the map.
     }
     ```
 
-3.  **Create `DataPoint` Seeder**: Create a seeder, e.g., `MetropolisDataPointSeeder.php`, that reads from the recent data tables (like `metropolis_crimes`) and populates the `metropolis_data_points` table. Refer to `ChicagoDataPointSeeder.php` for an implementation example.
+3.  **Create `DataPoint` Seeder**: Create a seeder, e.g. `MetropolisDataPointSeeder.php`, that reads from the recent-data tables and populates the `metropolis_data_points` table. Refer to `ChicagoDataPointSeeder.php` or `NewYorkDataPointSeeder.php` for concrete examples.
 
 ---
 
-### Step 6: Integrate with the Application
+## Step 7: Register The City In App Config
 
-Finally, make the `GenericMapController` aware of the new city.
+Register the city in `config/cities.php`.
 
-1.  **Add Linkable Models**: In `app/Http/Controllers/GenericMapController.php`, add a new constant array for Metropolis's mappable models.
+At minimum, define:
 
-    ```php
-    // app/Http/Controllers/GenericMapController.php
-    private const METROPOLIS_LINKABLE_MODELS = [
-        \App\Models\MetropolisCrime::class,
-        // Add other Metropolis models here
-    ];
-    ```
+- `display_name`
+- `slug`
+- `center_lat`
+- `center_lng`
+- `supported_localities`
+- `data_points_table`
+- `db_connection`
+- `linkable_models`
+- `data_types`
 
-2.  **Update City Context Logic**: Modify the `getCityContext` method to include Metropolis. Add its coordinates and return the correct context array when the request location is closest to it.
+This config now feeds:
 
-    ```php
-    // app/Http/Controllers/GenericMapController.php
-    protected function getCityContext(float $latitude, float $longitude): array
-    {
-        // ... coordinates for Boston, Chicago
-        $metropolisLat = 29.7604; // Example: Houston
-        $metropolisLon = -95.3698;
+- map-city context
+- address serviceability decisions
+- city landing routing
+- homepage and footer coverage links
 
-        // ... distance calculations for Boston, Chicago
-        // ... calculate distance to Metropolis
-
-        if ($distMetropolis < $distChicago && $distMetropolis < $distBoston) {
-             return [
-                'city' => 'metropolis',
-                'data_points_table' => 'metropolis_data_points',
-                'linkable_models' => self::METROPOLIS_LINKABLE_MODELS,
-                'db_connection' => 'metropolis_db',
-            ];
-        }
-        // ... other city checks
-    }
-    ```
+If the new city should appear in the public city nav/footer, also update `resources/js/Utils/publicNavigation.js`.
 
 ---
 
-### Step 7: Execution Workflow
+## Step 8: Add Product Surfaces
+
+Do not stop at the DB layer. Add the city to the actual user-facing product.
+
+1. **City landing page**
+   - add copy in `app/Http/Controllers/CityLandingController.php`
+   - confirm dataset labels and related links look right
+
+2. **Homepage coverage**
+   - update `resources/js/Pages/Home.vue` or the backing controller payload if the new city should appear in the homepage coverage block
+
+3. **Crime preview support**
+   - if the area should be supported in `/crime-address`, update `config/cities.php` and confirm the serviceability logic recognizes the localities correctly
+   - if the area should not be supported yet, leave it out of the funnel so unsupported-address behavior stays honest
+
+4. **SEO and sitemap**
+   - confirm titles/descriptions are sensible
+   - confirm the city landing page should be indexable
+
+---
+
+## Step 9: Add Tests
+
+Minimum expected coverage for a new city:
+
+- feature tests for city landing resolution and metadata
+- serviceability tests if the city participates in `/crime-address`
+- seeder or parsing tests for any nontrivial source transformation
+- Playwright regression coverage if the city has a public landing page or preview flow
+
+Useful existing references:
+
+- `tests/Feature/CityLandingTest.php`
+- `tests/Feature/CrimeAddressFunnel/*`
+- `tests/e2e/public-surface-regressions.spec.ts`
+- `tests/e2e/crime-address-production.spec.ts`
+
+---
+
+## Step 10: Execution Workflow
 
 Run the following commands in order to bring the new city online.
 
@@ -256,4 +312,17 @@ Run the following commands in order to bring the new city online.
     php artisan db:seed --class=MetropolisDataPointSeeder
     ```
 
-Your new city, Metropolis, should now be fully integrated and accessible through the map interface when the map is centered on its location.
+4. **Build and verify**:
+   ```bash
+   ./vendor/bin/sail test
+   npx playwright test tests/e2e/public-surface-regressions.spec.ts
+   npm run build
+   ```
+
+5. **Deploy and verify production**:
+   - push `main`
+   - SSH using the alias from local `~/.ssh/config`
+   - run `~/publicdatawatchdeploy.sh`
+   - verify the city landing page, relevant map surface, and preview flow if applicable
+
+Metropolis should now be integrated at the data, map, and product layers, not just present in one database table.

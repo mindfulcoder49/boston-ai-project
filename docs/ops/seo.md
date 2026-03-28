@@ -2,102 +2,142 @@
 
 ## Purpose
 
-Drive steady discoverability from search engines and LLM discovery surfaces using low-risk frontend and content improvements.
+Grow search and LLM discovery through pages that match real user intent instead of generic map-tool language.
 
-## Primary Outcomes
+## Current Search-Facing Surfaces
 
-- stronger organic entry points
-- cleaner indexable landing pages
-- better internal linking and metadata
-- better discoverability for city-specific and neighborhood-specific use cases
+Primary indexable surfaces should be:
 
-## Scope
+- homepage `/`
+- crime preview `/crime-address`
+- city and region landing pages `/{city-slug}`
+- pricing `/subscription`
+- help pages
+- about page
+- news pages
 
-This work should favor low-breakage changes:
-- metadata
-- titles and descriptions
-- schema where useful
-- internal links
-- crawl/index hygiene
+## Current SEO Thesis
+
+PublicDataWatch should be discoverable through two complementary search shapes:
+
+1. **Address-intent / neighborhood-intent**
+   - “crime near my address”
+   - “what crime is happening around [place]”
+   - “neighborhood crime map”
+
+2. **City-intent / region-intent**
+   - “Boston crime map”
+   - “New York 311 map”
+   - “Montgomery County crime map”
+   - similar city-specific searches
+
+## City Landing Strategy
+
+City landing pages are now a primary SEO surface, not an afterthought.
+
+They should:
+
+- match the actual dataset mix for that region
+- avoid pretending every city has the same data
+- explain what the user can do there quickly
+- link into `/crime-address` when the region supports the crime preview funnel
+
+Important nuance:
+
+- Boston is a multi-dataset page
+- New York is 311-first
+- several other regions are crime-first
+
+## Homepage SEO Role
+
+The homepage should rank for the broader product story:
+
+- crime around your address
+- local public-data context
+- daily neighborhood awareness
+
+It should support city pages, not cannibalize them.
+
+## Current Repo Guidance
+
+Current SEO-critical files:
+
+- `app/Support/SeoMetadata.php`
+- `app/Http/Controllers/SitemapController.php`
+- `resources/js/Pages/Home.vue`
+- `resources/js/Pages/CrimeAddress/Index.vue`
+- `app/Http/Controllers/CityLandingController.php`
+- `resources/js/Pages/CityMapLite.vue`
+- `resources/js/Utils/publicNavigation.js`
+
+## Current Search Measurement State
+
+- Search Console access is available through [tools/analytics](../../tools/analytics/README.md)
+- default property: `sc-domain:publicdatawatch.com`
+- production sitemap: `https://publicdatawatch.com/sitemap.xml`
+
+Search performance is still early and sparse, so current SEO work should remain biased toward:
+
+- clean metadata
+- internal linking
 - page clarity
-- landing-page copy improvements
-
-## First Objectives
-
-1. Audit technical SEO basics.
-2. Review city landing pages for search intent and clarity.
-3. Define high-priority search surfaces.
-4. Build a queue of low-risk frontend SEO improvements.
+- sitemap hygiene
+- consistent city-page positioning
 
 ## Areas To Review
 
-- page titles
-- meta descriptions
-- canonical behavior
-- sitemap and robots behavior
-- crawlability of public pages
-- link structure between home, city pages, and maps
-- content structure for city pages like `/everett`
-- whether public pages communicate value clearly to both humans and search systems
+- titles and descriptions for `/`, `/crime-address`, and all city pages
+- consistency between city page copy and actual dataset coverage
+- internal links from home, footer, help, and pricing into city pages and the preview funnel
+- sitemap inclusion for key public pages
+- whether report viewers should remain indexable
 
-## Current Repo Finding
+## Current Indexation Decision Area
 
-Public analysis and scoring pages are currently indexable with generic metadata.
+Public report and artifact-style pages can still enter search if left indexable.
 
-What the code does today:
-- `SeoMetadata` only forces `noindex, nofollow` for admin, auth, and profile surfaces
-- public report routes such as `/reports/statistical-analysis/{jobId}`, `/reports/yearly-comparison/{jobId}`, and `/scoring-reports/{jobId}/{artifactName}` stay `index, follow`
-- the affected page components mostly provide title-only page metadata
-- no dedicated structured data exists for those report viewers
+That creates a product decision:
 
-Why this matters:
-- operational or artifact-style pages can enter search indices
-- snippets are likely weak because descriptions are generic or absent
-- search inventory can drift away from the intended landing/news/help surfaces
+- deliberately support them as search surfaces with strong metadata and structure
+- or mark them `noindex` so search stays focused on landing pages, help, pricing, and news
 
-Near-term decision required:
-- either promote those report pages as deliberate SEO surfaces with dedicated titles, descriptions, and schema
-- or mark them `noindex` so indexation stays focused on city pages, help content, pricing, and news
+This remains a founder-review policy question, not a casual implementation detail.
 
 ## LLM Discoverability
 
-Treat LLM discoverability as adjacent to SEO:
-- clear page purpose
-- stable public URLs
-- good headings
-- concise, specific copy
-- structured summaries
-- transparent data sourcing
+LLM discovery improves when public pages are:
+
+- explicit about purpose
+- stable at the URL level
+- clear in headings
+- careful about methodology and limits
+- internally well linked
+
+City landing pages and help pages matter here just as much as classic SEO pages.
 
 ## Weekly Review Loop
 
-1. Review search performance and landing-page traffic.
-2. Review pages with impressions but weak clickthrough.
-3. Select one to three low-risk SEO/frontend changes.
-4. Ship and measure impact.
+1. Review Search Console performance.
+2. Review landing-page traffic in GA4.
+3. Pick one to three low-risk SEO improvements.
+4. Ship and measure.
 
-## Inputs Required From Founder
+## Safe Agent-Driven Work
 
-- Search Console access or exports
-- any historical SEO work or constraints
-- approval for public copy changes where messaging matters
-
-## Agent-Driven Work
-
-- technical SEO audit
-- landing-page recommendations
 - metadata improvements
-- issue backlog creation
-- copy drafts for search-facing pages
+- sitemap and internal-link fixes
+- city-page copy improvements
+- help-page clarity improvements
+- search-facing IA cleanup
 
-## Founder-Required Actions
+## Founder-Review Work
 
-- Search Console access
-- final approval on major public messaging changes if desired
+- deciding whether public report pages stay indexable
+- approving major messaging shifts on search-facing pages when positioning changes materially
 
 ## Near-Term Deliverables
 
-- SEO audit
-- city-page SEO recommendations
-- low-risk frontend SEO backlog
-- search measurement checklist
+- maintain homepage and crime-preview metadata quality
+- maintain city landing pages as the main city-intent entry points
+- improve city page to preview linking
+- keep help/about/pricing aligned with the address-first product story

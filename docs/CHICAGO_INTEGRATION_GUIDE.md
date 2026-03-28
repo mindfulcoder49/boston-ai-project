@@ -1,20 +1,30 @@
 # Chicago Integration Guide
 
-This document outlines the specific steps and files created to integrate the City of Chicago's data into the BostonScope platform. It serves as a concrete example of the multi-city architecture described in `adding_a_new_city.md`.
+This document outlines how Chicago is integrated into the current PublicDataWatch product. It is both a historical example of the multi-city architecture and a practical reference for how a crime-first city should connect to the address-first funnel and city landing surfaces.
 
 ## 1. Overview
 
-The goal was to add Chicago crime data while keeping it isolated from the existing Boston-area data. This was achieved by creating two new database connections (`chicago_db` for recent data, `chicago_crime_db` for all data) and a set of models, migrations, and seeders specific to Chicago. The `GenericMapController` was then updated to be "city-aware," dynamically serving data based on the map's location.
+Chicago is a crime-first city in the product:
+
+- public landing page: `/chicago`
+- public funnel eligibility: supported in `/crime-address`
+- recent-data connection: `chicago_db`
+- full-history connection: `chicago_crime_db`
+- aggregated map table: `chicago_data_points`
+
+The goal was to add Chicago while keeping its data isolated from the Boston-area databases and still letting the shared map, landing-page, and preview systems work correctly.
 
 ---
 
 ## 2. File-by-File Implementation Details
 
-### Configuration
+### Configuration And Product Registration
 
 1.  **Database Connections (`config/database.php`)**: Two new database connections were defined to handle Chicago's data, pointing to `chicago_db` and `chicago_crime_db`.
 
 2.  **Dataset Definition (`config/datasets.php`)**: The Chicago Crimes dataset was added to the configuration to enable downloading via the `app:download-city-dataset` command.
+
+3.  **City Registration (`config/cities.php`)**: Chicago is registered with its display name, supported localities, `chicago_data_points` table, `chicago_db` connection, and linkable models so the map and serviceability layers can resolve it consistently.
 
 ### Models
 
@@ -64,15 +74,17 @@ Two new seeders were created to handle the Extract, Transform, Load (ETL) proces
     *   Transforms each record into a standardized `DataPoint` format.
     *   Upserts the transformed records into the `chicago_data_points` table.
 
-### Controller Modifications
+### Controller And Public-Surface Integration
 
-The `app/Http/Controllers/GenericMapController.php` was significantly updated to support multiple cities.
+Chicago is now wired into more than the old multi-city map controller.
 
-1.  **Linkable Models**: A new `CHICAGO_LINKABLE_MODELS` constant was added to define which models are available for the Chicago context.
+1.  **Generic map context**: `app/Http/Controllers/GenericMapController.php` serves Chicago through its city context and linkable models when the shared map is centered on Chicago.
 
-2.  **City Context Detection (`getCityContext` method)**: A new helper method was created to determine the closest city based on the latitude and longitude of the user's request. It returns a context array containing the appropriate database connection, `data_points` table name, and list of linkable models.
+2.  **Address-first funnel**: `config/cities.php` and the serviceability layer allow supported Chicago addresses to enter `/crime-address` without pretending unsupported areas are covered.
 
-3.  **Dynamic Querying**: The `getRadialMapData` method now calls `getCityContext` at the beginning of a request. It uses the returned context to dynamically set the DB connection and table names for its queries, ensuring it pulls data from the correct city's database.
+3.  **City landing page**: `app/Http/Controllers/CityLandingController.php` and `resources/js/Pages/CityMapLite.vue` give Chicago a city-specific landing page rather than relying on a generic shell.
+
+4.  **Navigation and discovery**: `resources/js/Utils/publicNavigation.js`, the homepage coverage section, the footer, and the sitemap all help Chicago behave like a real public entry point.
 
 ---
 
@@ -97,4 +109,10 @@ To deploy the Chicago integration from scratch, the following Artisan commands m
     php artisan db:seed --class=ChicagoDataPointSeeder
     ```
 
-After these steps, the Chicago data is fully integrated and will be served automatically when the map is used in the Chicago area.
+4.  **Verify the public surfaces**:
+    ```bash
+    ./vendor/bin/sail test tests/Feature/CityLandingTest.php
+    npx playwright test tests/e2e/public-surface-regressions.spec.ts
+    ```
+
+After these steps, Chicago is fully integrated across the data layer, shared maps, city landing page, and address-preview funnel.

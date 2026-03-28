@@ -11,7 +11,7 @@
                             PublicDataWatch Help Center
                         </h1>
                         <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                            PublicDataWatch aggregates, analyzes, and visualizes public data from multiple cities to help you understand your urban environment. Find the guide that's right for you below.
+                            PublicDataWatch starts with one address, then expands into city landing pages, maps, trends, scores, and recurring reports. Find the guide that matches how you use the product.
                         </p>
                     </div>
 
@@ -81,12 +81,19 @@
                     <!-- Quick Links -->
                     <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
                         <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Links</h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <Link :href="route('help.contact')" class="flex items-center text-blue-600 hover:text-blue-800">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <Link :href="route('crime-address.index')" class="flex items-center text-blue-600 hover:text-blue-800">
                                 <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7z" />
+                                    <circle cx="12" cy="9" r="2.5" />
                                 </svg>
-                                Feedback & Support
+                                Crime Preview
+                            </Link>
+                            <Link :href="`${route('home')}#cities`" class="flex items-center text-blue-600 hover:text-blue-800">
+                                <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 21v-4.5m7.5 4.5v-4.5M3 10.5 12 3l9 7.5M4.5 9.75V21h15V9.75" />
+                                </svg>
+                                Cities & Coverage
                             </Link>
                             <Link :href="route('subscription.index')" class="flex items-center text-blue-600 hover:text-blue-800">
                                 <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -94,11 +101,11 @@
                                 </svg>
                                 Pricing & Plans
                             </Link>
-                            <Link :href="route('about.us')" class="flex items-center text-blue-600 hover:text-blue-800">
+                            <Link :href="route('help.contact')" class="flex items-center text-blue-600 hover:text-blue-800">
                                 <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                                 </svg>
-                                About Us
+                                Feedback & Support
                             </Link>
                         </div>
                     </div>
