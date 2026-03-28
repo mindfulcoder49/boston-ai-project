@@ -14,6 +14,18 @@ const EXCLUDED_PATH_PREFIXES = [
   '/csvreports',
 ];
 
+const PAGE_LOCATION_QUERY_PARAM_ALLOWLIST = new Set([
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'utm_id',
+  'gclid',
+  'fbclid',
+  'msclkid',
+]);
+
 function inferDeviceType() {
   if (typeof window === 'undefined') {
     return 'unknown';
@@ -36,6 +48,44 @@ function normalizeCity(city) {
   }
 
   return String(city).trim().toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
+}
+
+export function normalizePagePathForAnalytics(path = '') {
+  if (!path) {
+    return '';
+  }
+
+  try {
+    const base = typeof window !== 'undefined' ? window.location.origin : 'https://publicdatawatch.com';
+    return new URL(path, base).pathname || '';
+  } catch (error) {
+    return String(path).split('?')[0].split('#')[0] || '';
+  }
+}
+
+export function normalizePageLocationForAnalytics(location = '') {
+  if (!location) {
+    return '';
+  }
+
+  try {
+    const base = typeof window !== 'undefined' ? window.location.origin : 'https://publicdatawatch.com';
+    const url = new URL(location, base);
+    const filteredParams = new URLSearchParams();
+
+    for (const [key, value] of url.searchParams.entries()) {
+      if (PAGE_LOCATION_QUERY_PARAM_ALLOWLIST.has(key)) {
+        filteredParams.append(key, value);
+      }
+    }
+
+    url.search = filteredParams.toString() ? `?${filteredParams.toString()}` : '';
+    url.hash = '';
+
+    return url.toString();
+  } catch (error) {
+    return String(location).split('#')[0];
+  }
 }
 
 function inferPageType(path = '') {
@@ -116,7 +166,9 @@ export function buildCommonEventParams({
   isAuthenticated,
   params = {},
 } = {}) {
-  const pagePath = params.page_path || (typeof window !== 'undefined' ? window.location.pathname : '');
+  const pagePath = normalizePagePathForAnalytics(
+    params.page_path || (typeof window !== 'undefined' ? window.location.pathname : '')
+  );
 
   return sanitizeParams({
     page_type: pageType || inferPageType(pagePath),
@@ -125,6 +177,10 @@ export function buildCommonEventParams({
     device_type: inferDeviceType(),
     is_authenticated: isAuthenticated,
     ...params,
+    page_path: pagePath,
+    page_location: params.page_location
+      ? normalizePageLocationForAnalytics(params.page_location)
+      : undefined,
   });
 }
 
@@ -148,8 +204,8 @@ export function trackPageView(options = {}) {
     ...options,
     params: {
       page_title: typeof document !== 'undefined' ? document.title : '',
-      page_location: defaultLocation,
-      page_path: defaultPath,
+      page_location: normalizePageLocationForAnalytics(defaultLocation),
+      page_path: normalizePagePathForAnalytics(defaultPath),
       ...(options.params || {}),
     },
   });

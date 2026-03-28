@@ -36,8 +36,12 @@ class SeoMetadata
     {
         return match ($component) {
             'Home' => [
-                'title' => 'PublicDataWatch | Civic Data Intelligence for Your City',
-                'description' => 'Explore crime data, 311 requests, permits, inspections, and neighborhood trends across Boston, Everett, Chicago, Seattle, New York, San Francisco, and more.',
+                'title' => 'PublicDataWatch | Know What Crime Is Happening Around Your Address',
+                'description' => 'Search an address to see recent nearby crime, readable local context, neighborhood score framing, and the daily-report workflow across supported regions.',
+            ],
+            'CrimeAddress/Index' => [
+                'title' => 'Crime Around Your Address | PublicDataWatch',
+                'description' => 'Enter an address to see recent nearby crime, simplified trend context, and neighborhood score framing before you commit to a place.',
             ],
             'Company/AboutUs' => [
                 'title' => 'About PublicDataWatch | Civic Data Intelligence for Cities',
@@ -69,7 +73,7 @@ class SeoMetadata
             ],
             'Subscription' => [
                 'title' => 'Pricing And Subscription Plans | PublicDataWatch',
-                'description' => 'Compare PublicDataWatch plans for residents, researchers, and professionals who need deeper city-data access.',
+                'description' => 'Compare PublicDataWatch plans for daily one-address crime reports or fuller map, trend, and scoring workflows.',
             ],
             'CityMapLite' => self::cityLandingMetadata($props),
             'CombinedDataMap' => [

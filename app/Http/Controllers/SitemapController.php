@@ -14,6 +14,7 @@ class SitemapController extends Controller
         $staticUrls = collect([
             ['loc' => self::BASE_URL . '/', 'changefreq' => 'daily', 'priority' => '1.0'],
             ['loc' => self::BASE_URL . '/about-us', 'changefreq' => 'monthly', 'priority' => '0.7'],
+            ['loc' => self::BASE_URL . '/crime-address', 'changefreq' => 'daily', 'priority' => '0.9'],
             ['loc' => self::BASE_URL . '/help', 'changefreq' => 'monthly', 'priority' => '0.7'],
             ['loc' => self::BASE_URL . '/help/users', 'changefreq' => 'monthly', 'priority' => '0.6'],
             ['loc' => self::BASE_URL . '/help/municipalities', 'changefreq' => 'monthly', 'priority' => '0.6'],
@@ -24,6 +25,9 @@ class SitemapController extends Controller
             ['loc' => self::BASE_URL . '/map', 'changefreq' => 'weekly', 'priority' => '0.7'],
             ['loc' => self::BASE_URL . '/combined-map', 'changefreq' => 'weekly', 'priority' => '0.7'],
             ['loc' => self::BASE_URL . '/hotspots', 'changefreq' => 'weekly', 'priority' => '0.6'],
+            ['loc' => self::BASE_URL . '/trends', 'changefreq' => 'weekly', 'priority' => '0.7'],
+            ['loc' => self::BASE_URL . '/yearly-comparisons', 'changefreq' => 'weekly', 'priority' => '0.6'],
+            ['loc' => self::BASE_URL . '/scoring-reports', 'changefreq' => 'weekly', 'priority' => '0.6'],
             ['loc' => self::BASE_URL . '/data-metrics', 'changefreq' => 'weekly', 'priority' => '0.6'],
             ['loc' => self::BASE_URL . '/news', 'changefreq' => 'daily', 'priority' => '0.8'],
             ['loc' => self::BASE_URL . '/privacy-policy', 'changefreq' => 'yearly', 'priority' => '0.3'],
