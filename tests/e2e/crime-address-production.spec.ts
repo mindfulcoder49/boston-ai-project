@@ -190,6 +190,7 @@ test.describe('crime-address live regional coverage', () => {
       if (scenario.expectNeighborhoodScore) {
         expect(previewResponse.score_report).toBeTruthy();
         await expect(page.getByTestId('crime-address-neighborhood-score-value')).toHaveText(/^\d+(\.\d+)?$/);
+        await expect(page.getByTestId('crime-address-score-context')).toBeVisible();
       }
 
       await expect(page.getByText('Address Report', { exact: true })).toBeVisible();
@@ -264,6 +265,22 @@ test.describe('crime-address live regional coverage', () => {
 
     await expect(page.getByRole('heading', { name: 'We do not serve your address yet.' })).toBeVisible();
     await expect(page.getByPlaceholder('Email for updates')).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
+  test('homepage keeps the address funnel and grouped navigation intact', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.goto('/');
+
+    await expect(page.getByRole('heading', { name: /Know what crime is happening around your address/i })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'Crime Preview', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('button', { name: 'Cities' })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('button', { name: 'Explore' })).toBeVisible();
+    await expect(page.getByText('Supported cities and regions')).toBeVisible();
+    await expect(page.getByText('Cities & Regions')).toBeVisible();
+
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);
   });

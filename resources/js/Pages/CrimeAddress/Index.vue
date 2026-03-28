@@ -98,19 +98,25 @@
                   </p>
                 </div>
                 <div
-                  class="rounded-2xl bg-slate-100 px-4 py-3 text-right"
+                  class="min-w-[220px] rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-left"
                   data-testid="crime-address-neighborhood-score-card"
                 >
-                  <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Neighborhood Score</p>
+                  <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Address-Area Score</p>
                   <p
-                    v-if="scoreContext?.score_details?.score !== undefined"
-                    class="mt-1 text-3xl font-black text-slate-900"
+                    v-if="scoreValue !== null"
+                    class="mt-2 text-3xl font-black text-slate-900"
                     data-testid="crime-address-neighborhood-score-value"
                   >
-                    {{ Number(scoreContext.score_details.score).toFixed(1) }}
+                    {{ Number(scoreValue).toFixed(1) }}
+                  </p>
+                  <p v-if="scoreSummary?.band?.label" class="mt-1 text-sm font-semibold text-slate-700">
+                    {{ scoreSummary.band.label }}
+                  </p>
+                  <p class="mt-2 text-xs leading-5 text-slate-500">
+                    Applies to the scored hexagon around this address, not an individual parcel boundary.
                   </p>
                   <p
-                    v-else
+                    v-if="scoreValue === null"
                     class="mt-1 text-sm text-slate-500"
                     data-testid="crime-address-neighborhood-score-unavailable"
                   >
@@ -124,6 +130,100 @@
                   :center="{ latitude: preview.latitude, longitude: preview.longitude }"
                   :incidents="preview.map_data.incidents"
                 />
+              </div>
+
+              <div
+                class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5"
+                data-testid="crime-address-score-context"
+              >
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                  <div class="max-w-xl">
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">How To Read This Score</p>
+                    <h3 class="mt-2 text-xl font-bold text-slate-900">
+                      {{ scoreSummary?.band?.label || 'Waiting for score context' }}
+                    </h3>
+                    <p class="mt-2 text-sm leading-7 text-slate-600">
+                      {{ scoreSummary?.band?.description || scoreContextFallbackMessage }}
+                    </p>
+                  </div>
+                  <div class="rounded-2xl bg-white px-4 py-3 text-sm text-slate-500">
+                    <p class="font-semibold text-slate-900">{{ scoreSourceLabel }}</p>
+                    <p class="mt-1">{{ scoreMethodologyText }}</p>
+                  </div>
+                </div>
+
+                <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div class="rounded-2xl bg-white p-4">
+                    <p class="text-xs uppercase tracking-[0.16em] text-slate-400">City Percentile</p>
+                    <p class="mt-2 text-2xl font-black text-slate-900">{{ scorePercentileLabel }}</p>
+                    <p class="mt-1 text-sm text-slate-500">Relative concern within {{ preview.matched_city_name }}</p>
+                  </div>
+                  <div class="rounded-2xl bg-white p-4">
+                    <p class="text-xs uppercase tracking-[0.16em] text-slate-400">City Median</p>
+                    <p class="mt-2 text-2xl font-black text-slate-900">{{ distributionMedianLabel }}</p>
+                    <p class="mt-1 text-sm text-slate-500">Middle scored area in this city or region</p>
+                  </div>
+                  <div class="rounded-2xl bg-white p-4">
+                    <p class="text-xs uppercase tracking-[0.16em] text-slate-400">Nearby Median</p>
+                    <p class="mt-2 text-2xl font-black text-slate-900">{{ nearbyMedianLabel }}</p>
+                    <p class="mt-1 text-sm text-slate-500">{{ nearbyComparisonLabel }}</p>
+                  </div>
+                  <div class="rounded-2xl bg-white p-4">
+                    <p class="text-xs uppercase tracking-[0.16em] text-slate-400">Scored Areas</p>
+                    <p class="mt-2 text-2xl font-black text-slate-900">{{ scoreDistributionCountLabel }}</p>
+                    <p class="mt-1 text-sm text-slate-500">Distribution sample behind this comparison</p>
+                  </div>
+                </div>
+
+                <div class="mt-5 grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
+                  <div>
+                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Top Score Drivers</p>
+                    <ul v-if="scoreTopDrivers.length" class="mt-3 space-y-3">
+                      <li
+                        v-for="driver in scoreTopDrivers"
+                        :key="driver.label"
+                        class="flex items-center justify-between rounded-2xl bg-white px-4 py-3"
+                      >
+                        <div>
+                          <p class="text-sm font-semibold text-slate-900">{{ driver.label }}</p>
+                          <p class="text-xs text-slate-500">{{ driver.share_percent !== null ? `${driver.share_percent}% of weighted score` : 'Driver contribution' }}</p>
+                        </div>
+                        <p class="text-sm font-bold text-slate-700">{{ Number(driver.weighted_score).toFixed(1) }}</p>
+                      </li>
+                    </ul>
+                    <p v-else class="mt-3 text-sm leading-6 text-slate-600">
+                      The score loaded, but detailed driver composition was not available for this area.
+                    </p>
+                  </div>
+
+                  <div class="grid gap-3 sm:min-w-[220px]">
+                    <Link
+                      v-if="cityLandingHref"
+                      :href="cityLandingHref"
+                      class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                    >
+                      Open city page
+                    </Link>
+                    <Link
+                      :href="route('data-map.combined')"
+                      class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                    >
+                      Open full data map
+                    </Link>
+                    <Link
+                      :href="trendViewerHref"
+                      class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                    >
+                      Browse trends
+                    </Link>
+                    <Link
+                      :href="scoreViewerHref"
+                      class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-white"
+                    >
+                      Open scoring tools
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -417,23 +517,133 @@ const pricingHref = computed(() => route('subscription.index', {
   source: 'crime-address',
   recommended: hasExpiredTrial.value ? 'basic' : undefined,
 }));
+const scoreSummary = computed(() => scoreContext.value?.score_context ?? null);
+const scoreValue = computed(() => {
+  const summaryScore = scoreSummary.value?.score;
+  if (summaryScore !== undefined && summaryScore !== null) {
+    return Number(summaryScore);
+  }
+
+  const detailsScore = scoreContext.value?.score_details?.score;
+  return detailsScore !== undefined ? Number(detailsScore) : null;
+});
+const scoreTopDrivers = computed(() => scoreSummary.value?.top_drivers ?? []);
+const scorePercentileLabel = computed(() => {
+  if (scoreSummary.value?.percentile === undefined || scoreSummary.value?.percentile === null) {
+    return scoreLoading.value ? 'Loading…' : 'Unavailable';
+  }
+
+  return formatOrdinal(Math.round(Number(scoreSummary.value.percentile)));
+});
+const distributionMedianLabel = computed(() => {
+  const median = scoreSummary.value?.distribution?.median;
+  return median !== undefined && median !== null ? Number(median).toFixed(1) : 'Unavailable';
+});
+const nearbyMedianLabel = computed(() => {
+  const median = scoreSummary.value?.nearby_peers?.median;
+  return median !== undefined && median !== null ? Number(median).toFixed(1) : 'No nearby peer score';
+});
+const nearbyComparisonLabel = computed(() => {
+  if (!scoreSummary.value?.nearby_peers?.available) {
+    return 'No adjacent scored cells available for comparison';
+  }
+
+  const delta = Number(scoreSummary.value.nearby_peers?.current_vs_median ?? 0);
+  if (delta === 0) {
+    return 'This address-area sits right on the nearby median';
+  }
+
+  return delta > 0
+    ? `${delta.toFixed(1)} above nearby median`
+    : `${Math.abs(delta).toFixed(1)} below nearby median`;
+});
+const scoreDistributionCountLabel = computed(() => {
+  const count = scoreSummary.value?.distribution?.count;
+  return count !== undefined && count !== null ? String(count) : 'Unavailable';
+});
+const scoreSourceLabel = computed(() => {
+  const source = scoreSummary.value?.methodology?.source;
+  if (source === 'stage4_fallback') {
+    return 'Preview score estimate';
+  }
+
+  if (source === 'stage6_artifact') {
+    return 'Historical neighborhood score';
+  }
+
+  return scoreLoading.value ? 'Loading score source…' : 'Score source unavailable';
+});
+const scoreMethodologyText = computed(() => {
+  if (!scoreSummary.value?.methodology) {
+    return scoreLoading.value
+      ? 'Building city and nearby comparisons for this address.'
+      : 'This score will load with city and nearby comparison context when available.';
+  }
+
+  const weeks = scoreSummary.value.methodology.analysis_period_weeks;
+  const resolution = scoreSummary.value.methodology.resolution;
+
+  if (weeks) {
+    return `Based on a ${weeks}-week scoring window at H3 resolution ${resolution}.`;
+  }
+
+  return `Built from the scored H3 cell around this address at resolution ${resolution}.`;
+});
+const scoreContextFallbackMessage = computed(() => {
+  if (scoreLoading.value) {
+    return 'Building city-level and nearby-area comparison context for this address now.';
+  }
+
+  return 'A single score without nearby and city context is not useful. When scoring is available, this section explains how the address-area compares locally.';
+});
+const cityLandingHref = computed(() => {
+  const routeNameByCity = {
+    boston: 'city.landing.boston',
+    everett: 'city.landing.everett',
+    chicago: 'city.landing.chicago',
+    san_francisco: 'city.landing.san_francisco',
+    seattle: 'city.landing.seattle',
+    montgomery_county_md: 'city.landing.montgomery_county_md',
+  };
+
+  const routeName = routeNameByCity[preview.value?.matched_city_key];
+  return routeName ? route(routeName) : null;
+});
+const trendViewerHref = computed(() => {
+  if (preview.value?.trend_context?.job_id) {
+    return route('reports.statistical-analysis.show', { jobId: preview.value.trend_context.job_id });
+  }
+
+  return route('trends.index');
+});
+const scoreViewerHref = computed(() => {
+  if (preview.value?.score_report?.job_id && preview.value?.score_report?.artifact_name) {
+    return route('scoring-reports.show', {
+      jobId: preview.value.score_report.job_id,
+      artifactName: preview.value.score_report.artifact_name,
+    });
+  }
+
+  return route('scoring-reports.index');
+});
 
 const reportSections = computed(() => {
   const sections = [...(preview.value?.preview_report ?? [])];
 
-  if (scoreContext.value?.score_details?.score !== undefined) {
-    const composition = scoreContext.value.score_details.score_composition ?? [];
-    const topDrivers = composition
-      .sort((a, b) => Number(b.weighted_score ?? 0) - Number(a.weighted_score ?? 0))
+  if (scoreValue.value !== null) {
+    const topDrivers = scoreTopDrivers.value
       .slice(0, 3)
-      .map((entry) => `${entry.secondary_group} (${Number(entry.weighted_score ?? 0).toFixed(1)})`)
+      .map((entry) => `${entry.label} (${Number(entry.weighted_score ?? 0).toFixed(1)})`)
       .join(', ');
+    const percentileText = scoreSummary.value?.percentile !== undefined
+      ? ` It sits around the ${formatOrdinal(Math.round(Number(scoreSummary.value.percentile)))} percentile of scored areas in ${preview.value?.matched_city_name}.`
+      : '';
 
     sections.push({
       title: 'Neighborhood score',
       body: topDrivers
-        ? `This address currently scores ${Number(scoreContext.value.score_details.score).toFixed(1)}. The strongest contributors are ${topDrivers}.`
-        : `This address currently scores ${Number(scoreContext.value.score_details.score).toFixed(1)}.`,
+        ? `This address-area currently scores ${Number(scoreValue.value).toFixed(1)} and is labeled ${scoreSummary.value?.band?.label?.toLowerCase() ?? 'with local score context'} in ${preview.value?.matched_city_name}. The strongest contributors are ${topDrivers}.${percentileText}`
+        : `This address-area currently scores ${Number(scoreValue.value).toFixed(1)}.${percentileText}`,
     });
   }
 
@@ -545,6 +755,7 @@ async function loadScoreContext() {
 
     const payload = {
       h3_index: h3Index,
+      comparison_h3_indices: h3.gridDisk(h3Index, 1).filter((index) => index !== h3Index),
     };
 
     if (preview.value.score_report.job_id && preview.value.score_report.artifact_name) {
@@ -738,6 +949,26 @@ function formatDate(value) {
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+function formatOrdinal(value) {
+  const absValue = Math.abs(Number(value));
+  const lastTwo = absValue % 100;
+
+  if (lastTwo >= 11 && lastTwo <= 13) {
+    return `${absValue}th`;
+  }
+
+  switch (absValue % 10) {
+    case 1:
+      return `${absValue}st`;
+    case 2:
+      return `${absValue}nd`;
+    case 3:
+      return `${absValue}rd`;
+    default:
+      return `${absValue}th`;
+  }
 }
 
 onMounted(async () => {

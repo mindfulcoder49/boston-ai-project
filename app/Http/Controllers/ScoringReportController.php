@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use App\Models\AnalysisReportSnapshot;
 use App\Models\Trend;
 use App\Services\HistoricalScoreFallbackService;
+use App\Services\ScoreContextBuilder;
 
 class ScoringReportController extends Controller
 {
@@ -280,7 +281,11 @@ class ScoringReportController extends Controller
     /**
      * API endpoint to get score and analysis for a given H3 index.
      */
-    public function getScoreForLocation(Request $request, HistoricalScoreFallbackService $historicalScoreFallbackService)
+    public function getScoreForLocation(
+        Request $request,
+        HistoricalScoreFallbackService $historicalScoreFallbackService,
+        ScoreContextBuilder $scoreContextBuilder
+    )
     {
         $request->validate([
             'h3_index'      => 'required|string',
@@ -289,12 +294,16 @@ class ScoringReportController extends Controller
             'model_class'   => 'nullable|string',
             'source_job_id' => 'nullable|string',
             'column_name'   => 'nullable|string',
+            'comparison_h3_indices' => 'nullable|array|max:12',
+            'comparison_h3_indices.*' => 'string',
         ]);
 
         $h3Index     = $request->h3_index;
         $jobId = $request->job_id;
         $artifactName = $request->artifact_name;
         $scoringData = null;
+
+        $comparisonH3Indices = $request->input('comparison_h3_indices', []);
 
         if ($jobId && $artifactName) {
             $scoringData = AnalysisReportSnapshot::resolve($jobId, $artifactName);
@@ -306,6 +315,7 @@ class ScoringReportController extends Controller
                 $request->string('source_job_id')->toString(),
                 $h3Index,
                 $request->string('column_name')->toString() ?: null,
+                $comparisonH3Indices,
             );
 
             if ($fallback) {
@@ -317,7 +327,8 @@ class ScoringReportController extends Controller
             return response()->json(['error' => 'Scoring report not found.'], 404);
         }
 
-        $scoreResult = collect($scoringData['results'] ?? [])->firstWhere('h3_index', $h3Index);
+        $scoreRows = collect($scoringData['results'] ?? []);
+        $scoreResult = $scoreRows->firstWhere('h3_index', $h3Index);
 
         $analysisResult     = null;
         $analysisParameters = null;
@@ -343,6 +354,14 @@ class ScoringReportController extends Controller
             'score_details' => $scoreResult,
             'analysis_details' => $analysisResult,
             'analysis_parameters' => $analysisParameters, // Pass parameters to the frontend
+            'score_context' => $scoreContextBuilder->build(
+                $scoreResult,
+                $scoreRows,
+                $comparisonH3Indices,
+                $scoringData['parameters'] ?? ($scoringData['config'] ?? []),
+                $scoringData['parameters']['h3_resolution'] ?? $scoringData['config']['h3_resolution'] ?? null,
+                'stage6_artifact',
+            ),
         ]);
     }
 

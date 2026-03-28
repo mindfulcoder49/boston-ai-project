@@ -80,7 +80,7 @@
 
                                     <h3>Navigating the Platform</h3>
                                     <p>
-                                        The navigation bar at the top provides access to all major sections: <strong>Home</strong> (radial map), <strong>User Maps</strong>, <strong>Full Data Map</strong>, <strong>Trends</strong>, <strong>Yearly Comparison</strong>, <strong>Neighborhood Scores</strong>, <strong>Report History</strong> (authenticated users), <strong>Subscription</strong>, and <strong>Data Metrics</strong>. On mobile, tap the hamburger menu to see all links.
+                                        The navigation bar now leads with the public funnel first: <strong>Home</strong>, <strong>Crime Preview</strong>, <strong>Cities</strong>, <strong>Explore</strong>, <strong>Pricing</strong>, and <strong>Help</strong>. Advanced map, trend, score, and metrics workflows live under <strong>Explore</strong>. Saved locations, saved maps, billing, profile, and report history live in the authenticated account area. On mobile, open the hamburger menu to see the same grouped structure.
                                     </p>
                                 </section>
 
@@ -90,7 +90,7 @@
                                 <section id="radial-map">
                                     <h2>The Radial Map (Home Page)</h2>
                                     <p>
-                                        The radial map is the core feature of PublicDataWatch. It lets you explore public data around any location within a configurable radius.
+                                        The homepage now starts with the crime-address preview funnel rather than dropping every user directly into the radial map. The radial map remains a deeper exploration tool once you already know which area you want to investigate.
                                     </p>
                                     <h3>Setting Your Center Location</h3>
                                     <p>Use the address search bar to enter an address or place name. You can also click directly on the map to set your center point.</p>

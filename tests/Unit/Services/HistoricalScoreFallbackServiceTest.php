@@ -104,5 +104,8 @@ class HistoricalScoreFallbackServiceTest extends TestCase
         $this->assertSame('Medical / Mental Health', $scoreContext['score_details']['score_composition'][0]['secondary_group']);
         $this->assertEquals(3.0, $scoreContext['score_details']['score_composition'][0]['weighted_score']);
         $this->assertCount(3, $scoreContext['analysis_details']);
+        $this->assertSame('Preview score estimate', $scoreContext['score_context']['methodology']['label']);
+        $this->assertSame('Lower relative concern', $scoreContext['score_context']['band']['label']);
+        $this->assertSame(2, $scoreContext['score_context']['distribution']['count']);
     }
 }

@@ -115,6 +115,42 @@ async function stubSupportedPreview(page) {
             },
           ],
         },
+        score_context: {
+          score: 82.4,
+          percentile: 82,
+          band: {
+            label: 'Higher relative concern',
+            description: 'This address-area scores above most scored areas in the same city or region.',
+          },
+          distribution: {
+            count: 18,
+            median: 63.2,
+          },
+          nearby_peers: {
+            available: true,
+            count: 6,
+            median: 78.1,
+            current_vs_median: 4.3,
+          },
+          top_drivers: [
+            {
+              label: 'Violent Crime',
+              weighted_score: 42.1,
+              share_percent: 53.2,
+            },
+            {
+              label: 'Property Crime',
+              weighted_score: 25.7,
+              share_percent: 32.5,
+            },
+          ],
+          methodology: {
+            source: 'stage6_artifact',
+            label: 'Historical neighborhood score',
+            analysis_period_weeks: 52,
+            resolution: 8,
+          },
+        },
         analysis_details: [
           {
             secondary_group: 'Violent Crime',
@@ -192,9 +228,11 @@ test.describe('crime-address funnel', () => {
     await expect(page.getByText('What happened nearby')).toBeVisible();
     await expect(page.getByTestId('crime-address-trend-context')).toBeVisible();
     await expect(page.getByTestId('crime-address-neighborhood-score-value')).toHaveText('82.4');
+    await expect(page.getByTestId('crime-address-score-context')).toContainText('82nd');
+    await expect(page.getByTestId('crime-address-score-context')).toContainText('Higher relative concern');
     await expect(page.getByRole('heading', { name: 'Neighborhood score', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Create free account' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Log in' })).toBeVisible();
+    await expect(page.getByRole('complementary').getByRole('link', { name: 'Create free account' })).toBeVisible();
+    await expect(page.getByRole('complementary').getByRole('link', { name: 'Log in' })).toBeVisible();
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);
   });
@@ -343,6 +381,31 @@ test.describe('crime-address funnel', () => {
             score: 71.2,
             score_composition: [],
           },
+          score_context: {
+            score: 71.2,
+            percentile: 48,
+            band: {
+              label: 'Typical relative concern',
+              description: 'This address-area lands near the middle of the local score distribution.',
+            },
+            distribution: {
+              count: 22,
+              median: 70.4,
+            },
+            nearby_peers: {
+              available: false,
+              count: 0,
+              median: null,
+              current_vs_median: null,
+            },
+            top_drivers: [],
+            methodology: {
+              source: 'stage6_artifact',
+              label: 'Historical neighborhood score',
+              analysis_period_weeks: 52,
+              resolution: 8,
+            },
+          },
           analysis_details: [],
         }),
       });
@@ -353,6 +416,24 @@ test.describe('crime-address funnel', () => {
     await expect(page.getByText('No recent incidents were found within this preview radius.')).toBeVisible();
     await expect(page.getByText('No incident categories stand out because no recent incidents were found in this preview radius.')).toBeVisible();
     await expect(page.getByText('No recent crime incidents were found within 0.25 miles of 121 N La Salle St, Chicago, IL 60602, USA in the current preview window.')).toBeVisible();
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
+  test('homepage prioritizes the address funnel and grouped navigation', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.goto('/');
+
+    await expect(page.getByRole('heading', { name: /Know what crime is happening around your address/i })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'Crime Preview', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('button', { name: 'Cities' })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('button', { name: 'Explore' })).toBeVisible();
+    await expect(page.getByText('Supported cities and regions')).toBeVisible();
+    await expect(page.getByText('Advanced workflows belong under one explore layer')).toBeVisible();
+    await expect(page.getByText('Cities & Regions')).toBeVisible();
+    await expect(page.getByText('Crime around your address first.')).toBeVisible();
+
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);
   });

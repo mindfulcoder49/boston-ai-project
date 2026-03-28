@@ -73,6 +73,11 @@ class ScoringFallbackTest extends TestCase
                         'h3_index_9' => '892a1072893ffff',
                         'historical_weekly_avg' => 2.0,
                     ],
+                    [
+                        'secondary_group' => 'Alarm Response',
+                        'h3_index_9' => '892a1072897ffff',
+                        'historical_weekly_avg' => 2.0,
+                    ],
                 ],
             ],
             's3_last_modified' => 1772947601,
@@ -83,6 +88,7 @@ class ScoringFallbackTest extends TestCase
             'model_class' => EverettCrimeData::class,
             'source_job_id' => 'laravel-everett-crime-data-incident_type_group-res9-1772947601',
             'column_name' => 'incident_type_group',
+            'comparison_h3_indices' => ['892a1072897ffff'],
         ]);
 
         $response->assertOk()->assertJson([
@@ -90,6 +96,18 @@ class ScoringFallbackTest extends TestCase
             'score_details' => [
                 'score' => 5,
                 'source' => 'stage4_fallback',
+            ],
+            'score_context' => [
+                'band' => [
+                    'label' => 'Higher relative concern',
+                ],
+                'nearby_peers' => [
+                    'count' => 1,
+                    'available' => true,
+                ],
+                'methodology' => [
+                    'source' => 'stage4_fallback',
+                ],
             ],
         ]);
     }
