@@ -201,14 +201,7 @@ class GenericMapController extends Controller
                 continue;
             }
 
-            $fields = $model->getFillable();
-            $fields[] = $keyName;
-
-            if (method_exists($modelClass, 'getDateField')) {
-                $fields[] = $modelClass::getDateField();
-            }
-
-            $fields = array_values(array_unique(array_filter($fields)));
+            $fields = $this->getDeferredPreviewSelectFields($modelClass, $model);
 
             $loadedSourceData[$sourceTableName] = $modelClass::query()
                 ->select($fields)
@@ -221,6 +214,56 @@ class GenericMapController extends Controller
         }
 
         return $loadedSourceData;
+    }
+
+    protected function getDeferredPreviewSelectFields(string $modelClass, $model): array
+    {
+        $keyName = $model->getKeyName();
+        $dateField = method_exists($modelClass, 'getDateField') ? $modelClass::getDateField() : null;
+        $previewFields = [
+            'crimename1',
+            'crimename2',
+            'crimename3',
+            'incident_type_group',
+            'incident_type',
+            'incident_description',
+            'incident_address',
+            'offense_code_group',
+            'offense_description',
+            'primary_type',
+            'offense_category',
+            'incident_category',
+            'crime',
+            'offense_parent_group',
+            'nibrs_crime_against_category',
+            'nibrs_offense_code_description',
+            'description',
+            'incident_subcategory',
+            'crime_details',
+            'crime_details_concatenated',
+            'offense',
+            'location_description',
+            'location',
+            'block_address',
+            'block',
+            'street_name',
+            'street',
+            'address',
+            'address_number',
+            'address_street',
+            'street_type',
+        ];
+
+        $fields = [$keyName];
+
+        if ($dateField) {
+            $fields[] = $dateField;
+        }
+
+        return array_values(array_unique(array_merge(
+            $fields,
+            array_intersect($model->getFillable(), $previewFields),
+        )));
     }
 
     protected function sanitizeSourceRecord(array $attributes): array
