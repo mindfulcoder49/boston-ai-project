@@ -151,12 +151,12 @@ class CrimeAddressPreviewBuilder
 
     protected function resolveLatestScoreReport(?string $crimeModelClass): ?array
     {
-        return app(AnalysisArtifactLocator::class)->findPreferredScoreReport($crimeModelClass);
+        return app(AnalysisArtifactLocator::class)->findFastPreviewScoreReport($crimeModelClass);
     }
 
     protected function resolveTrendContext(?string $crimeModelClass): ?array
     {
-        return app(AnalysisArtifactLocator::class)->findPreferredTrendContext($crimeModelClass);
+        return app(AnalysisArtifactLocator::class)->findFastPreviewTrendContext($crimeModelClass);
     }
 
     protected function buildImmediatePreviewReportSections(array $serviceability, array $incidentSummary): array

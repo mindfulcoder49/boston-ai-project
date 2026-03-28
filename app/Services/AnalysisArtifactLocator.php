@@ -16,6 +16,69 @@ class AnalysisArtifactLocator
 {
     private const STAGE4_S3_CACHE_KEY = 'analysis_artifact_locator.stage4_s3_v1';
     private const STAGE6_S3_CACHE_KEY = 'analysis_artifact_locator.stage6_s3_v1';
+    private const PREVIEW_TREND_CANDIDATE_CACHE_TTL_MINUTES = 60;
+    private const PREVIEW_SCORE_REPORT_CACHE_TTL_MINUTES = 60;
+
+    public function findFastPreviewTrendContext(?string $modelClass, bool $allowS3Fallback = false): ?array
+    {
+        if (!$modelClass) {
+            return null;
+        }
+
+        $candidate = $this->preferredTrendCandidateForPreview($modelClass, $allowS3Fallback);
+        if (!$candidate) {
+            return null;
+        }
+
+        $summaryCacheKey = TrendSummaryService::cacheKey($candidate['job_id']);
+        $summary = Cache::get($summaryCacheKey)
+            ?? TrendSummaryService::computeAndCache(
+                $candidate['job_id'],
+                (int) $candidate['h3_resolution'],
+                (float) ($candidate['p_value_anomaly'] ?? 0.05),
+                (float) ($candidate['p_value_trend'] ?? 0.05),
+            );
+
+        return [
+            'job_id' => $candidate['job_id'],
+            'column_name' => $candidate['column_name'],
+            'h3_resolution' => $candidate['h3_resolution'],
+            'updated_at' => $this->formatCandidateDate($candidate),
+            'summary' => $summary,
+        ];
+    }
+
+    public function findFastPreviewScoreReport(?string $modelClass, bool $allowS3Fallback = false): ?array
+    {
+        if (!$modelClass) {
+            return null;
+        }
+
+        $cacheKey = sprintf(
+            'analysis_artifact_locator.preview_score_report.v1.%s.%d',
+            md5($modelClass),
+            $allowS3Fallback ? 1 : 0,
+        );
+
+        return Cache::remember($cacheKey, now()->addMinutes(self::PREVIEW_SCORE_REPORT_CACHE_TTL_MINUTES), function () use ($modelClass, $allowS3Fallback) {
+            $trendCandidate = $this->preferredTrendCandidateForPreview($modelClass, $allowS3Fallback);
+
+            if (!$trendCandidate) {
+                return null;
+            }
+
+            return [
+                'job_id' => $trendCandidate['job_id'],
+                'artifact_name' => null,
+                'resolution' => $trendCandidate['h3_resolution'],
+                'analysis_period_weeks' => $this->stage6AnalysisWeeksForModel($modelClass),
+                'source_job_id' => $trendCandidate['job_id'],
+                'column_name' => $trendCandidate['column_name'],
+                'model_class' => $modelClass,
+                'source' => 'stage4_fallback',
+            ];
+        });
+    }
 
     public function findPreferredTrendContext(?string $modelClass, bool $allowS3Fallback = false): ?array
     {
@@ -174,6 +237,62 @@ class AnalysisArtifactLocator
         return collect($this->stage6CandidatesFromS3())
             ->where('model_class', $modelClass)
             ->values();
+    }
+
+    protected function preferredTrendCandidateForPreview(string $modelClass, bool $allowS3Fallback = false): ?array
+    {
+        $cacheKey = sprintf(
+            'analysis_artifact_locator.preview_trend_candidate.v1.%s.%d',
+            md5($modelClass),
+            $allowS3Fallback ? 1 : 0,
+        );
+
+        return Cache::remember($cacheKey, now()->addMinutes(self::PREVIEW_TREND_CANDIDATE_CACHE_TTL_MINUTES), function () use ($modelClass, $allowS3Fallback) {
+            $preferredColumn = $this->preferredAnalysisColumn($modelClass);
+
+            $fromTrendRows = Trend::query()
+                ->where('model_class', $modelClass)
+                ->get()
+                ->map(fn (Trend $trend) => $this->buildTrendCandidateFromTrend($trend))
+                ->filter()
+                ->values();
+
+            if ($fromTrendRows->isNotEmpty()) {
+                return $this->selectPreferredCandidate($fromTrendRows, $preferredColumn);
+            }
+
+            $fromSnapshots = AnalysisReportSnapshot::query()
+                ->where('artifact_name', 'stage4_h3_anomaly.json')
+                ->where(function ($query) use ($modelClass) {
+                    $query->whereJsonContains('payload->parameters->model_class', $modelClass)
+                        ->orWhereJsonContains('payload->config->model_class', $modelClass);
+                })
+                ->get()
+                ->map(fn (AnalysisReportSnapshot $snapshot) => $this->buildTrendCandidateFromPayload(
+                    $snapshot->job_id,
+                    $snapshot->artifact_name,
+                    $snapshot->payload ?? [],
+                    $snapshot->s3_last_modified,
+                    optional($snapshot->updated_at)->timestamp,
+                ))
+                ->filter()
+                ->values();
+
+            if ($fromSnapshots->isNotEmpty()) {
+                return $this->selectPreferredCandidate($fromSnapshots, $preferredColumn);
+            }
+
+            if (!$allowS3Fallback) {
+                return null;
+            }
+
+            return $this->selectPreferredCandidate(
+                collect($this->stage4CandidatesFromS3())
+                    ->where('model_class', $modelClass)
+                    ->values(),
+                $preferredColumn,
+            );
+        });
     }
 
     protected function selectPreferredCandidate(Collection $candidates, ?string $preferredColumn): ?array

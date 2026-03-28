@@ -238,7 +238,7 @@ class PreviewFlowTest extends TestCase
         ]);
     }
 
-    public function test_context_endpoint_surfaces_snapshot_backed_trend_and_score_context(): void
+    public function test_context_endpoint_prefers_fast_stage4_preview_context_even_when_stage6_artifacts_exist(): void
     {
         config()->set('cities.cities', [
             'everett' => [
@@ -350,8 +350,9 @@ class PreviewFlowTest extends TestCase
                 'column_name' => 'incident_type_group',
             ],
             'score_report' => [
-                'job_id' => 'laravel-hist-score-everett-crime-data-incident_type_group-res10-1772947512',
-                'resolution' => 10,
+                'job_id' => 'laravel-everett-crime-data-incident_type_group-res8-1772947509',
+                'resolution' => 8,
+                'source' => 'stage4_fallback',
             ],
         ]);
     }
