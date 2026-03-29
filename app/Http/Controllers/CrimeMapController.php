@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\OpenAiTokenBudgetService;
 use App\Models\CrimeData;
+use App\Services\SpatialExclusionService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use GuzzleHttp\Client;
@@ -12,7 +13,9 @@ class CrimeMapController extends Controller
 {
     public function index(Request $request)
     {
-        $crimeData = CrimeData::limit(1500)->get();
+        $query = CrimeData::query();
+        app(SpatialExclusionService::class)->applyToQuery($query, CrimeData::class);
+        $crimeData = $query->limit(1500)->get();
 
         return Inertia::render('CrimeMap', [
             'crimeData' => $crimeData,
@@ -23,6 +26,7 @@ class CrimeMapController extends Controller
     public function getCrimeData(Request $request)
 {
     $query = CrimeData::query();
+    app(SpatialExclusionService::class)->applyToQuery($query, CrimeData::class);
     $filters = $request['filters'];
 
     // Offense Codes filter

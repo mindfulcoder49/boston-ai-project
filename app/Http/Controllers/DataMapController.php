@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Services\OpenAiTokenBudgetService;
+use App\Services\SpatialExclusionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 
@@ -72,6 +73,11 @@ class DataMapController extends Controller
             abort(500, "Model for {$dataType} ('{$modelClass}') does not exist or use the Mappable trait.");
         }
         return $modelClass;
+    }
+
+    protected function applySpatialExclusionsToQuery($query, string $modelClass): void
+    {
+        app(SpatialExclusionService::class)->applyToQuery($query, $modelClass);
     }
 
     public function getMinDateForEffectiveUser(string $dataTypeOrModelClass, ?\App\Models\User $userContext = null)
@@ -143,6 +149,7 @@ class DataMapController extends Controller
         // Create an instance of the model to get the connection name
         $modelInstance = new $modelClass();
         $query = $modelClass::on($modelInstance->getConnectionName())->getQuery();
+        $this->applySpatialExclusionsToQuery($query, $modelClass);
         //log the query
         Log::info("Query for {$dataType} on connection {$modelInstance->getConnectionName()}: " . $query->toSql());
         Log::info("Query bindings: " . json_encode($query->getBindings()));
@@ -217,6 +224,7 @@ class DataMapController extends Controller
             if ($modelKey === $initialModelKey) {
                 $config = $allDataTypeDetails[$initialModelKey];
                 $query = $modelClassString::query();
+                $this->applySpatialExclusionsToQuery($query, $modelClassString);
                 $tierMinDate = $this->getMinDateForEffectiveUser($modelClassString, Auth::user());
                 if ($tierMinDate) {
                     $query->where($config['dateField'], '>=', $tierMinDate->toDateString());
@@ -242,6 +250,7 @@ class DataMapController extends Controller
                     $config = $allDataTypeDetails[$initialModelKey];
                     $modelClassString = $this->modelRegistry[$initialModelKey];
                     $query = $modelClassString::query();
+                    $this->applySpatialExclusionsToQuery($query, $modelClassString);
                     $tierMinDateOnFallback = $this->getMinDateForEffectiveUser($modelClassString, Auth::user());
                     if ($tierMinDateOnFallback) {
                         $query->where($config['dateField'], '>=', $tierMinDateOnFallback->toDateString());
@@ -484,6 +493,7 @@ class DataMapController extends Controller
         Log::info("Fetching data for {$dataType} with filters: " . json_encode($request->input('filters')));
         
         $query = $modelClass::query();
+        $this->applySpatialExclusionsToQuery($query, $modelClass);
         $filters = $request->input('filters', []);
         $currentUser = Auth::user();
 

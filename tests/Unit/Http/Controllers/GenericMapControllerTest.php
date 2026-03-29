@@ -3,6 +3,7 @@
 namespace Tests\Unit\Http\Controllers;
 
 use App\Http\Controllers\GenericMapController;
+use App\Models\CrimeData;
 use App\Models\NewYork311;
 use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
@@ -80,6 +81,21 @@ class GenericMapControllerTest extends TestCase
         $this->assertContains('borough', $fields);
         $this->assertContains('incident_address', $fields);
         $this->assertContains('street_name', $fields);
+    }
+
+    public function test_boston_police_station_coordinates_are_marked_for_spatial_exclusion(): void
+    {
+        $controller = new class extends GenericMapController
+        {
+            public function excluded(string $modelClass, float $latitude, float $longitude): bool
+            {
+                return $this->isSpatiallyExcluded($modelClass, $latitude, $longitude);
+            }
+        };
+
+        $this->assertTrue($controller->excluded(CrimeData::class, 42.2975553, -71.0597091));
+        $this->assertTrue($controller->excluded(CrimeData::class, 42.3813251, -71.0280401));
+        $this->assertFalse($controller->excluded(CrimeData::class, 42.2975554, -71.0597091));
     }
 }
 

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\SpatialExclusionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -190,6 +191,8 @@ class DispatchHistoricalScoringJobsCommand extends Command
         $query = DB::connection($connectionName)->table($tableName)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
 
+        app(SpatialExclusionService::class)->applyToQuery($query, $modelClass);
+
         if ($exportWeeks > 0) {
             $latestRecordDate = Carbon::parse($latestRecordDateStr);
             $startDate = $latestRecordDate->copy()->subWeeks($exportWeeks)->startOfDay();
@@ -227,6 +230,8 @@ class DispatchHistoricalScoringJobsCommand extends Command
         $selectColumns = array_unique(array_merge([$dateField, $latField, $lonField, $primaryKey], $fieldsToAnalyze));
         $query = DB::connection($connectionName)->table($tableName)->select($selectColumns)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
+
+        app(SpatialExclusionService::class)->applyToQuery($query, $modelClass);
 
         if ($exportWeeks > 0) {
             $latestRecordDate = Carbon::parse($latestRecordDateStr);

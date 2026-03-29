@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\SpatialExclusionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -293,6 +294,15 @@ class GenericMapController extends Controller
         return $attributes;
     }
 
+    protected function isSpatiallyExcluded(?string $modelClass, mixed $latitude, mixed $longitude): bool
+    {
+        if (!$modelClass) {
+            return false;
+        }
+
+        return app(SpatialExclusionService::class)->isExcludedCoordinate($modelClass, $latitude, $longitude);
+    }
+
     public function getRadialMapData(Request $request)
     {
         $user = Auth::user();
@@ -472,14 +482,20 @@ class GenericMapController extends Controller
             unset($point->alcivartech_type_raw);
 
             return $point;
-        })->filter(function ($point) use ($cutoffDateTime) {
-            if (!$cutoffDateTime) {
-                return true;
+        })->filter(function ($point) use ($cutoffDateTime, $linkableModels) {
+            if ($cutoffDateTime) {
+                if (empty($point->alcivartech_date)) {
+                    return false;
+                }
+
+                if (!Carbon::parse($point->alcivartech_date)->startOfDay()->gte($cutoffDateTime)) {
+                    return false;
+                }
             }
-            if (empty($point->alcivartech_date)) {
-                return false;
-            }
-            return Carbon::parse($point->alcivartech_date)->startOfDay()->gte($cutoffDateTime);
+
+            $modelClass = $this->getModelClassFromTableName((string) ($point->alcivartech_model ?? ''), $linkableModels);
+
+            return !$this->isSpatiallyExcluded($modelClass, $point->latitude ?? null, $point->longitude ?? null);
         })->values();
 
         Log::info('Data points fetched and filtered.', ['totalDataPointsCount' => $dataPoints->count()]);

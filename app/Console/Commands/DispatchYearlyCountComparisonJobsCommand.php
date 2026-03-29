@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\SpatialExclusionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -178,6 +179,7 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
 
         $baseQuery = DB::connection($connectionName)->table($tableName)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField);
+        app(SpatialExclusionService::class)->applyToQuery($baseQuery, $modelClass);
 
         if ($baselineYear) {
             $baseQuery->where($dateField, '>=', "{$baselineYear}-01-01");
@@ -200,10 +202,12 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
         $progressBar = $this->output->createProgressBar($totalRows);
         $progressBar->start();
 
-        DB::connection($connectionName)->table($tableName)->select($header)
+        $query = DB::connection($connectionName)->table($tableName)->select($header)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField)
-            ->when($baselineYear, fn($q) => $q->where($dateField, '>=', "{$baselineYear}-01-01"))
-            ->orderBy($primaryKey)->lazy(50000)
+            ->when($baselineYear, fn($q) => $q->where($dateField, '>=', "{$baselineYear}-01-01"));
+        app(SpatialExclusionService::class)->applyToQuery($query, $modelClass);
+
+        $query->orderBy($primaryKey)->lazy(50000)
             ->each(function ($row) use ($fileHandle, $header, $progressBar) {
                 $rowData = [];
                 foreach ($header as $col) {

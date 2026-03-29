@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\SpatialExclusionService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -271,6 +272,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         $query = DB::connection($connectionName)->table($tableName)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField)
             ->where($dateField, '>=', $startDate);
+        app(SpatialExclusionService::class)->applyToQuery($query, $modelClass);
         $totalRows = $query->count();
 
         if ($totalRows === 0) {
@@ -303,6 +305,7 @@ class DispatchStatisticalAnalysisJobsCommand extends Command
         $query = DB::connection($connectionName)->table($tableName)->select($selectColumns)
             ->whereNotNull($dateField)->whereNotNull($latField)->whereNotNull($lonField)
             ->where($dateField, '>=', $startDate);
+        app(SpatialExclusionService::class)->applyToQuery($query, $modelClass);
 
         $unifiedValue = $modelClass::getHumanName();
 
