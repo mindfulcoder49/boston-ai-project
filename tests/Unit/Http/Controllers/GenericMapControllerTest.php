@@ -3,6 +3,7 @@
 namespace Tests\Unit\Http\Controllers;
 
 use App\Http\Controllers\GenericMapController;
+use App\Models\NewYork311;
 use Illuminate\Database\Eloquent\Model;
 use Tests\TestCase;
 
@@ -54,6 +55,31 @@ class GenericMapControllerTest extends TestCase
 
         $this->assertSame('Main St', $sanitized['safe_text']);
         $this->assertNull($sanitized['binary_blob']);
+    }
+
+    public function test_new_york_311_deferred_fields_include_popup_relevant_service_request_fields(): void
+    {
+        $controller = new class extends GenericMapController
+        {
+            public function deferredFields(string $modelClass): array
+            {
+                $model = new $modelClass();
+
+                return $this->getDeferredPreviewSelectFields($modelClass, $model);
+            }
+        };
+
+        $fields = $controller->deferredFields(NewYork311::class);
+
+        $this->assertContains('unique_key', $fields);
+        $this->assertContains('created_date', $fields);
+        $this->assertContains('complaint_type', $fields);
+        $this->assertContains('agency_name', $fields);
+        $this->assertContains('status', $fields);
+        $this->assertContains('resolution_description', $fields);
+        $this->assertContains('borough', $fields);
+        $this->assertContains('incident_address', $fields);
+        $this->assertContains('street_name', $fields);
     }
 }
 

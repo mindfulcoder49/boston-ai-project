@@ -237,6 +237,79 @@ test.describe('public surface regressions', () => {
     expect(runtime.pageErrors).toEqual([]);
   });
 
+  test('radial map shows New York 311 detail fields in the selected case panel', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.route('**/api/map-data', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          dataPoints: [
+            {
+              data_point_id: 1,
+              alcivartech_type: '311 Case',
+              alcivartech_date: '2026-03-15T10:29:08Z',
+              longitude: -74.006,
+              latitude: 40.7128,
+              alcivartech_model: 'new_york_311s',
+              new_york_311_data: {
+                unique_key: 68333421,
+                created_date: '2026-03-15 10:29:08',
+                agency_name: 'Department of Sanitation',
+                complaint_type: 'Vendor Enforcement',
+                descriptor: 'Non-Food Vendor',
+                status: 'Closed',
+                resolution_description: 'N/A',
+                borough: 'MANHATTAN',
+                incident_address: '222 BROADWAY',
+              },
+            },
+          ],
+          centralLocation: {
+            latitude: 40.7128,
+            longitude: -74.006,
+            address: 'New York, NY',
+          },
+          mapConfiguration: {
+            dataPointModelConfig: {
+              new_york_311s: {
+                dataObjectKey: 'new_york_311_data',
+                displayTitle: '311 Case',
+                mainIdentifierLabel: 'Service Request Unique Key',
+                mainIdentifierField: 'unique_key',
+                descriptionLabel: 'Problem / Complaint Type',
+                descriptionField: 'complaint_type',
+                additionalFields: [
+                  { label: 'Agency', key: 'agency_name' },
+                  { label: 'Status', key: 'status' },
+                  { label: 'Resolution', key: 'resolution_description' },
+                  { label: 'Borough', key: 'borough' },
+                  { label: 'Incident Address', key: 'incident_address' },
+                ],
+              },
+            },
+            modelToSubObjectKeyMap: {
+              new_york_311s: 'new_york_311_data',
+            },
+          },
+          city: 'new_york',
+        }),
+      });
+    });
+
+    await page.goto('/map/40.712800/-74.006000');
+
+    const caseDetails = page.locator('.case-details');
+
+    await expect(caseDetails.getByRole('heading', { name: 'Selected Case Details' })).toBeVisible();
+    await expect(caseDetails.getByText('Vendor Enforcement').first()).toBeVisible();
+    await expect(caseDetails.getByText('Department of Sanitation').first()).toBeVisible();
+    await expect(caseDetails.getByText('MANHATTAN').first()).toBeVisible();
+
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
   test('combined map banner auth links preserve the current page', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 

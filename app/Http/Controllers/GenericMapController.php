@@ -252,6 +252,22 @@ class GenericMapController extends Controller
             'address_number',
             'address_street',
             'street_type',
+            'complaint_type',
+            'descriptor',
+            'agency',
+            'agency_name',
+            'status',
+            'resolution_description',
+            'borough',
+            'city',
+            'location_type',
+            'address_type',
+            'facility_type',
+            'landmark',
+            'community_board',
+            'council_district',
+            'police_precinct',
+            'open_data_channel_type',
         ];
 
         $fields = [$keyName];
