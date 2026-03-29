@@ -120,6 +120,7 @@ class CityLandingController extends Controller
             'overview' => 'Use the New York page when you want quality-of-life and city-response context around an address, including nearby 311 request activity.',
             'howToUse' => 'Search a New York address, tap the nearby 311 records, and widen out only when you want a broader picture of service-request patterns nearby.',
             'dataUpdateNote' => 'New York coverage on this page is 311-focused, so it reflects resident request activity rather than a crime feed.',
+            'matchLocalities' => ['New York', 'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'],
             'focusAreas' => ['311 requests', 'Address search', 'Quality-of-life signals'],
             'highlights' => [
                 [
@@ -145,6 +146,7 @@ class CityLandingController extends Controller
             'overview' => 'Use the Montgomery County page when you want to check recent crime near an address across the county and its main communities.',
             'howToUse' => 'Search a Montgomery County address, read the nearby incidents, and widen out when you want a broader county-area comparison.',
             'dataUpdateNote' => 'Montgomery County coverage on this page is countywide crime data, so addresses from several local communities can be served by the same landing page.',
+            'matchLocalities' => ['Bethesda', 'Rockville', 'Silver Spring', 'Gaithersburg', 'Germantown', 'Chevy Chase', 'Takoma Park', 'Potomac'],
             'focusAreas' => ['Countywide crime', 'Address search', 'Cross-community checks'],
             'highlights' => [
                 [
@@ -209,7 +211,7 @@ class CityLandingController extends Controller
         'Car Crash' => 'Crash Reports',
     ];
 
-    public function show(string $citySlug): Response
+    public function show(Request $request, string $citySlug): Response
     {
         $cityKey = $this->resolveCityKeyFromSlug($citySlug);
         abort_unless($cityKey, 404);
@@ -241,8 +243,10 @@ class CityLandingController extends Controller
                 'searchPlaceholder' => $cityContent['searchPlaceholder'],
                 'focusAreas' => $cityContent['focusAreas'],
                 'highlights' => $cityContent['highlights'],
+                'initialLocation' => $this->buildInitialLocation($request),
             ],
             'languageOptions' => self::LANGUAGE_OPTIONS,
+            'cityRouting' => $this->buildCityRoutingMap(),
         ]);
     }
 
@@ -330,6 +334,56 @@ class CityLandingController extends Controller
             'highlights' => $profile['highlights'] ?? $this->getDefaultHighlights($cityName, $dataTypes),
             'relatedLinks' => $this->getRelatedLinks($cityKey, $cityName, $fullMapUrl, $dataTypes, $cityConfig),
         ];
+    }
+
+    private function buildInitialLocation(Request $request): ?array
+    {
+        if ($request->query('lat') === null || $request->query('lng') === null) {
+            return null;
+        }
+
+        return [
+            'address' => $request->query('address'),
+            'latitude' => (float) $request->query('lat'),
+            'longitude' => (float) $request->query('lng'),
+        ];
+    }
+
+    private function buildCityRoutingMap(): array
+    {
+        $targets = [];
+
+        foreach (array_keys(self::CITY_CONTENT) as $cityKey) {
+            $cityConfig = config("cities.cities.{$cityKey}");
+            if (!is_array($cityConfig)) {
+                continue;
+            }
+
+            $routeName = "city.landing.{$cityKey}";
+            if (!app('router')->has($routeName)) {
+                continue;
+            }
+
+            $matchLocalities = collect(array_merge(
+                [$cityConfig['name'] ?? null],
+                $cityConfig['serviceability']['supported_localities'] ?? [],
+                self::CITY_CONTENT[$cityKey]['matchLocalities'] ?? [],
+            ))
+                ->filter(fn ($value) => is_string($value) && trim($value) !== '')
+                ->map(fn (string $value) => Str::lower(trim($value)))
+                ->unique()
+                ->values()
+                ->all();
+
+            $targets[] = [
+                'key' => $cityKey,
+                'name' => $cityConfig['name'] ?? Str::headline($cityKey),
+                'url' => route($routeName),
+                'matchLocalities' => $matchLocalities,
+            ];
+        }
+
+        return $targets;
     }
 
     private function getCityTagline(string $cityName): string

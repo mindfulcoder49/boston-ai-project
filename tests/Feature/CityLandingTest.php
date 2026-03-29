@@ -128,6 +128,28 @@ class CityLandingTest extends TestCase
         );
     }
 
+    public function test_city_landing_exposes_initial_location_and_city_routing_metadata(): void
+    {
+        $response = $this->get(route('city.landing.boston', [
+            'address' => '851 Broadway, Everett, MA 02149, USA',
+            'lat' => '42.418742',
+            'lng' => '-71.044910',
+        ]));
+
+        $response->assertOk();
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('CityMapLite')
+            ->where('city.initialLocation.address', '851 Broadway, Everett, MA 02149, USA')
+            ->where('city.initialLocation.latitude', 42.418742)
+            ->where('city.initialLocation.longitude', -71.04491)
+            ->where('cityRouting', fn ($targets) => collect($targets)->contains(
+                fn (array $target) => $target['key'] === 'everett'
+                    && $target['url'] === route('city.landing.everett')
+                    && in_array('everett', $target['matchLocalities'], true)
+            ))
+        );
+    }
+
     public function test_seattle_city_landing_uses_seattle_specific_copy(): void
     {
         $response = $this->get(route('city.landing.seattle'));

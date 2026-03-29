@@ -103,6 +103,9 @@
           <GoogleAddressSearch
             :language_codes="[selectedLanguage]"
             :placeholder_text="city.searchPlaceholder"
+            :show_submit_button="true"
+            submit_button_label="Search address"
+            submit_button_class="city-search-submit"
             @address-selected="handleAddressSelected"
             @search-started="handleAddressSearchStarted"
           />
@@ -177,12 +180,23 @@
         </div>
       </div>
 
-      <div v-else class="empty-sheet">
-        <p class="eyebrow">{{ city.name }}</p>
-        <h2>{{ text.emptyTitle }}</h2>
-        <p>{{ text.emptyState }}</p>
+      <div v-else class="empty-sheet" :class="{ collapsed: cityGuideCollapsed }">
+        <div class="empty-sheet-header">
+          <div>
+            <p class="eyebrow">{{ city.name }}</p>
+            <h2>{{ text.emptyTitle }}</h2>
+            <p>{{ text.emptyState }}</p>
+          </div>
+          <button
+            type="button"
+            class="collapse-toggle sheet-toggle"
+            @click="cityGuideCollapsed = !cityGuideCollapsed"
+          >
+            {{ cityGuideCollapsed ? text.expandGuide : text.collapseGuide }}
+          </button>
+        </div>
 
-        <div class="city-guide">
+        <div v-if="!cityGuideCollapsed" class="city-guide">
           <div v-if="city.highlights?.length" class="highlight-grid" aria-label="City landing highlights">
             <article
               v-for="highlight in city.highlights"
@@ -245,6 +259,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  cityRouting: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const UI_TEXT = {
@@ -272,6 +290,8 @@ const UI_TEXT = {
     last7Days: 'Last 7 days',
     emptyTitle: 'Explore nearby activity in {city}',
     emptyState: 'Use your location, search an address, or zoom into the map to browse nearby records in {city}.',
+    expandGuide: 'Show guide',
+    collapseGuide: 'Hide guide',
     geolocationDenied: 'Location access was blocked. You can search your address instead.',
     geolocationUnavailable: 'Your location is unavailable right now.',
     geolocationTimeout: 'Location request timed out. Try again or search your address.',
@@ -302,6 +322,8 @@ const UI_TEXT = {
     last7Days: 'Últimos 7 días',
     emptyTitle: 'Explora la actividad cercana en {city}',
     emptyState: 'Usa tu ubicación, busca una dirección o acércate al mapa para ver registros cercanos en {city}.',
+    expandGuide: 'Mostrar guía',
+    collapseGuide: 'Ocultar guía',
     geolocationDenied: 'Se bloqueó el acceso a tu ubicación. Puedes buscar tu dirección.',
     geolocationUnavailable: 'Tu ubicación no está disponible en este momento.',
     geolocationTimeout: 'La solicitud de ubicación tardó demasiado. Inténtalo otra vez o busca tu dirección.',
@@ -332,6 +354,8 @@ const UI_TEXT = {
     last7Days: 'Últimos 7 dias',
     emptyTitle: 'Explore a atividade próxima em {city}',
     emptyState: 'Use sua localização, busque um endereço ou aproxime o mapa para ver registros próximos em {city}.',
+    expandGuide: 'Mostrar guia',
+    collapseGuide: 'Ocultar guia',
     geolocationDenied: 'O acesso à localização foi bloqueado. Você pode buscar seu endereço.',
     geolocationUnavailable: 'Sua localização não está disponível agora.',
     geolocationTimeout: 'A solicitação de localização expirou. Tente novamente ou busque seu endereço.',
@@ -362,6 +386,8 @@ const UI_TEXT = {
     last7Days: 'Dènye 7 jou yo',
     emptyTitle: 'Eksplore aktivite ki toupre {city}',
     emptyState: 'Sèvi ak kote ou, chèche adrès, oswa rale kat la pi pre pou wè dosye ki toupre yo nan {city}.',
+    expandGuide: 'Montre gid la',
+    collapseGuide: 'Kache gid la',
     geolocationDenied: 'Aksè ak kote ou a bloke. Ou ka chèche adrès ou pito.',
     geolocationUnavailable: 'Kote ou a pa disponib kounye a.',
     geolocationTimeout: 'Demann kote a pran twòp tan. Eseye ankò oswa chèche adrès ou.',
@@ -392,6 +418,8 @@ const UI_TEXT = {
     last7Days: '最近7天',
     emptyTitle: '查看 {city} 附近活动',
     emptyState: '使用你的位置、搜索地址，或放大地图来查看 {city} 附近记录。',
+    expandGuide: '显示指南',
+    collapseGuide: '隐藏指南',
     geolocationDenied: '定位权限被拒绝。你也可以搜索地址。',
     geolocationUnavailable: '暂时无法获取你的位置。',
     geolocationTimeout: '定位请求超时。请重试或搜索地址。',
@@ -422,6 +450,8 @@ const UI_TEXT = {
     last7Days: '7 ngày qua',
     emptyTitle: 'Khám phá hoạt động gần {city}',
     emptyState: 'Dùng vị trí của bạn, tìm địa chỉ hoặc phóng to bản đồ để xem các bản ghi gần {city}.',
+    expandGuide: 'Hiện hướng dẫn',
+    collapseGuide: 'Ẩn hướng dẫn',
     geolocationDenied: 'Quyền truy cập vị trí đã bị chặn. Bạn có thể tìm địa chỉ thay thế.',
     geolocationUnavailable: 'Hiện chưa lấy được vị trí của bạn.',
     geolocationTimeout: 'Yêu cầu vị trí bị quá thời gian. Hãy thử lại hoặc tìm địa chỉ.',
@@ -444,6 +474,7 @@ const translatedCard = ref(null);
 const selectedLanguage = ref('en-US');
 const sidebarCollapsed = ref(false);
 const sheetCollapsed = ref(false);
+const cityGuideCollapsed = ref(false);
 const selectedRecency = ref('default');
 const liveMapCenter = ref([props.city.latitude, props.city.longitude]);
 const translationCache = new Map();
@@ -465,6 +496,8 @@ const text = computed(() => {
     ...baseText,
     emptyTitle: formatText(baseText.emptyTitle, { city: props.city.name }),
     emptyState: formatText(baseText.emptyState, { city: props.city.name }),
+    expandGuide: baseText.expandGuide || UI_TEXT['en-US'].expandGuide,
+    collapseGuide: baseText.collapseGuide || UI_TEXT['en-US'].collapseGuide,
   };
 });
 
@@ -541,7 +574,7 @@ const translatedHeading = computed(() => {
   return option ? option.label : selectedLanguage.value;
 });
 
-onMounted(() => {
+onMounted(async () => {
   const storedLanguage = window.localStorage.getItem(getLanguageStorageKey());
   if (storedLanguage && props.languageOptions.some((option) => option.code === storedLanguage)) {
     selectedLanguage.value = storedLanguage;
@@ -549,6 +582,16 @@ onMounted(() => {
 
   if (window.innerWidth <= 768) {
     sidebarCollapsed.value = true;
+    cityGuideCollapsed.value = true;
+  }
+
+  const initialLocation = normalizeLocation(props.city.initialLocation);
+  if (initialLocation) {
+    if (redirectToMatchingCityLanding(initialLocation)) {
+      return;
+    }
+
+    applyLocationToMap(initialLocation);
   }
 
   trackPageView({
@@ -570,7 +613,7 @@ onMounted(() => {
     },
   });
 
-  fetchData();
+  await fetchData();
 });
 
 watch(
@@ -851,12 +894,33 @@ async function useCurrentLocation() {
 
   navigator.geolocation.getCurrentPosition(
     async (position) => {
-      await updateLocation({
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        address: 'Current location',
-      });
-      geolocationLoading.value = false;
+      const latitude = Number(position.coords.latitude.toFixed(6));
+      const longitude = Number(position.coords.longitude.toFixed(6));
+
+      try {
+        const address = await reverseGeocodeLocation(latitude, longitude);
+        const nextLocation = normalizeLocation({
+          latitude,
+          longitude,
+          address,
+        });
+
+        if (!nextLocation) {
+          throw new Error('Unable to normalize location.');
+        }
+
+        if (redirectToMatchingCityLanding(nextLocation)) {
+          geolocationLoading.value = false;
+          return;
+        }
+
+        await updateLocation(nextLocation);
+        geolocationLoading.value = false;
+      } catch (error) {
+        console.error('Error resolving browser location for city landing:', error);
+        geolocationError.value = 'We found your coordinates, but could not resolve a street address. Please search your address instead.';
+        geolocationLoading.value = false;
+      }
     },
     (error) => {
       if (error.code === error.PERMISSION_DENIED) {
@@ -882,11 +946,16 @@ async function useCurrentLocation() {
 async function handleAddressSelected(location) {
   geolocationError.value = '';
 
-  await updateLocation({
-    latitude: location.lat,
-    longitude: location.lng,
-    address: location.address,
-  });
+  const nextLocation = normalizeLocation(location);
+  if (!nextLocation) {
+    return;
+  }
+
+  if (redirectToMatchingCityLanding(nextLocation)) {
+    return;
+  }
+
+  await updateLocation(nextLocation);
 
   trackAnalyticsEvent('address_search_completed', {
     city: props.city.key,
@@ -902,14 +971,125 @@ async function handleAddressSelected(location) {
 }
 
 async function updateLocation(location) {
+  applyLocationToMap(location);
+
+  await fetchData({ reinitializeMap: true });
+}
+
+function applyLocationToMap(location) {
   centralLocation.value = {
     latitude: location.latitude,
     longitude: location.longitude,
-    address: location.address,
+    address: location.address || props.city.name,
   };
   mapCenter.value = [location.latitude, location.longitude];
+  liveMapCenter.value = [location.latitude, location.longitude];
+}
 
-  await fetchData({ reinitializeMap: true });
+function normalizeLocation(location) {
+  if (!location) {
+    return null;
+  }
+
+  const latitude = Number(location.latitude ?? location.lat);
+  const longitude = Number(location.longitude ?? location.lng);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  return {
+    latitude: Number(latitude.toFixed(6)),
+    longitude: Number(longitude.toFixed(6)),
+    address: typeof location.address === 'string' ? location.address.trim() : '',
+  };
+}
+
+async function reverseGeocodeLocation(latitude, longitude) {
+  const response = await axios.post(route('google-places.reverse-geocode'), {
+    latitude,
+    longitude,
+  });
+
+  return response.data.address;
+}
+
+function redirectToMatchingCityLanding(location) {
+  const target = findMatchingCityRoutingTarget(location.address);
+
+  if (!target || target.key === props.city.key) {
+    return false;
+  }
+
+  const url = new URL(target.url, window.location.origin);
+  if (location.address) {
+    url.searchParams.set('address', location.address);
+  }
+  url.searchParams.set('lat', String(location.latitude));
+  url.searchParams.set('lng', String(location.longitude));
+  window.location.assign(url.toString());
+
+  return true;
+}
+
+function findMatchingCityRoutingTarget(address) {
+  if (!address || !Array.isArray(props.cityRouting) || !props.cityRouting.length) {
+    return null;
+  }
+
+  const tokens = extractAddressLocalities(address);
+  if (!tokens.length) {
+    return null;
+  }
+
+  return props.cityRouting.find((target) => target.matchLocalities?.some((locality) => {
+    const normalizedLocality = normalizeLocality(locality);
+    return tokens.includes(normalizedLocality);
+  })) || null;
+}
+
+function extractAddressLocalities(address) {
+  const segments = String(address)
+    .split(',')
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  const tokens = new Set();
+
+  segments.forEach((segment) => {
+    const normalizedSegment = normalizeLocality(segment);
+    if (normalizedSegment) {
+      tokens.add(normalizedSegment);
+    }
+
+    const withoutZip = normalizeLocality(segment.replace(/\b\d{5}(?:-\d{4})?\b/g, ' '));
+    if (withoutZip) {
+      tokens.add(withoutZip);
+    }
+
+    const withoutState = normalizeLocality(segment.replace(/\b[A-Z]{2}\b/g, ' '));
+    if (withoutState) {
+      tokens.add(withoutState);
+    }
+  });
+
+  if (segments[1]) {
+    const likelyLocality = normalizeLocality(segments[1]);
+    if (likelyLocality) {
+      tokens.add(likelyLocality);
+    }
+  }
+
+  return Array.from(tokens);
+}
+
+function normalizeLocality(value) {
+  return String(value || '')
+    .replace(/\busa\b/gi, ' ')
+    .replace(/[.]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
 }
 
 async function translateSelectedCard() {
@@ -1284,6 +1464,23 @@ h1 {
   border-radius: 1rem;
 }
 
+.search-shell :deep(.city-search-submit) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.95rem;
+  background: #24453b;
+  color: #f6f2e7;
+  padding: 0.82rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.search-shell :deep(.city-search-submit:disabled) {
+  opacity: 0.58;
+}
+
 .feedback {
   margin-top: 0.65rem;
   font-size: 0.9rem;
@@ -1317,6 +1514,18 @@ h1 {
   margin-top: 0.9rem;
   padding-top: 0.9rem;
   border-top: 1px solid rgba(35, 68, 59, 0.08);
+}
+
+.empty-sheet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.empty-sheet.collapsed {
+  max-height: none;
+  overflow: hidden;
 }
 
 .highlight-grid {
@@ -1624,8 +1833,12 @@ h1 {
 
   .empty-sheet {
     max-width: 30rem;
-    max-height: none;
+    max-height: min(44vh, 26rem);
     padding: 0.6rem 0.8rem 0.7rem;
+  }
+
+  .empty-sheet.collapsed {
+    max-height: 9.5rem;
   }
 
   .empty-sheet h2 {
@@ -1658,6 +1871,10 @@ h1 {
 
   .sheet-actions {
     gap: 0.3rem;
+  }
+
+  .empty-sheet-header {
+    gap: 0.6rem;
   }
 }
 </style>

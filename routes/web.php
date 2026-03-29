@@ -116,8 +116,8 @@ Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('ho
 foreach (array_keys(config('cities.cities', [])) as $cityKey) {
     $citySlug = str_replace('_', '-', $cityKey);
 
-    Route::get("/{$citySlug}", function () use ($citySlug) {
-        return app(CityLandingController::class)->show($citySlug);
+    Route::get("/{$citySlug}", function (\Illuminate\Http\Request $request) use ($citySlug) {
+        return app(CityLandingController::class)->show($request, $citySlug);
     })
         ->name("city.landing.{$cityKey}");
 }

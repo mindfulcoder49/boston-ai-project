@@ -69,6 +69,93 @@ test.describe('public surface regressions', () => {
     expect(runtime.pageErrors).toEqual([]);
   });
 
+  test('city landing guide starts collapsed on mobile and can be toggled', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    await page.route('**/api/map-data', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          mapConfiguration: {
+            dataPointModelConfig: {},
+          },
+          dataPoints: [],
+        }),
+      });
+    });
+
+    await page.goto('/boston');
+
+    await expect(page.getByRole('button', { name: 'Show guide' })).toBeVisible();
+    await expect(page.getByText('How to use this page')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Show guide' }).click();
+    await expect(page.getByText('How to use this page')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Hide guide' }).click();
+    await expect(page.getByText('How to use this page')).toHaveCount(0);
+
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
+  test('city landing geolocation redirects to the correct city page', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+    const requestedCities = [];
+
+    await page.context().grantPermissions(['geolocation']);
+    await page.context().setGeolocation({
+      latitude: 42.418742,
+      longitude: -71.04491,
+    });
+
+    await page.route('**/api/reverse-geocode-google-place', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          lat: 42.418742,
+          lng: -71.04491,
+          address: '851 Broadway, Everett, MA 02149, USA',
+        }),
+      });
+    });
+
+    await page.route('**/api/map-data', async (route) => {
+      const payload = route.request().postDataJSON();
+      requestedCities.push(payload.city);
+
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          mapConfiguration: {
+            dataPointModelConfig: {},
+          },
+          dataPoints: payload.city === 'everett'
+            ? [
+              {
+                data_point_id: 1,
+                alcivartech_type: 'Crime Reports',
+                alcivartech_model: 'App\\Models\\EverettCrime',
+                alcivartech_date: '2026-03-28T12:00:00Z',
+              },
+            ]
+            : [],
+        }),
+      });
+    });
+
+    await page.goto('/boston');
+    await page.getByRole('button', { name: 'Use my location' }).click();
+
+    await expect(page).toHaveURL(/\/everett\?/);
+    await expect(page.getByText('Check recent Everett crime around an address fast.')).toBeVisible();
+    expect(requestedCities).toContain('everett');
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
   test('homepage uses customer-facing copy and complete city navigation', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 
