@@ -133,6 +133,10 @@ This should remain an explicit policy choice, not accidental drift.
 
 Operator QA and Playwright production checks can pollute the live property if internal filtering is not handled cleanly.
 
+Use `pdw-analytics check-test-filter --start-date 3daysAgo --end-date today` before interpreting a recent spike as real user demand.
+
+If the summary shows only `'(not set)'`, treat the property as mixed traffic for that slice even if the internal-traffic rule exists in the stream.
+
 ### 2. Report-surface policy is still unresolved
 
 Some report surfaces are excluded while other public artifact-like surfaces can still be measured or indexed differently. This should stay deliberate.
@@ -183,3 +187,4 @@ The code has the events, but the weekly reporting habit still needs to be consis
 - keep event docs aligned with actual code in `resources/js/Utils/analytics.js`
 - validate the address-preview funnel in narrow post-deploy windows first
 - keep city-page, preview, and checkout metrics readable after routing changes
+- use the local analytics tool to verify GA4 testing-filter matches before moving the filter to `Active`
