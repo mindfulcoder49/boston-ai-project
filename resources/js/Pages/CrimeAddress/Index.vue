@@ -26,6 +26,9 @@
                 <GoogleAddressSearch
                   :initial-search-query="addressInput"
                   :language_codes="['en-US']"
+                  show_submit_button
+                  submit_button_label="Search address"
+                  submit_button_class="crime-address-search-submit"
                   @address-selected="handleAddressSelected"
                   @search-started="handleSearchStarted"
                 />
@@ -59,6 +62,9 @@
           <p class="mt-3 max-w-2xl text-base leading-7 text-slate-700">
             We will look into adding your area and notify you if we do.
           </p>
+          <p v-if="coverageForm.requested_address" class="mt-3 text-sm text-amber-900/80">
+            Requested address: <span class="font-semibold">{{ coverageForm.requested_address }}</span>
+          </p>
 
           <form class="mt-6 grid gap-3 md:grid-cols-[1fr_320px_auto]" @submit.prevent="submitCoverageRequest">
             <input
@@ -78,9 +84,12 @@
               class="rounded-2xl bg-amber-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-60"
               :disabled="coverageSubmitting"
             >
-              {{ coverageSubmitting ? 'Submitting…' : 'Notify me' }}
+              {{ coverageSubmitting ? 'Submitting…' : 'Notify me if coverage expands' }}
             </button>
           </form>
+          <p class="mt-3 text-sm leading-6 text-slate-600">
+            We will only use your email for coverage updates about this area.
+          </p>
 
           <p v-if="coverageSuccess" class="mt-3 text-sm text-emerald-700">{{ coverageSuccess }}</p>
           <p v-if="coverageError" class="mt-3 text-sm text-red-600">{{ coverageError }}</p>
@@ -529,7 +538,7 @@ const scoreValue = computed(() => {
 const scoreTopDrivers = computed(() => scoreSummary.value?.top_drivers ?? []);
 const scoreAvailabilityLabel = computed(() => {
   if (deferredContextLoading.value || scoreLoading.value) {
-    return 'Loading…';
+    return 'Checking how this area compares…';
   }
 
   return 'No area score available yet';
@@ -539,7 +548,7 @@ const scoreHeadline = computed(() => {
 
   if (Number.isNaN(percentile)) {
     return deferredContextLoading.value || scoreLoading.value
-      ? 'Checking local score context'
+      ? 'Checking whether this area feels quieter, typical, or busier'
       : 'Area score unavailable';
   }
 
@@ -634,10 +643,10 @@ const scoreMethodologyText = computed(() => {
 });
 const scoreContextFallbackMessage = computed(() => {
   if (deferredContextLoading.value || scoreLoading.value) {
-    return 'We are adding city and nearby comparisons for this address now.';
+    return 'We are comparing this area with the rest of the city and the nearby blocks now.';
   }
 
-  return 'When an area score is available, this section explains whether the address looks quieter, typical, or busier than the rest of the city and nearby areas.';
+  return 'When an area score is available, this section explains in plain language whether this address looks quieter, typical, or busier than the rest of the city and nearby areas.';
 });
 const scoreContextSummary = computed(() => {
   if (scoreValue.value === null) {
@@ -1111,3 +1120,28 @@ watch(hasExpiredTrial, (expired) => {
   );
 }, { immediate: true });
 </script>
+
+<style scoped>
+.crime-address-search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  border: 1px solid #0f172a;
+  background: #0f172a;
+  color: white;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.crime-address-search-submit:hover:enabled {
+  background: #334155;
+}
+
+.crime-address-search-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+</style>

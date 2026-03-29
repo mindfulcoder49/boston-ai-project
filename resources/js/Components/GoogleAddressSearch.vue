@@ -1,13 +1,25 @@
 <template>
-  <div>
-    <input
-      type="text"
-      v-model="searchQuery"
-      @input="handleInput"
-      :placeholder="localizedLabels.addressPlaceholder"
-      class="border w-full"
-      @focus="showGoogleSuggestions = googleSuggestions.length > 0"
-    />
+  <div class="google-address-search">
+    <div class="google-address-search-row" :class="{ 'has-submit-button': show_submit_button }">
+      <input
+        type="text"
+        v-model="searchQuery"
+        @input="handleInput"
+        @keydown.enter.prevent="submitCurrentQuery"
+        :placeholder="localizedLabels.addressPlaceholder"
+        class="google-address-search-input border w-full"
+        @focus="showGoogleSuggestions = googleSuggestions.length > 0"
+      />
+      <button
+        v-if="show_submit_button"
+        type="button"
+        :class="submit_button_class || 'google-address-search-submit'"
+        :disabled="isLoadingGoogle || searchQuery.trim().length < 3"
+        @click="submitCurrentQuery"
+      >
+        {{ submit_button_label || 'Search address' }}
+      </button>
+    </div>
 
     <p v-if="isLoadingGoogle" class="text-gray-500 mt-2">{{ localizedLabels.loadingGoogleResults }}</p>
 
@@ -83,7 +95,32 @@ const localizationLabelsByLanguageCode = {
 
 
 export default {
-  props: ["initialSearchQuery", "language_codes"],
+  props: {
+    initialSearchQuery: {
+      type: String,
+      default: "",
+    },
+    language_codes: {
+      type: Array,
+      default: () => [],
+    },
+    placeholder_text: {
+      type: String,
+      default: null,
+    },
+    show_submit_button: {
+      type: Boolean,
+      default: false,
+    },
+    submit_button_label: {
+      type: String,
+      default: "Search address",
+    },
+    submit_button_class: {
+      type: String,
+      default: "",
+    },
+  },
   emits: ["address-selected", "search-started"],
   data() {
     return {
@@ -99,7 +136,11 @@ export default {
   computed: {
     localizedLabels() {
       const languageCode = this.language_codes && this.language_codes.length > 0 ? this.language_codes[0] : "en-US";
-      return localizationLabelsByLanguageCode[languageCode] || localizationLabelsByLanguageCode["en-US"];
+      const baseLabels = localizationLabelsByLanguageCode[languageCode] || localizationLabelsByLanguageCode["en-US"];
+      return {
+        ...baseLabels,
+        addressPlaceholder: this.placeholder_text || baseLabels.addressPlaceholder,
+      };
     },
   },
   created() {
@@ -136,6 +177,35 @@ export default {
       } catch (error) {
         console.error("Error fetching Google suggestions:", error);
         this.googleSuggestions = [];
+      } finally {
+        this.isLoadingGoogle = false;
+      }
+    },
+    async submitCurrentQuery() {
+      const query = this.searchQuery.trim();
+      if (query.length < 3) {
+        return;
+      }
+
+      this.isLoadingGoogle = true;
+      this.googleSearchAttempted = true;
+      if (!this.hasTrackedSearchStart) {
+        this.$emit("search-started", {
+          queryLength: query.length,
+          manualSubmit: true,
+        });
+        this.hasTrackedSearchStart = true;
+      }
+
+      try {
+        const response = await axios.post("/api/geocode-google-place", {
+          address: query,
+        });
+        const { lat, lng, address } = response.data;
+        this.selectAddress({ lat, lng, address });
+      } catch (error) {
+        console.error("Error geocoding manual address search:", error);
+        await this.fetchGoogleSuggestions();
       } finally {
         this.isLoadingGoogle = false;
       }
@@ -187,9 +257,52 @@ export default {
 </script>
 
 <style scoped>
-input {
-  margin-bottom: 10px;
+.google-address-search {
+  position: relative;
 }
+
+.google-address-search-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.google-address-search-row.has-submit-button {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.google-address-search-input {
+  margin-bottom: 0;
+}
+
+.google-address-search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  border: 1px solid #e2e8f0;
+  background: #0f172a;
+  color: white;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.google-address-search-submit:hover:enabled {
+  background: #1e293b;
+}
+
+.google-address-search-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (min-width: 768px) {
+  .google-address-search-row.has-submit-button {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
 ul {
   max-height: 250px; 
   overflow-y: auto;

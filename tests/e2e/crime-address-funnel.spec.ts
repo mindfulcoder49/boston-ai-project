@@ -180,11 +180,13 @@ test.describe('crime-address funnel', () => {
   test('shows unsupported coverage request flow', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 
-    await page.route('**/api/google-places-autocomplete', async (route) => {
+    await page.route('**/api/geocode-google-place', async (route) => {
       await route.fulfill({
         contentType: 'application/json',
         body: JSON.stringify({
-          suggestions: ['851 Broadway, Everett, MA'],
+          lat: 34.0522,
+          lng: -118.2437,
+          address: '200 N Spring St, Los Angeles, CA 90012, USA',
         }),
       });
     });
@@ -216,11 +218,15 @@ test.describe('crime-address funnel', () => {
       });
     });
 
-    await page.goto('/crime-address?address=200%20N%20Spring%20St%2C%20Los%20Angeles%2C%20CA%2090012%2C%20USA&lat=34.0522&lng=-118.2437');
+    await page.goto('/crime-address');
+
+    await page.getByPlaceholder('Enter address (Google Search)...').fill('200 N Spring St, Los Angeles, CA 90012');
+    await page.getByRole('button', { name: 'Search address' }).click();
 
     await expect(page.getByRole('heading', { name: 'We do not serve your address yet.' })).toBeVisible();
+    await expect(page.getByText('We will only use your email for coverage updates about this area.')).toBeVisible();
     await page.getByPlaceholder('Email for updates').fill('alerts@example.com');
-    await page.getByRole('button', { name: 'Notify me' }).click();
+    await page.getByRole('button', { name: 'Notify me if coverage expands' }).click();
     await expect(page.locator('p.text-emerald-700')).toHaveText('We will look into adding your area and notify you if we do.');
 
     const searchInput = page.locator('input').first();
@@ -379,7 +385,7 @@ test.describe('crime-address funnel', () => {
 
     await expect(page.getByRole('heading', { name: '1 Beacon St, Boston, MA 02108, USA' })).toBeVisible();
     await expect(page.getByText('Wallet taken from parked car')).toBeVisible();
-    await expect(page.getByTestId('crime-address-neighborhood-score-unavailable')).toHaveText('Loading…');
+    await expect(page.getByTestId('crime-address-neighborhood-score-unavailable')).toHaveText('Checking how this area compares…');
     await expect(page.getByTestId('crime-address-neighborhood-score-value')).toHaveText('82.4');
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);

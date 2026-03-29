@@ -78,6 +78,10 @@ test.describe('public surface regressions', () => {
     await expect(page.getByText('The score only makes sense when it sits next to incidents and trends.')).toHaveCount(0);
     await expect(page.getByText('Advanced workflows belong under one explore layer, not in the first user decision.')).toHaveCount(0);
     await expect(page.getByText('The homepage should make that clear before the user ever hits an unsupported address.')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Search address' }).first()).toBeVisible();
+    await expect(page.getByTestId('home-trust-proof')).toContainText('Built from official public records');
+    await expect(page.getByTestId('home-trust-proof')).toContainText('See data freshness and coverage');
+    await expect(page.getByTestId('home-example-addresses')).toContainText('Try Boston example');
 
     await page.getByRole('navigation').getByRole('button', { name: 'Cities' }).click();
     await expect(page.getByRole('navigation').getByRole('link', { name: 'New York', exact: true })).toBeVisible();

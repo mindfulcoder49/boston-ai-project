@@ -31,6 +31,9 @@
                     @address-selected="handleAddressSelected"
                     :language_codes="['en-US']"
                     placeholder_text="Enter your address..."
+                    show_submit_button
+                    submit_button_label="Search address"
+                    submit_button_class="hero-search-submit"
                   />
                 </div>
                 <button
@@ -54,6 +57,41 @@
                 If the address is supported, you will see a lightweight local preview first. If not, you can ask to be notified when coverage expands.
               </p>
               <p v-if="geoError" class="mt-2 text-sm text-rose-200">{{ geoError }}</p>
+
+              <div
+                class="mt-4 rounded-[24px] border border-white/10 bg-slate-950/35 p-4 text-left"
+                data-testid="home-trust-proof"
+              >
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">Built from official public records</p>
+                <p class="mt-2 text-sm leading-6 text-slate-200">
+                  PublicDataWatch currently spans {{ stats.cityCount }} regions and {{ formattedTotalRecords }} records across crime, 311, permits, inspections, violations, and crash data depending on the city. Refresh timing varies by city and source.
+                </p>
+                <div class="mt-4 flex flex-wrap gap-2" data-testid="home-example-addresses">
+                  <button
+                    v-for="example in exampleAddresses"
+                    :key="example.label"
+                    type="button"
+                    class="rounded-full border border-cyan-300/35 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200 hover:bg-cyan-400/20"
+                    @click="openPreview(example.address, example.latitude, example.longitude)"
+                  >
+                    Try {{ example.label }}
+                  </button>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-3 text-sm">
+                  <Link
+                    :href="route('data.metrics')"
+                    class="inline-flex items-center font-semibold text-cyan-100 transition hover:text-white"
+                  >
+                    See data freshness and coverage
+                  </Link>
+                  <Link
+                    :href="`${route('home')}#cities`"
+                    class="inline-flex items-center font-semibold text-slate-300 transition hover:text-white"
+                  >
+                    Browse supported regions
+                  </Link>
+                </div>
+              </div>
             </div>
 
             <div class="mt-8 flex flex-wrap gap-3">
@@ -416,6 +454,27 @@ const previewPanels = [
   },
 ];
 
+const exampleAddresses = [
+  {
+    label: 'Boston example',
+    address: '1 Beacon St, Boston, MA 02108, USA',
+    latitude: 42.3601,
+    longitude: -71.0589,
+  },
+  {
+    label: 'Everett example',
+    address: '484 Broadway, Everett, MA 02149, USA',
+    latitude: 42.4086,
+    longitude: -71.0533,
+  },
+  {
+    label: 'Chicago example',
+    address: '121 N La Salle St, Chicago, IL 60602, USA',
+    latitude: 41.8839,
+    longitude: -87.6324,
+  },
+];
+
 const IconFullMap = { render: () => h('svg', { class: 'h-5 w-5', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7' })]) };
 const IconTrends = { render: () => h('svg', { class: 'h-5 w-5', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M2 20h20M5 17l4-6 4 3 6-9' })]) };
 const IconScore = { render: () => h('svg', { class: 'h-5 w-5', fill: 'none', stroke: 'currentColor', 'stroke-width': '2', viewBox: '0 0 24 24' }, [h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', d: 'M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z' })]) };
@@ -493,6 +552,27 @@ const professionalTools = [
   outline: none;
   border-color: rgba(34, 211, 238, 0.6);
   box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
+}
+
+.hero-search-wrapper :deep(.hero-search-submit) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  background: rgba(34, 211, 238, 0.92);
+  color: #082f49;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.hero-search-wrapper :deep(.hero-search-submit:hover:enabled) {
+  background: rgba(103, 232, 249, 0.96);
+}
+
+.hero-search-wrapper :deep(.hero-search-submit:disabled) {
+  opacity: 0.55;
 }
 
 .hero-search-wrapper :deep(ul) {
