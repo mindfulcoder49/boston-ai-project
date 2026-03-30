@@ -42,7 +42,7 @@ class DispatchLocalNewsArticle extends Command
 
         $this->info("Processing NewsArticle ID: {$article->id}");
 
-        $report = $article->sourceReport;
+        $report = $article->source;
         if (!$report) {
             $this->error("Source report not found for NewsArticle ID: {$article->id}");
             $article->update(['status' => 'error', 'content' => 'Source report not found.']);

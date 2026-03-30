@@ -45,7 +45,7 @@ class GenerateNewsArticleJob implements ShouldQueue
 
         $this->article->update(['status' => 'generating', 'content' => 'AI generation in progress...']);
 
-        $report = $this->article->sourceReport;
+        $report = $this->article->source;
         if (!$report) {
             throw new \Exception("Source report not found for NewsArticle ID: {$this->article->id}");
         }
