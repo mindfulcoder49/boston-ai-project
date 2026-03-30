@@ -173,6 +173,7 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
     private function exportDataForModel(string $tableName, string $dateField, string $latField, string $lonField, array $fieldsToAnalyze, string $filename, string $modelClass, int $baselineYear = 0)
     {
         $filePath = Storage::disk('public')->path($filename);
+        $modelInstance = new $modelClass();
         $connectionName = (new $modelClass())->getConnectionName() ?? config('database.default');
 
         $this->line("      Counting rows to export for {$tableName}..." . ($baselineYear ? " (from {$baselineYear})" : ''));
