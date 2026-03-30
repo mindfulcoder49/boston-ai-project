@@ -10,15 +10,11 @@ use Illuminate\Queue\SerializesModels;
 use App\Models\NewsArticle;
 use App\Models\JobRun;
 use App\Http\Controllers\AiAssistantController;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 use App\Models\NewsArticleGenerationConfig;
 use App\Models\Trend;
 use App\Models\YearlyCountComparison;
-use App\Services\TrendSummaryService;
-use Illuminate\Support\Facades\Cache;
+use App\Services\NewsArticleReportDataResolver;
 use Throwable;
 
 class GenerateNewsArticleJob implements ShouldQueue
@@ -41,7 +37,8 @@ class GenerateNewsArticleJob implements ShouldQueue
 
     public function handle(): void
     {
-        $jobRun = JobRun::where('job_id', $this->job->getJobId())->first();
+        $queueJobId = $this->job?->getJobId();
+        $jobRun = $queueJobId ? JobRun::where('job_id', $queueJobId)->first() : null;
         if ($jobRun) {
             $jobRun->update(['status' => 'running', 'started_at' => now()]);
         }
@@ -54,7 +51,7 @@ class GenerateNewsArticleJob implements ShouldQueue
         }
 
         try {
-            $reportData = $this->fetchReportData($report);
+            $reportData = app(NewsArticleReportDataResolver::class)->resolve($report);
 
             if (!$reportData) {
                 throw new \Exception("Could not fetch or process report data for " . get_class($report) . " #{$report->id}.");
@@ -106,7 +103,8 @@ class GenerateNewsArticleJob implements ShouldQueue
 
     public function failed(Throwable $exception): void
     {
-        $jobRun = JobRun::where('job_id', $this->job->getJobId())->first();
+        $queueJobId = $this->job?->getJobId();
+        $jobRun = $queueJobId ? JobRun::where('job_id', $queueJobId)->first() : null;
         if ($jobRun) {
             $jobRun->update([
                 'status' => 'failed',
@@ -119,51 +117,6 @@ class GenerateNewsArticleJob implements ShouldQueue
             'status' => 'error',
             'content' => 'AI generation failed: ' . $exception->getMessage(),
         ]);
-    }
-
-    private function fetchReportData($report)
-    {
-        // Trend: use the cached summary (compact, pre-computed, no analysis API dependency)
-        if ($report instanceof Trend) {
-            $summary = Cache::get(TrendSummaryService::cacheKey($report->job_id))
-                ?? TrendSummaryService::compute($report->job_id, $report->h3_resolution, $report->p_value_anomaly, $report->p_value_trend);
-
-            if (empty($summary) || ($summary['status'] ?? '') !== 'ok') {
-                Log::warning("Trend summary unavailable for article generation.", ['trend_id' => $report->id, 'job_id' => $report->job_id]);
-                return null;
-            }
-            return $summary;
-        }
-
-        // YearlyCountComparison: fetch from analysis API and slim the results
-        if (!($report instanceof YearlyCountComparison)) return null;
-
-        $apiUrl  = config('services.analysis_api.url') . "/api/v1/jobs/{$report->job_id}/results/stage2_yearly_count_comparison.json";
-        $response = Http::timeout(120)->get($apiUrl);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            if (empty($data)) {
-                Log::warning("Fetched report data is empty for article generation.", ['report_class' => get_class($report), 'report_id' => $report->id]);
-                return null;
-            }
-            if (isset($data['results'])) {
-                $current_year     = $data['parameters']['analysis_current_year'] ?? null;
-                $filtered_results = array_filter($data['results'], fn($item) => isset($item['to_date'][$current_year]['change_pct']));
-                usort($filtered_results, fn($a, $b) => ($b['to_date'][$current_year]['change_pct'] ?? 0) <=> ($a['to_date'][$current_year]['change_pct'] ?? 0));
-                return [
-                    'summary_of_changes' => [
-                        'top_5_increases_ytd' => array_slice($filtered_results, 0, 5),
-                        'top_5_decreases_ytd' => array_slice(array_reverse($filtered_results), 0, 5),
-                    ],
-                    'parameters' => $data['parameters'] ?? null,
-                ];
-            }
-            return $data;
-        }
-
-        Log::error("Failed to fetch report data for article generation.", ['report_class' => get_class($report), 'report_id' => $report->id, 'status' => $response->status(), 'response' => $response->body()]);
-        return null;
     }
 
     private function getReportContext($report): array
