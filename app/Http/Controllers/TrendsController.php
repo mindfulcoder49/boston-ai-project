@@ -78,13 +78,17 @@ class TrendsController extends Controller
 
     private function buildListing(): array
     {
-        $stage4JobIds = $this->discoverStage4JobIds();
+        $snapshots = AnalysisReportSnapshot::where('artifact_name', 'stage4_h3_anomaly.json')->get()->keyBy('job_id');
+        $stage4JobIds = $snapshots->isNotEmpty()
+            ? $snapshots->keys()->all()
+            : $this->discoverStage4JobIds();
         $trendsMap    = Trend::all()->keyBy('job_id');
 
         $allAnalyses = [];
 
         foreach ($stage4JobIds as $jobId) {
             $trend = $trendsMap->get($jobId);
+            $snapshot = $snapshots->get($jobId);
 
             if ($trend && class_exists($trend->model_class)) {
                 // Fast path: DB record has all the metadata we need
@@ -97,12 +101,13 @@ class TrendsController extends Controller
                     'analysis_weeks_trend'   => $trend->analysis_weeks_trend,
                     'analysis_weeks_anomaly' => $trend->analysis_weeks_anomaly,
                     'last_run'               => $trend->updated_at->toDateString(),
+                    'sort_key'               => $trend->updated_at?->getTimestamp() ?? 0,
                     'trend_id'               => $trend->id,
                 ];
             } else {
                 // Slow path: read parameters from the S3 file itself.
                 // Only needed for jobs dispatched on another environment (no local DB record).
-                $meta = $this->extractMetaFromFile($jobId);
+                $meta = $this->extractMetaFromFile($jobId, $snapshot);
                 if (!$meta) {
                     continue;
                 }
@@ -131,24 +136,11 @@ class TrendsController extends Controller
                 'p_value_trend'          => $meta['p_value_trend'],
                 'last_run'               => $meta['last_run'] ?? null,
                 'summary'                => $summary,
+                '_sort_key'              => $meta['sort_key'] ?? 0,
             ];
         }
 
-        // Deduplicate by (model_class, column_name, h3_resolution): old job snapshots
-        // stay in the DB after a re-run, so the same analysis can appear twice — once
-        // via the current Trend record (has trend_id) and once via the stale snapshot.
-        // Keep whichever entry has a trend_id; otherwise keep the first encountered.
-        $seen = [];
-        $deduped = [];
-        foreach ($allAnalyses as $analysis) {
-            $key = $analysis['model_name'] . '|' . $analysis['column_name'] . '|' . $analysis['h3_resolution'];
-            if (!isset($seen[$key])) {
-                $seen[$key] = count($deduped);
-                $deduped[] = $analysis;
-            } elseif ($analysis['trend_id'] !== null && $deduped[$seen[$key]]['trend_id'] === null) {
-                $deduped[$seen[$key]] = $analysis;
-            }
-        }
+        $deduped = $this->dedupeAnalyses($allAnalyses);
 
         usort($deduped, fn($a, $b) =>
             ($b['summary']['total_findings'] ?? 0) <=> ($a['summary']['total_findings'] ?? 0)
@@ -198,10 +190,10 @@ class TrendsController extends Controller
      * Extract listing metadata from the stage4 artifact for jobs with no local Trend DB record.
      * Uses the snapshot table first, falls back to S3.
      */
-    private function extractMetaFromFile(string $jobId): ?array
+    private function extractMetaFromFile(string $jobId, ?AnalysisReportSnapshot $snapshot = null): ?array
     {
         try {
-            $data = AnalysisReportSnapshot::resolve($jobId, 'stage4_h3_anomaly.json');
+            $data = $snapshot?->payload ?? AnalysisReportSnapshot::resolve($jobId, 'stage4_h3_anomaly.json');
             if (!$data) {
                 return null;
             }
@@ -232,11 +224,39 @@ class TrendsController extends Controller
                 'analysis_weeks_trend'   =>          $params['analysis_weeks_trend']   ?? [4, 26, 52],
                 'analysis_weeks_anomaly' => (int)   ($params['analysis_weeks_anomaly'] ?? 4),
                 'last_run'               => null,
+                'sort_key'               => $snapshot?->s3_last_modified ?: optional($snapshot?->pulled_at)->getTimestamp() ?: 0,
             ];
         } catch (\Exception $e) {
             Log::error("[TrendsController] extractMetaFromFile({$jobId}): " . $e->getMessage());
             return null;
         }
+    }
+
+    private function dedupeAnalyses(array $allAnalyses): array
+    {
+        $bestByKey = [];
+
+        foreach ($allAnalyses as $analysis) {
+            $key = $analysis['model_name'] . '|' . $analysis['column_name'] . '|' . $analysis['h3_resolution'];
+
+            if (
+                !isset($bestByKey[$key]) ||
+                (($analysis['_sort_key'] ?? 0) > ($bestByKey[$key]['_sort_key'] ?? 0)) ||
+                (
+                    ($analysis['_sort_key'] ?? 0) === ($bestByKey[$key]['_sort_key'] ?? 0) &&
+                    ($analysis['trend_id'] !== null) &&
+                    ($bestByKey[$key]['trend_id'] === null)
+                )
+            ) {
+                $bestByKey[$key] = $analysis;
+            }
+        }
+
+        return array_map(function (array $analysis) {
+            unset($analysis['_sort_key']);
+
+            return $analysis;
+        }, array_values($bestByKey));
     }
 
     /**

@@ -26,4 +26,44 @@ class ScoringReportControllerTest extends TestCase
             ['job_id' => 'job-a', 'artifact_name' => 'a.json', 'resolution' => 8],
         ], $normalized);
     }
+
+    public function test_it_keeps_latest_scoring_report_for_same_logical_group(): void
+    {
+        $controller = new ScoringReportController();
+        $method = new \ReflectionMethod($controller, 'dedupeReportList');
+        $method->setAccessible(true);
+
+        $deduped = $method->invoke($controller, [
+            [
+                'job_id' => 'job-old',
+                'artifact_name' => 'stage6_old.json',
+                'title' => 'Historical Scoring Report',
+                'city' => 'Boston',
+                'date_range_key' => '2025-01-01 to 2026-03-30',
+                'resolution' => 9,
+                'source_job_id' => null,
+                'parameters' => [
+                    'model_class' => 'App\\Models\\ThreeOneOneCase',
+                    'column_name' => 'reason',
+                ],
+                '_sort_key' => 100,
+            ],
+            [
+                'job_id' => 'job-new',
+                'artifact_name' => 'stage6_new.json',
+                'title' => 'Historical Scoring Report',
+                'city' => 'Boston',
+                'date_range_key' => '2025-01-01 to 2026-03-30',
+                'resolution' => 9,
+                'source_job_id' => null,
+                'parameters' => [
+                    'model_class' => 'App\\Models\\ThreeOneOneCase',
+                    'column_name' => 'reason',
+                ],
+                '_sort_key' => 200,
+            ],
+        ]);
+
+        $this->assertSame(['job-new'], array_column($deduped, 'job_id'));
+    }
 }

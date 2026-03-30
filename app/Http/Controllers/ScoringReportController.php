@@ -80,9 +80,11 @@ class ScoringReportController extends Controller
                 'date_range_key' => $dateRange,
                 'resolution'     => $parameters['h3_resolution'] ?? 'N/A',
                 'source_job_id'  => $fileContent['source_job_id'] ?? null,
+                '_sort_key'      => $snapshot->s3_last_modified ?: optional($snapshot->pulled_at)->getTimestamp() ?: 0,
             ];
         }
-        return $reportList;
+
+        return $this->dedupeReportList($reportList);
     }
 
     private function buildReportListFromS3(): array
@@ -115,10 +117,12 @@ class ScoringReportController extends Controller
                     'date_range_key' => $dateRange,
                     'resolution'     => $parameters['h3_resolution'] ?? 'N/A',
                     'source_job_id'  => $fileContent['source_job_id'] ?? null,
+                    '_sort_key'      => $s3->lastModified($file),
                 ];
             }
         }
-        return $reportList;
+
+        return $this->dedupeReportList($reportList);
     }
 
     /**
@@ -368,5 +372,36 @@ class ScoringReportController extends Controller
     private function normalizeReportGroup($reportGroup): array
     {
         return collect($reportGroup ?? [])->values()->all();
+    }
+
+    private function dedupeReportList(array $reportList): array
+    {
+        $bestByKey = [];
+
+        foreach ($reportList as $report) {
+            $parameters = $report['parameters'] ?? [];
+            $key = implode('|', [
+                $report['title'] ?? '',
+                $report['city'] ?? '',
+                $report['date_range_key'] ?? '',
+                (string) ($report['resolution'] ?? ''),
+                $report['source_job_id'] ?? '',
+                $parameters['model_class'] ?? '',
+                $parameters['column_name'] ?? '',
+            ]);
+
+            if (
+                !isset($bestByKey[$key]) ||
+                (($report['_sort_key'] ?? 0) > ($bestByKey[$key]['_sort_key'] ?? 0))
+            ) {
+                $bestByKey[$key] = $report;
+            }
+        }
+
+        return array_map(function (array $report) {
+            unset($report['_sort_key']);
+
+            return $report;
+        }, array_values($bestByKey));
     }
 }

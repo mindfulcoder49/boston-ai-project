@@ -158,10 +158,45 @@ class YearlyCountComparisonController extends Controller
                 'group_by_col'   => $groupByCol,
                 'group_by_label' => Str::of($groupByCol)->replace('_', ' ')->title()->value(),
                 'baseline_year'  => $baselineYear,
+                '_sort_key'      => $snapshot->s3_last_modified ?: optional($snapshot->pulled_at)->getTimestamp() ?: 0,
             ];
         }
 
+        foreach ($byModel as &$modelData) {
+            $modelData['analyses'] = $this->dedupeLatestAnalyses($modelData['analyses']);
+        }
+        unset($modelData);
+
         return array_values($byModel);
+    }
+
+    private function dedupeLatestAnalyses(array $analyses): array
+    {
+        $bestByKey = [];
+
+        foreach ($analyses as $analysis) {
+            $key = implode('|', [
+                $analysis['group_by_col'] ?? '',
+                (string) ($analysis['baseline_year'] ?? ''),
+            ]);
+
+            if (
+                !isset($bestByKey[$key]) ||
+                (($analysis['_sort_key'] ?? 0) > ($bestByKey[$key]['_sort_key'] ?? 0))
+            ) {
+                $bestByKey[$key] = $analysis;
+            }
+        }
+
+        $deduped = array_values($bestByKey);
+
+        usort($deduped, fn(array $a, array $b) => ($b['_sort_key'] ?? 0) <=> ($a['_sort_key'] ?? 0));
+
+        return array_map(function (array $analysis) {
+            unset($analysis['_sort_key']);
+
+            return $analysis;
+        }, $deduped);
     }
 
     /**
