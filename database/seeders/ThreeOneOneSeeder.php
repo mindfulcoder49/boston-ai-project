@@ -26,16 +26,10 @@ class ThreeOneOneSeeder extends Seeder
      */
     public function run(): void
     {
-        $name = '311-service-requests'; // Specify the file naming convention to look for
-        $files = Storage::disk('local')->files('datasets'); // Fetch all files from 'datasets' directory
-
-        // Filter files to match the specified naming convention
-        $files = array_filter($files, function ($file) use ($name) {
-            return strpos($file, $name) !== false;
-        });
+        $files = $this->latestDatasetFiles();
 
         if (empty($files)) {
-            $this->command->warn("No files found to process for name: " . $name);
+            $this->command->warn('No files found to process for Boston 311 datasets.');
             return;
         }
 
@@ -45,6 +39,39 @@ class ThreeOneOneSeeder extends Seeder
             $this->command->info("Processing file: " . $file);
             $this->processFile(Storage::path($file));
         }
+    }
+
+    /**
+     * Keep the seed pass bounded to the newest snapshot for each Boston 311 feed.
+     *
+     * @return array<int, string>
+     */
+    private function latestDatasetFiles(): array
+    {
+        $availableFiles = Storage::disk('local')->files('datasets');
+        $datasetNames = collect(config('boston_datasets.datasets', []))
+            ->pluck('name')
+            ->filter(fn ($name) => is_string($name) && str_contains($name, '311-service-requests'))
+            ->unique()
+            ->values();
+
+        return $datasetNames
+            ->map(function (string $datasetName) use ($availableFiles) {
+                $matches = array_values(array_filter($availableFiles, function (string $file) use ($datasetName) {
+                    return str_starts_with($file, "datasets/{$datasetName}_");
+                }));
+
+                if (empty($matches)) {
+                    return null;
+                }
+
+                rsort($matches, SORT_STRING);
+
+                return $matches[0];
+            })
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /**

@@ -76,12 +76,17 @@ class BostonThreeOneOneSeederTest extends TestCase
     {
         Storage::fake('local');
 
-        Storage::disk('local')->put('datasets/311-service-requests-2026_fixture.csv', implode("\n", [
+        Storage::disk('local')->put('datasets/311-service-requests-2026_20260329_000000.csv', implode("\n", [
+            'case_enquiry_id,open_dt,sla_target_dt,closed_dt,on_time,case_status,closure_reason,case_title,subject,reason,type,queue,department,submitted_photo,closed_photo,location,fire_district,pwd_district,city_council_district,police_district,neighborhood,neighborhood_services_district,ward,precinct,location_street_name,location_zipcode,latitude,longitude,geom_4326,source',
+            '101006000000,"2026-02-28 10:00:00","2026-03-01 10:00:00","","OVERDUE","Open","","Parking Enforcement","Transportation - Traffic Division","Enforcement & Abandoned Vehicles","Parking Enforcement","BTDT_Parking Enforcement","BTDT","","","429 E First St  South Boston  MA  02127","6","05","2","C6","South Boston","South Boston","7","0102","E First St","02127","42.3398","-71.0276","","Constituent Call"',
+        ]));
+
+        Storage::disk('local')->put('datasets/311-service-requests-2026_20260330_000000.csv', implode("\n", [
             'case_enquiry_id,open_dt,sla_target_dt,closed_dt,on_time,case_status,closure_reason,case_title,subject,reason,type,queue,department,submitted_photo,closed_photo,location,fire_district,pwd_district,city_council_district,police_district,neighborhood,neighborhood_services_district,ward,precinct,location_street_name,location_zipcode,latitude,longitude,geom_4326,source',
             '101006000001,"2026-03-01 10:00:00","2026-03-02 10:00:00","","OVERDUE","Open","","Parking Enforcement","Transportation - Traffic Division","Enforcement & Abandoned Vehicles","Parking Enforcement","BTDT_Parking Enforcement","BTDT","","","430 E First St  South Boston  MA  02127","6","05","2","C6","South Boston","South Boston","7","0102","E First St","02127","42.3399","-71.0277","","Constituent Call"',
         ]));
 
-        Storage::disk('local')->put('datasets/311-service-requests-new-system_fixture.csv', implode("\n", [
+        Storage::disk('local')->put('datasets/311-service-requests-new-system_20260330_000000.csv', implode("\n", [
             'case_id,open_date,case_topic,service_name,assigned_department,assigned_team,case_status,closure_reason,closure_comments,close_date,target_close_date,on_time,report_source,full_address,street_number,street_name,zip_code,neighborhood,public_works_district,city_council_district,fire_district,police_district,ward,precinct,submitted_photo,closed_photo,longitude,latitude',
             'BCS-00000001,"2026-03-20 09:00:00+00","Street Light Outage","Street Light Outage","Public Works Department (PWD)","PWD Street Lighting","In progress","","","", "2026-03-23 09:00:00+00","OVERDUE","Call","30 B St, Boston, MA 02127","30","B St","02127","South Boston","5","2","6","C6","7","0102","","","-71.0270","42.3350"',
         ]));
@@ -89,6 +94,10 @@ class BostonThreeOneOneSeederTest extends TestCase
         $this->seed(ThreeOneOneSeeder::class);
 
         $this->assertDatabaseCount('three_one_one_cases', 2);
+
+        $this->assertDatabaseMissing('three_one_one_cases', [
+            'service_request_id' => '101006000000',
+        ]);
 
         $this->assertDatabaseHas('three_one_one_cases', [
             'service_request_id' => '101006000001',
