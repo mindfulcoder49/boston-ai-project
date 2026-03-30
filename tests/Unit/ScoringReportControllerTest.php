@@ -106,4 +106,61 @@ class ScoringReportControllerTest extends TestCase
 
         $this->assertSame(['job-new'], array_column($deduped, 'job_id'));
     }
+
+    public function test_it_normalizes_scoring_city_name_from_job_metadata_when_parameters_are_generic(): void
+    {
+        $controller = new ScoringReportController();
+        $method = new \ReflectionMethod($controller, 'buildReportListFromSnapshots');
+        $method->setAccessible(true);
+
+        $oldSnapshot = new class {
+            public string $job_id = 'laravel-hist-score-three-one-one-case-reason-res8-1772947514';
+            public string $artifact_name = 'stage6_historical_score_laravel-hist-score-three-one-one-case-reason-res8-1772947514.json';
+            public int $s3_last_modified = 100;
+            public $pulled_at;
+            public array $payload = [
+                'parameters' => [
+                    'city' => 'Boston 311 Cases',
+                    'h3_resolution' => 8,
+                    'date_range' => [
+                        'start_date' => '2025-01-01',
+                        'end_date' => '2026-03-03',
+                    ],
+                ],
+            ];
+
+            public function __construct()
+            {
+                $this->pulled_at = now();
+            }
+        };
+
+        $newSnapshot = new class {
+            public string $job_id = 'laravel-hist-score-three-one-one-case-reason-res8-1774876240';
+            public string $artifact_name = 'stage6_historical_score_laravel-hist-score-three-one-one-case-reason-res8-1774876240.json';
+            public int $s3_last_modified = 200;
+            public $pulled_at;
+            public array $payload = [
+                'parameters' => [
+                    'city' => 'Boston',
+                    'h3_resolution' => 8,
+                    'date_range' => [
+                        'start_date' => '2025-01-01',
+                        'end_date' => '2026-03-30',
+                    ],
+                ],
+            ];
+
+            public function __construct()
+            {
+                $this->pulled_at = now();
+            }
+        };
+
+        $reports = $method->invoke($controller, collect([$oldSnapshot, $newSnapshot]));
+
+        $this->assertCount(1, $reports);
+        $this->assertSame('laravel-hist-score-three-one-one-case-reason-res8-1774876240', $reports[0]['job_id']);
+        $this->assertSame('Boston 311 Cases', $reports[0]['city']);
+    }
 }

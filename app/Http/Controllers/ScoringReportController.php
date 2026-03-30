@@ -64,7 +64,8 @@ class ScoringReportController extends Controller
         foreach ($snapshots as $snapshot) {
             $fileContent = $snapshot->payload;
             $parameters  = $fileContent['parameters'] ?? ($fileContent['config'] ?? []);
-            $city        = $parameters['city'] ?? 'Unknown';
+            $meta        = $this->resolveReportMeta($snapshot->job_id, $parameters);
+            $city        = $this->resolveReportGroupName($parameters, $meta['model_class']);
             $dateRange   = 'N/A';
             if (isset($parameters['date_range']['start_date'], $parameters['date_range']['end_date'])) {
                 $dateRange = $parameters['date_range']['start_date'] . ' to ' . $parameters['date_range']['end_date'];
@@ -80,6 +81,8 @@ class ScoringReportController extends Controller
                 'date_range_key' => $dateRange,
                 'resolution'     => $parameters['h3_resolution'] ?? 'N/A',
                 'source_job_id'  => $fileContent['source_job_id'] ?? null,
+                'model_class'    => $meta['model_class'],
+                'column_name'    => $meta['column_name'],
                 '_sort_key'      => $snapshot->s3_last_modified ?: optional($snapshot->pulled_at)->getTimestamp() ?: 0,
             ];
         }
@@ -101,7 +104,8 @@ class ScoringReportController extends Controller
 
                 $fileContent = json_decode($s3->get($file), true);
                 $parameters  = $fileContent['parameters'] ?? ($fileContent['config'] ?? []);
-                $city        = $parameters['city'] ?? 'Unknown';
+                $meta        = $this->resolveReportMeta($jobDir, $parameters);
+                $city        = $this->resolveReportGroupName($parameters, $meta['model_class']);
                 $dateRange   = 'N/A';
                 if (isset($parameters['date_range']['start_date'], $parameters['date_range']['end_date'])) {
                     $dateRange = $parameters['date_range']['start_date'] . ' to ' . $parameters['date_range']['end_date'];
@@ -117,6 +121,8 @@ class ScoringReportController extends Controller
                     'date_range_key' => $dateRange,
                     'resolution'     => $parameters['h3_resolution'] ?? 'N/A',
                     'source_job_id'  => $fileContent['source_job_id'] ?? null,
+                    'model_class'    => $meta['model_class'],
+                    'column_name'    => $meta['column_name'],
                     '_sort_key'      => $s3->lastModified($file),
                 ];
             }
@@ -379,13 +385,12 @@ class ScoringReportController extends Controller
         $bestByKey = [];
 
         foreach ($reportList as $report) {
-            $parameters = $report['parameters'] ?? [];
             $key = implode('|', [
                 $report['title'] ?? '',
                 $report['city'] ?? '',
                 (string) ($report['resolution'] ?? ''),
-                $parameters['model_class'] ?? '',
-                $parameters['column_name'] ?? '',
+                $report['model_class'] ?? '',
+                $report['column_name'] ?? '',
             ]);
 
             if (
@@ -401,5 +406,68 @@ class ScoringReportController extends Controller
 
             return $report;
         }, array_values($bestByKey));
+    }
+
+    private function resolveReportMeta(string $jobId, array $parameters): array
+    {
+        $modelClass = $parameters['model_class'] ?? null;
+        $columnName = $parameters['column_name'] ?? null;
+
+        if ((!$modelClass || !class_exists($modelClass)) || !$columnName) {
+            $parsed = $this->parseScoringJobIdForMeta($jobId);
+            $modelClass = ($modelClass && class_exists($modelClass)) ? $modelClass : $parsed['model_class'];
+            $columnName = $columnName ?: $parsed['column_name'];
+        }
+
+        return [
+            'model_class' => $modelClass,
+            'column_name' => $columnName,
+        ];
+    }
+
+    private function resolveReportGroupName(array $parameters, ?string $modelClass): string
+    {
+        if ($modelClass && class_exists($modelClass) && method_exists($modelClass, 'getHumanName')) {
+            return $modelClass::getHumanName();
+        }
+
+        return $parameters['city'] ?? 'Unknown';
+    }
+
+    private function parseScoringJobIdForMeta(string $jobId): array
+    {
+        $jobBody = preg_replace('/^laravel-hist-score-/', '', $jobId);
+        if ($jobBody === $jobId) {
+            $jobBody = preg_replace('/^laravel-/', '', $jobId);
+        }
+
+        if (!preg_match('/^(.+)-res\d+-\d+$/', $jobBody, $matches)) {
+            return ['model_class' => null, 'column_name' => null];
+        }
+
+        $modelAndColumn = $matches[1];
+
+        $keyMap = [];
+        foreach (config('cities.cities', []) as $cityConfig) {
+            foreach ($cityConfig['models'] ?? [] as $modelClass) {
+                $keyMap[Str::kebab(class_basename($modelClass))] = $modelClass;
+            }
+        }
+        uksort($keyMap, fn($a, $b) => strlen($b) <=> strlen($a));
+
+        foreach ($keyMap as $key => $modelClass) {
+            if ($modelAndColumn === $key) {
+                return ['model_class' => $modelClass, 'column_name' => 'unified'];
+            }
+
+            if (str_starts_with($modelAndColumn, $key . '-')) {
+                return [
+                    'model_class' => $modelClass,
+                    'column_name' => substr($modelAndColumn, strlen($key) + 1),
+                ];
+            }
+        }
+
+        return ['model_class' => null, 'column_name' => null];
     }
 }
