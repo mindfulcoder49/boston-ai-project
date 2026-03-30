@@ -16,6 +16,12 @@ return [
             'format' => 'csv',
         ],
         [
+            //311 Service Requests in the modernized Boston 311 system
+            'name' => '311-service-requests-new-system',
+            'resource_id' => '254adca6-64ab-4c5c-9fc0-a6da622be185',
+            'format' => 'csv',
+        ],
+        [
             'name' => 'construction-off-hours',
             'resource_id' => 'c66524ea-36f5-43b1-aa9c-da36d7cb8744',
             'format' => 'csv',

@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\Cache;
 
 class ThreeOneOneCaseController extends Controller
 {
+    public function getMultiple(Request $request)
+    {
+        if ($request->has('service_request_ids') && !$request->has('case_enquiry_ids')) {
+            $request->merge([
+                'case_enquiry_ids' => $request->input('service_request_ids'),
+            ]);
+        }
+
+        return $this->getMultipleLiveCaseDetails($request);
+    }
 
     public function indexnofilter(Request $request)
     {
@@ -44,13 +54,33 @@ class ThreeOneOneCaseController extends Controller
         $cachedData = Cache::get($cacheKey);
 
         if ($cachedData) {
+            if ($cachedData === 'no_data') {
+                return response()->json(['data' => []]);
+            }
             return response()->json(['data' => $cachedData]);
+        }
+
+        if (!$this->isLegacyOpen311Id($caseEnquiryId)) {
+            $localCase = $this->getLocalCasesByIds([(string) $caseEnquiryId])[(string) $caseEnquiryId] ?? null;
+            if ($localCase) {
+                Cache::put($cacheKey, $localCase, now()->addMinutes(10));
+                return response()->json(['data' => $localCase]);
+            }
+
+            Cache::put($cacheKey, 'no_data', now()->addMinutes(10));
+            return response()->json(['data' => []]);
         }
 
         $apiKey = Config::get('services.bostongov.api_key');
         $baseUrl = Config::get('services.bostongov.base_url', 'https://311.boston.gov/open311/v2');
 
         if (!$apiKey) {
+            $localCase = $this->getLocalCasesByIds([(string) $caseEnquiryId])[(string) $caseEnquiryId] ?? null;
+            if ($localCase) {
+                Cache::put($cacheKey, $localCase, now()->addMinutes(10));
+                return response()->json(['data' => $localCase]);
+            }
+
             Log::error('Boston 311 API key not configured.');
             return response()->json(['error' => 'Service configuration error.'], 500);
         }
@@ -69,7 +99,13 @@ class ThreeOneOneCaseController extends Controller
 
             if (empty($data) || !is_array($data)) {
                 Log::warning("Boston 311 API returned empty or invalid data for case ID {$caseEnquiryId}. Body: " . $response->body());
-                Cache::put($cacheKey, 'no_data', now()->addMinutes(10)); // Cache "no data" marker for 10 minutes
+                $localCase = $this->getLocalCasesByIds([(string) $caseEnquiryId])[(string) $caseEnquiryId] ?? null;
+                if ($localCase) {
+                    Cache::put($cacheKey, $localCase, now()->addMinutes(10));
+                    return response()->json(['data' => $localCase]);
+                }
+
+                Cache::put($cacheKey, 'no_data', now()->addMinutes(10));
                 return response()->json(['data' => []]);
             }
 
@@ -111,36 +147,37 @@ class ThreeOneOneCaseController extends Controller
         $apiKey = Config::get('services.bostongov.api_key');
         $baseUrl = Config::get('services.bostongov.base_url', 'https://311.boston.gov/open311/v2');
 
-        if (!$apiKey) {
+        if (!$apiKey && !empty(array_filter($caseEnquiryIds, fn ($id) => $this->isLegacyOpen311Id($id)))) {
             Log::error('Boston 311 API key not configured.');
             return response()->json(['error' => 'Service configuration error.'], 500);
         }
 
+        $resultMap = $this->getLocalCasesByIds($caseEnquiryIds);
         $allCaseData = [];
-        $missingCaseIds = [];
+        $missingLegacyCaseIds = [];
 
         // Check cache for each ID
         foreach ($caseEnquiryIds as $caseEnquiryId) {
+            if (!$this->isLegacyOpen311Id($caseEnquiryId)) {
+                continue;
+            }
+
             $cacheKey = "case_details_{$caseEnquiryId}";
             $cachedData = Cache::get($cacheKey);
 
             if ($cachedData) {
-                if ($cachedData === 'no_data') {
-                    $allCaseData[] = []; // Add empty data for cases with "no data" cached
-                    continue;
+                if ($cachedData !== 'no_data') {
+                    $resultMap[$caseEnquiryId] = $this->mergeCasePayloads($resultMap[$caseEnquiryId] ?? null, $cachedData);
                 }
-                $allCaseData[] = $cachedData;
             } else {
-                $missingCaseIds[] = $caseEnquiryId;
+                $missingLegacyCaseIds[] = $caseEnquiryId;
             }
         }
 
-        //log stats on misses and hits
-        Log::info("Cache hits: " . (count($caseEnquiryIds) - count($missingCaseIds)) . ", Cache misses: " . count($missingCaseIds));
+        Log::info("Cache hits: " . (count($caseEnquiryIds) - count($missingLegacyCaseIds)) . ", Cache misses: " . count($missingLegacyCaseIds));
 
-        // Fetch data for missing IDs
-        if (!empty($missingCaseIds)) {
-            $chunkedCaseEnquiryIds = array_chunk($missingCaseIds, 50); // API limit of 50 per request
+        if (!empty($missingLegacyCaseIds)) {
+            $chunkedCaseEnquiryIds = array_chunk($missingLegacyCaseIds, 50); // API limit of 50 per request
 
             foreach ($chunkedCaseEnquiryIds as $index => $chunk) {
                 $serviceRequestIdsString = implode(',', $chunk);
@@ -151,7 +188,7 @@ class ThreeOneOneCaseController extends Controller
 
                     if ($response->failed()) {
                         Log::error("Boston 311 API request failed for chunk of case IDs. Status: " . $response->status() . " Body: " . $response->body());
-                        return response()->json(['error' => 'Failed to fetch data from Boston 311 API for a batch of cases.', 'details' => $response->json() ?: $response->body()], $response->status());
+                        continue;
                     }
 
                     $data = $response->json();
@@ -163,41 +200,72 @@ class ThreeOneOneCaseController extends Controller
                             if ($caseId) {
                                 $cacheKey = "case_details_{$caseId}";
                                 Cache::put($cacheKey, $case, now()->addMinutes(10)); // Cache for 10 minutes
-                                $allCaseData[] = $case;
+                                $resultMap[$caseId] = $this->mergeCasePayloads($resultMap[$caseId] ?? null, $case);
                                 $returnedCaseIds[] = $caseId;
                             }
                         }
 
-                        // Identify missing case IDs and cache "no data" for them
                         $missingFromResponse = array_diff($chunk, $returnedCaseIds);
                         foreach ($missingFromResponse as $missingCaseId) {
                             $cacheKey = "case_details_{$missingCaseId}";
-                            Cache::put($cacheKey, 'no_data', now()->addMinutes(10)); // Cache "no data" marker for 10 minutes
-                            $allCaseData[] = []; // Add empty data for cases with "no data"
-                        }
-                    } else {
-                        foreach ($chunk as $caseId) {
-                            $cacheKey = "case_details_{$caseId}";
-                            Cache::put($cacheKey, 'no_data', now()->addMinutes(10)); // Cache "no data" marker for 10 minutes
-                            $allCaseData[] = []; // Add empty data for cases with "no data"
+                            if (!isset($resultMap[$missingCaseId])) {
+                                Cache::put($cacheKey, 'no_data', now()->addMinutes(10));
+                            }
                         }
                     }
 
-                    // Rate limit: sleep for 1 second if there are more chunks to process
                     if ($index < count($chunkedCaseEnquiryIds) - 1) {
                         sleep(1);
                     }
 
                 } catch (\Illuminate\Http\Client\ConnectionException $e) {
                     Log::error("Boston 311 API connection error for chunk of case IDs: " . $e->getMessage());
-                    return response()->json(['error' => 'Could not connect to Boston 311 API.'], 503);
                 } catch (\Exception $e) {
                     Log::error("Error fetching live data for chunk of case IDs: " . $e->getMessage());
-                    return response()->json(['error' => 'An unexpected error occurred while fetching live data for a batch of cases.'], 500);
                 }
             }
         }
 
+        foreach ($caseEnquiryIds as $caseEnquiryId) {
+            $allCaseData[] = $resultMap[$caseEnquiryId] ?? [];
+        }
+
         return response()->json(['data' => $allCaseData]);
+    }
+
+    protected function getLocalCasesByIds(array $caseIds): array
+    {
+        $stringIds = array_values(array_unique(array_map('strval', $caseIds)));
+        $numericIds = collect($stringIds)
+            ->filter(fn ($caseId) => $this->isLegacyOpen311Id($caseId))
+            ->map(fn ($caseId) => (int) $caseId)
+            ->values()
+            ->all();
+
+        $query = ThreeOneOneCase::query()->whereIn('service_request_id', $stringIds);
+
+        if (!empty($numericIds)) {
+            $query->orWhereIn('case_enquiry_id', $numericIds);
+        }
+
+        return $query->get()
+            ->mapWithKeys(function (ThreeOneOneCase $case) {
+                $key = (string) ($case->service_request_id ?: $case->case_enquiry_id);
+                return [$key => (object) $case->toArray()];
+            })
+            ->all();
+    }
+
+    protected function mergeCasePayloads(mixed $localCase, mixed $liveCase): object
+    {
+        return (object) array_merge(
+            (array) ($localCase instanceof \stdClass ? $localCase : (array) $localCase),
+            (array) ($liveCase instanceof \stdClass ? $liveCase : (array) $liveCase),
+        );
+    }
+
+    protected function isLegacyOpen311Id(mixed $caseId): bool
+    {
+        return preg_match('/^\d+$/', (string) $caseId) === 1;
     }
 }

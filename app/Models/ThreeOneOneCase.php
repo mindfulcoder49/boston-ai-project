@@ -39,6 +39,7 @@ class ThreeOneOneCase extends Model
 
     //add fillable
     protected $fillable = [
+        'service_request_id',
         'case_enquiry_id', 
         'open_dt', 
         'sla_target_dt', 
@@ -46,10 +47,12 @@ class ThreeOneOneCase extends Model
         'on_time', 
         'case_status', 
         'closure_reason', 
+        'closure_comments',
         'case_title', 
         'subject', 
         'reason', 
         'type', 
+        'service_name',
         'queue', 
         'department', 
         'submitted_photo', 
@@ -68,6 +71,7 @@ class ThreeOneOneCase extends Model
         'latitude', 
         'longitude', 
         'source', 
+        'source_system',
         'ward_number', 
         'language_code',
         'threeoneonedescription',
@@ -75,7 +79,7 @@ class ThreeOneOneCase extends Model
     ];
 
     const SEARCHABLE_COLUMNS = [
-        'id', 'case_enquiry_id', 'open_dt', 'sla_target_dt', 'closed_dt', 'on_time', 'case_status', 'closure_reason', 'case_title', 'subject', 'reason', 'type', 'queue', 'department', 'submitted_photo', 'closed_photo', 'location', 'fire_district', 'pwd_district', 'city_council_district', 'police_district', 'neighborhood', 'neighborhood_services_district', 'ward', 'precinct', 'location_street_name', 'location_zipcode', 'latitude', 'longitude', 'source', 'ward_number', 'language_code', 'threeoneonedescription', 'source_city',
+        'id', 'service_request_id', 'case_enquiry_id', 'open_dt', 'sla_target_dt', 'closed_dt', 'on_time', 'case_status', 'closure_reason', 'closure_comments', 'case_title', 'subject', 'reason', 'type', 'service_name', 'queue', 'department', 'submitted_photo', 'closed_photo', 'location', 'fire_district', 'pwd_district', 'city_council_district', 'police_district', 'neighborhood', 'neighborhood_services_district', 'ward', 'precinct', 'location_street_name', 'location_zipcode', 'latitude', 'longitude', 'source', 'source_system', 'ward_number', 'language_code', 'threeoneonedescription', 'source_city',
     ];
     
     //function to check case survival time
@@ -135,24 +139,26 @@ class ThreeOneOneCase extends Model
 
     public static function getExternalIdName(): string
     {
-        return 'case_enquiry_id';
+        return 'service_request_id';
     }
 
     public function getExternalId(): string
     {
-        return $this->case_enquiry_id;
+        return (string) ($this->service_request_id ?: $this->case_enquiry_id);
     }
 
     public static function getPopupConfig(): array
     {
         return [
             'mainIdentifierLabel' => 'Case ID',
-            'mainIdentifierField' => 'case_enquiry_id', // Verify field name
-            'descriptionLabel' => 'Reason',
-            'descriptionField' => 'reason', // Verify field name
+            'mainIdentifierField' => 'service_request_id',
+            'descriptionLabel' => 'Service Type',
+            'descriptionField' => 'type',
             'additionalFields' => [
-                ['label' => 'Opened Date', 'key' => 'open_dt'], // Verify field name
-                ['label' => 'Type', 'key' => 'type'], // Verify field name
+                ['label' => 'Reason', 'key' => 'reason'],
+                ['label' => 'Opened Date', 'key' => 'open_dt'],
+                ['label' => 'Department', 'key' => 'department'],
+                ['label' => 'Service Name', 'key' => 'service_name'],
             ],
         ];
     }

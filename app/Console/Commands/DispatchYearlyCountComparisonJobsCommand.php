@@ -198,7 +198,7 @@ class DispatchYearlyCountComparisonJobsCommand extends Command
         $header = array_merge([$dateField, $latField, $lonField], $fieldsToAnalyze);
         fputcsv($fileHandle, $header);
 
-        $primaryKey = DB::connection($connectionName)->getSchemaBuilder()->getIndexes($tableName)[0]['columns'][0] ?? 'id';
+        $primaryKey = $modelInstance->getKeyName() ?: 'id';
         $progressBar = $this->output->createProgressBar($totalRows);
         $progressBar->start();
 
