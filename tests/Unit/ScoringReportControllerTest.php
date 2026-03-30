@@ -66,4 +66,44 @@ class ScoringReportControllerTest extends TestCase
 
         $this->assertSame(['job-new'], array_column($deduped, 'job_id'));
     }
+
+    public function test_it_replaces_older_score_windows_for_same_public_report_slot(): void
+    {
+        $controller = new ScoringReportController();
+        $method = new \ReflectionMethod($controller, 'dedupeReportList');
+        $method->setAccessible(true);
+
+        $deduped = $method->invoke($controller, [
+            [
+                'job_id' => 'job-old',
+                'artifact_name' => 'stage6_old.json',
+                'title' => 'Historical Scoring Report',
+                'city' => 'Boston 311 Cases',
+                'date_range_key' => '2025-01-01 to 2026-03-03',
+                'resolution' => 9,
+                'source_job_id' => 'old-stage4-job',
+                'parameters' => [
+                    'model_class' => 'App\\Models\\ThreeOneOneCase',
+                    'column_name' => 'reason',
+                ],
+                '_sort_key' => 100,
+            ],
+            [
+                'job_id' => 'job-new',
+                'artifact_name' => 'stage6_new.json',
+                'title' => 'Historical Scoring Report',
+                'city' => 'Boston 311 Cases',
+                'date_range_key' => '2025-01-01 to 2026-03-30',
+                'resolution' => 9,
+                'source_job_id' => 'new-stage4-job',
+                'parameters' => [
+                    'model_class' => 'App\\Models\\ThreeOneOneCase',
+                    'column_name' => 'reason',
+                ],
+                '_sort_key' => 200,
+            ],
+        ]);
+
+        $this->assertSame(['job-new'], array_column($deduped, 'job_id'));
+    }
 }

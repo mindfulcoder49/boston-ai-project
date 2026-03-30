@@ -383,9 +383,7 @@ class ScoringReportController extends Controller
             $key = implode('|', [
                 $report['title'] ?? '',
                 $report['city'] ?? '',
-                $report['date_range_key'] ?? '',
                 (string) ($report['resolution'] ?? ''),
-                $report['source_job_id'] ?? '',
                 $parameters['model_class'] ?? '',
                 $parameters['column_name'] ?? '',
             ]);
