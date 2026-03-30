@@ -127,11 +127,11 @@ class NewsArticleController extends Controller
         }
 
         if ($source instanceof \App\Models\Trend) {
-            return route('reports.statistical-analysis.show', ['trendId' => $source->id]);
+            return route('reports.statistical-analysis.show', ['jobId' => $source->job_id]);
         }
 
         if ($source instanceof \App\Models\YearlyCountComparison) {
-            return route('reports.yearly-comparison.show', ['reportId' => $source->id]);
+            return route('reports.yearly-comparison.show', ['jobId' => $source->job_id]);
         }
 
         return null;
