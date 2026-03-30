@@ -68,6 +68,11 @@ export function buildPublicNavigation(routeFn, isAuthenticated = false) {
         ],
       },
       {
+        label: 'News',
+        href: routeFn('news.index'),
+        routeNames: ['news.index', 'news.show'],
+      },
+      {
         label: 'Pricing',
         href: routeFn('subscription.index'),
         routeNames: ['subscription.index', 'subscribe.checkout'],
@@ -90,6 +95,7 @@ export function buildPublicNavigation(routeFn, isAuthenticated = false) {
         title: 'Product',
         links: [
           { label: 'Crime Preview', href: routeFn('crime-address.index') },
+          { label: 'News', href: routeFn('news.index') },
           { label: 'Pricing', href: routeFn('subscription.index') },
           { label: 'Full Data Map', href: routeFn('data-map.combined') },
           { label: 'Trends', href: routeFn('trends.index') },

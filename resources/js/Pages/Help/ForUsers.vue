@@ -81,7 +81,7 @@
 
                                     <h3>Navigating the Platform</h3>
                                     <p>
-                                        The navigation bar now leads with the public funnel first: <strong>Home</strong>, <strong>Crime Preview</strong>, <strong>Cities</strong>, <strong>Explore</strong>, <strong>Pricing</strong>, and <strong>Help</strong>. Advanced map, trend, score, and metrics workflows live under <strong>Explore</strong>. Saved locations, saved maps, billing, profile, and report history live in the authenticated account area. On mobile, open the hamburger menu to see the same grouped structure.
+                                        The navigation bar now leads with the public funnel first: <strong>Home</strong>, <strong>Crime Preview</strong>, <strong>Cities</strong>, <strong>Explore</strong>, <strong>News</strong>, <strong>Pricing</strong>, and <strong>Help</strong>. Advanced map, trend, score, and metrics workflows live under <strong>Explore</strong>. Saved locations, saved maps, billing, profile, and report history live in the authenticated account area. On mobile, open the hamburger menu to see the same grouped structure.
                                     </p>
                                 </section>
 

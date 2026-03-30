@@ -126,6 +126,7 @@
           <div class="flex items-center md:hidden">
             <button
               type="button"
+              :aria-label="showingNavigationDropdown ? 'Close navigation menu' : 'Open navigation menu'"
               class="inline-flex items-center justify-center rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
               @click="showingNavigationDropdown = !showingNavigationDropdown"
             >
@@ -138,7 +139,11 @@
         </div>
       </div>
 
-      <div v-if="showingNavigationDropdown" class="border-t border-slate-200 bg-white md:hidden">
+      <div
+        v-if="showingNavigationDropdown"
+        data-testid="mobile-nav-panel"
+        class="max-h-[calc(100vh-4.5rem)] overflow-y-auto border-t border-slate-200 bg-white overscroll-contain md:hidden"
+      >
         <div class="space-y-1 px-4 py-4">
           <template v-for="item in navigation.primary" :key="`mobile-${item.label}`">
             <ResponsiveNavLink

@@ -172,8 +172,38 @@ test.describe('public surface regressions', () => {
 
     await page.getByRole('navigation').getByRole('button', { name: 'Cities' }).click();
     await expect(page.getByRole('navigation').getByRole('link', { name: 'New York', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation').getByRole('link', { name: 'News', exact: true })).toBeVisible();
     await expect(page.locator('footer').getByRole('link', { name: 'New York', exact: true })).toBeVisible();
+    await expect(page.locator('footer').getByRole('link', { name: 'News', exact: true })).toBeVisible();
 
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
+  test('mobile navigation is scrollable and includes the news link', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+
+    await page.setViewportSize({ width: 390, height: 640 });
+    await page.goto('/');
+
+    await page.getByRole('button', { name: 'Open navigation menu' }).click();
+
+    const panel = page.getByTestId('mobile-nav-panel');
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole('link', { name: 'News', exact: true })).toBeVisible();
+
+    const metrics = await panel.evaluate((element) => {
+      const style = window.getComputedStyle(element);
+
+      return {
+        overflowY: style.overflowY,
+        clientHeight: element.clientHeight,
+        scrollHeight: element.scrollHeight,
+      };
+    });
+
+    expect(['auto', 'scroll']).toContain(metrics.overflowY);
+    expect(metrics.scrollHeight).toBeGreaterThan(metrics.clientHeight);
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);
   });

@@ -19,6 +19,8 @@ const routeMap = {
   'scoring-reports.index': '/scoring-reports',
   'yearly-comparisons.index': '/yearly-comparisons',
   'data.metrics': '/data-metrics',
+  'news.index': '/news',
+  'news.show': '/news/example-story',
   'subscription.index': '/subscription',
   'help.index': '/help',
   'help.contact': '/help/contact',
@@ -77,5 +79,21 @@ test('footer city list stays in sync with the cities navigation inventory', () =
   assert.deepEqual(
     footerSection.links.map((item) => item.label),
     citiesItem.items.map((item) => item.label),
+  );
+});
+
+test('public navigation includes news in both the primary nav and footer product links', () => {
+  const navigation = buildPublicNavigation(fakeRoute, false);
+
+  assert.ok(
+    navigation.primary.some((item) => item.label === 'News' && item.href === '/news'),
+    'expected News to exist in primary navigation',
+  );
+
+  const productSection = navigation.footerSections.find((section) => section.title === 'Product');
+  assert.ok(productSection, 'expected Product footer section to exist');
+  assert.ok(
+    productSection.links.some((item) => item.label === 'News' && item.href === '/news'),
+    'expected News to exist in footer product links',
   );
 });
