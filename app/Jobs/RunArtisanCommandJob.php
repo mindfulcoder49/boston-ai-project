@@ -26,6 +26,7 @@ class RunArtisanCommandJob implements ShouldQueue
         private string $command,
         private array  $parameters = []
     ) {
+        $this->onConnection(config('backend_admin.long_running_connection', config('queue.default')));
         $this->onQueue(config('backend_admin.long_running_queue', 'admin-long'));
     }
 

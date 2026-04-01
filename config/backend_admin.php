@@ -15,9 +15,11 @@ return [
         'active_run_max_age_hours' => (int) env('BACKEND_ADMIN_ACTIVE_RUN_MAX_AGE_HOURS', 6),
     ],
 
+    'long_running_connection' => env('BACKEND_ADMIN_LONG_CONNECTION', 'database_long_running'),
     'long_running_queue' => env('BACKEND_ADMIN_LONG_QUEUE', 'admin-long'),
 
     'queue_worker' => [
+        'connection' => env('BACKEND_ADMIN_QUEUE_WORKER_CONNECTION', env('BACKEND_ADMIN_LONG_CONNECTION', 'database_long_running')),
         'queues' => env(
             'BACKEND_ADMIN_WORKER_QUEUES',
             trim(env('BACKEND_ADMIN_LONG_QUEUE', 'admin-long') . ',default', ',')

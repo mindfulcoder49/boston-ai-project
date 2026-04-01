@@ -35,6 +35,7 @@ class BackendAdminFlowTest extends TestCase
         config([
             'backend_admin.pipeline_runs.root_path' => $this->testRoot . '/pipeline_runs',
             'backend_admin.pipeline_runs.history_path' => $this->testRoot . '/pipeline_runs_history.json',
+            'backend_admin.long_running_connection' => 'database_long_running',
             'backend_admin.dependency_health.snapshot_path' => $this->testRoot . '/ingestion_dependency_health.json',
             'backend_admin.dependency_health.worker_heartbeat_path' => $this->testRoot . '/admin_long_worker_heartbeat.json',
             'backend_admin.alerts.state_path' => $this->testRoot . '/backend_health_alert_state.json',
@@ -59,7 +60,8 @@ class BackendAdminFlowTest extends TestCase
         Artisan::shouldReceive('call')
             ->once()
             ->with('queue:work', \Mockery::on(function (array $parameters) {
-                return ($parameters['--stop-when-empty'] ?? false) === true
+                return ($parameters['connection'] ?? null) === 'database_long_running'
+                    && ($parameters['--stop-when-empty'] ?? false) === true
                     && ($parameters['--queue'] ?? null) === 'admin-long,default'
                     && ($parameters['--timeout'] ?? null) === 7200
                     && ($parameters['--tries'] ?? null) === 1;
@@ -77,6 +79,7 @@ class BackendAdminFlowTest extends TestCase
 
         $this->assertSame('queue:work', $heartbeat['command'] ?? null);
         $this->assertSame('completed', $heartbeat['status'] ?? null);
+        $this->assertSame('database_long_running', $heartbeat['connection'] ?? null);
         $this->assertSame('admin-long,default', $heartbeat['queue'] ?? null);
         $this->assertSame(7200, $heartbeat['timeout'] ?? null);
         $this->assertSame(1, $heartbeat['tries'] ?? null);
@@ -98,7 +101,10 @@ class BackendAdminFlowTest extends TestCase
             ->expectsOutputToContain('Daily pipeline dispatched to the long-running admin queue.')
             ->assertExitCode(0);
 
-        Queue::assertPushed(RunArtisanCommandJob::class, 1);
+        Queue::assertPushed(RunArtisanCommandJob::class, function (RunArtisanCommandJob $job) {
+            return $job->queue === 'admin-long'
+                && $job->connection === 'database_long_running';
+        });
     }
 
     public function test_dispatch_daily_pipeline_ignores_stale_running_history_entries(): void
@@ -135,7 +141,10 @@ class BackendAdminFlowTest extends TestCase
             ->expectsOutputToContain('Daily pipeline dispatched to the long-running admin queue.')
             ->assertExitCode(0);
 
-        Queue::assertPushed(RunArtisanCommandJob::class, 1);
+        Queue::assertPushed(RunArtisanCommandJob::class, function (RunArtisanCommandJob $job) {
+            return $job->queue === 'admin-long'
+                && $job->connection === 'database_long_running';
+        });
     }
 
     public function test_dependency_health_command_reports_healthy_snapshot(): void

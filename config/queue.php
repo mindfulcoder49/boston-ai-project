@@ -42,6 +42,14 @@ return [
             'after_commit' => false,
         ],
 
+        'database_long_running' => [
+            'driver' => 'database',
+            'table' => 'jobs',
+            'queue' => env('BACKEND_ADMIN_LONG_QUEUE', 'admin-long'),
+            'retry_after' => (int) env('BACKEND_ADMIN_LONG_RETRY_AFTER', 10800),
+            'after_commit' => false,
+        ],
+
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => 'localhost',

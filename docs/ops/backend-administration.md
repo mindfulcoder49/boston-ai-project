@@ -110,6 +110,8 @@ Current observability status:
 - stale historical `running` pipeline entries no longer block the daily dispatch path forever; only recent active runs count as blockers
 - the Hostinger production cron is confirmed to be the single scheduler entry:
   - `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
+- the scheduled `app:run-admin-long-worker` runtime now uses the dedicated `database_long_running` queue connection with an extended retry window so long admin jobs do not hit the default `90` second queue reservation policy
+- the scheduled `app:run-admin-long-worker` entry now runs in the background so the Hostinger scheduler path does not block on a 30+ minute pipeline execution
 - the default Laravel-scheduled daily pipeline dispatch time is now `07:00` in `America/New_York` so the daily run is more likely to include sources that publish around `05:00`
 - the scheduler now defaults that daily pipeline timezone directly to `America/New_York` instead of inheriting `app.timezone`, because the Hostinger app runtime itself is still `UTC`
 - the main remaining backend-admin follow-up is live runtime evidence:
@@ -118,6 +120,7 @@ Current observability status:
 - the sysadmin runtime must have `S3_BUCKET_NAME` configured if you want DNS sync evidence published to `ops/health/ec2_dns_status.json`, but missing DNS evidence is now informational rather than a backend-health warning
 - the scraper backend now exposes `GET /health` in the `opportunityHarvester` service, and Laravel now probes that path directly and requires a successful HTTP response for scraper health
 - the Montgomery County MD crime seeder now remaps the current source CSV headers to the canonical schema fields and filters against the live table columns before upsert, which fixes the recurring `Unknown column 'block_address'` failure caused by source-schema drift
+- the Seattle crime seeder now remaps the current source `nibrs_group_ab` header to the canonical `nibrs_group_a_b` field and filters against the live table columns before upsert so source-header drift does not silently degrade recent/full Seattle seeding
 - the Everett PDF markdown downloader now treats individual `404` historical source PDFs as warnings instead of failing the whole daily run; non-`404` scraper/PDF conversion failures still fail the command
 
 Current retention direction:

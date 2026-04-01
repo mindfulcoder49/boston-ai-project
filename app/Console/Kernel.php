@@ -18,7 +18,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command(RunAdminLongWorkerCommand::class)
             ->everyMinute()
-            ->withoutOverlapping(180);
+            ->withoutOverlapping(180)
+            ->runInBackground();
 
         $schedule->command(CheckIngestionDependenciesCommand::class)
             ->everyThirtyMinutes()

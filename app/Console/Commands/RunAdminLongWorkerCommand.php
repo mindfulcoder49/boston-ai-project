@@ -15,6 +15,7 @@ class RunAdminLongWorkerCommand extends Command
 
     public function handle(): int
     {
+        $connection = (string) config('backend_admin.queue_worker.connection', config('queue.default'));
         $queue = collect(explode(',', (string) config('backend_admin.queue_worker.queues', 'admin-long,default')))
             ->map(fn (string $name) => trim($name))
             ->filter()
@@ -24,6 +25,7 @@ class RunAdminLongWorkerCommand extends Command
         $tries = (int) config('backend_admin.queue_worker.tries', 1);
 
         $parameters = [
+            'connection' => $connection,
             '--stop-when-empty' => true,
             '--queue' => $queue,
             '--timeout' => $timeout,
@@ -31,6 +33,7 @@ class RunAdminLongWorkerCommand extends Command
         ];
 
         AdminLongWorkerHeartbeat::record('queue:work', 'started', [
+            'connection' => $connection,
             'queue' => $queue,
             'timeout' => $timeout,
             'tries' => $tries,
@@ -40,6 +43,7 @@ class RunAdminLongWorkerCommand extends Command
             $exitCode = Artisan::call('queue:work', $parameters);
 
             AdminLongWorkerHeartbeat::record('queue:work', $exitCode === 0 ? 'completed' : 'failed', [
+                'connection' => $connection,
                 'queue' => $queue,
                 'timeout' => $timeout,
                 'tries' => $tries,
@@ -49,6 +53,7 @@ class RunAdminLongWorkerCommand extends Command
             return $exitCode;
         } catch (Throwable $throwable) {
             AdminLongWorkerHeartbeat::record('queue:work', 'failed', [
+                'connection' => $connection,
                 'queue' => $queue,
                 'timeout' => $timeout,
                 'tries' => $tries,
