@@ -34,6 +34,8 @@ return [
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
         'daily_token_limit' => env('OPENAI_DAILY_TOKEN_LIMIT', 2500000),
+        'location_report_model' => env('OPENAI_LOCATION_REPORT_MODEL', 'gpt-5-mini'),
+        'location_report_max_completion_tokens' => env('OPENAI_LOCATION_REPORT_MAX_COMPLETION_TOKENS', 800),
     ],
 
     'anthropic' => [

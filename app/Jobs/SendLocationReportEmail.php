@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Contracts\Mail\Mailer;
 use App\Http\Controllers\GenericMapController;
 use App\Http\Controllers\ThreeOneOneCaseController; // Added import
-use App\Http\Controllers\AiAssistantController; // Added import
 use Illuminate\Http\Request;
 // GuzzleHttp imports are no longer needed here if AiAssistantController handles its own client
 // use GuzzleHttp\Client;
@@ -35,6 +34,7 @@ use App\Models\CambridgeCrimeReportData;
 use App\Models\CambridgeHousingViolationData;
 use App\Models\CambridgeSanitaryInspectionData;
 use App\Models\PersonCrashData;
+use App\Services\LocationReportSectionGenerator;
 
 class SendLocationReportEmail implements ShouldQueue
 {
@@ -84,7 +84,7 @@ class SendLocationReportEmail implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(Mailer $mailer)
+    public function handle(Mailer $mailer, LocationReportSectionGenerator $reportSectionGenerator)
     {
         try {
             // --- 1. Get Map Data ---
@@ -253,7 +253,7 @@ class SendLocationReportEmail implements ShouldQueue
                     // Pass the date context to the prompt if needed, or just the type
                     $promptType = ($dateOrOlderKey === 'older') ? "$type (Older Events)" : "$type (Events from $displayDate)";
                     // Call the static method from AiAssistantController
-                    $individualReport = AiAssistantController::generateReportSection(
+                    $individualReport = $reportSectionGenerator->generate(
                         $promptType,
                         $dataPointsForModel,
                         $this->location->language
