@@ -21,6 +21,10 @@ class SendLocationReportEmail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $tries = 1;
+    public int $timeout = 600;
+    public bool $failOnTimeout = true;
+
     protected $location;
     protected $radiusForReport;
 
@@ -43,6 +47,7 @@ class SendLocationReportEmail implements ShouldQueue
     )
     {
         $mapImagePath = null;
+        $mapSnapshot = null;
 
         try {
             $build = $reportBuilder->build($this->location, $this->radiusForReport);
@@ -89,6 +94,7 @@ class SendLocationReportEmail implements ShouldQueue
                 try {
                     $mapCapture = $emailMapService->capture($this->location, $this->radiusForReport);
                     $mapImagePath = $mapCapture['path'] ?? null;
+                    $mapSnapshot = $mapCapture['snapshot'] ?? null;
 
                     if ($mapCapture) {
                         Log::info('Location report map image captured for email.', [
@@ -105,7 +111,7 @@ class SendLocationReportEmail implements ShouldQueue
                 }
 
                 $mailer->to($this->location->user->email)
-                       ->send(new SendLocationReport($this->location, $finalReport, $mapImagePath));
+                       ->send(new SendLocationReport($this->location, $finalReport, $mapImagePath, $mapSnapshot));
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
                 $userEmail = $this->location->user?->email ?? 'unknown-user';

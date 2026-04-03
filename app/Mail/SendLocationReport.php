@@ -16,15 +16,22 @@ class SendLocationReport extends Mailable
     public $location;
     public $report;
     public $mapImagePath;
+    public $mapSnapshot;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Location $location, string $report, ?string $mapImagePath = null)
+    public function __construct(
+        Location $location,
+        string $report,
+        ?string $mapImagePath = null,
+        ?array $mapSnapshot = null
+    )
     {
         $this->location = $location;
         $this->report = $report;
         $this->mapImagePath = $mapImagePath;
+        $this->mapSnapshot = $mapSnapshot;
     }
 
     /**
@@ -43,11 +50,13 @@ class SendLocationReport extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.location_report',  //  The Blade template
+            view: 'emails.location_report_html',
+            text: 'emails.location_report_text',
             with: [
                 'location' => $this->location,
                 'report' => $this->report,
                 'mapImagePath' => $this->mapImagePath,
+                'mapSnapshot' => $this->mapSnapshot,
             ],
         );
     }

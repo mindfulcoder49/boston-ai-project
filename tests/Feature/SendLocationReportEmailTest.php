@@ -125,7 +125,18 @@ class SendLocationReportEmailTest extends TestCase
             ->andReturn([
                 'path' => $mapPath,
                 'days' => 2,
-                'snapshot' => ['selected_points' => 4],
+                'snapshot' => [
+                    'selected_points' => 4,
+                    'incidents' => [
+                        [
+                            'label' => '1',
+                            'headline' => 'Noise Complaint',
+                            'display_date' => 'April 3, 2026 9:36 PM',
+                            'address' => '621 E 1st St, South Boston, MA 02127, USA',
+                            'distance_miles' => 0.04,
+                        ],
+                    ],
+                ],
             ]);
 
         $job = new SendLocationReportEmail($location);
@@ -133,7 +144,8 @@ class SendLocationReportEmailTest extends TestCase
 
         Mail::assertSent(SendLocationReport::class, function (SendLocationReport $mail) use ($location, $mapPath): bool {
             return $mail->location->is($location)
-                && $mail->mapImagePath === $mapPath;
+                && $mail->mapImagePath === $mapPath
+                && ($mail->mapSnapshot['incidents'][0]['label'] ?? null) === '1';
         });
 
         $this->assertDatabaseCount('reports', 1);
@@ -180,5 +192,14 @@ class SendLocationReportEmailTest extends TestCase
         });
 
         $this->assertDatabaseCount('reports', 1);
+    }
+
+    public function test_it_uses_a_longer_timeout_for_report_generation_and_screenshot_capture(): void
+    {
+        $job = new SendLocationReportEmail(new Location());
+
+        $this->assertSame(1, $job->tries);
+        $this->assertSame(600, $job->timeout);
+        $this->assertTrue($job->failOnTimeout);
     }
 }

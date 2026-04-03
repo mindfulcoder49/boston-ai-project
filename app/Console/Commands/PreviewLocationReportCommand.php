@@ -90,16 +90,18 @@ class PreviewLocationReportCommand extends Command
                 $this->warn('No report sections were generated; no email sent.');
             } else {
                 $mapImagePath = null;
+                $mapSnapshot = null;
 
                 try {
                     try {
                         $mapCapture = $this->emailMapService->capture($location, (float) $this->option('radius'));
                         $mapImagePath = $mapCapture['path'] ?? null;
+                        $mapSnapshot = $mapCapture['snapshot'] ?? null;
                     } catch (\Throwable $mapException) {
                         $this->warn('Map image capture failed; sending preview email without an image.');
                     }
 
-                    $mailer->to($location->user->email)->send(new SendLocationReport($location, $result['final_report'], $mapImagePath));
+                    $mailer->to($location->user->email)->send(new SendLocationReport($location, $result['final_report'], $mapImagePath, $mapSnapshot));
                     $this->line("Preview email sent to {$location->user->email}.");
                 } finally {
                     if (is_string($mapImagePath) && $mapImagePath !== '' && File::exists($mapImagePath)) {
