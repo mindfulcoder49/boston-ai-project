@@ -22,8 +22,8 @@ class LocationReportMapScreenshotService
             $configBuilder->withNodePath((string) $nodePath);
         }
 
-        if ($browsersPath = config('services.playwright.browsers_path')) {
-            $configBuilder->addEnv('PLAYWRIGHT_BROWSERS_PATH', (string) $browsersPath);
+        foreach ($this->buildEnvironment() as $key => $value) {
+            $configBuilder->addEnv($key, $value);
         }
 
         $config = $configBuilder->build();
@@ -66,5 +66,48 @@ class LocationReportMapScreenshotService
     private function defaultOutputPath(): string
     {
         return storage_path('app/report_snapshots/' . Carbon::now()->format('YmdHis') . '_location_snapshot.png');
+    }
+
+    protected function buildEnvironment(): array
+    {
+        $environment = [];
+
+        if ($browsersPath = config('services.playwright.browsers_path')) {
+            $environment['PLAYWRIGHT_BROWSERS_PATH'] = (string) $browsersPath;
+        }
+
+        if ($libraryPath = $this->resolveLibraryPath()) {
+            $environment['LD_LIBRARY_PATH'] = $libraryPath;
+        }
+
+        return $environment;
+    }
+
+    protected function resolveLibraryPath(): ?string
+    {
+        $configuredPath = config('services.playwright.library_path');
+        if (!is_string($configuredPath) || trim($configuredPath) === '') {
+            return null;
+        }
+
+        $configuredPath = trim($configuredPath);
+        if (!File::isDirectory($configuredPath)) {
+            return null;
+        }
+
+        $paths = [$configuredPath];
+        $currentLibraryPath = getenv('LD_LIBRARY_PATH');
+        if (is_string($currentLibraryPath) && trim($currentLibraryPath) !== '') {
+            foreach (explode(':', $currentLibraryPath) as $path) {
+                $path = trim($path);
+                if ($path !== '') {
+                    $paths[] = $path;
+                }
+            }
+        }
+
+        $paths = array_values(array_unique($paths));
+
+        return implode(':', $paths);
     }
 }

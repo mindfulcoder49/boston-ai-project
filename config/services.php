@@ -48,6 +48,7 @@ return [
     'playwright' => [
         'node_path' => env('PLAYWRIGHT_NODE_PATH'),
         'browsers_path' => env('PLAYWRIGHT_BROWSERS_PATH'),
+        'library_path' => env('PLAYWRIGHT_LIBRARY_PATH', storage_path('app/playwright-libs/lib64')),
         'timeout_ms' => env('PLAYWRIGHT_TIMEOUT_MS', 45000),
         'viewport_width' => env('PLAYWRIGHT_VIEWPORT_WIDTH', 1400),
         'viewport_height' => env('PLAYWRIGHT_VIEWPORT_HEIGHT', 900),
