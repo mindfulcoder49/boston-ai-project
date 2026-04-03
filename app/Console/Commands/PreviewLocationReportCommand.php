@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Mail\SendLocationReport;
 use App\Models\Location;
 use App\Models\Report;
+use App\Services\LocationReportEmailMapService;
 use App\Services\LocationReportBuilder;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -24,7 +25,8 @@ class PreviewLocationReportCommand extends Command
     protected $description = 'Preview a saved-location report without dispatching the scheduled report job.';
 
     public function __construct(
-        private readonly LocationReportBuilder $reportBuilder
+        private readonly LocationReportBuilder $reportBuilder,
+        private readonly LocationReportEmailMapService $emailMapService
     ) {
         parent::__construct();
     }
@@ -87,8 +89,23 @@ class PreviewLocationReportCommand extends Command
             if ($result['daily_report_content'] === '') {
                 $this->warn('No report sections were generated; no email sent.');
             } else {
-                $mailer->to($location->user->email)->send(new SendLocationReport($location, $result['final_report']));
-                $this->line("Preview email sent to {$location->user->email}.");
+                $mapImagePath = null;
+
+                try {
+                    try {
+                        $mapCapture = $this->emailMapService->capture($location, (float) $this->option('radius'));
+                        $mapImagePath = $mapCapture['path'] ?? null;
+                    } catch (\Throwable $mapException) {
+                        $this->warn('Map image capture failed; sending preview email without an image.');
+                    }
+
+                    $mailer->to($location->user->email)->send(new SendLocationReport($location, $result['final_report'], $mapImagePath));
+                    $this->line("Preview email sent to {$location->user->email}.");
+                } finally {
+                    if (is_string($mapImagePath) && $mapImagePath !== '' && File::exists($mapImagePath)) {
+                        File::delete($mapImagePath);
+                    }
+                }
             }
         }
 

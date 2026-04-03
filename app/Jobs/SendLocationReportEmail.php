@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Location;
 use App\Mail\SendLocationReport;
 use App\Models\Report;
+use App\Services\LocationReportEmailMapService;
 use App\Services\LocationReportBuilder;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -13,6 +14,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class SendLocationReportEmail implements ShouldQueue
@@ -34,8 +36,14 @@ class SendLocationReportEmail implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(Mailer $mailer, LocationReportBuilder $reportBuilder)
+    public function handle(
+        Mailer $mailer,
+        LocationReportBuilder $reportBuilder,
+        LocationReportEmailMapService $emailMapService
+    )
     {
+        $mapImagePath = null;
+
         try {
             $build = $reportBuilder->build($this->location, $this->radiusForReport);
 
@@ -78,8 +86,26 @@ class SendLocationReportEmail implements ShouldQueue
 
             // --- 6. Send Email (if there's a report to send)---
             if (!empty($dailyReportContent) && $this->location->user) {
+                try {
+                    $mapCapture = $emailMapService->capture($this->location, $this->radiusForReport);
+                    $mapImagePath = $mapCapture['path'] ?? null;
+
+                    if ($mapCapture) {
+                        Log::info('Location report map image captured for email.', [
+                            'location_id' => $this->location->id,
+                            'days_used' => $mapCapture['days'] ?? null,
+                            'selected_points' => $mapCapture['snapshot']['selected_points'] ?? null,
+                        ]);
+                    }
+                } catch (\Throwable $mapException) {
+                    Log::warning('Location report map image capture failed; sending email without image.', [
+                        'location_id' => $this->location->id,
+                        'message' => $mapException->getMessage(),
+                    ]);
+                }
+
                 $mailer->to($this->location->user->email)
-                       ->send(new SendLocationReport($this->location, $finalReport));
+                       ->send(new SendLocationReport($this->location, $finalReport, $mapImagePath));
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
                 $userEmail = $this->location->user?->email ?? 'unknown-user';
@@ -89,6 +115,10 @@ class SendLocationReportEmail implements ShouldQueue
         } catch (\Exception $e) {
             Log::error("Error processing report or sending email for location {$this->location->address}: {$e->getMessage()}");
             Log::error("Stack trace: " . $e->getTraceAsString());
+        } finally {
+            if (is_string($mapImagePath) && $mapImagePath !== '' && File::exists($mapImagePath)) {
+                File::delete($mapImagePath);
+            }
         }
     }
 

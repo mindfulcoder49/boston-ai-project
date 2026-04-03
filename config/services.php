@@ -43,6 +43,10 @@ return [
 
     'reports' => [
         'snapshot_url_ttl_minutes' => env('REPORT_SNAPSHOT_URL_TTL_MINUTES', 15),
+        'email_map_days' => env('REPORT_EMAIL_MAP_DAYS', 2),
+        'email_map_fallback_days' => env('REPORT_EMAIL_MAP_FALLBACK_DAYS', 7),
+        'email_map_limit' => env('REPORT_EMAIL_MAP_LIMIT', 4),
+        'email_map_radius' => env('REPORT_EMAIL_MAP_RADIUS', 0.25),
     ],
 
     'playwright' => [
