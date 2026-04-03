@@ -33,7 +33,9 @@ class LocationReportSectionGeneratorTest extends TestCase
                 $this->assertSame('user', $payload['messages'][1]['role']);
                 $this->assertStringContainsString('Events from April 1, 2026', $payload['messages'][0]['content']);
                 $this->assertStringContainsString('"sampled_points": 1', $payload['messages'][1]['content']);
-                $this->assertStringContainsString('"category": "Crime"', $payload['messages'][1]['content']);
+                $this->assertStringContainsString('"service_name": "Parking Enforcement"', $payload['messages'][1]['content']);
+                $this->assertStringContainsString('"incident_address": "730 E Third St"', $payload['messages'][1]['content']);
+                $this->assertStringNotContainsString('crime_data_json', $payload['messages'][1]['content']);
 
                 return true;
             }))
@@ -55,6 +57,11 @@ class LocationReportSectionGeneratorTest extends TestCase
                 [
                     'category' => 'Crime',
                     'description' => 'Theft from a motor vehicle',
+                    'crime_data_json' => null,
+                    'three_one_one_case_data' => (object) [
+                        'service_name' => 'Parking Enforcement',
+                        'incident_address' => '730 E Third St',
+                    ],
                 ],
             ],
             'en'
@@ -133,7 +140,87 @@ class LocationReportSectionGeneratorTest extends TestCase
 
         $this->assertStringContainsString('- 3 records matched this section.', $result);
         $this->assertStringContainsString('Time span in source data: 2026-04-01.', $result);
+        $this->assertStringContainsString('Counts by day: 2026-04-01 (3).', $result);
         $this->assertStringContainsString('Crime (3)', $result);
         $this->assertStringContainsString('Theft from a motor vehicle', $result);
+    }
+
+    public function test_it_rejects_prompt_echo_style_responses_and_uses_the_structured_fallback(): void
+    {
+        config()->set('services.openai.location_report_prompt_max_points', 5);
+
+        $openAiService = Mockery::mock(OpenAIService::class);
+        $openAiService
+            ->shouldReceive('openaiChatCompletionsCreate')
+            ->once()
+            ->andReturn([
+                'choices' => [
+                    [
+                        'message' => [
+                            'content' => "### Boston 311 Cases\nPayload status (per provided records)\n- data_point_id 123\n- crime_data_json is null",
+                        ],
+                    ],
+                ],
+            ]);
+
+        $generator = new LocationReportSectionGenerator($openAiService);
+
+        $result = $generator->generate(
+            'Boston 311 Cases (Events from March 30, 2026)',
+            [
+                [
+                    'alcivartech_date' => '2026-03-30 12:35:53',
+                    'three_one_one_case_data' => (object) [
+                        'service_name' => 'Sticker Request',
+                        'incident_address' => '704 E Broadway',
+                    ],
+                ],
+            ],
+            'en'
+        );
+
+        $this->assertStringContainsString('- 1 record matched this section.', $result);
+        $this->assertStringContainsString('Sticker Request', $result);
+        $this->assertStringNotContainsString('Payload status', $result);
+    }
+
+    public function test_it_prioritizes_more_recent_data_points_in_the_prompt_sample(): void
+    {
+        config()->set('services.openai.location_report_prompt_max_points', 2);
+
+        $openAiService = Mockery::mock(OpenAIService::class);
+        $openAiService
+            ->shouldReceive('openaiChatCompletionsCreate')
+            ->once()
+            ->with(Mockery::on(function (array $payload): bool {
+                $content = $payload['messages'][1]['content'];
+
+                $this->assertStringContainsString('2026-04-03 10:00:00', $content);
+                $this->assertStringContainsString('2026-04-02 10:00:00', $content);
+                $this->assertStringNotContainsString('2026-04-01 10:00:00', $content);
+
+                return true;
+            }))
+            ->andReturn([
+                'choices' => [
+                    [
+                        'message' => [
+                            'content' => 'A concise section.',
+                        ],
+                    ],
+                ],
+            ]);
+
+        $generator = new LocationReportSectionGenerator($openAiService);
+
+        $generator->generate(
+            'Crime (Events from April 3, 2026)',
+            [
+                ['alcivartech_date' => '2026-04-01 10:00:00', 'category' => 'Crime', 'description' => 'Oldest'],
+                ['alcivartech_date' => '2026-04-03 10:00:00', 'category' => 'Crime', 'description' => 'Newest'],
+                ['alcivartech_date' => '2026-04-02 10:00:00', 'category' => 'Crime', 'description' => 'Middle'],
+            ],
+            'en'
+        );
     }
 }

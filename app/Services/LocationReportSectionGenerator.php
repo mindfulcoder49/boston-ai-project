@@ -10,21 +10,34 @@ use Illuminate\Support\Str;
 class LocationReportSectionGenerator
 {
     private const PRIORITY_FIELDS = [
+        'case_number',
+        'incident_number',
+        'service_request_id',
+        'permitnumber',
+        'permit_number',
         'alcivartech_date',
         'date',
         'offense_date',
         'incident_datetime',
         'created_date',
+        'closed_date',
+        'incident_type',
+        'offense_description',
         'primary_type',
         'description',
         'category',
         'service_name',
+        'status',
+        'closure_reason',
         'location_description',
         'block',
         'address',
+        'incident_address',
     ];
 
     private const LABEL_FIELDS = [
+        'incident_type',
+        'offense_description',
         'primary_type',
         'category',
         'service_name',
@@ -41,6 +54,18 @@ class LocationReportSectionGenerator
         'created_date',
         'report_date_time',
         'updated_on',
+    ];
+
+    private const EXCLUDED_FIELDS = [
+        'data_point_id',
+        'latitude',
+        'longitude',
+        'location_wkt',
+        'alcivartech_model',
+        'alcivartech_type',
+        'alcivartech_type_raw',
+        'alcivartech_model_class',
+        'data_point_alcivartech_date_from_dp_table',
     ];
 
     public function __construct(
@@ -74,6 +99,16 @@ class LocationReportSectionGenerator
             $content = $response['choices'][0]['message']['content'] ?? null;
 
             if (is_string($content) && trim($content) !== '') {
+                if ($this->looksLikePromptEcho($content)) {
+                    Log::warning('OpenAI location report section looked like a prompt echo or debug dump.', [
+                        'type_context' => $typeContext,
+                        'language' => $language,
+                        'model' => $payload['model'],
+                    ]);
+
+                    return $this->buildFallbackSection($dataPoints);
+                }
+
                 return trim($content);
             }
 
@@ -111,14 +146,15 @@ class LocationReportSectionGenerator
 
     private function buildSystemPrompt(string $typeContext, string $language): string
     {
-        return "You are a helpful assistant. Generate a narrative summary in markdown format for the provided city operations data. "
-            . "The data is for a specific city (for example Boston or Cambridge). If the city is not specified in the data, assume Boston, MA. "
-            . "The report must be entirely in {$language}. "
-            . "This section is specifically about {$typeContext}. "
-            . "Focus only on the data points provided in this request. "
-            . "Summarize the incidents factually, without speculation. "
-            . "Do not include disclaimers, introductions, or conclusions for this section. "
-            . "Keep the section brief and direct.";
+        return "You are writing one markdown section for a paid location report. "
+            . "Write entirely in {$language}. "
+            . "This section is about {$typeContext}. "
+            . "Use the aggregate summary to cover the full set of records, and use the sampled records only as concrete examples. "
+            . "Describe actual incidents, permits, inspections, or cases. "
+            . "Ignore internal field names, prompt metadata, and null or missing-field commentary. "
+            . "Do not mention payloads, JSON, sampled_points, or data_point_id values. "
+            . "Do not include a heading because the caller already adds one. "
+            . "Be factual, concise, and specific.";
     }
 
     private function buildUserPrompt(array $promptData): string
@@ -130,16 +166,18 @@ class LocationReportSectionGenerator
     private function buildPromptData(array $dataPoints): array
     {
         $maxPoints = max((int) config('services.openai.location_report_prompt_max_points', 20), 1);
-        $sample = array_slice($dataPoints, 0, $maxPoints);
+        $sample = $this->selectSample($dataPoints, $maxPoints);
 
         return [
             'summary' => [
                 'total_points' => count($dataPoints),
                 'sampled_points' => count($sample),
+                'omitted_points' => max(count($dataPoints) - count($sample), 0),
                 'date_range' => $this->extractDateRange($dataPoints),
+                'counts_by_date' => $this->extractDateCounts($dataPoints),
                 'top_labels' => $this->extractTopLabels($dataPoints),
             ],
-            'sample_data_points' => array_map(fn($dataPoint) => $this->simplifyDataPoint($dataPoint), $sample),
+            'sample_data_points' => array_map(fn ($dataPoint) => $this->simplifyDataPoint($dataPoint), $sample),
         ];
     }
 
@@ -198,6 +236,11 @@ class LocationReportSectionGenerator
             $lines[] = "- Time span in source data: {$dateRange}.";
         }
 
+        $dateCounts = $this->extractDateCounts($dataPoints);
+        if (!empty($dateCounts)) {
+            $lines[] = '- Counts by day: ' . implode(', ', $dateCounts) . '.';
+        }
+
         $topLabels = $this->extractTopLabels($dataPoints);
         if (!empty($topLabels)) {
             $lines[] = '- Most common labels: ' . implode(', ', $topLabels) . '.';
@@ -215,7 +258,7 @@ class LocationReportSectionGenerator
     {
         $counts = [];
 
-        foreach (array_slice($dataPoints, 0, 100) as $dataPoint) {
+        foreach ($dataPoints as $dataPoint) {
             $normalized = $this->normalizeDataPoint($dataPoint);
 
             foreach (self::LABEL_FIELDS as $field) {
@@ -242,7 +285,7 @@ class LocationReportSectionGenerator
     {
         $dates = [];
 
-        foreach (array_slice($dataPoints, 0, 100) as $dataPoint) {
+        foreach ($dataPoints as $dataPoint) {
             $normalized = $this->normalizeDataPoint($dataPoint);
 
             foreach (self::DATE_FIELDS as $field) {
@@ -274,15 +317,43 @@ class LocationReportSectionGenerator
             : $start->toDateString() . ' to ' . $end->toDateString();
     }
 
+    private function extractDateCounts(array $dataPoints): array
+    {
+        $counts = [];
+
+        foreach ($dataPoints as $dataPoint) {
+            $date = $this->extractComparableDate($dataPoint);
+            if (!$date) {
+                continue;
+            }
+
+            $dateKey = $date->toDateString();
+            $counts[$dateKey] = ($counts[$dateKey] ?? 0) + 1;
+        }
+
+        if (empty($counts)) {
+            return [];
+        }
+
+        krsort($counts);
+
+        $labels = [];
+        foreach (array_slice($counts, 0, 7, true) as $dateKey => $count) {
+            $labels[] = "{$dateKey} ({$count})";
+        }
+
+        return $labels;
+    }
+
     private function extractExampleLines(array $dataPoints): array
     {
         $examples = [];
 
-        foreach (array_slice($dataPoints, 0, 5) as $dataPoint) {
+        foreach (array_slice($this->sortDataPointsByDateDesc($dataPoints), 0, 5) as $dataPoint) {
             $normalized = $this->simplifyDataPoint($dataPoint);
             $parts = [];
 
-            foreach (['primary_type', 'category', 'description', 'service_name', 'block', 'address', 'location_description', 'date', 'alcivartech_date'] as $field) {
+            foreach (['case_number', 'incident_number', 'service_request_id', 'primary_type', 'incident_type', 'category', 'description', 'service_name', 'address', 'incident_address', 'location_description', 'date', 'alcivartech_date'] as $field) {
                 $value = $normalized[$field] ?? null;
                 if (!is_string($value) || trim($value) === '') {
                     continue;
@@ -305,15 +376,34 @@ class LocationReportSectionGenerator
 
     private function normalizeDataPoint(mixed $dataPoint): array
     {
+        $normalized = [];
+
         if (is_array($dataPoint)) {
-            return $dataPoint;
+            $normalized = $dataPoint;
+        } elseif (is_object($dataPoint)) {
+            $normalized = get_object_vars($dataPoint);
+        } else {
+            return ['value' => $dataPoint];
         }
 
-        if (is_object($dataPoint)) {
-            return get_object_vars($dataPoint);
+        $flattened = [];
+
+        foreach ($normalized as $key => $value) {
+            if (in_array($key, self::EXCLUDED_FIELDS, true) || str_ends_with((string) $key, '_json')) {
+                continue;
+            }
+
+            if (str_ends_with((string) $key, '_data') && (is_array($value) || is_object($value))) {
+                foreach ($this->flattenNestedPayload($value) as $nestedKey => $nestedValue) {
+                    $flattened[$nestedKey] = $nestedValue;
+                }
+                continue;
+            }
+
+            $flattened[$key] = $value;
         }
 
-        return ['value' => $dataPoint];
+        return $flattened;
     }
 
     private function normalizeScalarValue(mixed $value): string|int|float|bool|null
@@ -336,5 +426,98 @@ class LocationReportSectionGenerator
             max((int) config('services.openai.location_report_max_value_length', 160), 40),
             '...'
         );
+    }
+
+    private function flattenNestedPayload(array|object $payload): array
+    {
+        $values = is_array($payload) ? $payload : get_object_vars($payload);
+        $flattened = [];
+
+        foreach ($values as $key => $value) {
+            if (is_array($value) || is_object($value)) {
+                continue;
+            }
+
+            $flattened[$key] = $value;
+        }
+
+        return $flattened;
+    }
+
+    private function selectSample(array $dataPoints, int $maxPoints): array
+    {
+        $sorted = $this->sortDataPointsByDateDesc($dataPoints);
+
+        if (count($sorted) <= $maxPoints) {
+            return $sorted;
+        }
+
+        $groupedByDate = [];
+        foreach ($sorted as $dataPoint) {
+            $date = $this->extractComparableDate($dataPoint);
+            $dateKey = $date?->toDateString() ?? 'unknown';
+            $groupedByDate[$dateKey][] = $dataPoint;
+        }
+
+        krsort($groupedByDate);
+
+        $sample = [];
+        while (count($sample) < $maxPoints && !empty($groupedByDate)) {
+            foreach (array_keys($groupedByDate) as $dateKey) {
+                if (empty($groupedByDate[$dateKey])) {
+                    unset($groupedByDate[$dateKey]);
+                    continue;
+                }
+
+                $sample[] = array_shift($groupedByDate[$dateKey]);
+
+                if (empty($groupedByDate[$dateKey])) {
+                    unset($groupedByDate[$dateKey]);
+                }
+
+                if (count($sample) >= $maxPoints) {
+                    break;
+                }
+            }
+        }
+
+        return $sample;
+    }
+
+    private function sortDataPointsByDateDesc(array $dataPoints): array
+    {
+        usort($dataPoints, function ($left, $right) {
+            $leftDate = $this->extractComparableDate($left)?->getTimestamp() ?? 0;
+            $rightDate = $this->extractComparableDate($right)?->getTimestamp() ?? 0;
+
+            return $rightDate <=> $leftDate;
+        });
+
+        return $dataPoints;
+    }
+
+    private function extractComparableDate(mixed $dataPoint): ?Carbon
+    {
+        $normalized = $this->normalizeDataPoint($dataPoint);
+
+        foreach (self::DATE_FIELDS as $field) {
+            $value = $normalized[$field] ?? null;
+            if (!is_scalar($value) || trim((string) $value) === '') {
+                continue;
+            }
+
+            try {
+                return Carbon::parse((string) $value);
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return null;
+    }
+
+    private function looksLikePromptEcho(string $content): bool
+    {
+        return preg_match('/(_json|data_point_id|sampled_points|payload status|provided records)/i', $content) === 1;
     }
 }
