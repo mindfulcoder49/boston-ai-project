@@ -41,7 +41,19 @@ class CleanupCommand extends Command
         $report = (bool) $this->option('report');
         $dryRunDate = $this->option('dry-run-before');
         $deleteDate = $this->option('delete-before');
-        $targets = $this->resolveTargets((array) $this->option('target'));
+        $requestedTargetSlugs = collect((array) $this->option('target'))
+            ->filter(fn ($target) => is_string($target) && trim($target) !== '')
+            ->map(fn (string $target) => trim($target))
+            ->values()
+            ->all();
+
+        if ($deleteDate !== null && empty($requestedTargetSlugs)) {
+            $this->error('Destructive cleanup requires at least one explicit --target.');
+            $this->line('Run the same command with `--dry-run-before=<YYYY-MM-DD>` first, then rerun with the reviewed target slug.');
+            return 1;
+        }
+
+        $targets = $this->resolveTargets($requestedTargetSlugs);
 
         if ($targets === null) {
             return 1;

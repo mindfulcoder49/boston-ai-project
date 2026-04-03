@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Storage;
 
 class ChicagoCrimeSeeder extends Seeder
 {
+    private const SOURCE_TO_SCHEMA_MAP = [];
+
+    private array $tableColumnsCache = [];
+    private array $reportedDroppedColumns = [];
+
     public function run()
     {
         $directoryPath = 'datasets/chicago';
@@ -49,7 +54,7 @@ class ChicagoCrimeSeeder extends Seeder
             return;
         }
         
-        $dbColumns = array_map(fn($col) => strtolower(str_replace(' ', '_', $col)), $header);
+        $dbColumns = array_map(fn($col) => $this->normalizeHeaderColumn($col), $header);
 
         $dataToInsertFull = [];
         $dataToInsertRecent = [];
@@ -74,7 +79,7 @@ class ChicagoCrimeSeeder extends Seeder
                 continue;
             }
 
-            $record = array_combine($dbColumns, $row);
+            $record = $this->mapSourceRecordKeys(array_combine($dbColumns, $row));
             $transformedRecord = $this->transformRecord($record);
 
             if ($transformedRecord['location'] === null) {
@@ -129,6 +134,15 @@ class ChicagoCrimeSeeder extends Seeder
             return;
         }
 
+        $data = array_values(array_filter(array_map(
+            fn(array $record) => $this->filterRecordForTable($connection, $tableName, $record),
+            $data
+        )));
+
+        if (empty($data)) {
+            return;
+        }
+
         try {
             DB::connection($connection)->table($tableName)->upsert(
                 $data,
@@ -139,7 +153,72 @@ class ChicagoCrimeSeeder extends Seeder
         } catch (\Exception $e) {
             Log::error("Error upserting data to {$connection}.{$tableName}: " . $e->getMessage(), ['exception' => $e]);
             $this->command->error("Error upserting data to {$connection}.{$tableName}. See log for details.");
+            throw $e;
         }
+    }
+
+    protected function normalizeHeaderColumn(string $column): string
+    {
+        $normalized = strtolower(trim($column));
+        $normalized = preg_replace('/[^a-z0-9]+/', '_', $normalized) ?? $normalized;
+
+        return trim($normalized, '_');
+    }
+
+    protected function mapSourceRecordKeys(array $record): array
+    {
+        $mapped = [];
+
+        foreach ($record as $key => $value) {
+            $mapped[self::SOURCE_TO_SCHEMA_MAP[$key] ?? $key] = $value;
+        }
+
+        return $mapped;
+    }
+
+    private function filterRecordForTable(string $connection, string $tableName, array $record): array
+    {
+        $allowedColumns = $this->getTableColumns($connection, $tableName);
+        if (empty($allowedColumns)) {
+            return $record;
+        }
+
+        $filtered = array_intersect_key($record, $allowedColumns);
+        $droppedColumns = array_values(array_diff(array_keys($record), array_keys($filtered)));
+
+        if (!empty($droppedColumns)) {
+            $reportKey = $connection . '.' . $tableName;
+            if (!isset($this->reportedDroppedColumns[$reportKey])) {
+                $this->reportedDroppedColumns[$reportKey] = true;
+                $message = sprintf(
+                    'ChicagoCrimeSeeder dropped unsupported columns for %s: %s',
+                    $reportKey,
+                    implode(', ', $droppedColumns)
+                );
+                Log::warning($message);
+                $this->command?->warn($message);
+            }
+        }
+
+        return $filtered;
+    }
+
+    private function getTableColumns(string $connection, string $tableName): array
+    {
+        $cacheKey = $connection . '.' . $tableName;
+
+        if (!isset($this->tableColumnsCache[$cacheKey])) {
+            try {
+                $this->tableColumnsCache[$cacheKey] = array_flip(
+                    DB::connection($connection)->getSchemaBuilder()->getColumnListing($tableName)
+                );
+            } catch (\Throwable $e) {
+                Log::warning("Failed to read table columns for {$cacheKey}: " . $e->getMessage(), ['exception' => $e]);
+                $this->tableColumnsCache[$cacheKey] = [];
+            }
+        }
+
+        return $this->tableColumnsCache[$cacheKey];
     }
 
     private function transformRecord(array $record): array

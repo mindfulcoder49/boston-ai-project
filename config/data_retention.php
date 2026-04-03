@@ -11,6 +11,26 @@ return [
             ],
         ],
         [
+            'slug' => 'laravel-current-log',
+            'name' => 'Current Laravel Log',
+            'default' => false,
+            'paths' => [
+                storage_path('logs/laravel.log'),
+            ],
+        ],
+        [
+            'slug' => 'laravel-log-archives',
+            'name' => 'Archived Laravel Logs',
+            'default' => false,
+            'paths' => [
+                storage_path('logs'),
+            ],
+            'include_patterns' => [
+                'laravel.log.*',
+                'laravel-*.log',
+            ],
+        ],
+        [
             'slug' => 'pipeline-runs',
             'name' => 'Pipeline Run Logs',
             'default' => false,

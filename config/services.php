@@ -36,6 +36,9 @@ return [
         'daily_token_limit' => env('OPENAI_DAILY_TOKEN_LIMIT', 2500000),
         'location_report_model' => env('OPENAI_LOCATION_REPORT_MODEL', 'gpt-5-mini'),
         'location_report_max_completion_tokens' => env('OPENAI_LOCATION_REPORT_MAX_COMPLETION_TOKENS', 800),
+        'location_report_prompt_max_points' => env('OPENAI_LOCATION_REPORT_PROMPT_MAX_POINTS', 20),
+        'location_report_max_fields_per_point' => env('OPENAI_LOCATION_REPORT_MAX_FIELDS_PER_POINT', 12),
+        'location_report_max_value_length' => env('OPENAI_LOCATION_REPORT_MAX_VALUE_LENGTH', 160),
     ],
 
     'anthropic' => [
