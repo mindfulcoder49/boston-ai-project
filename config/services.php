@@ -41,6 +41,18 @@ return [
         'location_report_max_value_length' => env('OPENAI_LOCATION_REPORT_MAX_VALUE_LENGTH', 160),
     ],
 
+    'reports' => [
+        'snapshot_url_ttl_minutes' => env('REPORT_SNAPSHOT_URL_TTL_MINUTES', 15),
+    ],
+
+    'playwright' => [
+        'node_path' => env('PLAYWRIGHT_NODE_PATH'),
+        'browsers_path' => env('PLAYWRIGHT_BROWSERS_PATH'),
+        'timeout_ms' => env('PLAYWRIGHT_TIMEOUT_MS', 45000),
+        'viewport_width' => env('PLAYWRIGHT_VIEWPORT_WIDTH', 1400),
+        'viewport_height' => env('PLAYWRIGHT_VIEWPORT_HEIGHT', 900),
+    ],
+
     'anthropic' => [
         'api_key' => env('ANTHROPIC_API_KEY'),
     ],

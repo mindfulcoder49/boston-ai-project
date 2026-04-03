@@ -44,6 +44,7 @@ use App\Http\Controllers\AdminCacheController;
 use App\Http\Controllers\CityLandingController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\CrimeAddressFunnelController;
+use App\Http\Controllers\LocationReportSnapshotController;
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
@@ -93,6 +94,9 @@ Route::get('/crime-address', [CrimeAddressFunnelController::class, 'index'])->na
 Route::post('/api/crime-address/preview', [CrimeAddressFunnelController::class, 'preview'])->name('crime-address.preview');
 Route::post('/api/crime-address/context', [CrimeAddressFunnelController::class, 'context'])->name('crime-address.context');
 Route::middleware('auth')->post('/api/crime-address/trial/start', [CrimeAddressFunnelController::class, 'startTrial'])->name('crime-address.trial.start');
+Route::get('/report-snapshots/location/{location}', [LocationReportSnapshotController::class, 'show'])
+    ->middleware('signed')
+    ->name('reports.location-snapshot');
 
 // Google Places API proxy routes
 Route::post('/api/google-places-autocomplete', [TrashScheduleByAddressController::class, 'googleAutocomplete']); // Or your preferred auth
