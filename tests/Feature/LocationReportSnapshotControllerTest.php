@@ -104,8 +104,9 @@ class LocationReportSnapshotControllerTest extends TestCase
 
         $this->get($url)
             ->assertOk()
-            ->assertSee('Paid Report Map Preview')
-            ->assertSee('South Boston Home');
+            ->assertSee('id="snapshot-root"', false)
+            ->assertSee('id="map"', false)
+            ->assertDontSee('Paid Report Map Preview');
     }
 
     public function test_snapshot_route_requires_a_valid_signature(): void
