@@ -223,4 +223,59 @@ class LocationReportSectionGeneratorTest extends TestCase
             'en'
         );
     }
+
+    public function test_it_prioritizes_incident_descriptions_over_low_signal_derived_fields(): void
+    {
+        config()->set('services.openai.location_report_prompt_max_points', 1);
+        config()->set('services.openai.location_report_max_fields_per_point', 5);
+
+        $openAiService = Mockery::mock(OpenAIService::class);
+        $openAiService
+            ->shouldReceive('openaiChatCompletionsCreate')
+            ->once()
+            ->with(Mockery::on(function (array $payload): bool {
+                $content = $payload['messages'][1]['content'];
+
+                $this->assertStringContainsString('"incident_description": "WALTHAM PD WOULD LIKE TO KNOW WHO WAS DRIVING"', $content);
+                $this->assertStringContainsString('"incident_address": "26 GLEDHILL AV"', $content);
+                $this->assertStringNotContainsString('"year": 2026', $content);
+                $this->assertStringNotContainsString('"day_of_week": "Tuesday"', $content);
+                $this->assertStringContainsString('include those concrete details', $payload['messages'][0]['content']);
+
+                return true;
+            }))
+            ->andReturn([
+                'choices' => [
+                    [
+                        'message' => [
+                            'content' => '',
+                        ],
+                        'finish_reason' => 'length',
+                    ],
+                ],
+            ]);
+
+        $generator = new LocationReportSectionGenerator($openAiService);
+
+        $result = $generator->generate(
+            'Everett Crime (Events from March 31, 2026)',
+            [
+                [
+                    'case_number' => '963463',
+                    'occurred_on_datetime' => '2026-03-31 15:44:00',
+                    'incident_type' => 'NOTIFICATION- SEE COMMENTS',
+                    'incident_description' => 'WALTHAM PD WOULD LIKE TO KNOW WHO WAS DRIVING',
+                    'incident_address' => '26 GLEDHILL AV',
+                    'year' => 2026,
+                    'month' => 3,
+                    'day_of_week' => 'Tuesday',
+                    'hour' => 15,
+                ],
+            ],
+            'en'
+        );
+
+        $this->assertStringContainsString('WALTHAM PD WOULD LIKE TO KNOW WHO WAS DRIVING', $result);
+        $this->assertStringContainsString('26 GLEDHILL AV', $result);
+    }
 }

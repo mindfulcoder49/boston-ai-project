@@ -6,6 +6,7 @@ use App\Http\Controllers\ThreeOneOneCaseController;
 use App\Models\Location;
 use App\Models\ThreeOneOneCase;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 

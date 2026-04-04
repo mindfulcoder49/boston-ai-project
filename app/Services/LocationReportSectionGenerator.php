@@ -17,16 +17,30 @@ class LocationReportSectionGenerator
         'permit_number',
         'alcivartech_date',
         'date',
+        'occurred_on_datetime',
         'offense_date',
         'incident_datetime',
         'created_date',
         'closed_date',
         'incident_type',
-        'offense_description',
         'primary_type',
-        'description',
-        'category',
+        'complaint_type',
         'service_name',
+        'category',
+        'descriptor',
+        'offense_description',
+        'incident_description',
+        'description',
+        'issue_description',
+        'threeoneonedescription',
+        'resolution_description',
+        'closure_comments',
+        'additional_details',
+        'comments',
+        'notes',
+        'crime_details_concatenated',
+        'offense_sub_category',
+        'arrest_charges',
         'status',
         'closure_reason',
         'location_description',
@@ -49,6 +63,7 @@ class LocationReportSectionGenerator
     private const DATE_FIELDS = [
         'alcivartech_date',
         'date',
+        'occurred_on_datetime',
         'offense_date',
         'incident_datetime',
         'created_date',
@@ -66,6 +81,14 @@ class LocationReportSectionGenerator
         'alcivartech_type_raw',
         'alcivartech_model_class',
         'data_point_alcivartech_date_from_dp_table',
+        'year',
+        'month',
+        'day_of_week',
+        'hour',
+        'incident_log_file_date',
+        'incident_entry_date_parsed',
+        'incident_time_parsed',
+        'source_city',
     ];
 
     public function __construct(
@@ -151,6 +174,7 @@ class LocationReportSectionGenerator
             . "This section is about {$typeContext}. "
             . "Use the aggregate summary to cover the full set of records, and use the sampled records only as concrete examples. "
             . "Describe actual incidents, permits, inspections, or cases. "
+            . "If description-like fields are available, include those concrete details in the representative examples instead of repeating only the category or type. "
             . "Ignore internal field names, prompt metadata, and null or missing-field commentary. "
             . "Do not mention payloads, JSON, sampled_points, or data_point_id values. "
             . "Do not include a heading because the caller already adds one. "
@@ -353,7 +377,31 @@ class LocationReportSectionGenerator
             $normalized = $this->simplifyDataPoint($dataPoint);
             $parts = [];
 
-            foreach (['case_number', 'incident_number', 'service_request_id', 'primary_type', 'incident_type', 'category', 'description', 'service_name', 'address', 'incident_address', 'location_description', 'date', 'alcivartech_date'] as $field) {
+            foreach ([
+                'case_number',
+                'incident_number',
+                'service_request_id',
+                'primary_type',
+                'incident_type',
+                'complaint_type',
+                'category',
+                'service_name',
+                'descriptor',
+                'incident_description',
+                'description',
+                'issue_description',
+                'threeoneonedescription',
+                'resolution_description',
+                'closure_comments',
+                'additional_details',
+                'crime_details_concatenated',
+                'address',
+                'incident_address',
+                'location_description',
+                'occurred_on_datetime',
+                'date',
+                'alcivartech_date',
+            ] as $field) {
                 $value = $normalized[$field] ?? null;
                 if (!is_string($value) || trim($value) === '') {
                     continue;
@@ -361,7 +409,7 @@ class LocationReportSectionGenerator
 
                 $parts[] = $value;
 
-                if (count($parts) >= 3) {
+                if (count($parts) >= 4) {
                     break;
                 }
             }
