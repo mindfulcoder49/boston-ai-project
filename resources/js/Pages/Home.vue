@@ -9,27 +9,91 @@
     </Head>
 
     <article class="-mx-4 sm:-mx-6 lg:-mx-8">
-      <section class="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+      <section class="relative overflow-hidden px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.28),_transparent_36%),linear-gradient(135deg,_#020617,_#0f172a_45%,_#082f49)]"></div>
         <div class="absolute inset-0 opacity-[0.06]" style="background-image: linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px); background-size: 36px 36px;"></div>
 
-        <div class="relative mx-auto grid max-w-7xl gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div>
-            <p class="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300">Transparent Coverage</p>
-            <h1 class="mt-6 max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Choose your city before you search an address.
+        <div class="relative mx-auto max-w-7xl">
+          <div class="max-w-3xl">
+            <p class="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300">Supported Coverage</p>
+            <h1 class="mt-5 max-w-5xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Pick a supported city page from the map previews.
             </h1>
-            <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              PublicDataWatch only covers a small set of city and regional pages. Start with the page that matches your area so the address search, map layers, and reports line up with what we actually publish there.
+            <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
+              PublicDataWatch only covers a small set of city and regional pages. Open the place we actually publish first, then search an address, read local incidents, or upgrade into reports and deeper maps.
             </p>
+          </div>
 
+          <div class="mt-10" data-testid="home-featured-coverage">
             <div
-              class="mt-10 max-w-3xl rounded-[30px] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-slate-950/40 backdrop-blur-xl"
+              class="flex gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-2 md:overflow-visible xl:grid-cols-4"
+              data-testid="home-city-picker"
+            >
+              <Link
+                v-for="city in featuredCities"
+                :key="city.key"
+                :href="city.landingUrl || city.primaryUrl"
+                class="group relative min-h-[19rem] min-w-[82vw] overflow-hidden rounded-[30px] border border-white/12 bg-slate-950/35 shadow-2xl shadow-slate-950/30 transition duration-200 hover:-translate-y-1 hover:border-white/25 md:min-w-0"
+              >
+                <HomeCoverageMiniMap
+                  :city="city"
+                  :accent="coveragePalette(city).accent"
+                />
+
+                <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.12)_0%,rgba(2,6,23,0.2)_28%,rgba(2,6,23,0.72)_100%)]"></div>
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.22),transparent_28%)] opacity-70"></div>
+
+                <div class="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+                  <div
+                    class="rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+                    :class="coveragePalette(city).pillClass"
+                  >
+                    {{ city.locationLabel }}
+                  </div>
+                  <div class="rounded-full bg-slate-950/55 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-100 shadow-lg shadow-slate-950/30">
+                    {{ coverageFocusLabel(city) }}
+                  </div>
+                </div>
+
+                <div class="absolute inset-x-0 bottom-0 p-5">
+                  <p class="max-w-[18rem] text-base font-semibold leading-7 text-white">{{ city.coverageNote }}</p>
+
+                  <div class="mt-4 flex flex-wrap gap-2">
+                    <span
+                      v-for="dataType in city.dataTypes.slice(0, 2)"
+                      :key="`${city.key}-${dataType}`"
+                      class="rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+                      :class="coveragePalette(city).chipClass"
+                    >
+                      {{ dataType }}
+                    </span>
+                    <span
+                      v-if="city.dataTypes.length > 2"
+                      class="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-100"
+                    >
+                      +{{ city.dataTypes.length - 2 }} more
+                    </span>
+                  </div>
+
+                  <div class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
+                    Open city page
+                    <svg class="h-4 w-4 transition group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M3.5 10a.75.75 0 0 1 .75-.75h9.69L10.97 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06l2.97-2.97H4.25A.75.75 0 0 1 3.5 10Z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          <div class="mt-8 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div
+              class="rounded-[30px] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-slate-950/40 backdrop-blur-xl"
               data-testid="home-trust-proof"
             >
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">Built from official public records</p>
               <p class="mt-3 text-sm leading-7 text-slate-200">
-                PublicDataWatch currently publishes {{ stats.cityCount }} city and regional pages with {{ formattedTotalRecords }} records across crime, 311, permits, inspections, violations, and crash data. Some pages are crime-focused. Others include broader civic data.
+                PublicDataWatch currently publishes {{ stats.cityCount }} city and regional pages with {{ formattedTotalRecords }} records across crime, 311, permits, inspections, violations, and crash data. Start with a live map preview above, then go to the city page that matches your area.
               </p>
               <div class="mt-4 flex flex-wrap gap-3 text-sm">
                 <Link
@@ -47,12 +111,12 @@
               </div>
             </div>
 
-            <div class="mt-8 flex flex-wrap gap-3">
+            <div class="flex flex-wrap gap-3 lg:justify-end">
               <Link
                 :href="`${route('home')}#cities`"
                 class="inline-flex items-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
               >
-                Choose a city page
+                See all city pages
               </Link>
               <Link
                 :href="route('crime-address.index')"
@@ -65,56 +129,6 @@
                 class="inline-flex items-center rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
               >
                 Browse advanced tools
-              </Link>
-            </div>
-          </div>
-
-          <div
-            class="rounded-[30px] border border-white/10 bg-white/10 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl"
-            data-testid="home-city-picker"
-          >
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">Choose Your City</p>
-                <h2 class="mt-3 text-2xl font-black tracking-tight text-white">Start with the page that matches your area.</h2>
-              </div>
-              <div class="rounded-2xl bg-slate-950/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
-                {{ stats.cityCount }} pages
-              </div>
-            </div>
-
-            <div class="mt-6 grid gap-3 sm:grid-cols-2">
-              <Link
-                v-for="city in cities"
-                :key="city.key"
-                :href="city.landingUrl || city.primaryUrl"
-                class="group rounded-[24px] border border-white/10 bg-slate-950/30 p-4 transition hover:-translate-y-0.5 hover:border-cyan-200/50 hover:bg-slate-950/45"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 class="text-base font-bold text-white transition group-hover:text-cyan-200">{{ city.locationLabel }}</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-300">{{ city.coverageNote }}</p>
-                  </div>
-                  <div class="rounded-2xl bg-cyan-400/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-100">
-                    {{ coverageFocusLabel(city) }}
-                  </div>
-                </div>
-                <div class="mt-4 flex flex-wrap gap-2">
-                  <span
-                    v-for="dataType in city.dataTypes.slice(0, 3)"
-                    :key="`${city.key}-${dataType}`"
-                    class="rounded-full px-2.5 py-1 text-xs font-medium"
-                    :class="categoryBadgeClass(dataType)"
-                  >
-                    {{ dataType }}
-                  </span>
-                  <span
-                    v-if="city.dataTypes.length > 3"
-                    class="rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-slate-200"
-                  >
-                    +{{ city.dataTypes.length - 3 }} more
-                  </span>
-                </div>
               </Link>
             </div>
           </div>
@@ -171,7 +185,7 @@
             <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">Coverage</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Supported city and regional pages</h2>
+                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">All supported city and regional pages</h2>
                 <p class="mt-3 max-w-2xl text-base leading-8 text-slate-600">
                   This is the front-door list. If a place is not here, the homepage should not imply we fully support it yet.
                 </p>
@@ -279,6 +293,7 @@
 <script setup>
 import { computed, h } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
+import HomeCoverageMiniMap from '@/Components/HomeCoverageMiniMap.vue';
 import PageTemplate from '@/Components/PageTemplate.vue';
 
 const props = defineProps({
@@ -297,6 +312,8 @@ const formattedTotalRecords = computed(() => {
   }
   return total.toLocaleString();
 });
+
+const featuredCities = computed(() => props.cities.slice(0, 4));
 
 const badgeClasses = {
   Crime: 'bg-red-50 text-red-700',
@@ -326,6 +343,45 @@ function coverageFocusLabel(city) {
   }
 
   return 'City data';
+}
+
+const coveragePalettes = {
+  mixed: {
+    accent: '#22d3ee',
+    pillClass: 'border-cyan-200/30 bg-cyan-300/14 text-cyan-50',
+    chipClass: 'border-cyan-100/20 bg-cyan-200/10 text-cyan-50',
+  },
+  crime: {
+    accent: '#fb7185',
+    pillClass: 'border-rose-200/30 bg-rose-300/16 text-rose-50',
+    chipClass: 'border-rose-100/20 bg-rose-200/12 text-rose-50',
+  },
+  service: {
+    accent: '#f59e0b',
+    pillClass: 'border-amber-200/30 bg-amber-300/16 text-amber-50',
+    chipClass: 'border-amber-100/20 bg-amber-200/12 text-amber-50',
+  },
+  civic: {
+    accent: '#34d399',
+    pillClass: 'border-emerald-200/30 bg-emerald-300/14 text-emerald-50',
+    chipClass: 'border-emerald-100/20 bg-emerald-200/10 text-emerald-50',
+  },
+};
+
+function coveragePalette(city) {
+  if (city.dataTypes.includes('Crime') && city.dataTypes.length > 1) {
+    return coveragePalettes.mixed;
+  }
+
+  if (city.dataTypes.includes('Crime')) {
+    return coveragePalettes.crime;
+  }
+
+  if (city.dataTypes.includes('311 Case')) {
+    return coveragePalettes.service;
+  }
+
+  return coveragePalettes.civic;
 }
 
 const workflowSteps = [

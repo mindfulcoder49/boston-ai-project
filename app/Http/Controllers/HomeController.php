@@ -10,7 +10,7 @@ use Inertia\Inertia;
 
 class HomeController extends Controller
 {
-    public const HOME_PAGE_CACHE_KEY = 'home_page_data_v4';
+    public const HOME_PAGE_CACHE_KEY = 'home_page_data_v5';
 
     /**
      * Models that are geocoding helpers, not user-facing data types.
@@ -99,6 +99,7 @@ class HomeController extends Controller
                 'stateCode' => $stateCode,
                 'lat' => $cityConfig['latitude'],
                 'lng' => $cityConfig['longitude'],
+                'radiusMiles' => $cityConfig['serviceability']['radius_miles'] ?? null,
                 'dataTypes' => $dataTypes,
                 'dataMapKeys' => $dataMapKeys,
                 'dataTypeCount' => count($dataTypes),
