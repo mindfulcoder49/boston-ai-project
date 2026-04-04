@@ -44,11 +44,13 @@
                 <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.22),transparent_28%)] opacity-70"></div>
 
                 <div class="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
-                  <div
-                    class="rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
-                    :class="coveragePalette(city).pillClass"
-                  >
-                    Coverage map
+                  <div class="max-w-[15rem] rounded-[24px] bg-slate-950/72 px-4 py-3 shadow-xl shadow-slate-950/35 backdrop-blur-md">
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-200">
+                      City page
+                    </p>
+                    <h2 class="mt-1 text-2xl font-black leading-tight text-white sm:text-[1.85rem]">
+                      {{ city.locationLabel }}
+                    </h2>
                   </div>
                   <div class="rounded-full bg-slate-950/55 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-100 shadow-lg shadow-slate-950/30">
                     {{ coverageFocusLabel(city) }}
@@ -56,13 +58,10 @@
                 </div>
 
                 <div class="absolute inset-x-0 bottom-0 p-5">
-                  <h2 class="text-2xl font-black leading-tight text-white sm:text-[1.85rem]">
-                    {{ city.locationLabel }}
-                  </h2>
-                  <p class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">
+                  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">
                     {{ city.dataTypeCount }} data {{ city.dataTypeCount === 1 ? 'type' : 'types' }}
                   </p>
-                  <p class="max-w-[18rem] text-base font-semibold leading-7 text-white">{{ city.coverageNote }}</p>
+                  <p class="mt-2 max-w-[18rem] text-base font-semibold leading-7 text-white">{{ city.coverageNote }}</p>
 
                   <div class="mt-4 flex flex-wrap gap-2">
                     <span
@@ -82,7 +81,7 @@
                   </div>
 
                   <div class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
-                    Open city page
+                    Open {{ city.locationLabel }} page
                     <svg class="h-4 w-4 transition group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fill-rule="evenodd" d="M3.5 10a.75.75 0 0 1 .75-.75h9.69L10.97 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06l2.97-2.97H4.25A.75.75 0 0 1 3.5 10Z" clip-rule="evenodd" />
                     </svg>
