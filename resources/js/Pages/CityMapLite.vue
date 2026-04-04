@@ -19,6 +19,28 @@
       @map-coordinates-selected-for-new-center="handleMapCenterSelection"
     />
 
+    <div class="map-action-dock">
+      <button
+        type="button"
+        class="choose-location-toggle"
+        :class="{ active: chooseLocationMode }"
+        :disabled="locationSelectionLoading"
+        data-testid="choose-location-button"
+        @click="toggleChooseLocationMode"
+      >
+        {{ locationSelectionLoading ? text.repositioningLocation : (chooseLocationMode ? text.cancelChooseLocation : text.chooseLocation) }}
+      </button>
+
+      <p
+        v-if="chooseLocationMode || locationSelectionError"
+        class="mode-feedback"
+        :class="{ 'error-text': locationSelectionError }"
+        data-testid="choose-location-hint"
+      >
+        {{ chooseLocationMode ? text.chooseLocationHint : locationSelectionError }}
+      </p>
+    </div>
+
     <div class="top-panel" :class="{ collapsed: sidebarCollapsed }">
       <div class="brand-row">
         <div class="brand-copy">
@@ -27,16 +49,6 @@
         </div>
 
         <div class="panel-actions">
-          <button
-            type="button"
-            class="choose-location-toggle"
-            :class="{ active: chooseLocationMode }"
-            :disabled="locationSelectionLoading"
-            data-testid="choose-location-button"
-            @click="toggleChooseLocationMode"
-          >
-            {{ locationSelectionLoading ? text.repositioningLocation : (chooseLocationMode ? text.cancelChooseLocation : text.chooseLocation) }}
-          </button>
           <a
             v-if="!sidebarCollapsed"
             :href="exploreMapUrl"
@@ -50,15 +62,6 @@
           </button>
         </div>
       </div>
-
-      <p
-        v-if="chooseLocationMode || locationSelectionError"
-        class="mode-feedback"
-        :class="{ 'error-text': locationSelectionError }"
-        data-testid="choose-location-hint"
-      >
-        {{ chooseLocationMode ? text.chooseLocationHint : locationSelectionError }}
-      </p>
 
       <div v-if="!sidebarCollapsed" class="panel-body">
         <p class="tagline">{{ city.tagline }}</p>
@@ -1393,11 +1396,23 @@ function formatText(template, replacements) {
   cursor: crosshair;
 }
 
+.map-action-dock {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 1002;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.45rem;
+  max-width: min(18rem, calc(100vw - 1.7rem));
+}
+
 .top-panel {
   position: absolute;
   top: 0.85rem;
   left: 0.85rem;
-  right: 0.85rem;
+  right: 8.5rem;
   z-index: 1001;
   max-width: 34rem;
   padding: 1rem;
@@ -1486,6 +1501,7 @@ function formatText(template, replacements) {
 }
 
 .mode-feedback {
+  width: 100%;
   margin: 0.15rem 0 0;
   padding: 0.55rem 0.75rem;
   border-radius: 0.9rem;
@@ -1494,6 +1510,7 @@ function formatText(template, replacements) {
   font-size: 0.85rem;
   font-weight: 700;
   line-height: 1.4;
+  text-align: left;
 }
 
 .mode-feedback.error-text {
@@ -1902,11 +1919,17 @@ h1 {
 }
 
 @media (max-width: 768px) {
+  .map-action-dock {
+    top: max(0.5rem, env(safe-area-inset-top));
+    right: 0.5rem;
+    max-width: min(13rem, calc(100vw - 7.2rem));
+  }
+
   .top-panel {
     max-width: none;
     top: 0.5rem;
     left: 0.5rem;
-    right: 0.5rem;
+    right: 5.3rem;
     padding: 0.75rem;
     border-radius: 1rem;
   }
