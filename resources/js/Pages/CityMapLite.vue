@@ -9,13 +9,14 @@
       :map-center-coordinates="mapCenter"
       :all-map-data-points="filteredDataPoints"
       :active-filter-types="activeFilterTypes"
-      :is-center-selection-mode-active="false"
-      :temp-new-marker-placement-coords="null"
+      :is-center-selection-mode-active="chooseLocationMode"
+      :temp-new-marker-placement-coords="pendingLocationSelectionCoords"
       :map-is-loading="mapLoading"
       :should-clear-temp-marker="false"
       :map-configuration="mapConfiguration"
       :initial-zoom="initialZoom"
       @marker-data-point-clicked="handleMarkerClick"
+      @map-coordinates-selected-for-new-center="handleMapCenterSelection"
     />
 
     <div class="top-panel" :class="{ collapsed: sidebarCollapsed }">
@@ -26,6 +27,16 @@
         </div>
 
         <div class="panel-actions">
+          <button
+            type="button"
+            class="choose-location-toggle"
+            :class="{ active: chooseLocationMode }"
+            :disabled="locationSelectionLoading"
+            data-testid="choose-location-button"
+            @click="toggleChooseLocationMode"
+          >
+            {{ locationSelectionLoading ? text.repositioningLocation : (chooseLocationMode ? text.cancelChooseLocation : text.chooseLocation) }}
+          </button>
           <a
             v-if="!sidebarCollapsed"
             :href="exploreMapUrl"
@@ -39,6 +50,15 @@
           </button>
         </div>
       </div>
+
+      <p
+        v-if="chooseLocationMode || locationSelectionError"
+        class="mode-feedback"
+        :class="{ 'error-text': locationSelectionError }"
+        data-testid="choose-location-hint"
+      >
+        {{ chooseLocationMode ? text.chooseLocationHint : locationSelectionError }}
+      </p>
 
       <div v-if="!sidebarCollapsed" class="panel-body">
         <p class="tagline">{{ city.tagline }}</p>
@@ -268,6 +288,10 @@ const props = defineProps({
 const UI_TEXT = {
   'en-US': {
     useMyLocation: 'Use my location',
+    chooseLocation: 'Choose location',
+    cancelChooseLocation: 'Cancel',
+    chooseLocationHint: 'Tap anywhere on the map to move the home location and reload nearby records.',
+    repositioningLocation: 'Updating location...',
     locating: 'Finding your location...',
     searchAddress: 'Search address',
     hideSearch: 'Hide search',
@@ -300,6 +324,10 @@ const UI_TEXT = {
   },
   'es-MX': {
     useMyLocation: 'Usar mi ubicación',
+    chooseLocation: 'Elegir ubicación',
+    cancelChooseLocation: 'Cancelar',
+    chooseLocationHint: 'Toca cualquier parte del mapa para mover la ubicación base y recargar los registros cercanos.',
+    repositioningLocation: 'Actualizando ubicación...',
     locating: 'Buscando tu ubicación...',
     searchAddress: 'Buscar dirección',
     hideSearch: 'Ocultar búsqueda',
@@ -332,6 +360,10 @@ const UI_TEXT = {
   },
   'pt-BR': {
     useMyLocation: 'Usar minha localização',
+    chooseLocation: 'Escolher local',
+    cancelChooseLocation: 'Cancelar',
+    chooseLocationHint: 'Toque em qualquer ponto do mapa para mover a localização central e recarregar os registros próximos.',
+    repositioningLocation: 'Atualizando localização...',
     locating: 'Buscando sua localização...',
     searchAddress: 'Buscar endereço',
     hideSearch: 'Ocultar busca',
@@ -364,6 +396,10 @@ const UI_TEXT = {
   },
   'ht-HT': {
     useMyLocation: 'Sèvi ak kote mwen',
+    chooseLocation: 'Chwazi kote a',
+    cancelChooseLocation: 'Anile',
+    chooseLocationHint: 'Peze nenpòt kote sou kat la pou deplase kote prensipal la epi rechaje dosye ki toupre yo.',
+    repositioningLocation: 'Ap mete kote a ajou...',
     locating: 'M ap chèche kote ou...',
     searchAddress: 'Chèche adrès',
     hideSearch: 'Kache rechèch',
@@ -396,6 +432,10 @@ const UI_TEXT = {
   },
   'zh-CN': {
     useMyLocation: '使用我的位置',
+    chooseLocation: '选择位置',
+    cancelChooseLocation: '取消',
+    chooseLocationHint: '点击地图任意位置即可移动中心位置并重新加载附近记录。',
+    repositioningLocation: '正在更新位置...',
     locating: '正在定位...',
     searchAddress: '搜索地址',
     hideSearch: '隐藏搜索',
@@ -428,6 +468,10 @@ const UI_TEXT = {
   },
   'vi-VN': {
     useMyLocation: 'Dùng vị trí của tôi',
+    chooseLocation: 'Chọn vị trí',
+    cancelChooseLocation: 'Hủy',
+    chooseLocationHint: 'Chạm vào bất kỳ đâu trên bản đồ để dời vị trí trung tâm và tải lại các bản ghi gần đó.',
+    repositioningLocation: 'Đang cập nhật vị trí...',
     locating: 'Đang tìm vị trí của bạn...',
     searchAddress: 'Tìm địa chỉ',
     hideSearch: 'Ẩn tìm kiếm',
@@ -468,6 +512,10 @@ const mapLoading = ref(false);
 const searchOpen = ref(false);
 const geolocationLoading = ref(false);
 const geolocationError = ref('');
+const chooseLocationMode = ref(false);
+const locationSelectionLoading = ref(false);
+const locationSelectionError = ref('');
+const pendingLocationSelectionCoords = ref(null);
 const translationLoading = ref(false);
 const translationError = ref('');
 const translatedCard = ref(null);
@@ -490,14 +538,16 @@ const mapCenter = ref([props.city.latitude, props.city.longitude]);
 const initialZoom = computed(() => (props.city.key === 'everett' ? 14 : 13));
 
 const text = computed(() => {
-  const baseText = UI_TEXT[selectedLanguage.value] || UI_TEXT['en-US'];
+  const fallbackText = UI_TEXT['en-US'];
+  const localizedText = UI_TEXT[selectedLanguage.value] || {};
 
   return {
-    ...baseText,
-    emptyTitle: formatText(baseText.emptyTitle, { city: props.city.name }),
-    emptyState: formatText(baseText.emptyState, { city: props.city.name }),
-    expandGuide: baseText.expandGuide || UI_TEXT['en-US'].expandGuide,
-    collapseGuide: baseText.collapseGuide || UI_TEXT['en-US'].collapseGuide,
+    ...fallbackText,
+    ...localizedText,
+    emptyTitle: formatText((localizedText.emptyTitle || fallbackText.emptyTitle), { city: props.city.name }),
+    emptyState: formatText((localizedText.emptyState || fallbackText.emptyState), { city: props.city.name }),
+    expandGuide: localizedText.expandGuide || fallbackText.expandGuide,
+    collapseGuide: localizedText.collapseGuide || fallbackText.collapseGuide,
   };
 });
 
@@ -640,6 +690,27 @@ function setLanguage(languageCode) {
 
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value;
+}
+
+function toggleChooseLocationMode() {
+  if (locationSelectionLoading.value) {
+    return;
+  }
+
+  chooseLocationMode.value = !chooseLocationMode.value;
+  locationSelectionError.value = '';
+  geolocationError.value = '';
+  pendingLocationSelectionCoords.value = null;
+
+  trackAnalyticsEvent('choose_location_mode_toggled', {
+    city: props.city.key,
+    pageType: 'city_landing',
+    languageCode: selectedLanguage.value,
+    params: {
+      city_slug: props.city.slug,
+      enabled: chooseLocationMode.value,
+    },
+  });
 }
 
 function getLanguageStorageKey() {
@@ -875,6 +946,10 @@ function handleAddressSearchStarted() {
 }
 
 async function useCurrentLocation() {
+  chooseLocationMode.value = false;
+  locationSelectionError.value = '';
+  pendingLocationSelectionCoords.value = null;
+
   trackAnalyticsEvent('use_my_location_clicked', {
     city: props.city.key,
     pageType: 'city_landing',
@@ -945,6 +1020,9 @@ async function useCurrentLocation() {
 
 async function handleAddressSelected(location) {
   geolocationError.value = '';
+  locationSelectionError.value = '';
+  chooseLocationMode.value = false;
+  pendingLocationSelectionCoords.value = null;
 
   const nextLocation = normalizeLocation(location);
   if (!nextLocation) {
@@ -976,6 +1054,78 @@ async function updateLocation(location) {
   await fetchData({ reinitializeMap: true });
 }
 
+async function handleMapCenterSelection(latlng) {
+  if (!chooseLocationMode.value || locationSelectionLoading.value) {
+    return;
+  }
+
+  const latitude = Number(latlng?.lat);
+  const longitude = Number(latlng?.lng);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return;
+  }
+
+  const roundedLatitude = Number(latitude.toFixed(6));
+  const roundedLongitude = Number(longitude.toFixed(6));
+
+  chooseLocationMode.value = false;
+  locationSelectionLoading.value = true;
+  locationSelectionError.value = '';
+  geolocationError.value = '';
+  pendingLocationSelectionCoords.value = {
+    lat: roundedLatitude,
+    lng: roundedLongitude,
+  };
+
+  let resolvedAddress = '';
+
+  try {
+    resolvedAddress = await reverseGeocodeLocation(roundedLatitude, roundedLongitude);
+  } catch (error) {
+    console.warn('Unable to reverse-geocode map-selected location for city landing.', error);
+  }
+
+  const nextLocation = normalizeLocation({
+    latitude: roundedLatitude,
+    longitude: roundedLongitude,
+    address: resolvedAddress || buildMapSelectionLabel(roundedLatitude, roundedLongitude),
+  });
+
+  if (!nextLocation) {
+    locationSelectionError.value = text.value.geolocationUnavailable;
+    locationSelectionLoading.value = false;
+    pendingLocationSelectionCoords.value = null;
+    return;
+  }
+
+  trackAnalyticsEvent('map_location_selected', {
+    city: props.city.key,
+    pageType: 'city_landing',
+    languageCode: selectedLanguage.value,
+    params: {
+      city_slug: props.city.slug,
+      latitude: roundedLatitude,
+      longitude: roundedLongitude,
+      had_resolved_address: Boolean(resolvedAddress),
+    },
+  });
+
+  try {
+    if (redirectToMatchingCityLanding(nextLocation)) {
+      return;
+    }
+
+    await updateLocation(nextLocation);
+  } catch (error) {
+    console.error('Error updating city landing location from map selection:', error);
+    locationSelectionError.value = text.value.geolocationUnavailable;
+  } finally {
+    locationSelectionLoading.value = false;
+    pendingLocationSelectionCoords.value = null;
+  }
+}
+
 function applyLocationToMap(location) {
   centralLocation.value = {
     latitude: location.latitude,
@@ -984,6 +1134,10 @@ function applyLocationToMap(location) {
   };
   mapCenter.value = [location.latitude, location.longitude];
   liveMapCenter.value = [location.latitude, location.longitude];
+}
+
+function buildMapSelectionLabel(latitude, longitude) {
+  return `Selected point in ${props.city.name} (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`;
 }
 
 function normalizeLocation(location) {
@@ -1232,6 +1386,13 @@ function formatText(template, replacements) {
   height: 100%;
 }
 
+.city-lite-page :deep(.map-selection-mode),
+.city-lite-page :deep(.map-selection-mode .leaflet-container),
+.city-lite-page :deep(.map-selection-mode .leaflet-pane),
+.city-lite-page :deep(.map-selection-mode .leaflet-interactive) {
+  cursor: crosshair;
+}
+
 .top-panel {
   position: absolute;
   top: 0.85rem;
@@ -1272,12 +1433,15 @@ function formatText(template, replacements) {
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .brand-mark,
 .full-map-link,
 .sheet-link,
-.collapse-toggle {
+.collapse-toggle,
+.choose-location-toggle {
   color: #22443a;
   text-decoration: none;
   font-weight: 700;
@@ -1290,16 +1454,50 @@ function formatText(template, replacements) {
 
 .full-map-link,
 .sheet-link,
-.collapse-toggle {
+.collapse-toggle,
+.choose-location-toggle {
   font-size: 0.9rem;
 }
 
-.collapse-toggle {
+.collapse-toggle,
+.choose-location-toggle {
   border: 0;
   border-radius: 999px;
   padding: 0.45rem 0.8rem;
-  background: #dce8dc;
   cursor: pointer;
+}
+
+.collapse-toggle {
+  background: #dce8dc;
+}
+
+.choose-location-toggle {
+  background: #d9e9de;
+}
+
+.choose-location-toggle.active {
+  background: #22443a;
+  color: #f5f2e8;
+}
+
+.choose-location-toggle:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.mode-feedback {
+  margin: 0.15rem 0 0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.9rem;
+  background: rgba(220, 232, 220, 0.92);
+  color: #27473d;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.mode-feedback.error-text {
+  background: rgba(248, 224, 224, 0.94);
 }
 
 h1 {
@@ -1720,7 +1918,8 @@ h1 {
   .brand-mark,
   .full-map-link,
   .sheet-link,
-  .collapse-toggle {
+  .collapse-toggle,
+  .choose-location-toggle {
     font-size: 0.78rem;
   }
 
@@ -1818,6 +2017,16 @@ h1 {
 
   .collapse-toggle {
     padding: 0.38rem 0.65rem;
+  }
+
+  .choose-location-toggle {
+    padding: 0.38rem 0.65rem;
+  }
+
+  .mode-feedback {
+    margin-top: 0.25rem;
+    padding: 0.48rem 0.65rem;
+    font-size: 0.76rem;
   }
 
   .bottom-sheet {

@@ -156,6 +156,63 @@ test.describe('public surface regressions', () => {
     expect(runtime.pageErrors).toEqual([]);
   });
 
+  test('city landing can relocate from a map tap after choosing location mode', async ({ page }) => {
+    const runtime = installConsoleGuards(page);
+    const mapRequests = [];
+
+    await page.route('**/api/reverse-geocode-google-place', async (route) => {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          lat: 42.3431,
+          lng: -71.0986,
+          address: '200 Huntington Ave, Boston, MA 02115, USA',
+        }),
+      });
+    });
+
+    await page.route('**/api/map-data', async (route) => {
+      const payload = route.request().postDataJSON();
+      mapRequests.push(payload);
+
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          mapConfiguration: {
+            dataPointModelConfig: {},
+          },
+          dataPoints: [],
+        }),
+      });
+    });
+
+    await page.goto('/boston');
+
+    await expect(page.getByTestId('choose-location-button')).toBeVisible();
+    await page.getByTestId('choose-location-button').click();
+    await expect(page.getByTestId('choose-location-hint')).toContainText('Tap anywhere on the map');
+
+    const initialRequestCount = mapRequests.length;
+    const map = page.locator('.leaflet-container');
+    const box = await map.boundingBox();
+
+    if (!box) {
+      throw new Error('Leaflet map did not render.');
+    }
+
+    await page.mouse.click(box.x + (box.width * 0.82), box.y + (box.height * 0.34));
+
+    await expect.poll(() => mapRequests.length).toBeGreaterThan(initialRequestCount);
+
+    const lastRequest = mapRequests.at(-1);
+    expect(lastRequest.centralLocation.address).toBe('200 Huntington Ave, Boston, MA 02115, USA');
+    expect(lastRequest.centralLocation.latitude).not.toBe(42.3601);
+    expect(lastRequest.centralLocation.longitude).not.toBe(-71.0589);
+
+    expect(runtime.consoleErrors).toEqual([]);
+    expect(runtime.pageErrors).toEqual([]);
+  });
+
   test('homepage uses customer-facing copy and complete city navigation', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 
