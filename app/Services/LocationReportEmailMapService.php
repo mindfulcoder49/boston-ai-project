@@ -29,6 +29,16 @@ class LocationReportEmailMapService
         return null;
     }
 
+    public function captureLatestDay(Location $location, ?float $radius = null): ?array
+    {
+        $radius ??= (float) config('services.reports.email_map_radius', 0.25);
+        $limit = (int) config('services.reports.email_map_limit', 8);
+
+        $snapshot = $this->snapshotBuilder->buildForDate($location, $radius, now(), $limit);
+
+        return $this->captureSnapshot($location, $radius, $limit, $snapshot);
+    }
+
     public function captureDailySeries(Location $location, ?float $radius = null): array
     {
         $radius ??= (float) config('services.reports.email_map_radius', 0.25);

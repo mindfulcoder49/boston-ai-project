@@ -1,4 +1,11 @@
 @php
+    $recentSnapshot = $recentMap['snapshot'] ?? null;
+    $incidents = $recentSnapshot['incidents'] ?? [];
+    $selectedPoints = (int) ($recentSnapshot['selected_points'] ?? 0);
+    $recentPoints = (int) ($recentSnapshot['recent_points_in_window'] ?? 0);
+    $omittedPoints = (int) ($recentSnapshot['omitted_points'] ?? 0);
+    $windowDisplay = (string) ($recentSnapshot['window']['display'] ?? 'Most recent day');
+
     $badgeOuterStyle = function (array $incident): string {
         $shape = (string) ($incident['shape'] ?? 'rounded-square');
         $fill = (string) ($incident['fill_color'] ?? '#475569');
@@ -87,6 +94,18 @@
             padding-left: 22px;
         }
 
+        .button-link {
+            display: inline-block;
+            padding: 14px 20px;
+            border-radius: 14px;
+            background: #0f172a;
+            color: #ffffff !important;
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.2;
+            text-decoration: none;
+        }
+
         @media only screen and (max-width: 720px) {
             .email-shell {
                 width: 100% !important;
@@ -117,113 +136,124 @@
                         </td>
                     </tr>
 
-                    @if (!empty($dailyMaps))
+                    @if ($recentSnapshot)
                         <tr>
                             <td class="email-padding" style="padding:0 28px 12px; font-size:18px; line-height:1.7; color:#475569;">
-                                Daily incident maps for the last {{ count($dailyMaps) }} day{{ count($dailyMaps) === 1 ? '' : 's' }} around {{ $location->address }}.
+                                Most recent map for {{ $windowDisplay }} around {{ $location->address }}.
                             </td>
                         </tr>
 
-                        @foreach ($dailyMaps as $dailyMap)
-                            @php
-                                $snapshot = $dailyMap['snapshot'] ?? [];
-                                $incidents = $snapshot['incidents'] ?? [];
-                                $selectedPoints = (int) ($snapshot['selected_points'] ?? 0);
-                                $recentPoints = (int) ($snapshot['recent_points_in_window'] ?? 0);
-                                $omittedPoints = (int) ($snapshot['omitted_points'] ?? 0);
-                                $windowDisplay = (string) ($snapshot['window']['display'] ?? 'Recent activity');
-                            @endphp
-                            <tr>
-                                <td class="email-padding" style="padding:0 28px 22px;">
-                                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="section-card" style="border-collapse:collapse; width:100%;">
+                        <tr>
+                            <td class="email-padding" style="padding:0 28px 22px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="section-card" style="border-collapse:collapse; width:100%;">
+                                    <tr>
+                                        <td style="padding:20px 20px 8px;">
+                                            <div style="font-size:24px; line-height:1.2; font-weight:800; color:#0f172a;">
+                                                {{ $windowDisplay }}
+                                            </div>
+                                            <div style="margin-top:8px; font-size:18px; line-height:1.7; color:#475569;">
+                                                @if ($selectedPoints > 0)
+                                                    Showing {{ $selectedPoints }} of {{ $recentPoints }} nearby incident{{ $recentPoints === 1 ? '' : 's' }} within {{ number_format((float) ($recentSnapshot['radius_miles'] ?? 0.25), 2) }} miles.
+                                                @else
+                                                    No nearby incidents were found within {{ number_format((float) ($recentSnapshot['radius_miles'] ?? 0.25), 2) }} miles.
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    @if (!empty($recentMap['path']) && is_string($recentMap['path']) && is_file($recentMap['path']))
                                         <tr>
-                                            <td style="padding:20px 20px 8px;">
-                                                <div style="font-size:24px; line-height:1.2; font-weight:800; color:#0f172a;">
-                                                    {{ $windowDisplay }}
-                                                </div>
-                                                <div style="margin-top:8px; font-size:18px; line-height:1.7; color:#475569;">
-                                                    @if ($selectedPoints > 0)
-                                                        Showing {{ $selectedPoints }} of {{ $recentPoints }} nearby incident{{ $recentPoints === 1 ? '' : 's' }} within {{ number_format((float) ($snapshot['radius_miles'] ?? 0.25), 2) }} miles.
-                                                    @else
-                                                        No nearby incidents were found within {{ number_format((float) ($snapshot['radius_miles'] ?? 0.25), 2) }} miles.
-                                                    @endif
-                                                </div>
+                                            <td style="padding:0 20px 16px;">
+                                                <img
+                                                    src="{{ $message->embed($recentMap['path']) }}"
+                                                    alt="Incident map for {{ $windowDisplay }} near {{ $location->address }}"
+                                                    style="display:block; width:100%; height:auto; border:1px solid #d7dde5; border-radius:16px;"
+                                                >
                                             </td>
                                         </tr>
+                                    @endif
 
-                                        @if (!empty($dailyMap['path']) && is_string($dailyMap['path']) && is_file($dailyMap['path']))
-                                            <tr>
-                                                <td style="padding:0 20px 16px;">
-                                                    <img
-                                                        src="{{ $message->embed($dailyMap['path']) }}"
-                                                        alt="Incident map for {{ $windowDisplay }} near {{ $location->address }}"
-                                                        style="display:block; width:100%; height:auto; border:1px solid #d7dde5; border-radius:16px;"
-                                                    >
-                                                </td>
-                                            </tr>
-                                        @endif
+                                    <tr>
+                                        <td style="padding:0 20px 20px;">
+                                            @if (!empty($incidents))
+                                                <div style="margin-bottom:14px; font-size:17px; line-height:1.7; color:#475569;">
+                                                    Numbered badges in the map match the incidents below.
+                                                </div>
 
-                                        <tr>
-                                            <td style="padding:0 20px 20px;">
-                                                @if (!empty($incidents))
-                                                    <div style="margin-bottom:14px; font-size:17px; line-height:1.7; color:#475569;">
-                                                        Numbered badges in the map match the incidents below.
-                                                    </div>
-
-                                                    @foreach ($incidents as $incident)
-                                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%; margin-bottom:14px;">
-                                                            <tr>
-                                                                <td width="72" valign="top" style="padding-right:12px;">
-                                                                    <span style="{{ $badgeOuterStyle($incident) }}">
-                                                                        <span style="{{ $badgeInnerStyle($incident) }}">{{ $incident['label'] }}</span>
-                                                                    </span>
-                                                                </td>
-                                                                <td valign="top" style="font-size:18px; line-height:1.7; color:#1f2937;">
-                                                                    <div style="font-weight:700; color:#0f172a;">
-                                                                        {{ $incident['headline'] }}
-                                                                    </div>
-                                                                    <div style="color:#475569;">
-                                                                        {{ $incident['category_label'] ?? $incident['type'] }}
-                                                                        · {{ $incident['display_date'] }}
-                                                                        @if (!empty($incident['address']))
-                                                                            · {{ $incident['address'] }}
-                                                                        @endif
-                                                                        · {{ number_format((float) $incident['distance_miles'], 2) }} miles from home
-                                                                    </div>
-                                                                    @if (!empty($incident['status']) || !empty($incident['identifier']))
-                                                                        <div style="color:#64748b;">
-                                                                            @if (!empty($incident['status']))
-                                                                                Status: {{ $incident['status'] }}
-                                                                            @endif
-                                                                            @if (!empty($incident['status']) && !empty($incident['identifier']))
-                                                                                ·
-                                                                            @endif
-                                                                            @if (!empty($incident['identifier']))
-                                                                                ID: {{ $incident['identifier'] }}
-                                                                            @endif
-                                                                        </div>
+                                                @foreach ($incidents as $incident)
+                                                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%; margin-bottom:14px;">
+                                                        <tr>
+                                                            <td width="72" valign="top" style="padding-right:12px;">
+                                                                <span style="{{ $badgeOuterStyle($incident) }}">
+                                                                    <span style="{{ $badgeInnerStyle($incident) }}">{{ $incident['label'] }}</span>
+                                                                </span>
+                                                            </td>
+                                                            <td valign="top" style="font-size:18px; line-height:1.7; color:#1f2937;">
+                                                                <div style="font-weight:700; color:#0f172a;">
+                                                                    {{ $incident['headline'] }}
+                                                                </div>
+                                                                <div style="color:#475569;">
+                                                                    {{ $incident['category_label'] ?? $incident['type'] }}
+                                                                    · {{ $incident['display_date'] }}
+                                                                    @if (!empty($incident['address']))
+                                                                        · {{ $incident['address'] }}
                                                                     @endif
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    @endforeach
+                                                                    · {{ number_format((float) $incident['distance_miles'], 2) }} miles from home
+                                                                </div>
+                                                                @if (!empty($incident['status']) || !empty($incident['identifier']))
+                                                                    <div style="color:#64748b;">
+                                                                        @if (!empty($incident['status']))
+                                                                            Status: {{ $incident['status'] }}
+                                                                        @endif
+                                                                        @if (!empty($incident['status']) && !empty($incident['identifier']))
+                                                                            ·
+                                                                        @endif
+                                                                        @if (!empty($incident['identifier']))
+                                                                            ID: {{ $incident['identifier'] }}
+                                                                        @endif
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                @endforeach
 
-                                                    @if ($omittedPoints > 0)
-                                                        <div style="font-size:17px; line-height:1.7; color:#64748b;">
-                                                            {{ $omittedPoints }} additional incident{{ $omittedPoints === 1 ? '' : 's' }} happened that day but were not shown on the map.
-                                                        </div>
-                                                    @endif
-                                                @else
-                                                    <div style="font-size:18px; line-height:1.7; color:#475569;">
-                                                        Quiet day. The map for this day shows only the home marker.
+                                                @if ($omittedPoints > 0)
+                                                    <div style="font-size:17px; line-height:1.7; color:#64748b;">
+                                                        {{ $omittedPoints }} additional incident{{ $omittedPoints === 1 ? '' : 's' }} happened that day but were not shown on the map.
                                                     </div>
                                                 @endif
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                        @endforeach
+                                            @else
+                                                <div style="font-size:18px; line-height:1.7; color:#475569;">
+                                                    Quiet day. The map for this day shows only the home marker.
+                                                </div>
+                                            @endif
+
+                                            @if (!empty($publicMapsUrl))
+                                                <div style="margin-top:18px;">
+                                                    <a href="{{ $publicMapsUrl }}" class="button-link">View Daily Maps For The Last 7 Days</a>
+                                                </div>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    @elseif (!empty($publicMapsUrl))
+                        <tr>
+                            <td class="email-padding" style="padding:0 28px 22px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="section-card" style="border-collapse:collapse; width:100%;">
+                                    <tr>
+                                        <td style="padding:20px;">
+                                            <div style="font-size:18px; line-height:1.7; color:#475569; margin-bottom:16px;">
+                                                The newest-day map could not be embedded in this email.
+                                            </div>
+                                            <a href="{{ $publicMapsUrl }}" class="button-link">View Daily Maps For The Last 7 Days</a>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
                     @endif
 
                     <tr>

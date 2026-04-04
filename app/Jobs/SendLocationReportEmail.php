@@ -7,6 +7,7 @@ use App\Mail\SendLocationReport;
 use App\Models\Report;
 use App\Services\LocationReportEmailMapService;
 use App\Services\LocationReportBuilder;
+use App\Services\LocationReportMapSnapshotUrlGenerator;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Mail\Mailer;
@@ -42,10 +43,11 @@ class SendLocationReportEmail implements ShouldQueue
     public function handle(
         Mailer $mailer,
         LocationReportBuilder $reportBuilder,
-        LocationReportEmailMapService $emailMapService
+        LocationReportEmailMapService $emailMapService,
+        LocationReportMapSnapshotUrlGenerator $snapshotUrlGenerator
     )
     {
-        $dailyMaps = [];
+        $recentMap = null;
 
         try {
             $build = $reportBuilder->build($this->location, $this->radiusForReport);
@@ -90,25 +92,30 @@ class SendLocationReportEmail implements ShouldQueue
             // --- 6. Send Email (if there's a report to send)---
             if (!empty($dailyReportContent) && $this->location->user) {
                 try {
-                    $dailyMaps = $emailMapService->captureDailySeries($this->location, $this->radiusForReport);
+                    $recentMap = $emailMapService->captureLatestDay($this->location, $this->radiusForReport);
 
-                    if ($dailyMaps !== []) {
-                        Log::info('Location report map images prepared for email.', [
+                    if ($recentMap !== null) {
+                        Log::info('Location report newest-day map prepared for email.', [
                             'location_id' => $this->location->id,
-                            'days_requested' => count($dailyMaps),
-                            'maps_with_images' => count(array_filter($dailyMaps, fn (array $map): bool => is_string($map['path'] ?? null))),
-                            'days_with_incidents' => count(array_filter($dailyMaps, fn (array $map): bool => (int) ($map['snapshot']['selected_points'] ?? 0) > 0)),
+                            'window_date' => $recentMap['snapshot']['window']['date'] ?? null,
+                            'has_image' => is_string($recentMap['path'] ?? null),
+                            'selected_points' => $recentMap['snapshot']['selected_points'] ?? null,
                         ]);
                     }
                 } catch (\Throwable $mapException) {
-                    Log::warning('Location report map image capture failed; sending email without daily maps.', [
+                    Log::warning('Location report newest-day map capture failed; sending email without image.', [
                         'location_id' => $this->location->id,
                         'message' => $mapException->getMessage(),
                     ]);
                 }
 
                 $mailer->to($this->location->user->email)
-                       ->send(new SendLocationReport($this->location, $finalReport, $dailyMaps));
+                       ->send(new SendLocationReport(
+                           $this->location,
+                           $finalReport,
+                           $recentMap,
+                           $snapshotUrlGenerator->generatePublicDailyMapsPage($this->location)
+                       ));
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
                 $userEmail = $this->location->user?->email ?? 'unknown-user';

@@ -1,19 +1,16 @@
-@if (!empty($dailyMaps))
-Daily incident maps
-
-@foreach ($dailyMaps as $dailyMap)
 @php
-    $snapshot = $dailyMap['snapshot'] ?? [];
-    $incidents = $snapshot['incidents'] ?? [];
-    $selectedPoints = (int) ($snapshot['selected_points'] ?? 0);
-    $recentPoints = (int) ($snapshot['recent_points_in_window'] ?? 0);
-    $omittedPoints = (int) ($snapshot['omitted_points'] ?? 0);
+    $recentSnapshot = $recentMap['snapshot'] ?? null;
+    $incidents = $recentSnapshot['incidents'] ?? [];
+    $selectedPoints = (int) ($recentSnapshot['selected_points'] ?? 0);
+    $recentPoints = (int) ($recentSnapshot['recent_points_in_window'] ?? 0);
+    $omittedPoints = (int) ($recentSnapshot['omitted_points'] ?? 0);
 @endphp
-{{ $snapshot['window']['display'] ?? 'Recent activity' }}
+@if ($recentSnapshot)
+Most recent day map: {{ $recentSnapshot['window']['display'] ?? 'Most recent day' }}
 @if ($selectedPoints > 0)
-Showing {{ $selectedPoints }} of {{ $recentPoints }} nearby incident{{ $recentPoints === 1 ? '' : 's' }} within {{ number_format((float) ($snapshot['radius_miles'] ?? 0.25), 2) }} miles.
+Showing {{ $selectedPoints }} of {{ $recentPoints }} nearby incident{{ $recentPoints === 1 ? '' : 's' }} within {{ number_format((float) ($recentSnapshot['radius_miles'] ?? 0.25), 2) }} miles.
 @else
-No nearby incidents were found within {{ number_format((float) ($snapshot['radius_miles'] ?? 0.25), 2) }} miles.
+No nearby incidents were found within {{ number_format((float) ($recentSnapshot['radius_miles'] ?? 0.25), 2) }} miles.
 @endif
 
 @if (!empty($incidents))
@@ -33,7 +30,12 @@ No nearby incidents were found within {{ number_format((float) ($snapshot['radiu
 Quiet day. The map for this day shows only the home marker.
 
 @endif
-@endforeach
+@endif
+
+@if (!empty($publicMapsUrl))
+View daily maps for the last 7 days:
+{{ $publicMapsUrl }}
+
 @endif
 
 {{ $report }}

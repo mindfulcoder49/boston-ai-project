@@ -8,6 +8,7 @@ use App\Models\Location;
 use App\Models\User;
 use App\Services\LocationReportBuilder;
 use App\Services\LocationReportEmailMapService;
+use App\Services\LocationReportMapSnapshotUrlGenerator;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -119,10 +120,10 @@ class SendLocationReportEmailTest extends TestCase
         File::put($mapPath, 'fake png bytes');
 
         $emailMapService = Mockery::mock(LocationReportEmailMapService::class);
-        $emailMapService->shouldReceive('captureDailySeries')
+        $emailMapService->shouldReceive('captureLatestDay')
             ->once()
             ->with($location, 0.25)
-            ->andReturn([[
+            ->andReturn([
                 'path' => $mapPath,
                 'snapshot' => [
                     'window' => [
@@ -144,15 +145,22 @@ class SendLocationReportEmailTest extends TestCase
                         ],
                     ],
                 ],
-            ]]);
+            ]);
+
+        $snapshotUrlGenerator = Mockery::mock(LocationReportMapSnapshotUrlGenerator::class);
+        $snapshotUrlGenerator->shouldReceive('generatePublicDailyMapsPage')
+            ->once()
+            ->with($location)
+            ->andReturn('https://example.test/location-maps');
 
         $job = new SendLocationReportEmail($location);
-        $job->handle(app(Mailer::class), $builder, $emailMapService);
+        $job->handle(app(Mailer::class), $builder, $emailMapService, $snapshotUrlGenerator);
 
         Mail::assertSent(SendLocationReport::class, function (SendLocationReport $mail) use ($location, $mapPath): bool {
             return $mail->location->is($location)
-                && ($mail->dailyMaps[0]['path'] ?? null) === $mapPath
-                && (($mail->dailyMaps[0]['snapshot']['incidents'][0]['label'] ?? null) === '1');
+                && ($mail->recentMap['path'] ?? null) === $mapPath
+                && (($mail->recentMap['snapshot']['incidents'][0]['label'] ?? null) === '1')
+                && $mail->publicMapsUrl === 'https://example.test/location-maps';
         });
 
         $this->assertDatabaseCount('reports', 1);
@@ -185,17 +193,24 @@ class SendLocationReportEmailTest extends TestCase
             ]);
 
         $emailMapService = Mockery::mock(LocationReportEmailMapService::class);
-        $emailMapService->shouldReceive('captureDailySeries')
+        $emailMapService->shouldReceive('captureLatestDay')
             ->once()
             ->with($location, 0.25)
             ->andThrow(new \RuntimeException('Chromium failed'));
 
+        $snapshotUrlGenerator = Mockery::mock(LocationReportMapSnapshotUrlGenerator::class);
+        $snapshotUrlGenerator->shouldReceive('generatePublicDailyMapsPage')
+            ->once()
+            ->with($location)
+            ->andReturn('https://example.test/location-maps');
+
         $job = new SendLocationReportEmail($location);
-        $job->handle(app(Mailer::class), $builder, $emailMapService);
+        $job->handle(app(Mailer::class), $builder, $emailMapService, $snapshotUrlGenerator);
 
         Mail::assertSent(SendLocationReport::class, function (SendLocationReport $mail) use ($location): bool {
             return $mail->location->is($location)
-                && $mail->dailyMaps === [];
+                && $mail->recentMap === null
+                && $mail->publicMapsUrl === 'https://example.test/location-maps';
         });
 
         $this->assertDatabaseCount('reports', 1);

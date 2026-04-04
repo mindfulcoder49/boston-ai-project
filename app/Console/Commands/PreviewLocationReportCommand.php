@@ -7,6 +7,7 @@ use App\Models\Location;
 use App\Models\Report;
 use App\Services\LocationReportEmailMapService;
 use App\Services\LocationReportBuilder;
+use App\Services\LocationReportMapSnapshotUrlGenerator;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Mail\Mailer;
@@ -26,7 +27,8 @@ class PreviewLocationReportCommand extends Command
 
     public function __construct(
         private readonly LocationReportBuilder $reportBuilder,
-        private readonly LocationReportEmailMapService $emailMapService
+        private readonly LocationReportEmailMapService $emailMapService,
+        private readonly LocationReportMapSnapshotUrlGenerator $snapshotUrlGenerator
     ) {
         parent::__construct();
     }
@@ -89,15 +91,20 @@ class PreviewLocationReportCommand extends Command
             if ($result['daily_report_content'] === '') {
                 $this->warn('No report sections were generated; no email sent.');
             } else {
-                $dailyMaps = [];
+                $recentMap = null;
 
                 try {
-                    $dailyMaps = $this->emailMapService->captureDailySeries($location, (float) $this->option('radius'));
+                    $recentMap = $this->emailMapService->captureLatestDay($location, (float) $this->option('radius'));
                 } catch (\Throwable $mapException) {
-                    $this->warn('Map image capture failed; sending preview email without daily maps.');
+                    $this->warn('Newest-day map capture failed; sending preview email without an image.');
                 }
 
-                $mailer->to($location->user->email)->send(new SendLocationReport($location, $result['final_report'], $dailyMaps));
+                $mailer->to($location->user->email)->send(new SendLocationReport(
+                    $location,
+                    $result['final_report'],
+                    $recentMap,
+                    $this->snapshotUrlGenerator->generatePublicDailyMapsPage($location)
+                ));
                 $this->line("Preview email sent to {$location->user->email}.");
             }
         }

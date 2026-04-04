@@ -12,6 +12,7 @@ class SendLocationReportMailRenderTest extends TestCase
     public function test_it_renders_the_inline_map_as_html_instead_of_escaped_markdown(): void
     {
         $location = new Location([
+            'id' => 17,
             'name' => 'other',
             'address' => '621 E 1st St, South Boston, MA 02127, USA',
             'latitude' => 42.3379221,
@@ -27,7 +28,7 @@ class SendLocationReportMailRenderTest extends TestCase
             $html = (new SendLocationReport(
                 $location,
                 "## Location Report: other\n\n- **Location Name:** other",
-                [[
+                [
                     'path' => $path,
                     'snapshot' => [
                         'window' => [
@@ -52,7 +53,8 @@ class SendLocationReportMailRenderTest extends TestCase
                             ],
                         ],
                     ],
-                ]]
+                ],
+                'https://example.test/location-maps'
             ))->render();
         } finally {
             File::delete($path);
@@ -64,5 +66,7 @@ class SendLocationReportMailRenderTest extends TestCase
         $this->assertStringContainsString('April 3, 2026', $html);
         $this->assertStringContainsString('Noise Complaint', $html);
         $this->assertStringContainsString('Narrative Summary', $html);
+        $this->assertStringContainsString('View Daily Maps For The Last 7 Days', $html);
+        $this->assertStringContainsString('https://example.test/location-maps', $html);
     }
 }

@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\URL;
 
 class LocationReportMapSnapshotUrlGenerator
 {
+    public function generatePublicDailyMapsPage(Location $location): string
+    {
+        return URL::signedRoute('reports.location-daily-maps', [
+            'location' => $location->getKey(),
+        ]);
+    }
+
     public function generate(
         Location $location,
         float $radius = 0.25,
