@@ -78,6 +78,19 @@ function updateMap() {
     opacity: 1,
     weight: 2,
   }).addTo(mapInstance);
+
+  centerLayer
+    .bindTooltip(
+      `<span class="coverage-mini-map-label">${props.city?.locationLabel ?? ''}</span>`,
+      {
+        permanent: true,
+        direction: 'top',
+        offset: [0, -14],
+        opacity: 1,
+        className: 'coverage-mini-map-tooltip-shell',
+      }
+    )
+    .openTooltip();
 }
 
 onMounted(() => {
@@ -140,5 +153,31 @@ onBeforeUnmount(() => {
 .coverage-mini-map :deep(.leaflet-top),
 .coverage-mini-map :deep(.leaflet-bottom) {
   pointer-events: none;
+}
+
+.coverage-mini-map :deep(.coverage-mini-map-tooltip-shell) {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.coverage-mini-map :deep(.coverage-mini-map-tooltip-shell::before) {
+  display: none;
+}
+
+.coverage-mini-map :deep(.coverage-mini-map-label) {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #f8fafc;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.28);
 }
 </style>
