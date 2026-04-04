@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
 use Mockery;
 use Tests\TestCase;
@@ -223,5 +224,58 @@ class SendLocationReportEmailTest extends TestCase
         $this->assertSame(1, $job->tries);
         $this->assertSame(600, $job->timeout);
         $this->assertTrue($job->failOnTimeout);
+    }
+
+    public function test_it_rethrows_mail_render_failures_so_the_queue_marks_the_job_failed(): void
+    {
+        $user = User::factory()->create([
+            'password' => Hash::make('password'),
+        ]);
+
+        $location = Location::factory()->for($user)->create([
+            'name' => 'South Boston Home',
+            'report' => 'daily',
+            'language' => 'en',
+        ]);
+
+        $builder = Mockery::mock(LocationReportBuilder::class);
+        $builder->shouldReceive('build')
+            ->once()
+            ->with($location, 0.25)
+            ->andReturn([
+                'final_report' => "## Location Report: South Boston Home\n\nSample report.",
+                'daily_report_content' => "### April 3, 2026\n\nSample report.",
+                'data_points_count' => 4,
+                'section_diagnostics' => [],
+            ]);
+
+        $emailMapService = Mockery::mock(LocationReportEmailMapService::class);
+        $emailMapService->shouldReceive('captureLatestDay')
+            ->once()
+            ->with($location, 0.25)
+            ->andReturn(null);
+
+        $snapshotUrlGenerator = Mockery::mock(LocationReportMapSnapshotUrlGenerator::class);
+        $snapshotUrlGenerator->shouldReceive('generatePublicDailyMapsPage')
+            ->once()
+            ->with($location)
+            ->andReturn('https://example.test/location-maps');
+
+        $failingMailer = Mockery::mock(Mailer::class);
+        $failingMailer->shouldReceive('to')
+            ->once()
+            ->with($user->email)
+            ->andReturnSelf();
+        $failingMailer->shouldReceive('send')
+            ->once()
+            ->with(Mockery::type(SendLocationReport::class))
+            ->andThrow(new \RuntimeException('mail transport blew up: '.Str::random(8)));
+
+        $job = new SendLocationReportEmail($location);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('mail transport blew up');
+
+        $job->handle($failingMailer, $builder, $emailMapService, $snapshotUrlGenerator);
     }
 }

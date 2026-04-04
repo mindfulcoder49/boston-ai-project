@@ -16,6 +16,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SendLocationReportEmail implements ShouldQueue
 {
@@ -121,10 +122,11 @@ class SendLocationReportEmail implements ShouldQueue
                 $userEmail = $this->location->user?->email ?? 'unknown-user';
                 Log::info("No reports generated after date/type processing (empty dailyReportContent). No email was sent to {$userEmail} for location: {$this->location->address}");
             }
-
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             Log::error("Error processing report or sending email for location {$this->location->address}: {$e->getMessage()}");
             Log::error("Stack trace: " . $e->getTraceAsString());
+
+            throw $e;
         }
     }
 
