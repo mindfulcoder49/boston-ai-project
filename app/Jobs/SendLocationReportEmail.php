@@ -14,7 +14,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class SendLocationReportEmail implements ShouldQueue
@@ -46,8 +45,7 @@ class SendLocationReportEmail implements ShouldQueue
         LocationReportEmailMapService $emailMapService
     )
     {
-        $mapImagePath = null;
-        $mapSnapshot = null;
+        $dailyMaps = [];
 
         try {
             $build = $reportBuilder->build($this->location, $this->radiusForReport);
@@ -92,26 +90,25 @@ class SendLocationReportEmail implements ShouldQueue
             // --- 6. Send Email (if there's a report to send)---
             if (!empty($dailyReportContent) && $this->location->user) {
                 try {
-                    $mapCapture = $emailMapService->capture($this->location, $this->radiusForReport);
-                    $mapImagePath = $mapCapture['path'] ?? null;
-                    $mapSnapshot = $mapCapture['snapshot'] ?? null;
+                    $dailyMaps = $emailMapService->captureDailySeries($this->location, $this->radiusForReport);
 
-                    if ($mapCapture) {
-                        Log::info('Location report map image captured for email.', [
+                    if ($dailyMaps !== []) {
+                        Log::info('Location report map images prepared for email.', [
                             'location_id' => $this->location->id,
-                            'days_used' => $mapCapture['days'] ?? null,
-                            'selected_points' => $mapCapture['snapshot']['selected_points'] ?? null,
+                            'days_requested' => count($dailyMaps),
+                            'maps_with_images' => count(array_filter($dailyMaps, fn (array $map): bool => is_string($map['path'] ?? null))),
+                            'days_with_incidents' => count(array_filter($dailyMaps, fn (array $map): bool => (int) ($map['snapshot']['selected_points'] ?? 0) > 0)),
                         ]);
                     }
                 } catch (\Throwable $mapException) {
-                    Log::warning('Location report map image capture failed; sending email without image.', [
+                    Log::warning('Location report map image capture failed; sending email without daily maps.', [
                         'location_id' => $this->location->id,
                         'message' => $mapException->getMessage(),
                     ]);
                 }
 
                 $mailer->to($this->location->user->email)
-                       ->send(new SendLocationReport($this->location, $finalReport, $mapImagePath, $mapSnapshot));
+                       ->send(new SendLocationReport($this->location, $finalReport, $dailyMaps));
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
                 $userEmail = $this->location->user?->email ?? 'unknown-user';
@@ -121,10 +118,6 @@ class SendLocationReportEmail implements ShouldQueue
         } catch (\Exception $e) {
             Log::error("Error processing report or sending email for location {$this->location->address}: {$e->getMessage()}");
             Log::error("Stack trace: " . $e->getTraceAsString());
-        } finally {
-            if (is_string($mapImagePath) && $mapImagePath !== '' && File::exists($mapImagePath)) {
-                File::delete($mapImagePath);
-            }
         }
     }
 

@@ -119,13 +119,15 @@ class SendLocationReportEmailTest extends TestCase
         File::put($mapPath, 'fake png bytes');
 
         $emailMapService = Mockery::mock(LocationReportEmailMapService::class);
-        $emailMapService->shouldReceive('capture')
+        $emailMapService->shouldReceive('captureDailySeries')
             ->once()
             ->with($location, 0.25)
-            ->andReturn([
+            ->andReturn([[
                 'path' => $mapPath,
-                'days' => 2,
                 'snapshot' => [
+                    'window' => [
+                        'display' => 'April 3, 2026',
+                    ],
                     'selected_points' => 4,
                     'incidents' => [
                         [
@@ -134,22 +136,27 @@ class SendLocationReportEmailTest extends TestCase
                             'display_date' => 'April 3, 2026 9:36 PM',
                             'address' => '621 E 1st St, South Boston, MA 02127, USA',
                             'distance_miles' => 0.04,
+                            'category_label' => '311',
+                            'shape' => 'rounded-square',
+                            'fill_color' => '#2563EB',
+                            'stroke_color' => '#FFFFFF',
+                            'text_color' => '#FFFFFF',
                         ],
                     ],
                 ],
-            ]);
+            ]]);
 
         $job = new SendLocationReportEmail($location);
         $job->handle(app(Mailer::class), $builder, $emailMapService);
 
         Mail::assertSent(SendLocationReport::class, function (SendLocationReport $mail) use ($location, $mapPath): bool {
             return $mail->location->is($location)
-                && $mail->mapImagePath === $mapPath
-                && ($mail->mapSnapshot['incidents'][0]['label'] ?? null) === '1';
+                && ($mail->dailyMaps[0]['path'] ?? null) === $mapPath
+                && (($mail->dailyMaps[0]['snapshot']['incidents'][0]['label'] ?? null) === '1');
         });
 
         $this->assertDatabaseCount('reports', 1);
-        $this->assertFalse(File::exists($mapPath));
+        File::delete($mapPath);
     }
 
     public function test_it_still_sends_the_report_email_when_map_capture_fails(): void
@@ -178,7 +185,7 @@ class SendLocationReportEmailTest extends TestCase
             ]);
 
         $emailMapService = Mockery::mock(LocationReportEmailMapService::class);
-        $emailMapService->shouldReceive('capture')
+        $emailMapService->shouldReceive('captureDailySeries')
             ->once()
             ->with($location, 0.25)
             ->andThrow(new \RuntimeException('Chromium failed'));
@@ -188,7 +195,7 @@ class SendLocationReportEmailTest extends TestCase
 
         Mail::assertSent(SendLocationReport::class, function (SendLocationReport $mail) use ($location): bool {
             return $mail->location->is($location)
-                && $mail->mapImagePath === null;
+                && $mail->dailyMaps === [];
         });
 
         $this->assertDatabaseCount('reports', 1);

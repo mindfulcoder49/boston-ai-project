@@ -15,8 +15,7 @@ class SendLocationReport extends Mailable
 
     public $location;
     public $report;
-    public $mapImagePath;
-    public $mapSnapshot;
+    public $dailyMaps;
 
     /**
      * Create a new message instance.
@@ -24,14 +23,12 @@ class SendLocationReport extends Mailable
     public function __construct(
         Location $location,
         string $report,
-        ?string $mapImagePath = null,
-        ?array $mapSnapshot = null
+        array $dailyMaps = []
     )
     {
         $this->location = $location;
         $this->report = $report;
-        $this->mapImagePath = $mapImagePath;
-        $this->mapSnapshot = $mapSnapshot;
+        $this->dailyMaps = $dailyMaps;
     }
 
     /**
@@ -55,8 +52,7 @@ class SendLocationReport extends Mailable
             with: [
                 'location' => $this->location,
                 'report' => $this->report,
-                'mapImagePath' => $this->mapImagePath,
-                'mapSnapshot' => $this->mapSnapshot,
+                'dailyMaps' => $this->dailyMaps,
             ],
         );
     }

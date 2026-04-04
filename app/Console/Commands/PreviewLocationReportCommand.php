@@ -89,25 +89,16 @@ class PreviewLocationReportCommand extends Command
             if ($result['daily_report_content'] === '') {
                 $this->warn('No report sections were generated; no email sent.');
             } else {
-                $mapImagePath = null;
-                $mapSnapshot = null;
+                $dailyMaps = [];
 
                 try {
-                    try {
-                        $mapCapture = $this->emailMapService->capture($location, (float) $this->option('radius'));
-                        $mapImagePath = $mapCapture['path'] ?? null;
-                        $mapSnapshot = $mapCapture['snapshot'] ?? null;
-                    } catch (\Throwable $mapException) {
-                        $this->warn('Map image capture failed; sending preview email without an image.');
-                    }
-
-                    $mailer->to($location->user->email)->send(new SendLocationReport($location, $result['final_report'], $mapImagePath, $mapSnapshot));
-                    $this->line("Preview email sent to {$location->user->email}.");
-                } finally {
-                    if (is_string($mapImagePath) && $mapImagePath !== '' && File::exists($mapImagePath)) {
-                        File::delete($mapImagePath);
-                    }
+                    $dailyMaps = $this->emailMapService->captureDailySeries($location, (float) $this->option('radius'));
+                } catch (\Throwable $mapException) {
+                    $this->warn('Map image capture failed; sending preview email without daily maps.');
                 }
+
+                $mailer->to($location->user->email)->send(new SendLocationReport($location, $result['final_report'], $dailyMaps));
+                $this->line("Preview email sent to {$location->user->email}.");
             }
         }
 

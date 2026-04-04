@@ -91,11 +91,66 @@ class LocationReportMapSnapshotBuilderTest extends TestCase
         $this->assertSame('H', $snapshot['markers'][0]['label']);
         $this->assertSame('1', $snapshot['incidents'][0]['label']);
         $this->assertSame('Illegal Parking', $snapshot['incidents'][0]['headline']);
+        $this->assertSame('311', $snapshot['incidents'][0]['category_label']);
+        $this->assertSame('rounded-square', $snapshot['incidents'][0]['shape']);
         $this->assertSame('SR-1', $snapshot['incidents'][0]['identifier']);
         $this->assertSame('2', $snapshot['incidents'][1]['label']);
         $this->assertSame('Larceny', $snapshot['incidents'][1]['headline']);
+        $this->assertSame('Crime', $snapshot['incidents'][1]['category_label']);
+        $this->assertSame('circle', $snapshot['incidents'][1]['shape']);
         $this->assertSame('CASE-2', $snapshot['incidents'][1]['identifier']);
         $this->assertSame('2026-04-03', $snapshot['counts_by_date'][0]['date']);
         $this->assertSame(2, $snapshot['counts_by_date'][0]['count']);
+        $this->assertNotEmpty($snapshot['render_fingerprint']);
+    }
+
+    public function test_it_builds_a_daily_series_with_stable_dates_and_cache_fingerprints(): void
+    {
+        Carbon::setTestNow('2026-04-03 12:00:00');
+
+        $dataService = Mockery::mock(LocationReportDataService::class);
+        $dataService
+            ->shouldReceive('fetch')
+            ->once()
+            ->andReturn([
+                (object) [
+                    'alcivartech_type' => 'Food Inspection',
+                    'alcivartech_date' => '2026-04-03 08:00:00',
+                    'latitude' => 42.3309,
+                    'longitude' => -71.0508,
+                    'food_inspection_data' => (object) [
+                        'description' => 'Expired milk',
+                        'address' => '100 A St',
+                    ],
+                ],
+                (object) [
+                    'alcivartech_type' => 'Food Inspection',
+                    'alcivartech_date' => '2026-04-02 08:00:00',
+                    'latitude' => 42.3309,
+                    'longitude' => -71.0508,
+                    'food_inspection_data' => (object) [
+                        'description' => 'Cold storage issue',
+                        'address' => '100 A St',
+                    ],
+                ],
+            ]);
+
+        $builder = new LocationReportMapSnapshotBuilder($dataService);
+        $location = new Location([
+            'name' => 'South Boston Home',
+            'address' => '730 E Third St',
+            'latitude' => 42.3310,
+            'longitude' => -71.0512,
+        ]);
+
+        $series = $builder->buildDailySeries($location, 0.25, 3, 8);
+
+        $this->assertCount(3, $series);
+        $this->assertSame('2026-04-03', $series[0]['window']['date']);
+        $this->assertSame('2026-04-02', $series[1]['window']['date']);
+        $this->assertSame('2026-04-01', $series[2]['window']['date']);
+        $this->assertSame('diamond', $series[0]['incidents'][0]['shape']);
+        $this->assertSame($series[0]['render_fingerprint'], $series[1]['render_fingerprint']);
+        $this->assertTrue($series[2]['empty']);
     }
 }

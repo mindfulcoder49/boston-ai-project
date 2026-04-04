@@ -27,18 +27,32 @@ class SendLocationReportMailRenderTest extends TestCase
             $html = (new SendLocationReport(
                 $location,
                 "## Location Report: other\n\n- **Location Name:** other",
-                $path,
-                [
-                    'incidents' => [
-                        [
-                            'label' => '1',
-                            'headline' => 'Noise Complaint',
-                            'display_date' => 'April 3, 2026 9:36 PM',
-                            'address' => '621 E 1st St, South Boston, MA 02127, USA',
-                            'distance_miles' => 0.04,
+                [[
+                    'path' => $path,
+                    'snapshot' => [
+                        'window' => [
+                            'display' => 'April 3, 2026',
+                        ],
+                        'selected_points' => 1,
+                        'recent_points_in_window' => 1,
+                        'radius_miles' => 0.25,
+                        'omitted_points' => 0,
+                        'incidents' => [
+                            [
+                                'label' => '1',
+                                'headline' => 'Noise Complaint',
+                                'display_date' => 'April 3, 2026 9:36 PM',
+                                'address' => '621 E 1st St, South Boston, MA 02127, USA',
+                                'distance_miles' => 0.04,
+                                'category_label' => '311',
+                                'shape' => 'rounded-square',
+                                'fill_color' => '#2563EB',
+                                'stroke_color' => '#FFFFFF',
+                                'text_color' => '#FFFFFF',
+                            ],
                         ],
                     ],
-                ]
+                ]]
             ))->render();
         } finally {
             File::delete($path);
@@ -47,7 +61,8 @@ class SendLocationReportMailRenderTest extends TestCase
         $this->assertStringContainsString('<img', $html);
         $this->assertStringContainsString('src="cid:', $html);
         $this->assertStringNotContainsString('&lt;img', $html);
-        $this->assertStringContainsString('Incidents Shown On The Map', $html);
-        $this->assertStringContainsString('1. Noise Complaint', $html);
+        $this->assertStringContainsString('April 3, 2026', $html);
+        $this->assertStringContainsString('Noise Complaint', $html);
+        $this->assertStringContainsString('Narrative Summary', $html);
     }
 }

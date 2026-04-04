@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\Location;
 use App\Models\User;
 use App\Services\LocationReportEmailMapService;
+use App\Services\LocationReportMapAssetCache;
 use App\Services\LocationReportMapScreenshotService;
 use App\Services\LocationReportMapSnapshotBuilder;
 use App\Services\LocationReportMapSnapshotUrlGenerator;
@@ -20,11 +21,10 @@ class LocationReportEmailMapServiceTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_it_falls_back_to_a_wider_window_when_the_primary_window_is_empty(): void
+    public function test_it_reuses_cached_daily_map_images_when_the_snapshot_matches(): void
     {
-        config()->set('services.reports.email_map_days', 2);
-        config()->set('services.reports.email_map_fallback_days', 7);
-        config()->set('services.reports.email_map_limit', 4);
+        config()->set('services.reports.email_map_days', 7);
+        config()->set('services.reports.email_map_limit', 8);
         config()->set('services.reports.email_map_radius', 0.25);
 
         $location = new Location([
@@ -35,68 +35,103 @@ class LocationReportEmailMapServiceTest extends TestCase
         ]);
         $location->setRelation('user', new User(['id' => 1]));
 
+        $snapshot = [
+            'window' => ['date' => '2026-04-03', 'days' => 1],
+            'selected_points' => 2,
+            'render_fingerprint' => 'fingerprint-1',
+            'incidents' => [
+                ['label' => '1'],
+            ],
+        ];
+
         $builder = Mockery::mock(LocationReportMapSnapshotBuilder::class);
-        $builder->shouldReceive('build')
+        $builder->shouldReceive('buildDailySeries')
             ->once()
-            ->with($location, 0.25, 2, 4)
-            ->andReturn(['selected_points' => 0]);
-        $builder->shouldReceive('build')
-            ->once()
-            ->with($location, 0.25, 7, 4)
-            ->andReturn(['selected_points' => 3]);
+            ->with($location, 0.25, 7, 8)
+            ->andReturn([$snapshot]);
 
         $urlGenerator = Mockery::mock(LocationReportMapSnapshotUrlGenerator::class);
-        $urlGenerator->shouldReceive('generate')
+        $urlGenerator->shouldNotReceive('generateForDate');
+
+        $screenshotService = Mockery::mock(LocationReportMapScreenshotService::class);
+        $screenshotService->shouldNotReceive('capture');
+
+        $assetCache = Mockery::mock(LocationReportMapAssetCache::class);
+        $assetCache->shouldReceive('imagePath')
             ->once()
-            ->with($location, 0.25, 7, 4)
+            ->with($location, $snapshot)
+            ->andReturn('/tmp/location-map.png');
+        $assetCache->shouldReceive('hasImage')
+            ->twice()
+            ->with($location, $snapshot)
+            ->andReturn(true);
+        $assetCache->shouldNotReceive('persistMetadata');
+
+        $service = new LocationReportEmailMapService($builder, $urlGenerator, $screenshotService, $assetCache);
+        $result = $service->captureDailySeries($location);
+
+        $this->assertCount(1, $result);
+        $this->assertSame('/tmp/location-map.png', $result[0]['path']);
+        $this->assertTrue($result[0]['cached']);
+    }
+
+    public function test_it_captures_and_persists_uncached_daily_map_images(): void
+    {
+        config()->set('services.reports.email_map_days', 7);
+        config()->set('services.reports.email_map_limit', 8);
+        config()->set('services.reports.email_map_radius', 0.25);
+
+        $location = new Location([
+            'latitude' => 42.36,
+            'longitude' => -71.05,
+            'address' => '1 Main St',
+            'user_id' => 1,
+        ]);
+        $location->setRelation('user', new User(['id' => 1]));
+
+        $snapshot = [
+            'window' => ['date' => '2026-04-03', 'days' => 1],
+            'selected_points' => 2,
+            'render_fingerprint' => 'fingerprint-2',
+            'incidents' => [
+                ['label' => '1'],
+            ],
+        ];
+
+        $builder = Mockery::mock(LocationReportMapSnapshotBuilder::class);
+        $builder->shouldReceive('buildDailySeries')
+            ->once()
+            ->with($location, 0.25, 7, 8)
+            ->andReturn([$snapshot]);
+
+        $urlGenerator = Mockery::mock(LocationReportMapSnapshotUrlGenerator::class);
+        $urlGenerator->shouldReceive('generateForDate')
+            ->once()
+            ->with($location, 0.25, '2026-04-03', 8)
             ->andReturn('https://example.test/snapshot');
 
         $screenshotService = Mockery::mock(LocationReportMapScreenshotService::class);
         $screenshotService->shouldReceive('capture')
             ->once()
-            ->with('https://example.test/snapshot')
+            ->with('https://example.test/snapshot', '/tmp/location-map.png');
+
+        $assetCache = Mockery::mock(LocationReportMapAssetCache::class);
+        $assetCache->shouldReceive('imagePath')
+            ->once()
+            ->with($location, $snapshot)
             ->andReturn('/tmp/location-map.png');
-
-        $service = new LocationReportEmailMapService($builder, $urlGenerator, $screenshotService);
-        $result = $service->capture($location);
-
-        $this->assertSame('/tmp/location-map.png', $result['path']);
-        $this->assertSame(7, $result['days']);
-    }
-
-    public function test_it_returns_null_when_no_snapshot_window_has_incidents(): void
-    {
-        config()->set('services.reports.email_map_days', 2);
-        config()->set('services.reports.email_map_fallback_days', 7);
-        config()->set('services.reports.email_map_limit', 4);
-        config()->set('services.reports.email_map_radius', 0.25);
-
-        $location = new Location([
-            'latitude' => 42.36,
-            'longitude' => -71.05,
-            'address' => '1 Main St',
-            'user_id' => 1,
-        ]);
-        $location->setRelation('user', new User(['id' => 1]));
-
-        $builder = Mockery::mock(LocationReportMapSnapshotBuilder::class);
-        $builder->shouldReceive('build')
+        $assetCache->shouldReceive('hasImage')
+            ->with($location, $snapshot)
+            ->andReturn(false, true);
+        $assetCache->shouldReceive('persistMetadata')
             ->once()
-            ->with($location, 0.25, 2, 4)
-            ->andReturn(['selected_points' => 0]);
-        $builder->shouldReceive('build')
-            ->once()
-            ->with($location, 0.25, 7, 4)
-            ->andReturn(['selected_points' => 0]);
+            ->with($location, $snapshot, Mockery::on(fn (array $context): bool => ($context['render_url'] ?? null) === 'https://example.test/snapshot'));
 
-        $urlGenerator = Mockery::mock(LocationReportMapSnapshotUrlGenerator::class);
-        $urlGenerator->shouldNotReceive('generate');
+        $service = new LocationReportEmailMapService($builder, $urlGenerator, $screenshotService, $assetCache);
+        $result = $service->captureDailySeries($location);
 
-        $screenshotService = Mockery::mock(LocationReportMapScreenshotService::class);
-        $screenshotService->shouldNotReceive('capture');
-
-        $service = new LocationReportEmailMapService($builder, $urlGenerator, $screenshotService);
-
-        $this->assertNull($service->capture($location));
+        $this->assertCount(1, $result);
+        $this->assertSame('/tmp/location-map.png', $result[0]['path']);
+        $this->assertFalse($result[0]['cached']);
     }
 }

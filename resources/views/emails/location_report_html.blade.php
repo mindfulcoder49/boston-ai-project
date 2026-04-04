@@ -1,62 +1,239 @@
+@php
+    $badgeOuterStyle = function (array $incident): string {
+        $shape = (string) ($incident['shape'] ?? 'rounded-square');
+        $fill = (string) ($incident['fill_color'] ?? '#475569');
+        $stroke = (string) ($incident['stroke_color'] ?? '#FFFFFF');
+        $text = (string) ($incident['text_color'] ?? '#FFFFFF');
+
+        $base = 'display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;line-height:1;color:'
+            . $text
+            . ';background:'
+            . $fill
+            . ';border:3px solid '
+            . $stroke
+            . ';box-shadow:0 8px 18px rgba(15,23,42,0.16);';
+
+        return match ($shape) {
+            'circle' => $base . 'width:46px;height:46px;border-radius:999px;',
+            'square' => $base . 'width:46px;height:46px;border-radius:8px;',
+            'pill' => $base . 'width:58px;height:42px;border-radius:999px;',
+            'bevel' => $base . 'width:58px;height:42px;border-radius:16px 6px 16px 6px;',
+            'tag' => $base . 'width:58px;height:42px;border-radius:6px 16px 6px 16px;',
+            'diamond' => $base . 'width:40px;height:40px;border-radius:8px;transform:rotate(45deg);',
+            default => $base . 'width:46px;height:46px;border-radius:14px;',
+        };
+    };
+
+    $badgeInnerStyle = function (array $incident): string {
+        return ($incident['shape'] ?? null) === 'diamond'
+            ? 'display:inline-flex;align-items:center;justify-content:center;transform:rotate(-45deg);'
+            : 'display:inline-flex;align-items:center;justify-content:center;';
+    };
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Location Report</title>
+    <style>
+        body, table, td, div, p, li, a {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
+        .email-shell {
+            width: 680px;
+            max-width: 680px;
+        }
+
+        .section-card {
+            border: 1px solid #d7dde5;
+            border-radius: 18px;
+            background: #f8fafc;
+        }
+
+        .report-content,
+        .report-content p,
+        .report-content li {
+            font-size: 18px;
+            line-height: 1.75;
+            color: #1f2937;
+        }
+
+        .report-content h2 {
+            margin: 0 0 14px;
+            font-size: 28px;
+            line-height: 1.25;
+            color: #0f172a;
+        }
+
+        .report-content h3 {
+            margin: 22px 0 10px;
+            font-size: 24px;
+            line-height: 1.35;
+            color: #0f172a;
+        }
+
+        .report-content h4 {
+            margin: 18px 0 10px;
+            font-size: 20px;
+            line-height: 1.4;
+            color: #0f172a;
+        }
+
+        .report-content ul,
+        .report-content ol {
+            padding-left: 22px;
+        }
+
+        @media only screen and (max-width: 720px) {
+            .email-shell {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .email-padding {
+                padding-left: 18px !important;
+                padding-right: 18px !important;
+            }
+
+            .report-content,
+            .report-content p,
+            .report-content li {
+                font-size: 18px !important;
+            }
+        }
+    </style>
 </head>
 <body style="margin:0; padding:24px 0; background:#edf2f7; color:#1f2937; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%;">
         <tr>
-            <td align="center">
-                <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:640px; max-width:640px; background:#ffffff; border:1px solid #d7dde5; border-radius:16px;">
+            <td align="center" class="email-padding" style="padding:0 12px;">
+                <table role="presentation" class="email-shell" cellpadding="0" cellspacing="0" style="border-collapse:collapse; background:#ffffff; border:1px solid #d7dde5; border-radius:18px;">
                     <tr>
-                        <td style="padding:28px 28px 12px; font-size:24px; font-weight:700; color:#0f172a;">
+                        <td class="email-padding" style="padding:28px 28px 10px; font-size:28px; font-weight:800; color:#0f172a;">
                             PublicDataWatch
                         </td>
                     </tr>
-                    @if (!empty($mapImagePath) && is_string($mapImagePath) && is_file($mapImagePath))
+
+                    @if (!empty($dailyMaps))
                         <tr>
-                            <td style="padding:0 28px 16px;">
-                                <img
-                                    src="{{ $message->embed($mapImagePath) }}"
-                                    alt="Recent incident map near {{ $location->address }}"
-                                    style="display:block; width:100%; max-width:584px; height:auto; border:1px solid #d7dde5; border-radius:14px;"
-                                >
+                            <td class="email-padding" style="padding:0 28px 12px; font-size:18px; line-height:1.7; color:#475569;">
+                                Daily incident maps for the last {{ count($dailyMaps) }} day{{ count($dailyMaps) === 1 ? '' : 's' }} around {{ $location->address }}.
                             </td>
                         </tr>
-                    @endif
-                    @if (!empty($mapSnapshot['incidents']))
-                        <tr>
-                            <td style="padding:0 28px 20px; font-size:15px; line-height:1.6; color:#1f2937;">
-                                <div style="font-size:18px; font-weight:700; color:#0f172a; margin-bottom:10px;">
-                                    Incidents Shown On The Map
-                                </div>
-                                <div style="margin-bottom:12px; color:#475569;">
-                                    Numbered markers in the image correspond to the incidents below.
-                                </div>
-                                <ol style="margin:0; padding-left:22px;">
-                                    @foreach ($mapSnapshot['incidents'] as $incident)
-                                        <li style="margin-bottom:12px;">
-                                            <div style="font-weight:700; color:#0f172a;">
-                                                {{ $incident['label'] }}. {{ $incident['headline'] }}
-                                            </div>
-                                            <div style="color:#475569;">
-                                                {{ $incident['display_date'] }}
-                                                @if (!empty($incident['address']))
-                                                    · {{ $incident['address'] }}
+
+                        @foreach ($dailyMaps as $dailyMap)
+                            @php
+                                $snapshot = $dailyMap['snapshot'] ?? [];
+                                $incidents = $snapshot['incidents'] ?? [];
+                                $selectedPoints = (int) ($snapshot['selected_points'] ?? 0);
+                                $recentPoints = (int) ($snapshot['recent_points_in_window'] ?? 0);
+                                $omittedPoints = (int) ($snapshot['omitted_points'] ?? 0);
+                                $windowDisplay = (string) ($snapshot['window']['display'] ?? 'Recent activity');
+                            @endphp
+                            <tr>
+                                <td class="email-padding" style="padding:0 28px 22px;">
+                                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="section-card" style="border-collapse:collapse; width:100%;">
+                                        <tr>
+                                            <td style="padding:20px 20px 8px;">
+                                                <div style="font-size:24px; line-height:1.2; font-weight:800; color:#0f172a;">
+                                                    {{ $windowDisplay }}
+                                                </div>
+                                                <div style="margin-top:8px; font-size:18px; line-height:1.7; color:#475569;">
+                                                    @if ($selectedPoints > 0)
+                                                        Showing {{ $selectedPoints }} of {{ $recentPoints }} nearby incident{{ $recentPoints === 1 ? '' : 's' }} within {{ number_format((float) ($snapshot['radius_miles'] ?? 0.25), 2) }} miles.
+                                                    @else
+                                                        No nearby incidents were found within {{ number_format((float) ($snapshot['radius_miles'] ?? 0.25), 2) }} miles.
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        @if (!empty($dailyMap['path']) && is_string($dailyMap['path']) && is_file($dailyMap['path']))
+                                            <tr>
+                                                <td style="padding:0 20px 16px;">
+                                                    <img
+                                                        src="{{ $message->embed($dailyMap['path']) }}"
+                                                        alt="Incident map for {{ $windowDisplay }} near {{ $location->address }}"
+                                                        style="display:block; width:100%; height:auto; border:1px solid #d7dde5; border-radius:16px;"
+                                                    >
+                                                </td>
+                                            </tr>
+                                        @endif
+
+                                        <tr>
+                                            <td style="padding:0 20px 20px;">
+                                                @if (!empty($incidents))
+                                                    <div style="margin-bottom:14px; font-size:17px; line-height:1.7; color:#475569;">
+                                                        Numbered badges in the map match the incidents below.
+                                                    </div>
+
+                                                    @foreach ($incidents as $incident)
+                                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%; margin-bottom:14px;">
+                                                            <tr>
+                                                                <td width="72" valign="top" style="padding-right:12px;">
+                                                                    <span style="{{ $badgeOuterStyle($incident) }}">
+                                                                        <span style="{{ $badgeInnerStyle($incident) }}">{{ $incident['label'] }}</span>
+                                                                    </span>
+                                                                </td>
+                                                                <td valign="top" style="font-size:18px; line-height:1.7; color:#1f2937;">
+                                                                    <div style="font-weight:700; color:#0f172a;">
+                                                                        {{ $incident['headline'] }}
+                                                                    </div>
+                                                                    <div style="color:#475569;">
+                                                                        {{ $incident['category_label'] ?? $incident['type'] }}
+                                                                        · {{ $incident['display_date'] }}
+                                                                        @if (!empty($incident['address']))
+                                                                            · {{ $incident['address'] }}
+                                                                        @endif
+                                                                        · {{ number_format((float) $incident['distance_miles'], 2) }} miles from home
+                                                                    </div>
+                                                                    @if (!empty($incident['status']) || !empty($incident['identifier']))
+                                                                        <div style="color:#64748b;">
+                                                                            @if (!empty($incident['status']))
+                                                                                Status: {{ $incident['status'] }}
+                                                                            @endif
+                                                                            @if (!empty($incident['status']) && !empty($incident['identifier']))
+                                                                                ·
+                                                                            @endif
+                                                                            @if (!empty($incident['identifier']))
+                                                                                ID: {{ $incident['identifier'] }}
+                                                                            @endif
+                                                                        </div>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    @endforeach
+
+                                                    @if ($omittedPoints > 0)
+                                                        <div style="font-size:17px; line-height:1.7; color:#64748b;">
+                                                            {{ $omittedPoints }} additional incident{{ $omittedPoints === 1 ? '' : 's' }} happened that day but were not shown on the map.
+                                                        </div>
+                                                    @endif
+                                                @else
+                                                    <div style="font-size:18px; line-height:1.7; color:#475569;">
+                                                        Quiet day. The map for this day shows only the home marker.
+                                                    </div>
                                                 @endif
-                                                · {{ number_format((float) $incident['distance_miles'], 2) }} miles from home
-                                            </div>
-                                        </li>
-                                    @endforeach
-                                </ol>
-                            </td>
-                        </tr>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        @endforeach
                     @endif
+
                     <tr>
-                        <td style="padding:0 28px 28px; font-size:16px; line-height:1.6; color:#1f2937;">
-                            {!! Illuminate\Support\Str::markdown($report) !!}
+                        <td class="email-padding" style="padding:4px 28px 28px;">
+                            <div style="font-size:24px; line-height:1.2; font-weight:800; color:#0f172a; margin-bottom:12px;">
+                                Narrative Summary
+                            </div>
+                            <div class="report-content">
+                                {!! Illuminate\Support\Str::markdown($report) !!}
+                            </div>
                         </td>
                     </tr>
                 </table>
