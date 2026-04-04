@@ -65,13 +65,14 @@ class LocationReportMapSnapshotBuilder
         $days = min(max($days, 1), 7);
         $limit = $this->sanitizeLimit($limit);
         $dataPoints = $this->dataService->fetch($location, $radius);
+        $reference = $this->nowInReportTimezone();
 
         return $this->buildFromDataPoints(
             $location,
             $dataPoints,
             $radius,
-            Carbon::now()->subDays($days - 1)->startOfDay(),
-            Carbon::now()->endOfDay(),
+            $reference->copy()->subDays($days - 1)->startOfDay(),
+            $reference->copy()->endOfDay(),
             $limit
         );
     }
@@ -81,7 +82,9 @@ class LocationReportMapSnapshotBuilder
         $radius = $this->sanitizeRadius($radius);
         $limit = $this->sanitizeLimit($limit);
         $dataPoints = $this->dataService->fetch($location, $radius);
-        $date = $date instanceof CarbonInterface ? Carbon::instance($date) : Carbon::parse((string) $date);
+        $date = $date instanceof CarbonInterface
+            ? Carbon::instance($date)->setTimezone($this->reportTimezone())
+            : Carbon::parse((string) $date, $this->reportTimezone())->setTimezone($this->reportTimezone());
 
         return $this->buildFromDataPoints(
             $location,
@@ -99,11 +102,12 @@ class LocationReportMapSnapshotBuilder
         $days = min(max($days, 1), 7);
         $limit = $this->sanitizeLimit($limit);
         $dataPoints = $this->dataService->fetch($location, $radius);
+        $anchorDate = $this->latestIncidentDate($dataPoints) ?? $this->nowInReportTimezone();
 
         $snapshots = [];
 
         for ($offset = 0; $offset < $days; $offset++) {
-            $date = Carbon::now()->subDays($offset);
+            $date = $anchorDate->copy()->subDays($offset);
             $snapshots[] = $this->buildFromDataPoints(
                 $location,
                 $dataPoints,
@@ -224,7 +228,7 @@ class LocationReportMapSnapshotBuilder
 
         $snapshot = [
             'render_version' => (string) config('services.reports.email_map_cache_version', 'daily-v2'),
-            'generated_at' => Carbon::now()->toIso8601String(),
+            'generated_at' => $this->nowInReportTimezone()->toIso8601String(),
             'location' => [
                 'id' => $location->getKey(),
                 'label' => $this->locationLabel($location),
@@ -493,10 +497,38 @@ class LocationReportMapSnapshotBuilder
         }
 
         try {
-            return Carbon::parse((string) $value);
+            return Carbon::parse((string) $value, $this->reportTimezone())->setTimezone($this->reportTimezone());
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    private function latestIncidentDate(array $dataPoints): ?Carbon
+    {
+        $latest = null;
+
+        foreach ($dataPoints as $dataPoint) {
+            $date = $this->extractDate($dataPoint);
+            if ($date === null) {
+                continue;
+            }
+
+            if ($latest === null || $date->greaterThan($latest)) {
+                $latest = $date;
+            }
+        }
+
+        return $latest?->copy();
+    }
+
+    private function nowInReportTimezone(): Carbon
+    {
+        return Carbon::now($this->reportTimezone());
+    }
+
+    private function reportTimezone(): string
+    {
+        return (string) config('services.reports.timezone', config('backend_admin.daily_pipeline.timezone', config('app.timezone', 'UTC')));
     }
 
     private function extractCoordinates(mixed $dataPoint): ?array

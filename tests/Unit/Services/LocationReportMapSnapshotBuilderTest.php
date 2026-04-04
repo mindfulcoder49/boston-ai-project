@@ -153,4 +153,51 @@ class LocationReportMapSnapshotBuilderTest extends TestCase
         $this->assertSame($series[0]['render_fingerprint'], $series[1]['render_fingerprint']);
         $this->assertTrue($series[2]['empty']);
     }
+
+    public function test_it_anchors_the_daily_series_to_the_latest_incident_day_in_report_timezone(): void
+    {
+        config()->set('services.reports.timezone', 'America/New_York');
+        Carbon::setTestNow(Carbon::parse('2026-04-04 01:30:00', 'UTC'));
+
+        $dataService = Mockery::mock(LocationReportDataService::class);
+        $dataService
+            ->shouldReceive('fetch')
+            ->once()
+            ->andReturn([
+                (object) [
+                    'alcivartech_type' => '311 Case',
+                    'alcivartech_date' => '2026-04-03 20:15:00',
+                    'latitude' => 42.3309,
+                    'longitude' => -71.0508,
+                    'three_one_one_case_data' => (object) [
+                        'service_name' => 'Illegal Parking',
+                    ],
+                ],
+                (object) [
+                    'alcivartech_type' => 'Crime',
+                    'alcivartech_date' => '2026-04-02 10:00:00',
+                    'latitude' => 42.3312,
+                    'longitude' => -71.0510,
+                    'crime_data' => (object) [
+                        'primary_type' => 'Larceny',
+                    ],
+                ],
+            ]);
+
+        $builder = new LocationReportMapSnapshotBuilder($dataService);
+        $location = new Location([
+            'name' => 'South Boston Home',
+            'address' => '730 E Third St',
+            'latitude' => 42.3310,
+            'longitude' => -71.0512,
+        ]);
+
+        $series = $builder->buildDailySeries($location, 0.25, 3, 8);
+
+        $this->assertSame('2026-04-03', $series[0]['window']['date']);
+        $this->assertSame('April 3, 2026', $series[0]['window']['display']);
+        $this->assertFalse($series[0]['empty']);
+        $this->assertSame('2026-04-02', $series[1]['window']['date']);
+        $this->assertSame('2026-04-01', $series[2]['window']['date']);
+    }
 }

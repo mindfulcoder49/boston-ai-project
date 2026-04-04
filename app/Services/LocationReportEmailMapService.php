@@ -33,8 +33,15 @@ class LocationReportEmailMapService
     {
         $radius ??= (float) config('services.reports.email_map_radius', 0.25);
         $limit = (int) config('services.reports.email_map_limit', 8);
+        $days = (int) config('services.reports.email_map_days', 7);
+        $snapshots = $this->snapshotBuilder->buildDailySeries($location, $radius, $days, $limit);
+        $snapshot = collect($snapshots)->first(
+            fn (array $candidate): bool => (int) ($candidate['selected_points'] ?? 0) > 0
+        );
 
-        $snapshot = $this->snapshotBuilder->buildForDate($location, $radius, now(), $limit);
+        if (!is_array($snapshot)) {
+            return null;
+        }
 
         return $this->captureSnapshot($location, $radius, $limit, $snapshot);
     }
