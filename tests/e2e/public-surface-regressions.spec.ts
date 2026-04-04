@@ -229,7 +229,9 @@ test.describe('public surface regressions', () => {
     await expect(page.getByTestId('home-featured-coverage')).toContainText('Everett, MA');
     await expect(page.getByTestId('home-featured-coverage')).toContainText('Chicago, IL');
     await expect(page.getByTestId('home-featured-coverage')).toContainText('San Francisco, CA');
-    await expect(page.locator('#cities')).toContainText('New York, NY');
+    await expect(page.getByTestId('home-featured-coverage')).toContainText('New York, NY');
+    await expect(page.getByTestId('home-featured-coverage')).toContainText('Montgomery County, MD');
+    await expect(page.getByTestId('home-featured-coverage')).toContainText('Seattle, WA');
 
     await page.getByRole('navigation').getByRole('button', { name: 'Cities' }).click();
     await expect(page.getByRole('navigation').getByRole('link', { name: 'New York', exact: true })).toBeVisible();

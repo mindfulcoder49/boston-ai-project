@@ -30,7 +30,7 @@
               data-testid="home-city-picker"
             >
               <Link
-                v-for="city in featuredCities"
+                v-for="city in cities"
                 :key="city.key"
                 :href="city.landingUrl || city.primaryUrl"
                 class="group relative min-h-[19rem] min-w-[82vw] overflow-hidden rounded-[30px] border border-white/12 bg-slate-950/35 shadow-2xl shadow-slate-950/30 transition duration-200 hover:-translate-y-1 hover:border-white/25 md:min-w-0"
@@ -48,7 +48,7 @@
                     class="rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
                     :class="coveragePalette(city).pillClass"
                   >
-                    {{ city.locationLabel }}
+                    Coverage map
                   </div>
                   <div class="rounded-full bg-slate-950/55 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-100 shadow-lg shadow-slate-950/30">
                     {{ coverageFocusLabel(city) }}
@@ -56,6 +56,12 @@
                 </div>
 
                 <div class="absolute inset-x-0 bottom-0 p-5">
+                  <h2 class="text-2xl font-black leading-tight text-white sm:text-[1.85rem]">
+                    {{ city.locationLabel }}
+                  </h2>
+                  <p class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">
+                    {{ city.dataTypeCount }} data {{ city.dataTypeCount === 1 ? 'type' : 'types' }}
+                  </p>
                   <p class="max-w-[18rem] text-base font-semibold leading-7 text-white">{{ city.coverageNote }}</p>
 
                   <div class="mt-4 flex flex-wrap gap-2">
@@ -312,8 +318,6 @@ const formattedTotalRecords = computed(() => {
   }
   return total.toLocaleString();
 });
-
-const featuredCities = computed(() => props.cities.slice(0, 4));
 
 const badgeClasses = {
   Crime: 'bg-red-50 text-red-700',
