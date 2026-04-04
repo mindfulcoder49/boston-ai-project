@@ -1,10 +1,10 @@
 <template>
   <PageTemplate>
     <Head>
-      <title>PublicDataWatch | Know What Crime Is Happening Around Your Address</title>
+      <title>PublicDataWatch | Choose Your City Before You Search</title>
       <meta
         name="description"
-        content="Search an address to see recent nearby crime, readable local context, neighborhood score framing, and the daily-report workflow. Then explore the full map, trends, and scoring tools across supported regions."
+        content="PublicDataWatch only covers a small set of city and regional pages. Choose the place we support first, then search an address with the right local datasets."
       />
     </Head>
 
@@ -13,99 +13,52 @@
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.22),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.28),_transparent_36%),linear-gradient(135deg,_#020617,_#0f172a_45%,_#082f49)]"></div>
         <div class="absolute inset-0 opacity-[0.06]" style="background-image: linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px); background-size: 36px 36px;"></div>
 
-        <div class="relative mx-auto grid max-w-7xl gap-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+        <div class="relative mx-auto grid max-w-7xl gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
-            <p class="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300">Address-First Civic Data</p>
+            <p class="text-sm font-semibold uppercase tracking-[0.28em] text-cyan-300">Transparent Coverage</p>
             <h1 class="mt-6 max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Know what crime is happening around your address before you commit to a place.
+              Choose your city before you search an address.
             </h1>
             <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-              PublicDataWatch starts with the simple question regular people actually have: what is happening near this address right now? Then it expands into trends, scoring, and full-map workflows for people who need deeper context.
+              PublicDataWatch only covers a small set of city and regional pages. Start with the page that matches your area so the address search, map layers, and reports line up with what we actually publish there.
             </p>
 
-            <div class="mt-10 max-w-3xl rounded-[30px] border border-white/10 bg-white/10 p-4 shadow-2xl shadow-slate-950/40 backdrop-blur-xl">
-              <p class="mb-3 text-sm font-medium text-cyan-100">Try the crime preview first</p>
-              <div class="grid gap-3 lg:grid-cols-[1fr_auto]">
-                <div class="hero-search-wrapper rounded-2xl p-2">
-                  <GoogleAddressSearch
-                    @address-selected="handleAddressSelected"
-                    :language_codes="['en-US']"
-                    placeholder_text="Enter your address..."
-                    show_submit_button
-                    submit_button_label="Search address"
-                    submit_button_class="hero-search-submit"
-                  />
-                </div>
-                <button
-                  type="button"
-                  class="inline-flex items-center justify-center gap-2 rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:opacity-60"
-                  :disabled="geoLoading"
-                  @click="useCurrentLocation"
-                >
-                  <svg v-if="!geoLoading" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7z" />
-                    <circle cx="12" cy="9" r="2.5" />
-                  </svg>
-                  <svg v-else class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  {{ geoLoading ? 'Locating…' : 'Use my location' }}
-                </button>
-              </div>
-              <p class="mt-3 text-sm text-slate-300">
-                If the address is supported, you will see a lightweight local preview first. If not, you can ask to be notified when coverage expands.
+            <div
+              class="mt-10 max-w-3xl rounded-[30px] border border-white/10 bg-white/10 p-5 shadow-2xl shadow-slate-950/40 backdrop-blur-xl"
+              data-testid="home-trust-proof"
+            >
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">Built from official public records</p>
+              <p class="mt-3 text-sm leading-7 text-slate-200">
+                PublicDataWatch currently publishes {{ stats.cityCount }} city and regional pages with {{ formattedTotalRecords }} records across crime, 311, permits, inspections, violations, and crash data. Some pages are crime-focused. Others include broader civic data.
               </p>
-              <p v-if="geoError" class="mt-2 text-sm text-rose-200">{{ geoError }}</p>
-
-              <div
-                class="mt-4 rounded-[24px] border border-white/10 bg-slate-950/35 p-4 text-left"
-                data-testid="home-trust-proof"
-              >
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">Built from official public records</p>
-                <p class="mt-2 text-sm leading-6 text-slate-200">
-                  PublicDataWatch currently spans {{ stats.cityCount }} regions and {{ formattedTotalRecords }} records across crime, 311, permits, inspections, violations, and crash data depending on the city. Refresh timing varies by city and source.
-                </p>
-                <div class="mt-4 flex flex-wrap gap-2" data-testid="home-example-addresses">
-                  <button
-                    v-for="example in exampleAddresses"
-                    :key="example.label"
-                    type="button"
-                    class="rounded-full border border-cyan-300/35 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100 transition hover:border-cyan-200 hover:bg-cyan-400/20"
-                    @click="openPreview(example.address, example.latitude, example.longitude)"
-                  >
-                    Try {{ example.label }}
-                  </button>
-                </div>
-                <div class="mt-4 flex flex-wrap gap-3 text-sm">
-                  <Link
-                    :href="route('data.metrics')"
-                    class="inline-flex items-center font-semibold text-cyan-100 transition hover:text-white"
-                  >
-                    See data freshness and coverage
-                  </Link>
-                  <Link
-                    :href="`${route('home')}#cities`"
-                    class="inline-flex items-center font-semibold text-slate-300 transition hover:text-white"
-                  >
-                    Browse supported regions
-                  </Link>
-                </div>
+              <div class="mt-4 flex flex-wrap gap-3 text-sm">
+                <Link
+                  :href="route('data.metrics')"
+                  class="inline-flex items-center font-semibold text-cyan-100 transition hover:text-white"
+                >
+                  See data freshness and coverage
+                </Link>
+                <Link
+                  :href="`${route('home')}#cities`"
+                  class="inline-flex items-center font-semibold text-slate-300 transition hover:text-white"
+                >
+                  See every supported city page
+                </Link>
               </div>
             </div>
 
             <div class="mt-8 flex flex-wrap gap-3">
               <Link
-                :href="route('crime-address.index')"
+                :href="`${route('home')}#cities`"
                 class="inline-flex items-center rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
               >
-                Open crime preview
+                Choose a city page
               </Link>
               <Link
-                :href="`${route('home')}#cities`"
+                :href="route('crime-address.index')"
                 class="inline-flex items-center rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
               >
-                See supported regions
+                Open the direct address preview
               </Link>
               <Link
                 :href="`${route('home')}#explore-tools`"
@@ -116,30 +69,53 @@
             </div>
           </div>
 
-          <div class="grid gap-4">
-            <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
-              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">What you get in one search</p>
-              <ul class="mt-5 space-y-4 text-sm leading-7 text-slate-200">
-                <li v-for="promise in previewPromises" :key="promise.title" class="rounded-2xl border border-white/10 bg-slate-950/30 p-4">
-                  <p class="font-semibold text-white">{{ promise.title }}</p>
-                  <p class="mt-1 text-slate-300">{{ promise.body }}</p>
-                </li>
-              </ul>
+          <div
+            class="rounded-[30px] border border-white/10 bg-white/10 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur-xl"
+            data-testid="home-city-picker"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-200">Choose Your City</p>
+                <h2 class="mt-3 text-2xl font-black tracking-tight text-white">Start with the page that matches your area.</h2>
+              </div>
+              <div class="rounded-2xl bg-slate-950/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                {{ stats.cityCount }} pages
+              </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-4">
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 text-center shadow-xl shadow-slate-950/20 backdrop-blur">
-                <p class="text-3xl font-black text-white">{{ stats.cityCount }}</p>
-                <p class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-300">Regions</p>
-              </div>
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 text-center shadow-xl shadow-slate-950/20 backdrop-blur">
-                <p class="text-3xl font-black text-white">{{ stats.dataCategoryCount }}</p>
-                <p class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-300">Data types</p>
-              </div>
-              <div class="rounded-3xl border border-white/10 bg-white/10 p-5 text-center shadow-xl shadow-slate-950/20 backdrop-blur">
-                <p class="text-3xl font-black text-white">{{ formattedTotalRecords }}</p>
-                <p class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-300">Records</p>
-              </div>
+            <div class="mt-6 grid gap-3 sm:grid-cols-2">
+              <Link
+                v-for="city in cities"
+                :key="city.key"
+                :href="city.landingUrl || city.primaryUrl"
+                class="group rounded-[24px] border border-white/10 bg-slate-950/30 p-4 transition hover:-translate-y-0.5 hover:border-cyan-200/50 hover:bg-slate-950/45"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 class="text-base font-bold text-white transition group-hover:text-cyan-200">{{ city.locationLabel }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-300">{{ city.coverageNote }}</p>
+                  </div>
+                  <div class="rounded-2xl bg-cyan-400/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-100">
+                    {{ coverageFocusLabel(city) }}
+                  </div>
+                </div>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span
+                    v-for="dataType in city.dataTypes.slice(0, 3)"
+                    :key="`${city.key}-${dataType}`"
+                    class="rounded-full px-2.5 py-1 text-xs font-medium"
+                    :class="categoryBadgeClass(dataType)"
+                  >
+                    {{ dataType }}
+                  </span>
+                  <span
+                    v-if="city.dataTypes.length > 3"
+                    class="rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-slate-200"
+                  >
+                    +{{ city.dataTypes.length - 3 }} more
+                  </span>
+                </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -150,7 +126,7 @@
           <div class="mx-auto max-w-6xl">
             <div class="max-w-2xl">
               <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">How It Works</p>
-              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Search once. Get a clear answer fast.</h2>
+              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Start with the right city. Then get specific.</h2>
             </div>
             <div class="mt-8 grid gap-5 lg:grid-cols-3">
               <article
@@ -170,10 +146,10 @@
           <div class="mx-auto max-w-6xl rounded-[34px] border border-slate-200 bg-white p-8 shadow-sm lg:p-10">
             <div class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
               <div>
-                <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">What The Preview Includes</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Incidents, trends, and score context work better together.</h2>
+                <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">Why Lead With City Pages</p>
+                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">The front door should match the coverage we actually have.</h2>
                 <p class="mt-4 text-base leading-8 text-slate-600">
-                  One number by itself is not useful. The preview shows what happened nearby, how the surrounding city is behaving, and how this area compares locally so the address makes sense quickly.
+                  The right city page tells the truth about what datasets exist there before anyone wastes time on a dead-end address lookup. Once you pick the right place, the address flow and deeper tools make much more sense.
                 </p>
               </div>
               <div class="grid gap-4 sm:grid-cols-3">
@@ -195,30 +171,31 @@
             <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">Coverage</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Supported cities and regions</h2>
+                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Supported city and regional pages</h2>
                 <p class="mt-3 max-w-2xl text-base leading-8 text-slate-600">
-                  Coverage varies by region. Check supported cities before you rely on the preview for one specific address.
+                  This is the front-door list. If a place is not here, the homepage should not imply we fully support it yet.
                 </p>
               </div>
               <Link
-                :href="route('crime-address.index')"
+                :href="route('data.metrics')"
                 class="inline-flex items-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
               >
-                Search an address now
+                Review freshness and dataset breadth
               </Link>
             </div>
 
             <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               <Link
                 v-for="city in cities"
-                :key="city.name"
-                :href="city.primaryUrl"
+                :key="city.key"
+                :href="city.landingUrl || city.primaryUrl"
                 class="group rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-lg"
               >
-                <div class="flex items-center justify-between gap-3">
+                <div class="flex items-start justify-between gap-3">
                   <div>
-                    <h3 class="text-lg font-bold text-slate-900 transition group-hover:text-cyan-700">{{ city.name }}</h3>
-                    <p class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">{{ city.dataTypeCount }} data {{ city.dataTypeCount === 1 ? 'type' : 'types' }}</p>
+                    <h3 class="text-lg font-bold text-slate-900 transition group-hover:text-cyan-700">{{ city.locationLabel }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ city.coverageNote }}</p>
+                    <p class="mt-3 text-xs uppercase tracking-[0.16em] text-slate-400">{{ city.dataTypeCount }} data {{ city.dataTypeCount === 1 ? 'type' : 'types' }}</p>
                   </div>
                   <div class="rounded-2xl bg-slate-100 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                     {{ coverageFocusLabel(city) }}
@@ -228,7 +205,7 @@
                 <div class="mt-4 flex flex-wrap gap-2">
                   <span
                     v-for="dataType in city.dataTypes"
-                    :key="`${city.name}-${dataType}`"
+                    :key="`${city.key}-${dataType}`"
                     class="rounded-full px-2.5 py-1 text-xs font-medium"
                     :class="categoryBadgeClass(dataType)"
                   >
@@ -244,9 +221,9 @@
           <div class="mx-auto max-w-6xl">
             <div class="max-w-2xl">
               <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-700">Explore Tools</p>
-              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Explore deeper when one address is not enough.</h2>
+              <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-900">Go deeper after the city page tells you it is relevant.</h2>
               <p class="mt-3 text-base leading-8 text-slate-600">
-                Use the full map, historical comparisons, and scoring tools when you need broader city context, multiple neighborhoods, or a reporting workflow.
+                Use the full map, historical comparisons, and scoring tools when you need broader city context, multiple neighborhoods, or a reporting workflow beyond one address.
               </p>
             </div>
 
@@ -272,9 +249,9 @@
             <div class="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Next Step</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight">Want ongoing updates on one address?</h2>
+                <h2 class="mt-3 text-3xl font-black tracking-tight">Already know the exact address and city?</h2>
                 <p class="mt-4 max-w-2xl text-base leading-8 text-slate-300">
-                  Start with the free preview. If it helps, keep daily reports for one address or unlock the full map, trends, and neighborhood scores.
+                  The city page is the honest starting point. If you already know the supported city and exact address, the direct preview is still available. If the first scan helps, keep daily reports or unlock the fuller map workflow.
                 </p>
               </div>
               <div class="flex flex-wrap gap-3">
@@ -282,7 +259,7 @@
                   :href="route('crime-address.index')"
                   class="inline-flex items-center rounded-2xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
                 >
-                  Start crime preview
+                  Open direct address preview
                 </Link>
                 <Link
                   :href="route('subscription.index')"
@@ -300,10 +277,8 @@
 </template>
 
 <script setup>
-import axios from 'axios';
-import { computed, h, ref } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import GoogleAddressSearch from '@/Components/GoogleAddressSearch.vue';
+import { computed, h } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
 import PageTemplate from '@/Components/PageTemplate.vue';
 
 const props = defineProps({
@@ -312,69 +287,8 @@ const props = defineProps({
   stats: Object,
 });
 
-const geoLoading = ref(false);
-const geoError = ref(null);
-
-async function reverseGeocodeLocation(latitude, longitude) {
-  const response = await axios.post(route('google-places.reverse-geocode'), {
-    latitude,
-    longitude,
-  });
-
-  return response.data.address;
-}
-
-function openPreview(address, latitude, longitude) {
-  router.visit(route('crime-address.index', {
-    address,
-    lat: latitude,
-    lng: longitude,
-  }));
-}
-
-function handleAddressSelected(location) {
-  if (!location?.lat || !location?.lng) {
-    return;
-  }
-
-  openPreview(location.address, location.lat, location.lng);
-}
-
-function useCurrentLocation() {
-  if (!navigator.geolocation) {
-    geoError.value = 'Geolocation is not supported by your browser.';
-    return;
-  }
-
-  geoLoading.value = true;
-  geoError.value = null;
-
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const latitude = Number(position.coords.latitude.toFixed(6));
-      const longitude = Number(position.coords.longitude.toFixed(6));
-
-      try {
-        const address = await reverseGeocodeLocation(latitude, longitude);
-        geoLoading.value = false;
-        openPreview(address, latitude, longitude);
-      } catch (error) {
-        geoLoading.value = false;
-        geoError.value = 'We found your coordinates, but could not resolve a street address. Please search your address instead.';
-      }
-    },
-    (error) => {
-      geoLoading.value = false;
-      geoError.value = error.code === 1
-        ? 'Location access denied. Please allow location access in your browser settings.'
-        : 'Unable to determine your location. Please try searching an address instead.';
-    },
-    { enableHighAccuracy: true, timeout: 10000 },
-  );
-}
-
 const formattedTotalRecords = computed(() => {
-  const total = props.stats.totalRecords;
+  const total = Number.isFinite(Number(props.stats?.totalRecords)) ? Number(props.stats.totalRecords) : 0;
   if (total >= 1_000_000) {
     return `${(total / 1_000_000).toFixed(1).replace(/\.0$/, '')}M+`;
   }
@@ -399,79 +313,51 @@ function categoryBadgeClass(name) {
 }
 
 function coverageFocusLabel(city) {
-  if (city.dataTypes.length === 1) {
-    return `${city.dataTypes[0]} focus`;
+  if (city.dataTypes.includes('Crime') && city.dataTypes.length > 1) {
+    return 'Crime + city data';
   }
 
-  return city.dataTypes.includes('Crime') ? 'Mixed data' : 'Data overview';
-}
+  if (city.dataTypes.includes('Crime')) {
+    return 'Crime focus';
+  }
 
-const previewPromises = [
-  {
-    title: 'Recent nearby incidents',
-    body: 'See the latest incidents near the address on a lightweight map with readable details.',
-  },
-  {
-    title: 'Trends that add context',
-    body: 'Understand whether the surrounding city or region is showing unusual crime patterns right now.',
-  },
-  {
-    title: 'Score context you can interpret',
-    body: 'Compare the surrounding scored area with the rest of the city and nearby areas so the number means something.',
-  },
-];
+  if (city.dataTypes.includes('311 Case')) {
+    return '311 focus';
+  }
+
+  return 'City data';
+}
 
 const workflowSteps = [
   {
     step: 'Step 1',
-    title: 'Search an address',
-    body: 'Type an address or use your current location to check the places you care about.',
+    title: 'Choose the city page',
+    body: 'Start with the supported city or regional page so the product promise matches the data that actually exists there.',
   },
   {
     step: 'Step 2',
-    title: 'Read the local preview',
-    body: 'Get nearby incidents, trend context, and score context in one page that answers the question quickly.',
+    title: 'Search the address there',
+    body: 'Use the city-specific address search to get the right map layers, dataset mix, and local framing for that place.',
   },
   {
     step: 'Step 3',
-    title: 'Choose ongoing updates if it helps',
-    body: 'If the preview is useful, start daily reports for one address or move into the full map and reporting workflow.',
+    title: 'Go deeper only if it earns it',
+    body: 'Move into maps, trends, scoring, or daily reports once the first read tells you the area is worth deeper review.',
   },
 ];
 
 const previewPanels = [
   {
-    title: 'Incidents',
-    body: 'Recent incidents and category patterns around the address, with a light map and readable summaries.',
+    title: 'Honest coverage first',
+    body: 'The homepage should say exactly which city and regional pages exist instead of pretending every address is equally supported.',
   },
   {
-    title: 'Trend context',
-    body: 'City or region-level findings that show whether the address sits inside a place with active statistical signals.',
+    title: 'The right data mix',
+    body: 'Boston is not the same product surface as New York or Everett. The city page tells you whether you are getting crime, 311, or a broader civic-data mix.',
   },
   {
-    title: 'Score context',
-    body: 'A city-relative and nearby-relative view of the score, not just a bare number with no explanation.',
-  },
-];
-
-const exampleAddresses = [
-  {
-    label: 'Boston example',
-    address: '1 Beacon St, Boston, MA 02108, USA',
-    latitude: 42.3601,
-    longitude: -71.0589,
-  },
-  {
-    label: 'Everett example',
-    address: '484 Broadway, Everett, MA 02149, USA',
-    latitude: 42.4086,
-    longitude: -71.0533,
-  },
-  {
-    label: 'Chicago example',
-    address: '121 N La Salle St, Chicago, IL 60602, USA',
-    latitude: 41.8839,
-    longitude: -87.6324,
+    title: 'Cleaner decisions',
+    body: 'When the city page is right, the later address preview, full map, and reports all feel more trustworthy and easier to interpret.',
   },
 ];
 
@@ -484,7 +370,7 @@ const IconMetrics = { render: () => h('svg', { class: 'h-5 w-5', fill: 'none', s
 const professionalTools = [
   {
     title: 'Full data map',
-    description: 'Explore broader spatial context across the city once a single address preview is not enough.',
+    description: 'Explore broader spatial context across the city once the city page confirms the dataset mix you need.',
     route: route('data-map.combined'),
     iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-500',
     iconShadow: 'box-shadow: 0 10px 28px rgba(59, 130, 246, 0.28)',
@@ -500,7 +386,7 @@ const professionalTools = [
   },
   {
     title: 'Neighborhood scores',
-    description: 'Compare scored H3 areas directly when you need more than the preview’s local context block.',
+    description: 'Compare scored H3 areas directly when you need more than an address-centered first pass.',
     route: route('scoring-reports.index'),
     iconBg: 'bg-gradient-to-br from-amber-400 to-orange-500',
     iconShadow: 'box-shadow: 0 10px 28px rgba(245, 158, 11, 0.28)',
@@ -516,7 +402,7 @@ const professionalTools = [
   },
   {
     title: 'Data metrics',
-    description: 'Check how broad and fresh the underlying public datasets are in each region.',
+    description: 'Check how broad and fresh the underlying public datasets are in each supported place.',
     route: route('data.metrics'),
     iconBg: 'bg-gradient-to-br from-slate-500 to-slate-700',
     iconShadow: 'box-shadow: 0 10px 28px rgba(71, 85, 105, 0.28)',
@@ -524,71 +410,3 @@ const professionalTools = [
   },
 ];
 </script>
-
-<style scoped>
-.hero-search-wrapper {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-.hero-search-wrapper :deep(input) {
-  width: 100%;
-  border-radius: 0.95rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
-  padding: 0.85rem 1rem;
-  font-size: 0.95rem;
-}
-
-.hero-search-wrapper :deep(input::placeholder) {
-  color: rgba(226, 232, 240, 0.6);
-}
-
-.hero-search-wrapper :deep(input:focus) {
-  outline: none;
-  border-color: rgba(34, 211, 238, 0.6);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
-}
-
-.hero-search-wrapper :deep(.hero-search-submit) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.95rem;
-  border: 1px solid rgba(34, 211, 238, 0.2);
-  background: rgba(34, 211, 238, 0.92);
-  color: #082f49;
-  padding: 0.85rem 1rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.hero-search-wrapper :deep(.hero-search-submit:hover:enabled) {
-  background: rgba(103, 232, 249, 0.96);
-}
-
-.hero-search-wrapper :deep(.hero-search-submit:disabled) {
-  opacity: 0.55;
-}
-
-.hero-search-wrapper :deep(ul) {
-  margin-top: 0.35rem;
-  overflow: hidden;
-  border-radius: 0.95rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: #0f172a;
-}
-
-.hero-search-wrapper :deep(li) {
-  padding: 0.7rem 1rem;
-  color: #e2e8f0;
-}
-
-.hero-search-wrapper :deep(li:hover) {
-  background: rgba(255, 255, 255, 0.08);
-}
-</style>

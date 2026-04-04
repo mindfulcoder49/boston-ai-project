@@ -5,17 +5,17 @@
         <div class="max-w-sm">
           <p class="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">PublicDataWatch</p>
           <h2 class="mt-4 text-2xl font-black tracking-tight text-white">
-            Crime around your address first. Deeper civic-data tools when you need them.
+            Choose a supported city page first. Then go address-deep.
           </h2>
           <p class="mt-4 text-sm leading-7 text-slate-400">
-            Search an address, read the local preview, and decide whether you want daily reports or the full map and scoring workflow.
+            Start with the city or regional page we actually support, then search an address and decide whether you want daily reports or the fuller map workflow.
           </p>
           <div class="mt-6 flex flex-wrap gap-3">
             <Link
-              :href="route('crime-address.index')"
+              :href="`${route('home')}#cities`"
               class="inline-flex items-center rounded-2xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300"
             >
-              Start crime preview
+              Browse city pages
             </Link>
             <Link
               :href="route('subscription.index')"
@@ -42,7 +42,7 @@
 
       <div class="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <p>&copy; {{ new Date().getFullYear() }} AlcivarTech LLC. All rights reserved.</p>
-        <p>PublicDataWatch helps people understand what is happening around an address before they commit to a place.</p>
+        <p>PublicDataWatch helps people understand what is happening in the places we actually cover before they commit to a place.</p>
       </div>
     </div>
   </footer>

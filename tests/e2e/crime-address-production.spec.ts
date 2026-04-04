@@ -271,17 +271,18 @@ test.describe('crime-address live regional coverage', () => {
     expect(runtime.pageErrors).toEqual([]);
   });
 
-  test('homepage keeps the address funnel and grouped navigation intact', async ({ page }) => {
+  test('homepage keeps the city-first funnel and grouped navigation intact', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { name: /Know what crime is happening around your address/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Choose your city before you search an address/i })).toBeVisible();
     await expect(page.getByRole('navigation').getByRole('link', { name: 'Crime Preview', exact: true })).toBeVisible();
     await expect(page.getByRole('navigation').getByRole('button', { name: 'Cities' })).toBeVisible();
     await expect(page.getByRole('navigation').getByRole('button', { name: 'Explore' })).toBeVisible();
-    await expect(page.getByText('Supported cities and regions')).toBeVisible();
+    await expect(page.getByText('Supported city and regional pages')).toBeVisible();
     await expect(page.getByText('Cities & Regions')).toBeVisible();
+    await expect(page.getByTestId('home-city-picker')).toContainText('Boston, MA');
     await expect(page.getByText('The homepage should make that clear before the user ever hits an unsupported address.')).toHaveCount(0);
 
     expect(runtime.consoleErrors).toEqual([]);

@@ -596,19 +596,20 @@ test.describe('crime-address funnel', () => {
     expect(runtime.pageErrors).toEqual([]);
   });
 
-  test('homepage prioritizes the address funnel and grouped navigation', async ({ page }) => {
+  test('homepage prioritizes city selection and grouped navigation', async ({ page }) => {
     const runtime = installConsoleGuards(page);
 
     await page.goto('/');
 
-    await expect(page.getByRole('heading', { name: /Know what crime is happening around your address/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Choose your city before you search an address/i })).toBeVisible();
     await expect(page.getByRole('navigation').getByRole('link', { name: 'Crime Preview', exact: true })).toBeVisible();
     await expect(page.getByRole('navigation').getByRole('button', { name: 'Cities' })).toBeVisible();
     await expect(page.getByRole('navigation').getByRole('button', { name: 'Explore' })).toBeVisible();
-    await expect(page.getByText('Supported cities and regions')).toBeVisible();
-    await expect(page.getByText('Explore deeper when one address is not enough.')).toBeVisible();
+    await expect(page.getByText('Supported city and regional pages')).toBeVisible();
+    await expect(page.getByText('Go deeper after the city page tells you it is relevant.')).toBeVisible();
     await expect(page.getByText('Cities & Regions')).toBeVisible();
-    await expect(page.getByText('Crime around your address first.')).toBeVisible();
+    await expect(page.getByTestId('home-city-picker')).toContainText('Boston, MA');
+    await expect(page.getByText('Choose a supported city page first. Then go address-deep.')).toBeVisible();
 
     expect(runtime.consoleErrors).toEqual([]);
     expect(runtime.pageErrors).toEqual([]);

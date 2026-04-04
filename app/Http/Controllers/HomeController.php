@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Support\MetricsSnapshotStore;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class HomeController extends Controller
 {
-    public const HOME_PAGE_CACHE_KEY = 'home_page_data_v3';
+    public const HOME_PAGE_CACHE_KEY = 'home_page_data_v4';
 
     /**
      * Models that are geocoding helpers, not user-facing data types.
@@ -17,53 +18,6 @@ class HomeController extends Controller
     private const EXCLUDED_MODELS = [
         \App\Models\CambridgeMasterAddress::class,
         \App\Models\CambridgeMasterIntersection::class,
-    ];
-
-    /**
-     * Mapping of model classes to their display area (city/region).
-     * Boston's config includes Cambridge and Everett models, so we
-     * split them into separate areas for the homepage.
-     */
-    private const MODEL_AREA_MAP = [
-        \App\Models\CrimeData::class => 'Boston',
-        \App\Models\ThreeOneOneCase::class => 'Boston',
-        \App\Models\PropertyViolation::class => 'Boston',
-        \App\Models\ConstructionOffHour::class => 'Boston',
-        \App\Models\BuildingPermit::class => 'Boston',
-        \App\Models\FoodInspection::class => 'Boston',
-        \App\Models\PersonCrashData::class => 'Boston',
-        \App\Models\EverettCrimeData::class => 'Everett',
-        \App\Models\CambridgeThreeOneOneCase::class => 'Cambridge',
-        \App\Models\CambridgeBuildingPermitData::class => 'Cambridge',
-        \App\Models\CambridgeCrimeReportData::class => 'Cambridge',
-        \App\Models\CambridgeHousingViolationData::class => 'Cambridge',
-        \App\Models\CambridgeSanitaryInspectionData::class => 'Cambridge',
-    ];
-
-    /**
-     * Map center coordinates for each display area.
-     */
-    private const AREA_COORDINATES = [
-        'Boston' => ['lat' => 42.3601, 'lng' => -71.0589],
-        'Cambridge' => ['lat' => 42.3736, 'lng' => -71.1097],
-        'Everett' => ['lat' => 42.4084, 'lng' => -71.0537],
-        'Chicago' => ['lat' => 41.8781, 'lng' => -87.6298],
-        'San Francisco' => ['lat' => 37.7749, 'lng' => -122.4194],
-        'Seattle' => ['lat' => 47.6062, 'lng' => -122.3321],
-        'Montgomery County, MD' => ['lat' => 39.154, 'lng' => -77.24],
-    ];
-
-    /**
-     * Map display areas to city landing routes where they exist.
-     */
-    private const AREA_LANDING_ROUTES = [
-        'Boston' => 'city.landing.boston',
-        'Everett' => 'city.landing.everett',
-        'Chicago' => 'city.landing.chicago',
-        'San Francisco' => 'city.landing.san_francisco',
-        'New York' => 'city.landing.new_york',
-        'Montgomery County, MD' => 'city.landing.montgomery_county_md',
-        'Seattle' => 'city.landing.seattle',
     ];
 
     /**
@@ -85,16 +39,16 @@ class HomeController extends Controller
             $cities = config('cities.cities', []);
             $metricsData = $metricsSnapshotStore->currentPayload()['data'] ?? [];
 
-            $areas = $this->buildAreas($cities);
+            $cityEntries = $this->buildCityEntries($cities);
             $dataCategories = $this->buildDataCategories($cities);
             $totalRecords = collect($metricsData)->sum('totalRecords');
 
             return [
-                'cities' => array_values($areas),
+                'cities' => array_values($cityEntries),
                 'dataCategories' => $dataCategories,
                 'stats' => [
                     'totalRecords' => $totalRecords,
-                    'cityCount' => count($areas),
+                    'cityCount' => count($cityEntries),
                     'dataCategoryCount' => count($dataCategories),
                 ],
             ];
@@ -103,69 +57,59 @@ class HomeController extends Controller
         return Inertia::render('Home', $homeData);
     }
 
-    private function buildAreas(array $cities): array
+    private function buildCityEntries(array $cities): array
     {
-        $areas = [];
+        $cityEntries = [];
 
-        // Build reverse lookup: model class -> data_map key
         $modelToDataMapKey = [];
         foreach (config('data_map.models', []) as $key => $modelClass) {
             $modelToDataMapKey[$modelClass] = $key;
         }
 
-        foreach ($cities as $cityConfig) {
+        foreach ($cities as $cityKey => $cityConfig) {
+            $dataTypes = [];
+            $dataMapKeys = [];
+
             foreach ($cityConfig['models'] as $modelClass) {
-                if (in_array($modelClass, self::EXCLUDED_MODELS)) {
+                if (in_array($modelClass, self::EXCLUDED_MODELS, true)) {
                     continue;
                 }
 
-                $areaName = self::MODEL_AREA_MAP[$modelClass] ?? $cityConfig['name'];
                 $dataType = $modelClass::getAlcivartechTypeForStyling();
                 $dataMapKey = $modelToDataMapKey[$modelClass] ?? null;
 
-                if (!isset($areas[$areaName])) {
-                    $coords = self::AREA_COORDINATES[$areaName] ?? [
-                        'lat' => $cityConfig['latitude'],
-                        'lng' => $cityConfig['longitude'],
-                    ];
-                    $areas[$areaName] = [
-                        'name' => $areaName,
-                        'lat' => $coords['lat'],
-                        'lng' => $coords['lng'],
-                        'dataTypes' => [],
-                        'dataMapKeys' => [],
-                    ];
+                if (!in_array($dataType, $dataTypes, true)) {
+                    $dataTypes[] = $dataType;
                 }
 
-                if (!in_array($dataType, $areas[$areaName]['dataTypes'])) {
-                    $areas[$areaName]['dataTypes'][] = $dataType;
-                }
-                if ($dataMapKey && !in_array($dataMapKey, $areas[$areaName]['dataMapKeys'])) {
-                    $areas[$areaName]['dataMapKeys'][] = $dataMapKey;
+                if ($dataMapKey && !in_array($dataMapKey, $dataMapKeys, true)) {
+                    $dataMapKeys[] = $dataMapKey;
                 }
             }
+
+            $landingRoute = "city.landing.{$cityKey}";
+            $landingUrl = Route::has($landingRoute) ? route($landingRoute) : null;
+            $stateCode = $this->resolveStateCode($cityConfig);
+            $mapUrl = $this->buildMapUrl($dataMapKeys);
+
+            $cityEntries[$cityKey] = [
+                'key' => $cityKey,
+                'name' => $cityConfig['name'],
+                'locationLabel' => $this->buildLocationLabel($cityConfig['name'], $stateCode),
+                'stateCode' => $stateCode,
+                'lat' => $cityConfig['latitude'],
+                'lng' => $cityConfig['longitude'],
+                'dataTypes' => $dataTypes,
+                'dataMapKeys' => $dataMapKeys,
+                'dataTypeCount' => count($dataTypes),
+                'mapUrl' => $mapUrl,
+                'landingUrl' => $landingUrl,
+                'primaryUrl' => $landingUrl ?: $mapUrl,
+                'coverageNote' => $this->buildCoverageNote($cityConfig, $stateCode),
+            ];
         }
 
-        // Add dataTypeCount and mapUrl for convenience
-        foreach ($areas as &$area) {
-            $area['dataTypeCount'] = count($area['dataTypes']);
-
-            if (count($area['dataMapKeys']) === 1) {
-                $area['mapUrl'] = route('data-map.index', ['dataType' => $area['dataMapKeys'][0]]);
-            } elseif (count($area['dataMapKeys']) > 1) {
-                $area['mapUrl'] = route('data-map.combined') . '?types=' . implode(',', $area['dataMapKeys']);
-            } else {
-                $area['mapUrl'] = route('data-map.combined');
-            }
-
-            $landingRoute = self::AREA_LANDING_ROUTES[$area['name']] ?? null;
-            $area['landingUrl'] = ($landingRoute && Route::has($landingRoute))
-                ? route($landingRoute)
-                : null;
-            $area['primaryUrl'] = $area['landingUrl'] ?: $area['mapUrl'];
-        }
-
-        return $areas;
+        return $cityEntries;
     }
 
     private function buildDataCategories(array $cities): array
@@ -174,7 +118,7 @@ class HomeController extends Controller
 
         foreach ($cities as $cityConfig) {
             foreach ($cityConfig['models'] as $modelClass) {
-                if (in_array($modelClass, self::EXCLUDED_MODELS)) {
+                if (in_array($modelClass, self::EXCLUDED_MODELS, true)) {
                     continue;
                 }
 
@@ -190,5 +134,70 @@ class HomeController extends Controller
         }
 
         return array_values($categories);
+    }
+
+    private function buildMapUrl(array $dataMapKeys): string
+    {
+        if (count($dataMapKeys) === 1) {
+            return route('data-map.index', ['dataType' => $dataMapKeys[0]]);
+        }
+
+        if (count($dataMapKeys) > 1) {
+            return route('data-map.combined') . '?types=' . implode(',', $dataMapKeys);
+        }
+
+        return route('data-map.combined');
+    }
+
+    private function resolveStateCode(array $cityConfig): ?string
+    {
+        $stateCode = collect($cityConfig['serviceability']['supported_regions'] ?? [])
+            ->map(fn ($value) => strtoupper(trim((string) $value)))
+            ->first(fn ($value) => $value !== '');
+
+        return is_string($stateCode) ? $stateCode : null;
+    }
+
+    private function buildLocationLabel(string $name, ?string $stateCode): string
+    {
+        if ($stateCode === null) {
+            return $name;
+        }
+
+        if (Str::endsWith($name, ", {$stateCode}")) {
+            return $name;
+        }
+
+        return "{$name}, {$stateCode}";
+    }
+
+    private function buildCoverageNote(array $cityConfig, ?string $stateCode): string
+    {
+        $name = (string) ($cityConfig['name'] ?? '');
+        $serviceability = $cityConfig['serviceability'] ?? [];
+        $supportedLocalities = collect($serviceability['supported_localities'] ?? [])
+            ->map(fn ($locality) => trim((string) $locality))
+            ->filter();
+
+        $extraLocalities = $supportedLocalities
+            ->reject(fn ($locality) => Str::lower($locality) === Str::lower($name))
+            ->values();
+
+        if ($extraLocalities->isNotEmpty()) {
+            $suffix = $stateCode ? ", {$stateCode}" : '';
+            $formatted = $extraLocalities->map(fn ($locality) => "{$locality}{$suffix}");
+
+            return 'Also supports ' . $formatted->join(', ') . ' address lookups.';
+        }
+
+        if (Str::contains(Str::lower($name), 'county')) {
+            return 'Regional page for countywide address checks and broader map coverage.';
+        }
+
+        if (($serviceability['crime_address_funnel_enabled'] ?? false) === false) {
+            return 'City page with civic-data search tailored to what this region actually publishes.';
+        }
+
+        return 'City page for direct address search, map context, and local reports.';
     }
 }

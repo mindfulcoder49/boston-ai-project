@@ -36,8 +36,8 @@ class SeoMetadata
     {
         return match ($component) {
             'Home' => [
-                'title' => 'PublicDataWatch | Know What Crime Is Happening Around Your Address',
-                'description' => 'Search an address to see recent nearby crime, readable local context, neighborhood score framing, and the daily-report workflow across supported regions.',
+                'title' => 'PublicDataWatch | Choose Your City Before You Search',
+                'description' => 'PublicDataWatch only covers a small set of city and regional pages. Choose the place we support first, then search an address with the right local datasets.',
             ],
             'CrimeAddress/Index' => [
                 'title' => 'Crime Around Your Address | PublicDataWatch',

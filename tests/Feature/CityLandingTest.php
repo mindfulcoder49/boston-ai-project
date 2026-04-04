@@ -16,7 +16,16 @@ class CityLandingTest extends TestCase
 
         Cache::forget('h3_location_names_map');
 
+        Schema::dropIfExists('saved_maps');
         Schema::dropIfExists('h3_location_names');
+        Schema::create('saved_maps', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('user_id')->nullable();
+            $table->boolean('is_public')->default(false);
+            $table->boolean('is_approved')->default(false);
+            $table->boolean('is_featured')->default(false);
+            $table->timestamps();
+        });
         Schema::create('h3_location_names', function (Blueprint $table): void {
             $table->id();
             $table->string('h3_index')->unique();
@@ -32,6 +41,7 @@ class CityLandingTest extends TestCase
     {
         Cache::forget('h3_location_names_map');
         Schema::dropIfExists('h3_location_names');
+        Schema::dropIfExists('saved_maps');
 
         parent::tearDown();
     }
