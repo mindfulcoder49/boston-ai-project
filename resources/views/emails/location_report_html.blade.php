@@ -6,35 +6,60 @@
     $omittedPoints = (int) ($recentSnapshot['omitted_points'] ?? 0);
     $windowDisplay = (string) ($recentSnapshot['window']['display'] ?? 'Most recent day');
 
-    $badgeOuterStyle = function (array $incident): string {
+    $badgeGeometry = function (array $incident): array {
         $shape = (string) ($incident['shape'] ?? 'rounded-square');
-        $fill = (string) ($incident['fill_color'] ?? '#475569');
-        $stroke = (string) ($incident['stroke_color'] ?? '#FFFFFF');
-        $text = (string) ($incident['text_color'] ?? '#FFFFFF');
-
-        $base = 'display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;line-height:1;color:'
-            . $text
-            . ';background:'
-            . $fill
-            . ';border:3px solid '
-            . $stroke
-            . ';box-shadow:0 8px 18px rgba(15,23,42,0.16);';
 
         return match ($shape) {
-            'circle' => $base . 'width:46px;height:46px;border-radius:999px;',
-            'square' => $base . 'width:46px;height:46px;border-radius:8px;',
-            'pill' => $base . 'width:58px;height:42px;border-radius:999px;',
-            'bevel' => $base . 'width:58px;height:42px;border-radius:16px 6px 16px 6px;',
-            'tag' => $base . 'width:58px;height:42px;border-radius:6px 16px 6px 16px;',
-            'diamond' => $base . 'width:40px;height:40px;border-radius:8px;transform:rotate(45deg);',
-            default => $base . 'width:46px;height:46px;border-radius:14px;',
+            'circle' => ['width' => 46, 'height' => 46, 'radius' => '999px', 'rotate' => true],
+            'square' => ['width' => 46, 'height' => 46, 'radius' => '8px', 'rotate' => true],
+            'pill' => ['width' => 58, 'height' => 42, 'radius' => '999px', 'rotate' => true],
+            'bevel' => ['width' => 58, 'height' => 42, 'radius' => '16px 6px 16px 6px', 'rotate' => true],
+            'tag' => ['width' => 58, 'height' => 42, 'radius' => '6px 16px 6px 16px', 'rotate' => true],
+            'diamond' => ['width' => 40, 'height' => 40, 'radius' => '8px', 'rotate' => false],
+            default => ['width' => 46, 'height' => 46, 'radius' => '14px', 'rotate' => true],
         };
     };
 
-    $badgeInnerStyle = function (array $incident): string {
+    $badgeOuterStyle = function (array $incident) use ($badgeGeometry): string {
+        $geometry = $badgeGeometry($incident);
+        $fill = (string) ($incident['fill_color'] ?? '#475569');
+        $stroke = (string) ($incident['stroke_color'] ?? '#FFFFFF');
+
+        $style = 'border-collapse:separate;border-spacing:0;display:inline-table;vertical-align:top;'
+            . 'width:' . $geometry['width'] . 'px;'
+            . 'height:' . $geometry['height'] . 'px;'
+            . 'background:' . $fill . ';'
+            . 'border:3px solid ' . $stroke . ';'
+            . 'border-radius:' . $geometry['radius'] . ';'
+            . 'box-shadow:0 8px 18px rgba(15,23,42,0.16);';
+
+        if (($incident['shape'] ?? null) === 'diamond') {
+            $style .= 'transform:rotate(45deg);';
+        }
+
+        return $style;
+    };
+
+    $badgeCellStyle = function (array $incident) use ($badgeGeometry): string {
+        $geometry = $badgeGeometry($incident);
+        $text = (string) ($incident['text_color'] ?? '#FFFFFF');
+
+        return 'width:' . $geometry['width'] . 'px;'
+            . 'height:' . $geometry['height'] . 'px;'
+            . 'padding:0;'
+            . 'text-align:center;'
+            . 'vertical-align:middle;'
+            . 'font-weight:800;'
+            . 'font-size:18px;'
+            . 'line-height:18px;'
+            . 'color:' . $text . ';'
+            . 'mso-line-height-rule:exactly;';
+    };
+
+    $badgeLabelStyle = function (array $incident): string {
         return ($incident['shape'] ?? null) === 'diamond'
-            ? 'display:inline-flex;align-items:center;justify-content:center;transform:rotate(-45deg);'
-            : 'display:inline-flex;align-items:center;justify-content:center;';
+            ? 'display:inline-block;line-height:1;transform:rotate(-45deg);'
+            : 'display:inline-block;line-height:1;';
     };
 @endphp
 <!DOCTYPE html>
@@ -136,6 +161,30 @@
                         </td>
                     </tr>
 
+                    @if (!empty($introNotice))
+                        <tr>
+                            <td class="email-padding" style="padding:0 28px 18px;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%; border:1px solid #cbd5e1; border-radius:16px; background:#f8fafc;">
+                                    <tr>
+                                        <td style="padding:18px 20px;">
+                                            <div style="font-size:22px; line-height:1.2; font-weight:800; color:#0f172a;">
+                                                {{ $introNotice['headline'] }}
+                                            </div>
+                                            <div style="margin-top:8px; font-size:17px; line-height:1.7; color:#475569;">
+                                                {{ $introNotice['body'] }}
+                                            </div>
+                                            @if (!empty($subscriptionUrl) && !empty($introNotice['cta_label']))
+                                                <div style="margin-top:14px;">
+                                                    <a href="{{ $subscriptionUrl }}" class="button-link">{{ $introNotice['cta_label'] }}</a>
+                                                </div>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    @endif
+
                     @if ($recentSnapshot)
                         <tr>
                             <td class="email-padding" style="padding:0 28px 12px; font-size:18px; line-height:1.7; color:#475569;">
@@ -184,14 +233,23 @@
                                                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%; margin-bottom:14px;">
                                                         <tr>
                                                             <td width="72" valign="top" style="padding-right:12px;">
-                                                                <span style="{{ $badgeOuterStyle($incident) }}">
-                                                                    <span style="{{ $badgeInnerStyle($incident) }}">{{ $incident['label'] }}</span>
-                                                                </span>
+                                                                <table role="presentation" cellpadding="0" cellspacing="0" style="{{ $badgeOuterStyle($incident) }}">
+                                                                    <tr>
+                                                                        <td align="center" valign="middle" style="{{ $badgeCellStyle($incident) }}">
+                                                                            <span style="{{ $badgeLabelStyle($incident) }}">{{ $incident['label'] }}</span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
                                                             </td>
                                                             <td valign="top" style="font-size:18px; line-height:1.7; color:#1f2937;">
                                                                 <div style="font-weight:700; color:#0f172a;">
                                                                     {{ $incident['headline'] }}
                                                                 </div>
+                                                                @if (!empty($incident['detail']))
+                                                                    <div style="margin-top:2px; color:#334155;">
+                                                                        {{ $incident['detail'] }}
+                                                                    </div>
+                                                                @endif
                                                                 <div style="color:#475569;">
                                                                     {{ $incident['category_label'] ?? $incident['type'] }}
                                                                     · {{ $incident['display_date'] }}

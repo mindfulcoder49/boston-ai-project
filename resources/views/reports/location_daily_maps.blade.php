@@ -142,6 +142,13 @@
             color: var(--text-primary);
         }
 
+        .incident-detail {
+            margin: 4px 0 0;
+            font-size: 18px;
+            line-height: 1.65;
+            color: #334155;
+        }
+
         .incident-meta,
         .incident-status {
             margin: 4px 0 0;
@@ -273,6 +280,9 @@
                                         </div>
                                         <div class="incident-copy">
                                             <p class="incident-headline">{{ $incident['headline'] }}</p>
+                                            @if (!empty($incident['detail']))
+                                                <p class="incident-detail">{{ $incident['detail'] }}</p>
+                                            @endif
                                             <p class="incident-meta">
                                                 {{ $incident['category_label'] ?? $incident['type'] }}
                                                 · {{ $incident['display_date'] }}

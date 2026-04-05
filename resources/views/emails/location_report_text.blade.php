@@ -6,6 +6,17 @@
     $omittedPoints = (int) ($recentSnapshot['omitted_points'] ?? 0);
 @endphp
 
+@if (!empty($introNotice))
+{{ $introNotice['headline'] }}
+{{ $introNotice['body'] }}
+
+@if (!empty($subscriptionUrl) && !empty($introNotice['cta_label']))
+{{ $introNotice['cta_label'] }}:
+{{ $subscriptionUrl }}
+
+@endif
+@endif
+
 @if ($recentSnapshot)
 Most recent day map: {{ $recentSnapshot['window']['display'] ?? 'Most recent day' }}
 
@@ -18,6 +29,9 @@ No nearby incidents were found within {{ number_format((float) ($recentSnapshot[
 @if (!empty($incidents))
 @foreach ($incidents as $incident)
 {{ $incident['label'] }}. [{{ $incident['category_label'] ?? $incident['type'] ?? 'Incident' }}] {{ $incident['headline'] }}
+@if (!empty($incident['detail']))
+Details: {{ $incident['detail'] }}
+@endif
 {{ $incident['display_date'] }}
 
 @if (!empty($incident['address']))

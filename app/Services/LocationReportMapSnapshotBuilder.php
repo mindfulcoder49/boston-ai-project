@@ -19,6 +19,23 @@ class LocationReportMapSnapshotBuilder
         'location_description',
     ];
 
+    private const DETAIL_FIELDS = [
+        'incident_description',
+        'offense_description',
+        'incident_subcategory',
+        'offense_sub_category',
+        'description',
+        'issue_description',
+        'threeoneonedescription',
+        'resolution_description',
+        'closure_comments',
+        'additional_details',
+        'comments',
+        'notes',
+        'crime_details_concatenated',
+        'arrest_charges',
+    ];
+
     private const ADDRESS_FIELDS = [
         'incident_address',
         'address',
@@ -201,6 +218,7 @@ class LocationReportMapSnapshotBuilder
                 'label' => $label,
                 'type' => (string) ($row['point']->alcivartech_type ?? 'Record'),
                 'headline' => $summary['headline'],
+                'detail' => $summary['detail'],
                 'address' => $summary['address'],
                 'status' => $summary['status'],
                 'identifier' => $summary['identifier'],
@@ -287,12 +305,23 @@ class LocationReportMapSnapshotBuilder
 
     private function summarizeDataPoint(array $normalized): array
     {
+        $headline = $this->firstNonEmptyValue($normalized, self::TITLE_FIELDS)
+            ?? (string) ($normalized['alcivartech_type'] ?? 'Record');
+        $address = $this->firstNonEmptyValue($normalized, self::ADDRESS_FIELDS);
+        $status = $this->firstNonEmptyValue($normalized, self::STATUS_FIELDS);
+        $identifier = $this->firstNonEmptyValue($normalized, self::IDENTIFIER_FIELDS);
+
         return [
-            'headline' => $this->firstNonEmptyValue($normalized, self::TITLE_FIELDS)
-                ?? (string) ($normalized['alcivartech_type'] ?? 'Record'),
-            'address' => $this->firstNonEmptyValue($normalized, self::ADDRESS_FIELDS),
-            'status' => $this->firstNonEmptyValue($normalized, self::STATUS_FIELDS),
-            'identifier' => $this->firstNonEmptyValue($normalized, self::IDENTIFIER_FIELDS),
+            'headline' => $headline,
+            'detail' => $this->firstNonEmptyDistinctValue($normalized, self::DETAIL_FIELDS, [
+                $headline,
+                $address,
+                $status,
+                $identifier,
+            ]),
+            'address' => $address,
+            'status' => $status,
+            'identifier' => $identifier,
         ];
     }
 
@@ -480,6 +509,42 @@ class LocationReportMapSnapshotBuilder
         }
 
         return null;
+    }
+
+    private function firstNonEmptyDistinctValue(array $normalized, array $fields, array $excluded): ?string
+    {
+        $excludedValues = array_values(array_filter(array_map(
+            fn (mixed $value) => $this->normalizeComparisonValue($value),
+            $excluded
+        )));
+
+        foreach ($fields as $field) {
+            $value = $normalized[$field] ?? null;
+            $candidate = $this->normalizeComparisonValue($value);
+
+            if ($candidate === null || in_array($candidate, $excludedValues, true)) {
+                continue;
+            }
+
+            return trim((string) $value);
+        }
+
+        return null;
+    }
+
+    private function normalizeComparisonValue(mixed $value): ?string
+    {
+        if (!is_scalar($value)) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return strtolower((string) preg_replace('/\s+/', ' ', $trimmed));
     }
 
     private function extractDate(mixed $dataPoint): ?Carbon

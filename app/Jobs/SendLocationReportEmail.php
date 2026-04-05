@@ -8,6 +8,7 @@ use App\Models\Report;
 use App\Services\LocationReportEmailMapService;
 use App\Services\LocationReportBuilder;
 use App\Services\LocationReportMapSnapshotUrlGenerator;
+use App\Support\TrialLifecycleEmailVariant;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Mail\Mailer;
@@ -28,14 +29,16 @@ class SendLocationReportEmail implements ShouldQueue
 
     protected $location;
     protected $radiusForReport;
+    protected string $variant;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(Location $location)
+    public function __construct(Location $location, string $variant = TrialLifecycleEmailVariant::STANDARD)
     {
         $this->location = $location;
         $this->radiusForReport = 0.25;
+        $this->variant = $variant;
     }
 
     /**
@@ -115,8 +118,21 @@ class SendLocationReportEmail implements ShouldQueue
                            $this->location,
                            $finalReport,
                            $recentMap,
-                           $snapshotUrlGenerator->generatePublicDailyMapsPage($this->location)
+                           $snapshotUrlGenerator->generatePublicDailyMapsPage($this->location),
+                           $this->variant,
+                           route('subscription.index', [
+                               'source' => 'trial-lifecycle-email',
+                               'recommended' => 'basic',
+                               'trial' => 'expired',
+                           ])
                        ));
+
+                if ($this->variant === TrialLifecycleEmailVariant::TRIAL_GRACE_REPORT) {
+                    $this->location->user->forceFill([
+                        'crime_address_trial_grace_report_sent_at' => now(),
+                    ])->save();
+                }
+
                 Log::info("Report email sent to user: {$this->location->user->email} for location: {$this->location->address}");
             } else {
                 $userEmail = $this->location->user?->email ?? 'unknown-user';

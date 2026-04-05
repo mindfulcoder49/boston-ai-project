@@ -30,6 +30,8 @@ class User extends Authenticatable
         'crime_address_trial_started_at',
         'crime_address_trial_ends_at',
         'crime_address_trial_location_id',
+        'crime_address_trial_grace_report_sent_at',
+        'crime_address_trial_ended_notice_sent_at',
         'role', // Added for admin editability
     ];
 
@@ -53,6 +55,8 @@ class User extends Authenticatable
         'password' => 'hashed',
         'crime_address_trial_started_at' => 'datetime',
         'crime_address_trial_ends_at' => 'datetime',
+        'crime_address_trial_grace_report_sent_at' => 'datetime',
+        'crime_address_trial_ended_notice_sent_at' => 'datetime',
     ];
 
     public function chirps(): HasMany

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\LocationReportBuilder;
 use App\Services\LocationReportEmailMapService;
 use App\Services\LocationReportMapSnapshotUrlGenerator;
+use App\Support\TrialLifecycleEmailVariant;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,12 @@ class SendLocationReportEmailTest extends TestCase
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('manual_subscription_tier')->nullable();
+            $table->timestamp('crime_address_trial_started_at')->nullable();
+            $table->timestamp('crime_address_trial_ends_at')->nullable();
+            $table->unsignedBigInteger('crime_address_trial_location_id')->nullable();
+            $table->timestamp('crime_address_trial_grace_report_sent_at')->nullable();
+            $table->timestamp('crime_address_trial_ended_notice_sent_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
@@ -161,7 +168,8 @@ class SendLocationReportEmailTest extends TestCase
             return $mail->location->is($location)
                 && ($mail->recentMap['path'] ?? null) === $mapPath
                 && (($mail->recentMap['snapshot']['incidents'][0]['label'] ?? null) === '1')
-                && $mail->publicMapsUrl === 'https://example.test/location-maps';
+                && $mail->publicMapsUrl === 'https://example.test/location-maps'
+                && $mail->variant === TrialLifecycleEmailVariant::STANDARD;
         });
 
         $this->assertDatabaseCount('reports', 1);
@@ -211,10 +219,61 @@ class SendLocationReportEmailTest extends TestCase
         Mail::assertSent(SendLocationReport::class, function (SendLocationReport $mail) use ($location): bool {
             return $mail->location->is($location)
                 && $mail->recentMap === null
-                && $mail->publicMapsUrl === 'https://example.test/location-maps';
+                && $mail->publicMapsUrl === 'https://example.test/location-maps'
+                && $mail->variant === TrialLifecycleEmailVariant::STANDARD;
         });
 
         $this->assertDatabaseCount('reports', 1);
+    }
+
+    public function test_grace_report_variant_marks_the_followup_send_timestamp(): void
+    {
+        Mail::fake();
+
+        $user = User::factory()->create([
+            'password' => Hash::make('password'),
+            'crime_address_trial_started_at' => now()->subDays(8),
+            'crime_address_trial_ends_at' => now()->subDay(),
+        ]);
+
+        $location = Location::factory()->for($user)->create([
+            'name' => 'South Boston Home',
+            'report' => 'daily',
+            'language' => 'en',
+        ]);
+
+        $builder = Mockery::mock(LocationReportBuilder::class);
+        $builder->shouldReceive('build')
+            ->once()
+            ->with($location, 0.25)
+            ->andReturn([
+                'final_report' => "## Location Report: South Boston Home\n\nSample report.",
+                'daily_report_content' => "### April 3, 2026\n\nSample report.",
+                'data_points_count' => 4,
+                'section_diagnostics' => [],
+            ]);
+
+        $emailMapService = Mockery::mock(LocationReportEmailMapService::class);
+        $emailMapService->shouldReceive('captureLatestDay')
+            ->once()
+            ->with($location, 0.25)
+            ->andReturn(null);
+
+        $snapshotUrlGenerator = Mockery::mock(LocationReportMapSnapshotUrlGenerator::class);
+        $snapshotUrlGenerator->shouldReceive('generatePublicDailyMapsPage')
+            ->once()
+            ->with($location)
+            ->andReturn('https://example.test/location-maps');
+
+        $job = new SendLocationReportEmail($location, TrialLifecycleEmailVariant::TRIAL_GRACE_REPORT);
+        $job->handle(app(Mailer::class), $builder, $emailMapService, $snapshotUrlGenerator);
+
+        Mail::assertSent(SendLocationReport::class, function (SendLocationReport $mail): bool {
+            return $mail->variant === TrialLifecycleEmailVariant::TRIAL_GRACE_REPORT
+                && $mail->envelope()->subject === 'Your trial ended. We sent one more report for ' . $mail->location->address;
+        });
+
+        $this->assertNotNull($user->fresh()->crime_address_trial_grace_report_sent_at);
     }
 
     public function test_it_uses_a_longer_timeout_for_report_generation_and_screenshot_capture(): void

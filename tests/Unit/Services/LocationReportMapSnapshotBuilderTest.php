@@ -154,6 +154,45 @@ class LocationReportMapSnapshotBuilderTest extends TestCase
         $this->assertTrue($series[2]['empty']);
     }
 
+    public function test_it_keeps_a_distinct_secondary_detail_for_everett_incidents(): void
+    {
+        Carbon::setTestNow('2026-04-03 12:00:00');
+
+        $dataService = Mockery::mock(LocationReportDataService::class);
+        $dataService
+            ->shouldReceive('fetch')
+            ->once()
+            ->andReturn([
+                (object) [
+                    'alcivartech_type' => 'Crime',
+                    'alcivartech_date' => '2026-04-03 10:45:00',
+                    'latitude' => 42.4084,
+                    'longitude' => -71.0537,
+                    'everett_crime_data' => (object) [
+                        'incident_type' => 'MV-ACCIDENT HIT-RUN/PROP DAM',
+                        'incident_description' => 'Vehicle hit a parked car and left before officers arrived.',
+                        'incident_address' => '28 SUMMIT AV',
+                        'case_number' => '963730',
+                    ],
+                ],
+            ]);
+
+        $builder = new LocationReportMapSnapshotBuilder($dataService);
+        $location = new Location([
+            'name' => 'Everett Home',
+            'address' => '100 Main St',
+            'latitude' => 42.4080,
+            'longitude' => -71.0540,
+        ]);
+
+        $snapshot = $builder->buildForDate($location, 0.25, '2026-04-03', 4);
+
+        $this->assertSame('MV-ACCIDENT HIT-RUN/PROP DAM', $snapshot['incidents'][0]['headline']);
+        $this->assertSame('Vehicle hit a parked car and left before officers arrived.', $snapshot['incidents'][0]['detail']);
+        $this->assertSame('28 SUMMIT AV', $snapshot['incidents'][0]['address']);
+        $this->assertSame('963730', $snapshot['incidents'][0]['identifier']);
+    }
+
     public function test_it_anchors_the_daily_series_to_the_latest_incident_day_in_report_timezone(): void
     {
         config()->set('services.reports.timezone', 'America/New_York');

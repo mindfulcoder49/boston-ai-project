@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Jobs\SendTrialEndedNoticeEmail;
 use App\Models\Location;
 use App\Models\User; // Import User model
 use App\Jobs\SendLocationReportEmail;
@@ -60,36 +61,52 @@ class DispatchLocationReports extends Command
             return 0;
         }
 
-        $query = $userId ? User::where('id', $userId) : User::whereHas('locations');
+        $query = $userId
+            ? User::where('id', $userId)
+            : User::where(function ($builder) {
+                $builder->whereHas('locations')
+                    ->orWhereNotNull('crime_address_trial_started_at');
+            });
         $usersWithLocations = $query->with('locations')->get();
 
         if ($usersWithLocations->isEmpty()) {
-            $this->info('No users with locations found to process for reports.');
+            $this->info('No users with report activity or trial history found to process.');
             return 0;
         }
 
-        $this->info("Found {$usersWithLocations->count()} users with locations to process.");
+        $this->info("Found {$usersWithLocations->count()} users with report activity or trial history to process.");
 
         foreach ($usersWithLocations as $user) {
             $access = $this->reportAccessService->resolveRecurringReportAccess($user);
+            $trialEndedNotice = $this->reportAccessService->resolveTrialEndedNotice($user);
 
-            if (!$access['eligible']) {
+            if (!$access['eligible'] && !$trialEndedNotice['eligible']) {
                 Log::info("User ID: {$user->id} is not eligible for recurring reports. Skipping.");
                 continue;
             }
 
-            $this->line("Processing User ID: {$user->id} in '{$access['mode']}' recurring-report mode.");
+            if ($access['eligible']) {
+                $this->line("Processing User ID: {$user->id} in '{$access['mode']}' recurring-report mode.");
 
-            $configuredLocations = $this->reportAccessService->filterEligibleLocations($user->locations, $access, $force);
+                $configuredLocations = $this->reportAccessService->filterEligibleLocations($user->locations, $access, $force);
 
-            if ($configuredLocations->isEmpty()) {
-                $this->comment("-- User ID: {$user->id} has no locations configured for today's reports" . ($force ? ' (even with --force)' : '.'));
-                continue;
+                if ($configuredLocations->isEmpty()) {
+                    $this->comment("-- User ID: {$user->id} has no locations configured for today's reports" . ($force ? ' (even with --force)' : '.'));
+                }
+
+                foreach ($configuredLocations as $location) {
+                    SendLocationReportEmail::dispatch(
+                        $location,
+                        (string) ($access['report_variant'] ?? \App\Support\TrialLifecycleEmailVariant::STANDARD)
+                    );
+                    $this->info("-- Dispatched report for User ID: {$user->id}, Location ID: {$location->id} ('{$location->address}')");
+                    $dispatchedCount++;
+                }
             }
 
-            foreach ($configuredLocations as $location) {
-                SendLocationReportEmail::dispatch($location);
-                $this->info("-- Dispatched report for User ID: {$user->id}, Location ID: {$location->id} ('{$location->address}')");
+            if ($trialEndedNotice['eligible']) {
+                SendTrialEndedNoticeEmail::dispatch($user);
+                $this->info("-- Dispatched trial-ended notice for User ID: {$user->id} ('{$user->email}')");
                 $dispatchedCount++;
             }
         }
