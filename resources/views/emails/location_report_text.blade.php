@@ -30,7 +30,7 @@ No nearby incidents were found within {{ number_format((float) ($recentSnapshot[
 @foreach ($incidents as $incident)
 {{ $incident['label'] }}. [{{ $incident['category_label'] ?? $incident['type'] ?? 'Incident' }}] {{ $incident['headline'] }}
 @if (!empty($incident['detail']))
-Details: {{ $incident['detail'] }}
+Description: {{ $incident['detail'] }}
 @endif
 {{ $incident['display_date'] }}
 

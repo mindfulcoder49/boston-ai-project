@@ -71,7 +71,7 @@ class SendLocationReportMailRenderTest extends TestCase
         $this->assertStringNotContainsString('&lt;img', $html);
         $this->assertStringContainsString('April 3, 2026', $html);
         $this->assertStringContainsString('Noise Complaint', $html);
-        $this->assertStringContainsString('Caller reported repeated loud music from the block.', $html);
+        $this->assertStringContainsString('Description:</strong> Caller reported repeated loud music from the block.', $html);
         $this->assertStringContainsString('Narrative Summary', $html);
         $this->assertStringContainsString('View Daily Maps For The Last 7 Days', $html);
         $this->assertStringContainsString('https://example.test/location-maps', $html);
@@ -163,7 +163,7 @@ class SendLocationReportMailRenderTest extends TestCase
 
         $this->assertStringContainsString('Most recent day map: April 3, 2026', $text);
         $this->assertStringContainsString('1. [311] Noise Complaint', $text);
-        $this->assertStringContainsString('Details: Caller reported repeated loud music from the block.', $text);
+        $this->assertStringContainsString('Description: Caller reported repeated loud music from the block.', $text);
         $this->assertStringContainsString('Address: 621 E 1st St, South Boston, MA 02127, USA', $text);
         $this->assertStringContainsString('Status: Open', $text);
         $this->assertStringContainsString('ID: 311-123', $text);
