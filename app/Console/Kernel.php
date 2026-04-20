@@ -33,6 +33,31 @@ class Kernel extends ConsoleKernel
         $schedule->command(EvaluateBackendHealthAlertsCommand::class)
             ->hourlyAt(10)
             ->withoutOverlapping();
+
+        if (config('data_retention.automation.enabled')) {
+            $retentionGroups = collect(config('data_retention.automation.groups', []))
+                ->filter(fn ($group) => is_string($group) && trim($group) !== '')
+                ->map(fn (string $group) => trim($group))
+                ->values()
+                ->all();
+
+            if (!empty($retentionGroups)) {
+                $schedule->command('app:apply-data-retention', [
+                    '--group' => $retentionGroups,
+                    '--batch' => (int) config(
+                        'data_retention.automation.batch_size',
+                        config('data_retention.database_apply_batch_size', 1000)
+                    ),
+                    '--force' => true,
+                ])
+                    ->weeklyOn(
+                        (int) config('data_retention.automation.day_of_week', 0),
+                        config('data_retention.automation.time', '03:30')
+                    )
+                    ->timezone(config('data_retention.automation.timezone', config('app.timezone')))
+                    ->withoutOverlapping();
+            }
+        }
     }
 
     /**

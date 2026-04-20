@@ -24,9 +24,11 @@ This policy applies to:
 Already happening automatically in the app today:
 - aggregate data point tables prune rows older than 183 days inside their seeders
 
-Not yet automated in a retention-safe way:
+Now available behind explicit review/apply commands:
+- raw source-table retention for the main production database
+
+Still not automated by default:
 - file cleanup in `storage/logs` and `storage/app/datasets`
-- raw source-table retention
 - any storage-pressure workflow tied to Hostinger limits
 
 Legacy cleanup outside the retention plan:
@@ -38,17 +40,34 @@ Legacy cleanup outside the retention plan:
 
 Command:
 - `php artisan app:review-data-retention`
+- `php artisan app:review-data-retention --group=main_raw_source_tables`
 
 Purpose:
 - preview database rows that fall outside the current retention window
-- show cutoff date, candidate count, and sample rows
+- show cutoff date, candidate count, sample rows, and approximate reclaimable size
 - delete nothing
 
 Current scope:
 - shared `data_points`
 - city-specific `*_data_points` tables
+- main production raw/source tables that feed current Boston, Cambridge, Everett, and Massachusetts crash coverage
 
-### 2. File Cleanup Dry Run
+### 2. Database Retention Apply Command
+
+Command:
+- `php artisan app:apply-data-retention --group=main_raw_source_tables --force`
+- `php artisan app:apply-data-retention --rule=crime-data --force`
+
+Purpose:
+- delete reviewed database rows outside the retention window
+- require explicit scope via `--group` or `--rule`
+- batch deletes so large tables are not wiped in one statement
+
+Operating rule:
+- run the matching review command first
+- founder approval is still required before production use or schedule enablement
+
+### 3. File Cleanup Dry Run
 
 Command:
 - `php artisan app:cleanup --dry-run-before=YYYY-MM-DD`
@@ -83,7 +102,7 @@ Important Boston distinction:
 - Boston full-refresh scraper downloads are stored at the top level of `storage/app/datasets`
 - `boston-datasets` isolates them by filename pattern so they can be reviewed without sweeping in every city subdirectory
 
-### 3. Approval Boundary
+### 4. Approval Boundary
 
 No new cleanup automation should happen until:
 1. a dry run has been reviewed
@@ -152,14 +171,7 @@ Outcome:
 
 ## Recommended Next Phases
 
-### Phase 2. Centralize Apply Paths
-
-Move retention deletion into explicit commands with:
-- `--dry-run` as the default safety mode
-- `--apply` required for real deletion
-- clear summary output after execution
-
-### Phase 3. Add Cleanup Observability
+### Phase 2. Add Cleanup Observability
 
 Surface cleanup summary fields in pipeline/admin views:
 - rows deleted
@@ -168,11 +180,16 @@ Surface cleanup summary fields in pipeline/admin views:
 - cutoff date used
 - largest affected tables or directories
 
-### Phase 4. Expand Beyond Aggregate Tables
+### Phase 3. Enable Scheduled Retention After Review
 
-Only after review and approval:
-- define raw source-table retention by dataset family
-- decide which raw datasets are historical assets versus disposable operational inputs
+Now possible, but still disabled by default:
+- `app:apply-data-retention` can be scheduled weekly through `config/data_retention.php`
+- activation requires reviewed dry-run output plus founder approval first
+
+Current proposed database policy:
+- keep `data_points` tables at 183 days
+- keep main raw/source tables at 365 days
+- keep `analysis_report_snapshots` out of automated age-based deletion until its storage model is redesigned
 
 ## Operating Notes
 
