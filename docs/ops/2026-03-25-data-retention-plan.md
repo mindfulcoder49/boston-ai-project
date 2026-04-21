@@ -188,7 +188,8 @@ Now possible, but still disabled by default:
 
 Current proposed database policy:
 - keep `data_points` tables at 183 days
-- keep main raw/source tables at 365 days
+- keep main raw/source tables at 365 days, except Everett raw history
+- keep Everett raw history in full for now by excluding `everett_crime_data` from the default raw-table retention group
 - keep `analysis_report_snapshots` out of automated age-based deletion until its storage model is redesigned
 
 ## Operating Notes

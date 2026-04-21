@@ -372,13 +372,14 @@ return [
         [
             'slug' => 'everett-crime-data',
             'name' => 'Everett Crime Data',
-            'group' => 'main_raw_source_tables',
+            'group' => 'full_history_raw_source_tables',
             'connection' => 'mysql',
             'table' => 'everett_crime_data',
             'date_field' => 'occurred_on_datetime',
             'retention_days' => 365,
             'delete_key' => 'id',
             'sample_columns' => ['case_number', 'incident_type', 'occurred_on_datetime'],
+            'notes' => 'Everett raw history is intentionally kept in full for now, so it stays out of the main raw-table retention group.',
         ],
     ],
 ];
