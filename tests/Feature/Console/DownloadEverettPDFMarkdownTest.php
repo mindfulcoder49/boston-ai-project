@@ -5,6 +5,7 @@ namespace Tests\Feature\Console;
 use App\Services\NodePdfMarkdownConverter;
 use App\Services\PdfLinkExtractorService;
 use Carbon\Carbon;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -130,11 +131,54 @@ class DownloadEverettPDFMarkdownTest extends TestCase
         ]);
 
         $this->artisan('app:download-everett-pdf-markdown')
-            ->expectsOutputToContain('Skipping Everett PDF source that did not return a PDF document: https://files.example.com/not-a-pdf.pdf')
+            ->expectsOutputToContain('Skipping missing Everett PDF source: https://files.example.com/not-a-pdf.pdf')
             ->assertExitCode(0);
 
         $this->assertCount(0, File::glob($this->pdfOutputDir . '/not-a-pdf_*.pdf'));
         $this->assertCount(0, File::glob($this->markdownOutputDir . '/not-a-pdf_*.md'));
+    }
+
+    public function test_it_falls_back_to_scraper_when_direct_everett_fetches_fail(): void
+    {
+        config([
+            'services.scraper_service.base_url' => 'https://scraper.example.com',
+            'services.scraper_service.user_id' => '1',
+            'services.scraper_service.user_name' => 'Tester',
+            'services.scraper_service.user_role' => 'admin',
+            'services.scraper_service.wait_seconds' => 1,
+        ]);
+
+        Http::fake(function (Request $request) {
+            if ($request->url() === 'https://example.com/arrest_2022.php' && $request->method() === 'GET') {
+                return Http::response('upstream unavailable', 500);
+            }
+
+            if ($request->url() === 'https://files.example.com/fallback.pdf' && $request->method() === 'GET') {
+                return Http::response('upstream unavailable', 500);
+            }
+
+            if ($request->url() === 'https://scraper.example.com/scrape_url' && $request->method() === 'POST') {
+                $payload = $request->data();
+
+                if (($payload['url'] ?? null) === 'https://example.com/arrest_2022.php') {
+                    return Http::response(['html' => '<html><a href="https://files.example.com/fallback.pdf">fallback</a></html>'], 200);
+                }
+
+                if (($payload['url'] ?? null) === 'https://files.example.com/fallback.pdf') {
+                    return Http::response("ARREST LOG\n\nDOE, JOHN\n123 MAIN ST\nage: 34 arrest date: 01/05/2025 case: 123456\nASSAULT\n", 200);
+                }
+            }
+
+            return Http::response('unexpected request', 500);
+        });
+
+        $this->artisan('app:download-everett-pdf-markdown')
+            ->expectsOutputToContain('Using scraper fallback to fetch Everett page: https://example.com/arrest_2022.php')
+            ->expectsOutputToContain('Using scraper fallback to convert Everett PDF: https://files.example.com/fallback.pdf')
+            ->assertExitCode(0);
+
+        $this->assertCount(1, File::glob($this->markdownOutputDir . '/fallback_*.md'));
+        $this->assertCount(0, File::glob($this->pdfOutputDir . '/fallback_*.pdf'));
     }
 
     public function test_non_404_pdf_conversion_failure_still_fails_the_command(): void
@@ -160,7 +204,7 @@ class DownloadEverettPDFMarkdownTest extends TestCase
         ]);
 
         $this->artisan('app:download-everett-pdf-markdown')
-            ->expectsOutputToContain('Failed to convert Everett PDF to Markdown for: https://files.example.com/broken.pdf. Error: Broken converter')
+            ->expectsOutputToContain('Failed to convert Everett PDF to Markdown for: https://files.example.com/broken.pdf. Error: Direct fetch: Broken converter')
             ->assertExitCode(1);
     }
 }

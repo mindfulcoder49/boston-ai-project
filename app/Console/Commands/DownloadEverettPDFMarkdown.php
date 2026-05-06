@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Support\OperationalSummaryLogger;
 use Illuminate\Console\Command;
 use App\Services\NodePdfMarkdownConverter;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Services\PdfLinkExtractorService;
@@ -14,7 +15,7 @@ use Illuminate\Http\Client\Response;
 class DownloadEverettPDFMarkdown extends Command
 {
     protected $signature = 'app:download-everett-pdf-markdown';
-    protected $description = 'Downloads Everett police PDFs directly and converts them to markdown locally.';
+    protected $description = 'Downloads Everett police PDFs directly, with scraper fallback when needed, and converts them to markdown.';
 
     public function __construct(
         private readonly PdfLinkExtractorService $pdfLinkExtractor,
@@ -93,27 +94,27 @@ class DownloadEverettPDFMarkdown extends Command
             $this->info("Processing page: {$pageUrl} to find PDF links.");
 
             try {
-                $response = Http::timeout(120)
-                    ->withHeaders([
-                        'User-Agent' => 'PublicDataWatch Everett ingestion',
-                        'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    ])
-                    ->withOptions(['allow_redirects' => true])
-                    ->get($pageUrl);
-
-                if (!$response->successful()) {
-                    $this->error("Failed to fetch Everett page: {$pageUrl}. Status: {$response->status()}. Body: " . $response->body());
-                    Log::error("Everett page fetch error for {$pageUrl}: " . $response->body());
+                $pageFetch = $this->fetchPageHtml($pageUrl);
+                if (! ($pageFetch['success'] ?? false)) {
+                    $this->error("Failed to fetch Everett page: {$pageUrl}. " . ($pageFetch['message'] ?? 'Unknown error.'));
+                    Log::error('Everett page fetch error.', [
+                        'page_url' => $pageUrl,
+                        'message' => $pageFetch['message'] ?? 'Unknown error.',
+                    ]);
                     $summary['pages_failed']++;
                     continue;
                 }
 
-                $htmlContent = $response->body();
+                $htmlContent = (string) ($pageFetch['html'] ?? '');
 
                 if (empty($htmlContent)) {
                     $this->warn("Received empty HTML content for page: {$pageUrl}. Skipping PDF link extraction.");
                     $summary['pages_failed']++;
                     continue;
+                }
+
+                if (($pageFetch['source'] ?? 'direct') === 'scraper') {
+                    $this->warn("Using scraper fallback to fetch Everett page: {$pageUrl}");
                 }
 
                 File::put($htmlOutputDir . DIRECTORY_SEPARATOR . $this->htmlArtifactFilename($pageUrl), $htmlContent);
@@ -138,73 +139,52 @@ class DownloadEverettPDFMarkdown extends Command
                     $pdfFilepath = $pdfOutputDir . DIRECTORY_SEPARATOR . "{$currentPdfBaseFilename}_{$timestamp}.pdf";
                     $markdownFilepath = $mdOutputDir . DIRECTORY_SEPARATOR . "{$currentPdfBaseFilename}_{$timestamp}.md";
 
-                    $pdfResponse = Http::timeout(600)
-                        ->withHeaders([
-                            'User-Agent' => 'PublicDataWatch Everett PDF downloader',
-                            'Accept' => 'application/pdf,*/*',
-                        ])
-                        ->withOptions(['allow_redirects' => true])
-                        ->get($pdfLink);
+                    $conversion = $this->convertPdfToMarkdown($pdfLink, $pdfFilepath, $markdownFilepath);
 
-                    if (!$pdfResponse->successful()) {
-                        if ($pdfResponse->status() === 404) {
-                            $this->warn("Skipping missing Everett PDF source: {$pdfLink}");
-                            Log::warning("Missing Everett PDF source.", [
-                                'pdf_url' => $pdfLink,
-                                'status' => $pdfResponse->status(),
-                                'body' => $pdfResponse->body(),
-                            ]);
-                            $summary['markdown_missing_source']++;
-                            continue;
-                        }
-
-                        $this->error("Failed to download Everett PDF for Markdown conversion: {$pdfLink}. Status: {$pdfResponse->status()}. Body: " . $pdfResponse->body());
-                        Log::error("Everett PDF download error for {$pdfLink}: " . $pdfResponse->body());
-                        $summary['markdown_failed']++;
-                        continue;
-                    }
-
-                    if (! $this->isValidPdfResponse($pdfResponse)) {
-                        $this->warn("Skipping Everett PDF source that did not return a PDF document: {$pdfLink}");
-                        Log::warning('Everett PDF source returned a non-PDF or empty response.', [
+                    if (($conversion['status'] ?? null) === 'missing') {
+                        $this->warn("Skipping missing Everett PDF source: {$pdfLink}");
+                        Log::warning('Missing Everett PDF source.', [
                             'pdf_url' => $pdfLink,
-                            'status' => $pdfResponse->status(),
-                            'content_type' => $pdfResponse->header('Content-Type'),
-                            'body_length' => strlen($pdfResponse->body()),
+                            'message' => $conversion['message'] ?? null,
                         ]);
                         $summary['markdown_missing_source']++;
                         continue;
                     }
 
-                    File::put($pdfFilepath, $pdfResponse->body());
-                    $summary['pdf_downloaded']++;
-
-                    try {
-                        $conversion = $this->nodePdfMarkdownConverter->convertFile($pdfFilepath, $markdownFilepath);
-                        $this->info("Saved Markdown to {$markdownFilepath}");
-                        $summary['markdown_saved']++;
-                        $existingBaseFilenames[$currentPdfBaseFilename] = true;
-                        OperationalSummaryLogger::emit($this, $this->getName(), 'markdown_saved', [
-                            'page_url' => $pageUrl,
-                            'pdf_url' => $pdfLink,
-                            'pdf_file' => $pdfFilepath,
-                            'output_file' => $markdownFilepath,
-                            'bytes_written' => $conversion['bytes'] ?? null,
-                            'converter' => 'node_pdf_parse',
-                            'node_binary' => $conversion['node_binary'] ?? null,
-                            'node_version' => $conversion['node_version'] ?? null,
-                        ]);
-                    } catch (\Throwable $throwable) {
-                        $this->error("Failed to convert Everett PDF to Markdown for: {$pdfLink}. Error: {$throwable->getMessage()}");
+                    if (! ($conversion['success'] ?? false)) {
+                        $this->error("Failed to convert Everett PDF to Markdown for: {$pdfLink}. Error: " . ($conversion['message'] ?? 'Unknown error.'));
                         Log::error("Everett PDF markdown conversion error.", [
                             'pdf_url' => $pdfLink,
                             'pdf_path' => $pdfFilepath,
-                            'error' => $throwable->getMessage(),
+                            'error' => $conversion['message'] ?? 'Unknown error.',
                         ]);
                         $summary['markdown_failed']++;
+                        continue;
                     }
+
+                    if (($conversion['converter'] ?? null) === 'scraper_service') {
+                        $this->warn("Using scraper fallback to convert Everett PDF: {$pdfLink}");
+                    }
+
+                    if (($conversion['saved_pdf'] ?? false) === true) {
+                        $summary['pdf_downloaded']++;
+                    }
+
+                    $this->info("Saved Markdown to {$markdownFilepath}");
+                    $summary['markdown_saved']++;
+                    $existingBaseFilenames[$currentPdfBaseFilename] = true;
+                    OperationalSummaryLogger::emit($this, $this->getName(), 'markdown_saved', [
+                        'page_url' => $pageUrl,
+                        'pdf_url' => $pdfLink,
+                        'pdf_file' => $pdfFilepath,
+                        'output_file' => $markdownFilepath,
+                        'bytes_written' => $conversion['bytes'] ?? null,
+                        'converter' => $conversion['converter'] ?? null,
+                        'node_binary' => $conversion['node_binary'] ?? null,
+                        'node_version' => $conversion['node_version'] ?? null,
+                    ]);
                 }
-            } catch (\Illuminate\Http\Client\RequestException $e) {
+            } catch (RequestException $e) {
                 $this->error("HTTP Request Exception while processing {$pageUrl}: " . $e->getMessage());
                 Log::error("Everett request exception for URL {$pageUrl}: " . $e->getMessage());
                 $summary['pages_failed']++;
@@ -219,6 +199,255 @@ class DownloadEverettPDFMarkdown extends Command
         OperationalSummaryLogger::emit($this, $this->getName(), 'complete', $summary, ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0 || $summary['markdown_missing_source'] > 0) ? 'warning' : 'info');
 
         return ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0) ? 1 : 0;
+    }
+
+    private function fetchPageHtml(string $pageUrl): array
+    {
+        $directFailure = null;
+
+        try {
+            $response = Http::connectTimeout(30)
+                ->timeout(120)
+                ->retry(2, 1000, throw: false)
+                ->withHeaders([
+                    'User-Agent' => 'PublicDataWatch Everett ingestion',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                ])
+                ->withOptions(['allow_redirects' => true])
+                ->get($pageUrl);
+
+            if ($response->successful()) {
+                $htmlContent = $response->body();
+                if ($htmlContent !== '') {
+                    return [
+                        'success' => true,
+                        'html' => $htmlContent,
+                        'source' => 'direct',
+                    ];
+                }
+
+                $directFailure = 'Direct page fetch returned an empty response body.';
+            } else {
+                $directFailure = 'Direct page fetch failed with status ' . $response->status() . '.';
+            }
+        } catch (\Throwable $throwable) {
+            $directFailure = $throwable->getMessage();
+        }
+
+        $scraperFallback = $this->fetchPageHtmlViaScraper($pageUrl);
+        if (($scraperFallback['success'] ?? false) === true) {
+            return $scraperFallback;
+        }
+
+        return [
+            'success' => false,
+            'message' => trim(($directFailure ? 'Direct fetch: ' . $directFailure : '') . ' ' . (($scraperFallback['message'] ?? null) ? 'Scraper fallback: ' . $scraperFallback['message'] : '')),
+        ];
+    }
+
+    private function fetchPageHtmlViaScraper(string $pageUrl): array
+    {
+        $scraperConfig = $this->scraperConfig();
+        if ($scraperConfig === null) {
+            return [
+                'success' => false,
+                'message' => 'Scraper fallback is not configured.',
+            ];
+        }
+
+        try {
+            $response = Http::withHeaders($this->scraperHeaders($scraperConfig))
+                ->timeout(120)
+                ->post($this->scraperEndpoint($scraperConfig), [
+                    'url' => $pageUrl,
+                    'wait' => (int) ($scraperConfig['wait_seconds'] ?? 5),
+                ]);
+
+            if (! $response->successful()) {
+                return [
+                    'success' => false,
+                    'message' => 'Scraper page fetch failed with status ' . $response->status() . '.',
+                ];
+            }
+
+            $htmlContent = $this->extractScraperTextPayload($response->body());
+            if ($htmlContent === '') {
+                return [
+                    'success' => false,
+                    'message' => 'Scraper page fetch returned an empty response body.',
+                ];
+            }
+
+            return [
+                'success' => true,
+                'html' => $htmlContent,
+                'source' => 'scraper',
+            ];
+        } catch (\Throwable $throwable) {
+            return [
+                'success' => false,
+                'message' => $throwable->getMessage(),
+            ];
+        }
+    }
+
+    private function convertPdfToMarkdown(string $pdfLink, string $pdfFilepath, string $markdownFilepath): array
+    {
+        $directFailure = null;
+
+        try {
+            $pdfResponse = Http::connectTimeout(30)
+                ->timeout(600)
+                ->retry(2, 1000, throw: false)
+                ->withHeaders([
+                    'User-Agent' => 'PublicDataWatch Everett PDF downloader',
+                    'Accept' => 'application/pdf,*/*',
+                ])
+                ->withOptions(['allow_redirects' => true])
+                ->get($pdfLink);
+
+            if ($pdfResponse->successful()) {
+                if (! $this->isValidPdfResponse($pdfResponse)) {
+                    return [
+                        'status' => 'missing',
+                        'message' => 'Direct PDF fetch returned a non-PDF or empty response.',
+                    ];
+                }
+
+                File::put($pdfFilepath, $pdfResponse->body());
+                $conversion = $this->nodePdfMarkdownConverter->convertFile($pdfFilepath, $markdownFilepath);
+
+                return [
+                    'success' => true,
+                    'converter' => 'node_pdf_parse',
+                    'saved_pdf' => true,
+                    'bytes' => $conversion['bytes'] ?? null,
+                    'node_binary' => $conversion['node_binary'] ?? null,
+                    'node_version' => $conversion['node_version'] ?? null,
+                ];
+            }
+
+            if ($pdfResponse->status() === 404) {
+                return [
+                    'status' => 'missing',
+                    'message' => 'Direct PDF fetch returned 404.',
+                ];
+            }
+
+            $directFailure = 'Direct PDF fetch failed with status ' . $pdfResponse->status() . '.';
+        } catch (\Throwable $throwable) {
+            $directFailure = $throwable->getMessage();
+        }
+
+        $scraperFallback = $this->convertPdfToMarkdownViaScraper($pdfLink, $markdownFilepath);
+        if (($scraperFallback['success'] ?? false) === true || ($scraperFallback['status'] ?? null) === 'missing') {
+            return $scraperFallback;
+        }
+
+        return [
+            'success' => false,
+            'message' => trim(($directFailure ? 'Direct fetch: ' . $directFailure : '') . ' ' . (($scraperFallback['message'] ?? null) ? 'Scraper fallback: ' . $scraperFallback['message'] : '')),
+        ];
+    }
+
+    private function convertPdfToMarkdownViaScraper(string $pdfLink, string $markdownFilepath): array
+    {
+        $scraperConfig = $this->scraperConfig();
+        if ($scraperConfig === null) {
+            return [
+                'success' => false,
+                'message' => 'Scraper fallback is not configured.',
+            ];
+        }
+
+        try {
+            $response = Http::withHeaders($this->scraperHeaders($scraperConfig))
+                ->timeout(600)
+                ->post($this->scraperEndpoint($scraperConfig), [
+                    'url' => $pdfLink,
+                    'wait' => (int) ($scraperConfig['wait_seconds'] ?? 5),
+                    'url_type' => 'pdf',
+                    'output_markitdown' => true,
+                ]);
+
+            if (! $response->successful()) {
+                if ($response->status() === 404) {
+                    return [
+                        'status' => 'missing',
+                        'message' => 'Scraper fallback returned 404.',
+                    ];
+                }
+
+                return [
+                    'success' => false,
+                    'message' => 'Scraper PDF conversion failed with status ' . $response->status() . '.',
+                ];
+            }
+
+            $markdownText = $this->extractScraperTextPayload($response->body());
+            if ($markdownText === '') {
+                return [
+                    'success' => false,
+                    'message' => 'Scraper fallback returned an empty markdown response.',
+                ];
+            }
+
+            File::put($markdownFilepath, $markdownText);
+
+            return [
+                'success' => true,
+                'converter' => 'scraper_service',
+                'saved_pdf' => false,
+                'bytes' => strlen($markdownText),
+                'node_binary' => null,
+                'node_version' => null,
+            ];
+        } catch (\Throwable $throwable) {
+            return [
+                'success' => false,
+                'message' => $throwable->getMessage(),
+            ];
+        }
+    }
+
+    private function extractScraperTextPayload(string $body): string
+    {
+        $decodedJson = json_decode($body, true);
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decodedJson)) {
+            return $body;
+        }
+
+        foreach (['html', 'markdown', 'text', 'content'] as $key) {
+            if (isset($decodedJson[$key]) && is_string($decodedJson[$key])) {
+                return $decodedJson[$key];
+            }
+        }
+
+        return '';
+    }
+
+    private function scraperConfig(): ?array
+    {
+        $scraperConfig = config('services.scraper_service');
+        if (! is_array($scraperConfig) || empty($scraperConfig['base_url'])) {
+            return null;
+        }
+
+        return $scraperConfig;
+    }
+
+    private function scraperEndpoint(array $scraperConfig): string
+    {
+        return rtrim((string) $scraperConfig['base_url'], '/') . '/scrape_url';
+    }
+
+    private function scraperHeaders(array $scraperConfig): array
+    {
+        return [
+            'X-User-Id' => $scraperConfig['user_id'] ?? '1',
+            'X-User-Name' => $scraperConfig['user_name'] ?? 'Guest',
+            'X-User-Role' => $scraperConfig['user_role'] ?? 'guest',
+        ];
     }
 
     private function isValidPdfResponse(Response $response): bool
