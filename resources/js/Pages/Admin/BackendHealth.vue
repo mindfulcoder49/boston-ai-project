@@ -73,22 +73,12 @@
           <div class="mt-4 space-y-4 text-sm">
             <div class="rounded-md border border-gray-200 p-4">
               <div class="flex items-center justify-between">
-                <div class="font-medium text-gray-800">Scraper</div>
-                <span :class="pillClass(snapshot.dependencyHealth?.scraper?.status)" class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold">
-                  {{ snapshot.dependencyHealth?.scraper?.label ?? 'Unknown' }}
+                <div class="font-medium text-gray-800">Local Ingestion Runtime</div>
+                <span :class="pillClass(runtimeDependency?.status)" class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold">
+                  {{ runtimeDependency?.label ?? 'Unknown' }}
                 </span>
               </div>
-              <div class="mt-2 break-words text-gray-600">{{ snapshot.dependencyHealth?.scraper?.message ?? 'No scraper snapshot available.' }}</div>
-            </div>
-
-            <div class="rounded-md border border-gray-200 p-4">
-              <div class="flex items-center justify-between">
-                <div class="font-medium text-gray-800">DNS Sync</div>
-                <span :class="pillClass(snapshot.dependencyHealth?.dns_sync?.status)" class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold">
-                  {{ snapshot.dependencyHealth?.dns_sync?.label ?? 'Unknown' }}
-                </span>
-              </div>
-              <div class="mt-2 break-words text-gray-600">{{ snapshot.dependencyHealth?.dns_sync?.message ?? 'No DNS sync snapshot available.' }}</div>
+              <div class="mt-2 break-words text-gray-600">{{ runtimeDependency?.message ?? 'No local runtime snapshot available.' }}</div>
             </div>
 
             <div class="rounded-md border border-gray-200 p-4">
@@ -174,12 +164,19 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-defineProps({
+const props = defineProps({
   snapshot: {
     type: Object,
     required: true,
   },
+});
+
+const runtimeDependency = computed(() => {
+  return props.snapshot?.dependencyHealth?.local_ingestion_runtime
+    ?? props.snapshot?.dependencyHealth?.scraper
+    ?? null;
 });
 
 const formatDateTime = (dateTimeString) => {

@@ -11,10 +11,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Response as InertiaResponse;
 use Tests\TestCase;
 
@@ -40,8 +38,6 @@ class BackendAdminFlowTest extends TestCase
             'backend_admin.dependency_health.worker_heartbeat_path' => $this->testRoot . '/admin_long_worker_heartbeat.json',
             'backend_admin.alerts.state_path' => $this->testRoot . '/backend_health_alert_state.json',
             'backend_admin.alerts.email' => 'ops@example.com',
-            'services.scraper_service.base_url' => 'http://127.0.0.1',
-            'backend_admin.dependency_health.scraper_health_path' => 'health',
         ]);
     }
 
@@ -89,7 +85,7 @@ class BackendAdminFlowTest extends TestCase
     public function test_dispatch_daily_pipeline_blocks_on_dependency_failure_and_dispatches_when_forced(): void
     {
         Queue::fake();
-        config(['services.scraper_service.base_url' => '']);
+        config(['services.playwright.node_path' => '/definitely-missing-node']);
 
         $this->artisan('app:dispatch-daily-pipeline')
             ->expectsOutputToContain('Daily pipeline dispatch blocked by dependency health issues.')
@@ -149,11 +145,6 @@ class BackendAdminFlowTest extends TestCase
 
     public function test_dependency_health_command_reports_healthy_snapshot(): void
     {
-        Storage::fake('s3');
-        Http::fake([
-            'http://127.0.0.1/health' => Http::response('ok', 200),
-        ]);
-
         File::put(
             config('backend_admin.dependency_health.worker_heartbeat_path'),
             json_encode([
@@ -163,28 +154,16 @@ class BackendAdminFlowTest extends TestCase
             ], JSON_PRETTY_PRINT)
         );
 
-        Storage::disk('s3')->put('ops/health/ec2_dns_status.json', json_encode([
-            'checked_at' => Carbon::now()->toIso8601String(),
-            'status' => 'ok',
-            'record_label' => 'api.publicdatawatch.com',
-            'dns_ip' => '1.2.3.4',
-            'ec2_ip' => '1.2.3.4',
-            'changed' => false,
-        ], JSON_PRETTY_PRINT));
-
         $snapshot = app(IngestionDependencyHealth::class)->check();
 
         $this->assertSame('healthy', $snapshot['overall_status']);
-        $this->assertTrue($snapshot['scraper']['reachable']);
-        $this->assertSame('1.2.3.4', $snapshot['dns_sync']['dns_ip']);
+        $this->assertSame('healthy', $snapshot['local_ingestion_runtime']['status']);
+        $this->assertSame([], $snapshot['informational_issues']);
     }
 
-    public function test_scraper_probe_requires_successful_health_response(): void
+    public function test_local_ingestion_runtime_probe_requires_available_node_runtime(): void
     {
-        Storage::fake('s3');
-        Http::fake([
-            'http://127.0.0.1/health' => Http::response('error', 500),
-        ]);
+        config(['services.playwright.node_path' => '/definitely-missing-node']);
 
         File::put(
             config('backend_admin.dependency_health.worker_heartbeat_path'),
@@ -198,33 +177,18 @@ class BackendAdminFlowTest extends TestCase
         $snapshot = app(IngestionDependencyHealth::class)->check();
 
         $this->assertSame('failed', $snapshot['overall_status']);
-        $this->assertFalse($snapshot['scraper']['reachable']);
-        $this->assertSame(500, $snapshot['scraper']['http_status']);
-        $this->assertSame(['scraper_unreachable'], $snapshot['blocking_issues']);
+        $this->assertSame('failed', $snapshot['local_ingestion_runtime']['status']);
+        $this->assertSame(['local_ingestion_runtime_unavailable'], $snapshot['blocking_issues']);
     }
 
-    public function test_missing_dns_status_is_informational_when_scraper_is_healthy(): void
+    public function test_missing_worker_heartbeat_is_a_warning_when_local_runtime_is_healthy(): void
     {
-        Storage::fake('s3');
-        Http::fake([
-            'http://127.0.0.1/health' => Http::response('ok', 200),
-        ]);
-
-        File::put(
-            config('backend_admin.dependency_health.worker_heartbeat_path'),
-            json_encode([
-                'last_seen_at' => Carbon::now()->toIso8601String(),
-                'command' => 'app:run-all-data-pipeline',
-                'status' => 'completed',
-            ], JSON_PRETTY_PRINT)
-        );
-
         $snapshot = app(IngestionDependencyHealth::class)->check();
 
-        $this->assertSame('healthy', $snapshot['overall_status']);
-        $this->assertSame('unknown', $snapshot['dns_sync']['status']);
-        $this->assertSame(['dns_sync_unknown'], $snapshot['informational_issues']);
-        $this->assertSame([], $snapshot['warnings']);
+        $this->assertSame('warning', $snapshot['overall_status']);
+        $this->assertSame('healthy', $snapshot['local_ingestion_runtime']['status']);
+        $this->assertSame('unknown', $snapshot['queue_worker']['status']);
+        $this->assertSame(['worker_evidence_missing'], $snapshot['warnings']);
     }
 
     public function test_backend_health_dashboard_renders_for_admin(): void

@@ -61,27 +61,29 @@ class BackendHealthAlertEvaluator
             }
         }
 
-        $scraperDependentCommands = [
+        $localAcquisitionCommands = [
             'app:download-boston-dataset-via-scraper',
             'app:download-everett-pdf-markdown',
         ];
 
         $latestFailedCommand = $latestRun['first_failed_command']['command_name'] ?? null;
-        if ($latestFailedCommand && in_array($latestFailedCommand, $scraperDependentCommands, true)) {
+        if ($latestFailedCommand && in_array($latestFailedCommand, $localAcquisitionCommands, true)) {
             $alerts[] = $this->makeAlert(
                 'critical',
-                'scraper-command-failure:' . $latestFailedCommand,
-                'Scraper-dependent acquisition failed',
-                "The latest run failed on scraper-dependent acquisition command {$latestFailedCommand}."
+                'local-acquisition-command-failure:' . $latestFailedCommand,
+                'Local acquisition failed',
+                "The latest run failed on local acquisition command {$latestFailedCommand}."
             );
         }
 
-        if (($dependencySnapshot['scraper']['status'] ?? null) === 'failed') {
+        $runtimeSnapshot = $dependencySnapshot['local_ingestion_runtime'] ?? $dependencySnapshot['scraper'] ?? null;
+
+        if (($runtimeSnapshot['status'] ?? null) === 'failed') {
             $alerts[] = $this->makeAlert(
                 'critical',
-                'scraper-health-failed',
-                'Scraper dependency is unreachable',
-                $dependencySnapshot['scraper']['message'] ?? 'The scraper service did not respond to the health probe.'
+                'local-ingestion-runtime-failed',
+                'Local ingestion runtime is unavailable',
+                $runtimeSnapshot['message'] ?? 'The local Everett PDF extraction runtime is unavailable.'
             );
         }
 

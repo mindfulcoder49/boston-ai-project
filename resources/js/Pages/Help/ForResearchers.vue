@@ -212,11 +212,11 @@
                                     <h2>Data Pipeline Architecture</h2>
                                     <p>The data pipeline is orchestrated as a staged sequential process with city-specific acquisition and seeding steps before aggregation and reporting:</p>
                                     <ol>
-                                        <li><strong>Boston Data Acquisition</strong> &mdash; Downloads datasets from Analyze Boston via scraper service.</li>
+                                        <li><strong>Boston Data Acquisition</strong> &mdash; Downloads datasets directly from Analyze Boston.</li>
                                         <li><strong>Boston Data Seeding</strong> &mdash; Processes CSVs into database tables using batch upsert (500-1000 records per batch).</li>
                                         <li><strong>Cambridge Data Acquisition</strong> &mdash; Downloads from Cambridge Open Data and police log PDFs.</li>
                                         <li><strong>Cambridge Data Seeding</strong> &mdash; Processes and geocodes Cambridge data.</li>
-                                        <li><strong>Everett Data Acquisition & Processing</strong> &mdash; Downloads police PDFs, converts to structured data via NLP.</li>
+                                        <li><strong>Everett Data Acquisition & Processing</strong> &mdash; Downloads police PDFs directly, extracts text locally, and converts them into structured incident data.</li>
                                         <li><strong>Everett Data Seeding</strong> &mdash; Loads processed Everett data.</li>
                                         <li><strong>Chicago, San Francisco, Seattle, and Montgomery County seeding</strong> &mdash; Loads additional regional datasets into their city-specific tables.</li>
                                         <li><strong>New York seeding</strong> &mdash; Loads 311 / service-request data for the New York regional surface.</li>

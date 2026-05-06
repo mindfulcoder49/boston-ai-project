@@ -4,22 +4,23 @@ namespace App\Console\Commands;
 
 use App\Support\OperationalSummaryLogger;
 use Illuminate\Console\Command;
+use App\Services\NodePdfMarkdownConverter;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log; // Keep Log if you plan to use it, otherwise it can be removed if not used.
+use Illuminate\Support\Facades\Log;
 use App\Services\PdfLinkExtractorService;
-use Illuminate\Support\Facades\File; // For directory and file operations
+use Illuminate\Support\Facades\File;
+use Illuminate\Http\Client\Response;
 
 class DownloadEverettPDFMarkdown extends Command
 {
     protected $signature = 'app:download-everett-pdf-markdown';
-    protected $description = 'Downloads PDF links from Everett pages and gets Markdown via scraper service';
+    protected $description = 'Downloads Everett police PDFs directly and converts them to markdown locally.';
 
-    protected $pdfLinkExtractor;
-
-    public function __construct(PdfLinkExtractorService $pdfLinkExtractor)
-    {
+    public function __construct(
+        private readonly PdfLinkExtractorService $pdfLinkExtractor,
+        private readonly NodePdfMarkdownConverter $nodePdfMarkdownConverter,
+    ) {
         parent::__construct();
-        $this->pdfLinkExtractor = $pdfLinkExtractor;
     }
 
     public function handle(): int
@@ -47,46 +48,30 @@ class DownloadEverettPDFMarkdown extends Command
             return 1;
         }
 
-        $scraperConfig = config('services.scraper_service');
-        if (!$scraperConfig || empty($scraperConfig['base_url'])) {
-            $this->error("Scraper service configuration missing or base_url is not set in config/services.php.");
-            return 1;
-        }
-        $scraperEndpoint = rtrim($scraperConfig['base_url'], '/') . '/scrape_url';
-        
-        // Use a more specific path within storage, e.g., storage/app/markdown_output
+        $baseStorageDir = storage_path('app/datasets/everett');
         $mdOutputDirRelative = $config['markdown_output_directory'] ?? 'markdown_output';
-        $mdOutputDir = storage_path('app/datasets/everett/' . trim($mdOutputDirRelative, '/'));
+        $pdfOutputDirRelative = $config['pdfs_directory'] ?? 'pdfs';
+        $htmlOutputDirRelative = $config['html_pages_directory'] ?? 'html_pages';
+        $mdOutputDir = $baseStorageDir . '/' . trim($mdOutputDirRelative, '/');
+        $pdfOutputDir = $baseStorageDir . '/' . trim($pdfOutputDirRelative, '/');
+        $htmlOutputDir = $baseStorageDir . '/' . trim($htmlOutputDirRelative, '/');
 
-        if (!File::isDirectory($mdOutputDir)) {
-            File::makeDirectory($mdOutputDir, 0775, true, true);
-        }
+        File::ensureDirectoryExists($baseStorageDir);
+        File::ensureDirectoryExists($mdOutputDir);
+        File::ensureDirectoryExists($pdfOutputDir);
+        File::ensureDirectoryExists($htmlOutputDir);
 
-        // Scan for existing base filenames
         $existingBaseFilenames = [];
-        if (File::isDirectory($mdOutputDir)) {
-            $filesInDir = File::files($mdOutputDir);
-            foreach ($filesInDir as $file) {
-                $filename = $file->getFilename();
-                // Extracts base_filename from base_filename_YYYYMMDD_HHMMSS.md
-                if (preg_match('/^(.*?)_\d{8}_\d{6}\.md$/', $filename, $matches)) {
-                    $existingBaseFilenames[$matches[1]] = true; // Use as a set for quick lookups
-                }
+        foreach (File::files($mdOutputDir) as $file) {
+            $filename = $file->getFilename();
+            if (preg_match('/^(.*?)_\d{8}_\d{6}\.md$/', $filename, $matches)) {
+                $existingBaseFilenames[$matches[1]] = true;
             }
         }
+
         if (count($existingBaseFilenames) > 0) {
             $this->info("Found " . count($existingBaseFilenames) . " existing base filenames in {$mdOutputDir}. These will be skipped if encountered again.");
         }
-        
-        $headers = [
-            'X-User-Id'   => $scraperConfig['user_id'] ?? '1',
-            'X-User-Name' => $scraperConfig['user_name'] ?? 'Guest',
-            'X-User-Role' => $scraperConfig['user_role'] ?? 'guest',
-            // The scraper API seems to return plain text for markdown or JSON for HTML.
-            // 'Accept' => 'application/json' might be okay if scraper wraps HTML in JSON.
-            // If scraper returns raw HTML, 'text/html, application/json' might be better.
-            // For now, let's assume the scraper handles content negotiation or the existing JSON parsing works.
-        ];
 
         $summary = [
             'pages_total' => count($pages),
@@ -96,6 +81,7 @@ class DownloadEverettPDFMarkdown extends Command
             'markdown_skipped_existing' => 0,
             'markdown_failed' => 0,
             'markdown_missing_source' => 0,
+            'pdf_downloaded' => 0,
         ];
 
         OperationalSummaryLogger::emit($this, $this->getName(), 'start', [
@@ -105,43 +91,32 @@ class DownloadEverettPDFMarkdown extends Command
 
         foreach ($pages as $pageUrl) {
             $this->info("Processing page: {$pageUrl} to find PDF links.");
-            // Payload to get HTML content of the page itself
-            $pageScrapePayload = [
-                'url'  => $pageUrl,
-                'wait' => (int)($scraperConfig['wait_seconds'] ?? 5),
-                // 'output_markitdown' => false, // Explicitly false or remove for HTML
-            ];
-            
+
             try {
-                $response = Http::withHeaders($headers)->timeout(120)->post($scraperEndpoint, $pageScrapePayload);
+                $response = Http::timeout(120)
+                    ->withHeaders([
+                        'User-Agent' => 'PublicDataWatch Everett ingestion',
+                        'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    ])
+                    ->withOptions(['allow_redirects' => true])
+                    ->get($pageUrl);
 
                 if (!$response->successful()) {
-                    $this->error("Failed to scrape page: {$pageUrl}. Status: {$response->status()}. Body: " . $response->body());
-                    Log::error("Scraper service error for page URL {$pageUrl}: " . $response->body());
+                    $this->error("Failed to fetch Everett page: {$pageUrl}. Status: {$response->status()}. Body: " . $response->body());
+                    Log::error("Everett page fetch error for {$pageUrl}: " . $response->body());
                     $summary['pages_failed']++;
                     continue;
                 }
 
                 $htmlContent = $response->body();
-                // Attempt to decode if JSON, otherwise assume raw HTML
-                $decodedJson = json_decode($htmlContent, true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    if (isset($decodedJson['html'])) {
-                        $htmlContent = $decodedJson['html'];
-                    } elseif (isset($decodedJson['text']) && !isset($decodedJson['html'])) {
-                        // If 'text' exists and 'html' doesn't, it might be pre-converted markdown or plain text.
-                        // For link extraction, we need HTML. If scraper returns markdown here, this is an issue.
-                        // Assuming for now that if 'output_markitdown' is false/absent, we get HTML or JSON-wrapped HTML.
-                        $htmlContent = $decodedJson['text']; 
-                    }
-                }
-                // If it wasn't JSON, $htmlContent remains as is (hopefully HTML)
 
                 if (empty($htmlContent)) {
-                    $this->warn("Received empty or non-HTML content for page: {$pageUrl}. Skipping PDF link extraction.");
+                    $this->warn("Received empty HTML content for page: {$pageUrl}. Skipping PDF link extraction.");
                     $summary['pages_failed']++;
                     continue;
                 }
+
+                File::put($htmlOutputDir . DIRECTORY_SEPARATOR . $this->htmlArtifactFilename($pageUrl), $htmlContent);
 
                 $pdfLinks = $this->pdfLinkExtractor->extractFromHtml($htmlContent, $pageUrl);
                 $this->info("Found " . count($pdfLinks) . " PDF links on {$pageUrl}");
@@ -150,8 +125,7 @@ class DownloadEverettPDFMarkdown extends Command
                 foreach ($pdfLinks as $pdfLink) {
                     $this->info("Processing PDF link for Markdown: {$pdfLink}");
 
-                    // Generate base filename for the current PDF to check if it exists
-                    $pathinfoCurrentPdf = pathinfo($pdfLink);
+                    $pathinfoCurrentPdf = pathinfo((string) parse_url($pdfLink, PHP_URL_PATH));
                     $currentPdfBaseFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $pathinfoCurrentPdf['filename'] ?? 'document');
 
                     if (isset($existingBaseFilenames[$currentPdfBaseFilename])) {
@@ -160,58 +134,79 @@ class DownloadEverettPDFMarkdown extends Command
                         continue; // Skip to the next PDF link
                     }
 
-                    // Payload to get Markdown from the PDF link
-                    $pdfToMarkdownPayload = [
-                        'url'               => $pdfLink,
-                        'wait'              => (int)($scraperConfig['wait_seconds'] ?? 5), // Wait might not be relevant for direct PDF download
-                        'url_type'          => 'pdf',
-                        'output_markitdown' => true,
-                    ];
-                    
-                    $mdResponse = Http::withHeaders($headers)
-                                      ->timeout(600) // Increased timeout for PDF processing
-                                      ->post($scraperEndpoint, $pdfToMarkdownPayload);
+                    $timestamp = now()->format('Ymd_His');
+                    $pdfFilepath = $pdfOutputDir . DIRECTORY_SEPARATOR . "{$currentPdfBaseFilename}_{$timestamp}.pdf";
+                    $markdownFilepath = $mdOutputDir . DIRECTORY_SEPARATOR . "{$currentPdfBaseFilename}_{$timestamp}.md";
 
-                    if (!$mdResponse->successful()) {
-                        if ($mdResponse->status() === 404) {
+                    $pdfResponse = Http::timeout(600)
+                        ->withHeaders([
+                            'User-Agent' => 'PublicDataWatch Everett PDF downloader',
+                            'Accept' => 'application/pdf,*/*',
+                        ])
+                        ->withOptions(['allow_redirects' => true])
+                        ->get($pdfLink);
+
+                    if (!$pdfResponse->successful()) {
+                        if ($pdfResponse->status() === 404) {
                             $this->warn("Skipping missing Everett PDF source: {$pdfLink}");
-                            Log::warning("Missing Everett PDF source for Markdown conversion.", [
+                            Log::warning("Missing Everett PDF source.", [
                                 'pdf_url' => $pdfLink,
-                                'status' => $mdResponse->status(),
-                                'body' => $mdResponse->body(),
+                                'status' => $pdfResponse->status(),
+                                'body' => $pdfResponse->body(),
                             ]);
                             $summary['markdown_missing_source']++;
                             continue;
                         }
 
-                        $this->error("Failed to convert PDF to Markdown for: {$pdfLink}. Status: {$mdResponse->status()}. Body: " . $mdResponse->body());
-                        Log::error("Scraper service error for PDF URL {$pdfLink}: " . $mdResponse->body());
+                        $this->error("Failed to download Everett PDF for Markdown conversion: {$pdfLink}. Status: {$pdfResponse->status()}. Body: " . $pdfResponse->body());
+                        Log::error("Everett PDF download error for {$pdfLink}: " . $pdfResponse->body());
                         $summary['markdown_failed']++;
                         continue;
                     }
 
-                    $markdownText = $mdResponse->body(); // Expecting plain text Markdown
-                    
-                    // Sanitize filename (more robustly) - currentPdfBaseFilename is already sanitized
-                    // $pathinfo = pathinfo($pdfLink); // Already done above as $pathinfoCurrentPdf
-                    // $baseFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $pathinfo['filename'] ?? 'document'); // Use $currentPdfBaseFilename
-                    $timestamp = now()->format('Ymd_His');
-                    $filename = "{$currentPdfBaseFilename}_{$timestamp}.md"; // Use $currentPdfBaseFilename
-                    $filepath = $mdOutputDir . DIRECTORY_SEPARATOR . $filename;
+                    if (! $this->isValidPdfResponse($pdfResponse)) {
+                        $this->warn("Skipping Everett PDF source that did not return a PDF document: {$pdfLink}");
+                        Log::warning('Everett PDF source returned a non-PDF or empty response.', [
+                            'pdf_url' => $pdfLink,
+                            'status' => $pdfResponse->status(),
+                            'content_type' => $pdfResponse->header('Content-Type'),
+                            'body_length' => strlen($pdfResponse->body()),
+                        ]);
+                        $summary['markdown_missing_source']++;
+                        continue;
+                    }
 
-                    File::put($filepath, $markdownText);
-                    $this->info("Saved Markdown to {$filepath}");
-                    $summary['markdown_saved']++;
-                    OperationalSummaryLogger::emit($this, $this->getName(), 'markdown_saved', [
-                        'page_url' => $pageUrl,
-                        'pdf_url' => $pdfLink,
-                        'output_file' => $filepath,
-                        'bytes_written' => strlen($markdownText),
-                    ]);
+                    File::put($pdfFilepath, $pdfResponse->body());
+                    $summary['pdf_downloaded']++;
+
+                    try {
+                        $conversion = $this->nodePdfMarkdownConverter->convertFile($pdfFilepath, $markdownFilepath);
+                        $this->info("Saved Markdown to {$markdownFilepath}");
+                        $summary['markdown_saved']++;
+                        $existingBaseFilenames[$currentPdfBaseFilename] = true;
+                        OperationalSummaryLogger::emit($this, $this->getName(), 'markdown_saved', [
+                            'page_url' => $pageUrl,
+                            'pdf_url' => $pdfLink,
+                            'pdf_file' => $pdfFilepath,
+                            'output_file' => $markdownFilepath,
+                            'bytes_written' => $conversion['bytes'] ?? null,
+                            'converter' => 'node_pdf_parse',
+                            'node_binary' => $conversion['node_binary'] ?? null,
+                            'node_version' => $conversion['node_version'] ?? null,
+                        ]);
+                    } catch (\Throwable $throwable) {
+                        $this->error("Failed to convert Everett PDF to Markdown for: {$pdfLink}. Error: {$throwable->getMessage()}");
+                        Log::error("Everett PDF markdown conversion error.", [
+                            'pdf_url' => $pdfLink,
+                            'pdf_path' => $pdfFilepath,
+                            'error' => $throwable->getMessage(),
+                        ]);
+                        $summary['markdown_failed']++;
+                    }
                 }
             } catch (\Illuminate\Http\Client\RequestException $e) {
                 $this->error("HTTP Request Exception while processing {$pageUrl}: " . $e->getMessage());
-                Log::error("Scraper service request exception for URL {$pageUrl}: " . $e->getMessage());
+                Log::error("Everett request exception for URL {$pageUrl}: " . $e->getMessage());
                 $summary['pages_failed']++;
             } catch (\Exception $e) {
                 $this->error("An unexpected error occurred while processing {$pageUrl}: " . $e->getMessage());
@@ -224,5 +219,28 @@ class DownloadEverettPDFMarkdown extends Command
         OperationalSummaryLogger::emit($this, $this->getName(), 'complete', $summary, ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0 || $summary['markdown_missing_source'] > 0) ? 'warning' : 'info');
 
         return ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0) ? 1 : 0;
+    }
+
+    private function isValidPdfResponse(Response $response): bool
+    {
+        $body = $response->body();
+        if ($body === '') {
+            return false;
+        }
+
+        $contentType = strtolower((string) $response->header('Content-Type'));
+        if (str_contains($contentType, 'application/pdf')) {
+            return true;
+        }
+
+        return str_starts_with(ltrim($body), '%PDF-');
+    }
+
+    private function htmlArtifactFilename(string $pageUrl): string
+    {
+        $path = trim((string) parse_url($pageUrl, PHP_URL_PATH), '/');
+        $safePath = preg_replace('/[^a-zA-Z0-9_-]/', '_', $path ?: 'page');
+
+        return $safePath . '_' . now()->format('Ymd_His') . '.html';
     }
 }
