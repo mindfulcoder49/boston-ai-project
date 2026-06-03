@@ -88,7 +88,7 @@ return [
     ],
 
     'scraper_service' => [
-        'base_url' => env('SCRAPER_API_BASE_URL', 'http://localhost:8000'),
+        'base_url' => env('SCRAPER_API_BASE_URL', 'https://pdw-everett-scraper.fly.dev'),
         'user_id' => env('SCRAPER_X_USER_ID', '1'),
         'user_name' => env('SCRAPER_X_USER_NAME', 'Guest'),
         'user_role' => env('SCRAPER_X_USER_ROLE', 'guest'),

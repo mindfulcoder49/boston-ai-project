@@ -10,7 +10,7 @@ class CheckIngestionDependenciesCommand extends Command
     protected $signature = 'app:check-ingestion-dependencies
                             {--json : Output the snapshot as JSON}';
 
-    protected $description = 'Checks local ingestion runtime availability and queue-worker evidence for daily ingestion dependencies.';
+    protected $description = 'Checks local ingestion runtime availability, scraper reachability, and queue-worker evidence for daily ingestion dependencies.';
 
     public function __construct(private readonly IngestionDependencyHealth $dependencyHealth)
     {
@@ -29,6 +29,7 @@ class CheckIngestionDependenciesCommand extends Command
         $this->info('Ingestion dependency check complete.');
         $this->line('Overall status: ' . ($snapshot['overall_status'] ?? 'unknown'));
         $this->line('Local runtime: ' . ($snapshot['local_ingestion_runtime']['label'] ?? 'Unknown'));
+        $this->line('Scraper: ' . ($snapshot['scraper']['label'] ?? 'Unknown'));
         $this->line('Queue worker: ' . ($snapshot['queue_worker']['label'] ?? 'Unknown'));
 
         if (!empty($snapshot['blocking_issues'])) {

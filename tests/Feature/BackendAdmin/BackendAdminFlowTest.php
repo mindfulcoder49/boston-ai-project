@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Response as InertiaResponse;
@@ -35,9 +36,15 @@ class BackendAdminFlowTest extends TestCase
             'backend_admin.pipeline_runs.history_path' => $this->testRoot . '/pipeline_runs_history.json',
             'backend_admin.long_running_connection' => 'database_long_running',
             'backend_admin.dependency_health.snapshot_path' => $this->testRoot . '/ingestion_dependency_health.json',
+            'backend_admin.dependency_health.scraper_health_path' => 'health',
             'backend_admin.dependency_health.worker_heartbeat_path' => $this->testRoot . '/admin_long_worker_heartbeat.json',
             'backend_admin.alerts.state_path' => $this->testRoot . '/backend_health_alert_state.json',
             'backend_admin.alerts.email' => 'ops@example.com',
+            'services.scraper_service.base_url' => 'https://scraper.example.test',
+        ]);
+
+        Http::fake([
+            'https://scraper.example.test/health' => Http::response(['status' => 'ok'], 200),
         ]);
     }
 
@@ -158,6 +165,7 @@ class BackendAdminFlowTest extends TestCase
 
         $this->assertSame('healthy', $snapshot['overall_status']);
         $this->assertSame('healthy', $snapshot['local_ingestion_runtime']['status']);
+        $this->assertSame('healthy', $snapshot['scraper']['status']);
         $this->assertSame([], $snapshot['informational_issues']);
     }
 
@@ -187,8 +195,34 @@ class BackendAdminFlowTest extends TestCase
 
         $this->assertSame('warning', $snapshot['overall_status']);
         $this->assertSame('healthy', $snapshot['local_ingestion_runtime']['status']);
+        $this->assertSame('healthy', $snapshot['scraper']['status']);
         $this->assertSame('unknown', $snapshot['queue_worker']['status']);
         $this->assertSame(['worker_evidence_missing'], $snapshot['warnings']);
+    }
+
+    public function test_scraper_probe_failure_is_blocking(): void
+    {
+        File::put(
+            config('backend_admin.dependency_health.worker_heartbeat_path'),
+            json_encode([
+                'last_seen_at' => Carbon::now()->toIso8601String(),
+                'command' => 'app:run-all-data-pipeline',
+                'status' => 'completed',
+            ], JSON_PRETTY_PRINT)
+        );
+
+        config(['services.scraper_service.base_url' => 'https://scraper-down.example.test']);
+
+        Http::fake([
+            'https://scraper-down.example.test/health' => Http::response(['status' => 'down'], 503),
+        ]);
+
+        $snapshot = app(IngestionDependencyHealth::class)->check();
+
+        $this->assertSame('failed', $snapshot['overall_status']);
+        $this->assertSame('failed', $snapshot['scraper']['status']);
+        $this->assertSame('https://scraper-down.example.test/health', $snapshot['scraper']['endpoint']);
+        $this->assertSame(['scraper_unreachable'], $snapshot['blocking_issues']);
     }
 
     public function test_backend_health_dashboard_renders_for_admin(): void

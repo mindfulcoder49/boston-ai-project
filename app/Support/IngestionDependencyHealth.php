@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Services\NodePdfMarkdownConverter;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Throwable;
 
 class IngestionDependencyHealth
@@ -14,6 +15,7 @@ class IngestionDependencyHealth
         $snapshot = [
             'checked_at' => Carbon::now()->toIso8601String(),
             'local_ingestion_runtime' => $this->checkLocalIngestionRuntime(),
+            'scraper' => $this->checkScraperReachability(),
             'queue_worker' => AdminLongWorkerHeartbeat::freshness(Carbon::now()),
         ];
 
@@ -22,6 +24,14 @@ class IngestionDependencyHealth
 
         if (($snapshot['local_ingestion_runtime']['status'] ?? null) === 'failed') {
             $blockingIssues[] = 'local_ingestion_runtime_unavailable';
+        }
+
+        if (($snapshot['scraper']['status'] ?? null) === 'failed') {
+            $blockingIssues[] = 'scraper_unreachable';
+        }
+
+        if (($snapshot['scraper']['status'] ?? null) === 'unknown') {
+            $warnings[] = 'scraper_health_unknown';
         }
 
         if (($snapshot['queue_worker']['status'] ?? null) === 'warning') {
@@ -86,6 +96,63 @@ class IngestionDependencyHealth
                 'node_version' => null,
                 'extractor_script_path' => null,
                 'pdf_parse_version' => null,
+                'message' => $exception->getMessage(),
+            ];
+        }
+    }
+
+    private function checkScraperReachability(): array
+    {
+        $scraperConfig = config('services.scraper_service');
+        $baseUrl = is_array($scraperConfig) ? trim((string) ($scraperConfig['base_url'] ?? '')) : '';
+
+        if ($baseUrl === '') {
+            return [
+                'status' => 'unknown',
+                'label' => 'Scraper endpoint not configured',
+                'endpoint' => null,
+                'http_status' => null,
+                'message' => 'SCRAPER_API_BASE_URL is not configured.',
+            ];
+        }
+
+        $healthPath = trim((string) config('backend_admin.dependency_health.scraper_health_path', 'health'), '/');
+        $endpoint = rtrim($baseUrl, '/');
+        if ($healthPath !== '') {
+            $endpoint .= '/' . $healthPath;
+        }
+
+        $timeoutSeconds = max(1, (int) config('backend_admin.dependency_health.scraper_timeout_seconds', 5));
+
+        try {
+            $response = Http::connectTimeout($timeoutSeconds)
+                ->timeout($timeoutSeconds)
+                ->acceptJson()
+                ->get($endpoint);
+
+            if ($response->successful()) {
+                return [
+                    'status' => 'healthy',
+                    'label' => 'Scraper reachable',
+                    'endpoint' => $endpoint,
+                    'http_status' => $response->status(),
+                    'message' => 'Scraper health endpoint responded successfully.',
+                ];
+            }
+
+            return [
+                'status' => 'failed',
+                'label' => 'Scraper unreachable',
+                'endpoint' => $endpoint,
+                'http_status' => $response->status(),
+                'message' => 'Scraper health endpoint returned HTTP ' . $response->status() . '.',
+            ];
+        } catch (Throwable $exception) {
+            return [
+                'status' => 'failed',
+                'label' => 'Scraper unreachable',
+                'endpoint' => $endpoint,
+                'http_status' => null,
                 'message' => $exception->getMessage(),
             ];
         }

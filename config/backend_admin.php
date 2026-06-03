@@ -33,8 +33,6 @@ return [
         'scraper_timeout_seconds' => (int) env('BACKEND_ADMIN_SCRAPER_TIMEOUT_SECONDS', 5),
         'worker_heartbeat_path' => storage_path('app/backend_admin/admin_long_worker_heartbeat.json'),
         'worker_heartbeat_max_age_minutes' => (int) env('BACKEND_ADMIN_WORKER_HEARTBEAT_MAX_AGE_MINUTES', 180),
-        'dns_status_s3_key' => env('BACKEND_ADMIN_DNS_STATUS_S3_KEY', 'ops/health/ec2_dns_status.json'),
-        'dns_status_max_age_minutes' => (int) env('BACKEND_ADMIN_DNS_STATUS_MAX_AGE_MINUTES', 60),
         'scraper_health_path' => env('BACKEND_ADMIN_SCRAPER_HEALTH_PATH', 'health'),
     ],
 
