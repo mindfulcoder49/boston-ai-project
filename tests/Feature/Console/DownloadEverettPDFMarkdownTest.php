@@ -231,6 +231,8 @@ class DownloadEverettPDFMarkdownTest extends TestCase
 
     public function test_non_404_pdf_conversion_failure_still_fails_the_command(): void
     {
+        config(['everett_datasets.fail_on_pdf_conversion_failure' => true]);
+
         $this->app->instance(PdfLinkExtractorService::class, new class extends PdfLinkExtractorService {
             public function extractFromHtml(string $html, string $baseUrl): array
             {

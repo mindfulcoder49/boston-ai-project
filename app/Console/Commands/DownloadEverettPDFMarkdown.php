@@ -198,7 +198,9 @@ class DownloadEverettPDFMarkdown extends Command
         $this->info("Processing complete.");
         OperationalSummaryLogger::emit($this, $this->getName(), 'complete', $summary, ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0 || $summary['markdown_missing_source'] > 0) ? 'warning' : 'info');
 
-        return ($summary['pages_failed'] > 0 || $summary['markdown_failed'] > 0) ? 1 : 0;
+        $failOnPdfConversionFailure = filter_var($config['fail_on_pdf_conversion_failure'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        return ($summary['pages_failed'] > 0 || ($failOnPdfConversionFailure && $summary['markdown_failed'] > 0)) ? 1 : 0;
     }
 
     private function fetchPageHtml(string $pageUrl): array
@@ -305,6 +307,11 @@ class DownloadEverettPDFMarkdown extends Command
             if (($scraperFirst['success'] ?? false) === true || ($scraperFirst['status'] ?? null) === 'missing') {
                 return $scraperFirst;
             }
+
+            return [
+                'success' => false,
+                'message' => 'Scraper-first PDF conversion failed: ' . ($scraperFirst['message'] ?? 'Unknown error.'),
+            ];
         }
 
         $directFailure = null;
