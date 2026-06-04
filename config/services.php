@@ -93,6 +93,7 @@ return [
         'user_name' => env('SCRAPER_X_USER_NAME', 'Guest'),
         'user_role' => env('SCRAPER_X_USER_ROLE', 'guest'),
         'wait_seconds' => env('SCRAPER_WAIT_SECONDS', '5'),
+        'prefer_for_everett' => env('SCRAPER_PREFER_FOR_EVERETT', true),
     ],
 
     'analysis_api' => [

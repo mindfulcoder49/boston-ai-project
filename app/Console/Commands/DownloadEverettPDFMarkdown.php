@@ -203,6 +203,13 @@ class DownloadEverettPDFMarkdown extends Command
 
     private function fetchPageHtml(string $pageUrl): array
     {
+        if ($this->preferScraperForEverett()) {
+            $scraperFirst = $this->fetchPageHtmlViaScraper($pageUrl);
+            if (($scraperFirst['success'] ?? false) === true) {
+                return $scraperFirst;
+            }
+        }
+
         $directFailure = null;
 
         try {
@@ -293,6 +300,13 @@ class DownloadEverettPDFMarkdown extends Command
 
     private function convertPdfToMarkdown(string $pdfLink, string $pdfFilepath, string $markdownFilepath): array
     {
+        if ($this->preferScraperForEverett()) {
+            $scraperFirst = $this->convertPdfToMarkdownViaScraper($pdfLink, $markdownFilepath);
+            if (($scraperFirst['success'] ?? false) === true || ($scraperFirst['status'] ?? null) === 'missing') {
+                return $scraperFirst;
+            }
+        }
+
         $directFailure = null;
 
         try {
@@ -448,6 +462,11 @@ class DownloadEverettPDFMarkdown extends Command
             'X-User-Name' => $scraperConfig['user_name'] ?? 'Guest',
             'X-User-Role' => $scraperConfig['user_role'] ?? 'guest',
         ];
+    }
+
+    private function preferScraperForEverett(): bool
+    {
+        return filter_var(config('services.scraper_service.prefer_for_everett', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     private function isValidPdfResponse(Response $response): bool

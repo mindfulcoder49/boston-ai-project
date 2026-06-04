@@ -30,7 +30,7 @@ return [
 
     'dependency_health' => [
         'snapshot_path' => storage_path('app/backend_admin/ingestion_dependency_health.json'),
-        'scraper_timeout_seconds' => (int) env('BACKEND_ADMIN_SCRAPER_TIMEOUT_SECONDS', 5),
+        'scraper_timeout_seconds' => (int) env('BACKEND_ADMIN_SCRAPER_TIMEOUT_SECONDS', 30),
         'worker_heartbeat_path' => storage_path('app/backend_admin/admin_long_worker_heartbeat.json'),
         'worker_heartbeat_max_age_minutes' => (int) env('BACKEND_ADMIN_WORKER_HEARTBEAT_MAX_AGE_MINUTES', 180),
         'scraper_health_path' => env('BACKEND_ADMIN_SCRAPER_HEALTH_PATH', 'health'),

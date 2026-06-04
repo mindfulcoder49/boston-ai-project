@@ -38,6 +38,7 @@ class DownloadEverettPDFMarkdownTest extends TestCase
             'everett_datasets.markdown_output_directory' => 'test-markdown-output',
             'everett_datasets.pdfs_directory' => 'test-pdfs',
             'everett_datasets.html_pages_directory' => 'test-html',
+            'services.scraper_service.prefer_for_everett' => false,
         ]);
     }
 
@@ -146,6 +147,7 @@ class DownloadEverettPDFMarkdownTest extends TestCase
             'services.scraper_service.user_name' => 'Tester',
             'services.scraper_service.user_role' => 'admin',
             'services.scraper_service.wait_seconds' => 1,
+            'services.scraper_service.prefer_for_everett' => false,
         ]);
 
         Http::fake(function (Request $request) {
@@ -179,6 +181,52 @@ class DownloadEverettPDFMarkdownTest extends TestCase
 
         $this->assertCount(1, File::glob($this->markdownOutputDir . '/fallback_*.md'));
         $this->assertCount(0, File::glob($this->pdfOutputDir . '/fallback_*.pdf'));
+    }
+
+    public function test_it_can_prefer_scraper_for_everett_fetches(): void
+    {
+        config([
+            'services.scraper_service.base_url' => 'https://scraper.example.com',
+            'services.scraper_service.user_id' => '1',
+            'services.scraper_service.user_name' => 'Tester',
+            'services.scraper_service.user_role' => 'admin',
+            'services.scraper_service.wait_seconds' => 1,
+            'services.scraper_service.prefer_for_everett' => true,
+        ]);
+
+        Http::fake(function (Request $request) {
+            if ($request->url() === 'https://example.com/arrest_2022.php') {
+                return Http::response('direct path should not be used', 500);
+            }
+
+            if ($request->url() === 'https://files.example.com/preferred.pdf') {
+                return Http::response('direct PDF path should not be used', 500);
+            }
+
+            if ($request->url() === 'https://scraper.example.com/scrape_url' && $request->method() === 'POST') {
+                $payload = $request->data();
+
+                if (($payload['url'] ?? null) === 'https://example.com/arrest_2022.php') {
+                    return Http::response(['html' => '<html><a href="https://files.example.com/preferred.pdf">preferred</a></html>'], 200);
+                }
+
+                if (($payload['url'] ?? null) === 'https://files.example.com/preferred.pdf') {
+                    return Http::response("ARREST LOG\n\nDOE, JOHN\n123 MAIN ST\nage: 34 arrest date: 01/05/2025 case: 123456\nASSAULT\n", 200);
+                }
+            }
+
+            return Http::response('unexpected request', 500);
+        });
+
+        $this->artisan('app:download-everett-pdf-markdown')
+            ->expectsOutputToContain('Using scraper fallback to fetch Everett page: https://example.com/arrest_2022.php')
+            ->expectsOutputToContain('Using scraper fallback to convert Everett PDF: https://files.example.com/preferred.pdf')
+            ->assertExitCode(0);
+
+        $this->assertCount(1, File::glob($this->markdownOutputDir . '/preferred_*.md'));
+
+        Http::assertNotSent(fn (Request $request) => $request->url() === 'https://example.com/arrest_2022.php');
+        Http::assertNotSent(fn (Request $request) => $request->url() === 'https://files.example.com/preferred.pdf');
     }
 
     public function test_non_404_pdf_conversion_failure_still_fails_the_command(): void
