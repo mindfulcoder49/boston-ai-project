@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePersonCrashDataTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -13,6 +13,10 @@ class CreatePersonCrashDataTable extends Migration
      */
     public function up()
     {
+        if (Schema::connection('person_crash_data_db')->hasTable('person_crash_data')) {
+            return;
+        }
+
         Schema::connection('person_crash_data_db')->create('person_crash_data', function (Blueprint $table) {
             $table->id(); 
 
@@ -238,4 +242,4 @@ class CreatePersonCrashDataTable extends Migration
     {
         Schema::connection('person_crash_data_db')->dropIfExists('person_crash_data');
     }
-}
+};

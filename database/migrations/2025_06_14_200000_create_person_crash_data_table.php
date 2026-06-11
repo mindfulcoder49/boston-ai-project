@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePersonCrashDataTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -273,4 +273,4 @@ class CreatePersonCrashDataTable extends Migration
             $table->dropColumn('person_crash_data_id');
         });
     }
-}
+};

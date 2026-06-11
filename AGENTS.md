@@ -25,11 +25,16 @@ At the beginning of every session, before doing substantial work:
 - Prefer small, reversible, well-instrumented changes.
 - If a task touches analytics, SEO, backend operations, or monetization, align the work with the corresponding `docs/ops` playbook.
 - If a task touches social distribution, product page management, or public content planning, align the work with [docs/ops/social-distribution.md](docs/ops/social-distribution.md).
+- For PublicDataWatch LinkedIn Page drafting, default to `Signal` as the authorial persona unless the playbook documents a specific exception.
+- For social drafting, do not publish inert changelog copy; use the human-interest screen in [docs/ops/social-distribution.md](docs/ops/social-distribution.md) so posts create curiosity, orientation, agency, or relevance for a real reader.
+- For LinkedIn drafting, remember the feed is competitive and noisy: use a stop-scroll hook, allow tasteful emojis and Unicode bold, and reject generic AI-sounding product prose.
+- For PublicDataWatch LinkedIn drafts, default to the direct `Hey, Signal here` operator-check-in format with a concrete brag list of what Signal handled so Alex did not have to.
 - Prefer standalone local tooling for analytics, ops automation, and non-production test infrastructure when the work does not need to run on Hostinger or inside Laravel.
 - For Laravel commands, tests, and runtime validation, prefer `./vendor/bin/sail ...` when Sail is available so verification matches the actual app runtime.
 - For deployment or server-access work, check [docs/ops/backend-administration.md](docs/ops/backend-administration.md) for the deploy flow, and use local `~/.ssh/config` for exact SSH connection details.
 - When work identifies a `founder_review` or `founder_required` external action, create or update the task in `tools/exoskeleton` before handing the task back to the founder.
 - Founder queue tasks must be self-contained. Do not rely on the founder opening markdown files to know what to do; include exact copy, exact values, or exact step text directly in the task.
+- When checking whether a founder task or external setup is still unfinished, inspect the founder queue with full history, not just open items. Use `tools/exoskeleton` with `--status all` and review relevant `done` tasks before creating a new queue item or claiming the work is still pending.
 - Treat new cleanup or retention automation as approval-sensitive work: add a dry-run review path first, then get founder approval before enabling destructive automation.
 - When making recommendations or planning work, separate:
   - safe agent-driven actions

@@ -116,9 +116,11 @@ Current observability status:
 - the scheduler now defaults that daily pipeline timezone directly to `America/New_York` instead of inheriting `app.timezone`, because the Hostinger app runtime itself is still `UTC`
 - the main remaining backend-admin follow-up is live runtime evidence:
   - confirm the scheduler-driven worker heartbeat reflects the real queue-worker path
-  - confirm the `sysadmin/` DNS sync runtime is publishing its S3 status artifact in the environment that actually runs it
-- the sysadmin runtime must have `S3_BUCKET_NAME` configured if you want DNS sync evidence published to `ops/health/ec2_dns_status.json`, but missing DNS evidence is now informational rather than a backend-health warning
-- the scraper backend now exposes `GET /health` in the `opportunityHarvester` service, and Laravel now probes that path directly and requires a successful HTTP response for scraper health
+- scraper dependency diagnosis is now Fly.io reachability first:
+  - daily automated backend health should check the Fly scraper `/health` endpoint directly
+  - the intended scraper base URL is `https://pdw-everett-scraper.fly.dev`
+  - the old EC2-to-Hostinger DNS repair path is no longer part of the scraper dependency loop
+- the scraper backend exposes `GET /health` in the Everett-specific Fly service, and Laravel probes that path directly and requires a successful HTTP response for scraper health
 - the Montgomery County MD crime seeder now remaps the current source CSV headers to the canonical schema fields and filters against the live table columns before upsert, which fixes the recurring `Unknown column 'block_address'` failure caused by source-schema drift
 - the Seattle crime seeder now remaps the current source `nibrs_group_ab` header to the canonical `nibrs_group_a_b` field and filters against the live table columns before upsert so source-header drift does not silently degrade recent/full Seattle seeding
 - the Everett PDF markdown downloader now treats individual `404` historical source PDFs as warnings instead of failing the whole daily run; non-`404` scraper/PDF conversion failures still fail the command
@@ -141,7 +143,7 @@ Current first-pass closeout status:
 - the concrete execution order, file targets, acceptance criteria, and test plan for those issues are tracked in [2026-03-25-backend-admin-implementation-plan.md](./2026-03-25-backend-admin-implementation-plan.md)
 - the first-pass code implementation is now complete
 - the most important remaining follow-up areas are:
-  - validation of worker heartbeat and DNS status artifact publishing in the real external runtimes
+  - validation of worker heartbeat in the real external runtime
   - the next manual storage-retention trial for `cambridge-socrata-datasets`
 
 ## Current Production Deploy

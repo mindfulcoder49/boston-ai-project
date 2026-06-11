@@ -60,7 +60,7 @@ Build a repeatable operating system where:
 - As of March 26, 2026, the founder confirmed Hostinger production is using a single cron entry:
   - `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
 - As of March 28, 2026, the daily pipeline is configured to run at `07:00` in `America/New_York`.
-- The remaining backend-admin follow-up is confirming that the scheduler-driven worker heartbeat and DNS status artifact are visible in the live runtimes.
+- The remaining backend-admin follow-up is confirming Fly.io scraper cutover in production runtime after `SCRAPER_API_BASE_URL` points at `https://pdw-everett-scraper.fly.dev`.
 
 ## Delivery Loop
 
@@ -88,6 +88,7 @@ Use the local founder action queue in `tools/exoskeleton` as the default handoff
 
 Required discipline:
 - when work reveals a `founder_review` or `founder_required` action, create or update the queue item before ending the task or asking the founder to act
+- when deciding whether founder work is still open, or when scanning for unfinished plans, inspect the queue with full history using `--status all`; review relevant `done` tasks before creating a new queue item or reporting the work as still pending
 - include the exact action, external system, success criteria, blocking reason, and source doc or workflow
 - queue items for the founder must be self-contained and actionable without requiring the founder to open markdown files
 - if the action is a post, message, setting change, or external form entry, include the exact copy or exact values directly in the queue item

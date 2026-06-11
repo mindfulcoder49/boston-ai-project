@@ -632,11 +632,13 @@ This is the recommended implementation order for the actual coding session:
 
 ## Current Founder Queue Item
 
-The current founder-review handoff for this workstream is:
+Historical note:
 
-- `task_1b82f5778553` in `tools/exoskeleton`
+- the original queue item referenced for this workstream, `task_1b82f5778553`, is no longer present in the current `tools/exoskeleton` queue data
 
-It should be updated rather than replaced if the funnel definition changes again.
+Current rule:
+
+- if this funnel needs new founder-review or founder-required follow-up, create a fresh self-contained queue item in `tools/exoskeleton` instead of relying on the stale historical id
 
 ## Work Log
 

@@ -34,11 +34,11 @@ Navigation and footer are generated from:
 - **Route**: `GET /`
 - **Controller**: `HomeController::index()`
 - **Vue Page**: `resources/js/Pages/Home.vue`
-- **Purpose**: primary acquisition surface; leads with the address-first crime preview funnel and then introduces supported city pages and deeper explore tools
+- **Purpose**: primary acquisition surface; currently leads with supported city-page selection and keeps the direct address preview as an explicit secondary CTA
 - **Data passed**: `cities[]`, `dataCategories[]`, `stats{totalRecords, cityCount, dataCategoryCount}`
 - **Notes**:
   - city cards should point to city landing pages first
-  - the hero should always make the first action obvious: search an address
+  - the hero should always make the first action obvious: choose a supported city page or jump straight to the direct address preview
 
 ### Crime Address Preview
 
@@ -172,7 +172,7 @@ These still exist but are no longer the primary public wedge:
 
 The public site should always make it easier to:
 
-- enter an address
+- choose a supported place or enter an address
 - understand the immediate answer
 - decide whether deeper tools are worth opening
 

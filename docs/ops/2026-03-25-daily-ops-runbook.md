@@ -132,12 +132,11 @@ Likely commands:
 - `app:download-everett-pdf-markdown`
 
 Likely dependency area:
-- scraper/PDF helper service
-- EC2 public IP -> Hostinger DNS sync
+- Fly.io Everett scraper/PDF helper service
 
 Next check:
-- confirm whether the scraper hostname or service appears unavailable
-- if needed, review the separate `sysadmin/` DNS sync tool status before retrying
+- confirm whether `https://pdw-everett-scraper.fly.dev/health` responds successfully
+- if scraper reachability failed, inspect Fly app health/logs before retrying scraper-dependent acquisition
 
 #### If a Cambridge acquisition command failed
 
@@ -311,15 +310,14 @@ Current policy:
 - production Hostinger cron is confirmed to be the scheduler entry `* * * * * /usr/bin/php /home/u353344964/domains/publicdatawatch.com/bostonApp/artisan schedule:run`
 - the remaining uncertainty is whether the scheduler-driven queue-worker path is publishing clean heartbeat evidence in the live runtime
 - queue timeout policy outside the intended scheduled `admin-long` worker may not match long-running command envelopes
-- Boston and Everett rely on an external scraper helper
-- that scraper helper relies on the EC2-to-Hostinger DNS sync loop
-- the real worker-heartbeat and DNS-status evidence still need confirmation in the live external runtimes
+- Everett fallback conversion relies on the external Fly.io scraper helper at `https://pdw-everett-scraper.fly.dev`
+- scraper diagnosis is Fly app reachability and logs first; the old EC2-to-Hostinger DNS sync loop is no longer part of this dependency
 
 ## What This Runbook Does Not Yet Solve
 
 This runbook does not yet guarantee:
 - that the scheduler-driven worker path is publishing clean heartbeat evidence
-- that the external sysadmin runtime is publishing clean DNS status evidence
+- that the Fly app is healthy during a scraper incident
 - that storage-pressure review is surfaced in the same one-page view as freshness health
 
-Those are the main remaining external-runtime follow-ups, not missing code features inside Laravel.
+Those are the main remaining operational follow-ups, not missing code features inside Laravel.

@@ -113,9 +113,8 @@ Result:
 Surface checks for the external dependencies that can silently break ingestion.
 
 Important dependency checks:
-- scraper helper hostname resolution
-- scraper helper reachability
-- EC2 public IP versus current Hostinger DNS record
+- Fly.io scraper helper reachability
+- configured scraper base URL
 - queue worker heartbeat or recent job execution evidence
 
 This does not have to block the whole UI at first. Even a visible warning panel is enough.
@@ -219,7 +218,6 @@ Implemented on March 25, 2026:
   - `app:cache-metrics-data`
 - dependency health checks:
   - scraper reachability
-  - DNS status artifact consumption
   - queue worker heartbeat evidence
 - backend health dashboard
 - lightweight alerts:
@@ -236,8 +234,13 @@ Backward-compatibility note:
 
 Still remaining after implementation:
 - Hostinger cron cutover to `php artisan schedule:run`
-- confirming that the real external sysadmin runtime is publishing its DNS status artifact
 - confirming fresh worker heartbeat evidence in the real scheduled runtime
+- confirming production points at the Fly scraper base URL and reports a healthy scraper dependency
+
+Status update as of April 17, 2026:
+- the Hostinger cron cutover is complete
+- fresh worker-heartbeat evidence has been confirmed in production
+- the remaining scraper runtime follow-up is Fly.io production cutover validation
 
 Retention and storage follow-up:
 - cleanup review is now explicitly dry-run-first

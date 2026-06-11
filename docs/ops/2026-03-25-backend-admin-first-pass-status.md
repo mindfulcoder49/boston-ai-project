@@ -23,10 +23,10 @@ Implemented on March 25, 2026:
 - queue runtime policy cleanup
   - `RunArtisanCommandJob` now targets the dedicated `admin-long` queue
   - long-running orchestration uses a 2-hour queue timeout with `tries=1`
-- scraper and DNS dependency health checks
+- scraper dependency health checks
   - `app:check-ingestion-dependencies`
   - queue worker heartbeat tracking
-  - read-only DNS status artifact consumption from S3
+  - direct scraper `/health` probing
 - summary-first operational logging
   - `app:download-boston-dataset-via-scraper`
   - `app:download-everett-pdf-markdown`
@@ -72,12 +72,15 @@ Why it matters:
 Status:
 - partially complete
 
+Confirmed on production as of April 17, 2026:
+- the real scheduled worker path is leaving fresh heartbeat evidence
+
 What remains:
-- confirm the real sysadmin runtime is publishing `ops/health/ec2_dns_status.json`
-- confirm the real scheduled worker path is leaving fresh heartbeat evidence
+- confirm production is pointed at the Fly.io scraper base URL and that the live dependency check reports the scraper healthy
 
 Why it matters:
-- until those signals appear, dependency health will still show warnings instead of a clean healthy state
+- worker-heartbeat uncertainty is no longer blocking backend-health interpretation
+- scraper health should now be interpreted from the Fly `/health` endpoint, not from the old EC2 DNS status artifact
 
 ### 3. Next Manual Retention Trial
 
@@ -101,5 +104,5 @@ The first backend-admin pass is no longer blocked on missing code.
 The remaining work is now mostly:
 
 - external cutover
-- runtime confirmation
+- Fly scraper runtime confirmation
 - the next approved retention action

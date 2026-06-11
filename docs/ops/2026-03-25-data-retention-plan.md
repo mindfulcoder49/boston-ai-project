@@ -169,6 +169,56 @@ Outcome:
 - the preview-first workflow is now validated on both log cleanup and dataset cleanup
 - the next recommended manual trial is `cambridge-socrata-datasets`
 
+## June 2026 Scoped Cleanup
+
+Executed on production on `2026-06-08`.
+
+First conservative pass used cutoff `2026-03-10`:
+
+- `pipeline-runs` dry run: `44` files, about `52 MB`; delete result: `44` files deleted, `52 MB` freed
+- `boston-datasets` dry run: `8` files, about `878.37 MB`; delete result: `8` files deleted, `878.37 MB` freed
+- `cambridge-socrata-datasets` dry run: `7` files, about `143.92 MB`; delete result: `7` files deleted, `143.92 MB` freed
+- repeat dry runs for all three targets returned `0` candidates for the same cutoff
+
+Second retention pass used cutoff `2026-05-09`, keeping about 30 days of current PublicDataWatch artifacts:
+
+- `boston-datasets` dry run: `462` files, about `46.11 GB`; delete result: `462` files deleted, `46.11 GB` freed
+- `cambridge-socrata-datasets` dry run: `364` files, about `7.58 GB`; delete result: `364` files deleted, `7.58 GB` freed
+- `pipeline-runs` dry run: `2,429` files, about `6.53 GB`; delete result: `2,429` files deleted, `6.53 GB` freed
+- repeat dry runs for all three targets returned `0` candidates for the same cutoff
+
+Additional dry-run-only findings from the initial sweep:
+
+- `everett-datasets`: `2,547` files, about `39.08 MB`; left untouched because Everett ingestion was recently sensitive and the space savings are small
+- `chicago-datasets`: `1` file, about `10.83 MB`; left untouched pending explicit review for newer city targets
+- `san-francisco-datasets`: `1` file, about `2.24 MB`; left untouched pending explicit review for newer city targets
+- `seattle-datasets`: `1` file, about `1.06 MB`; left untouched pending explicit review for newer city targets
+- `montgomery-county-md-datasets`: `1` file, about `204.09 MB`; left untouched pending explicit review for newer city targets
+- `massachusetts-datasets`, `new-york-datasets`, and current `laravel-log-archives`: `0` candidates
+
+Legacy-host cleanup on `/home/u353344964/domains/alcivartech.com`:
+
+- `bostonApp/storage/app/datasets`: manual dry run found `297` files older than 30 days, about `16.56 GB`; deleted those files while excluding Everett and Cambridge daily police log paths
+- `bostonApp/storage/logs/laravel.log`: truncated from about `5.0 GB` to `0 B`
+- `startupBos/midland/storage/logs/laravel.log`: truncated from about `15.2 GB` to `0 B`; removed two stale editor swap files beside it
+- legacy Boston `app:cleanup` was unavailable, so cleanup used explicit path-scoped `find` checks instead of broad directory removal
+
+Post-cleanup production measurements:
+
+- current PublicDataWatch app `storage`: about `39G`, down from about `100G`
+- current PublicDataWatch `storage/app/datasets`: about `34G`, down from about `87G`
+- current PublicDataWatch `storage/logs`: about `4.5G`, down from about `12G`
+- current PublicDataWatch `storage/logs/pipeline_runs`: about `3.7G`, down from about `11G`
+- account home `/home/u353344964`: about `49G` by `du` after legacy cleanup
+
+Outcome:
+
+- the repeated scoped cleanup path remains safe for previously reviewed current-app targets
+- 30-day artifact retention is the meaningful storage lever for current PublicDataWatch snapshots and pipeline logs
+- broader city dataset cleanup should stay review-driven until each target is validated independently
+- Everett cleanup is not currently worth the operational risk for only about `39 MB`
+- oversized current logs in legacy apps were a separate storage issue and need follow-up log hygiene if those apps remain active
+
 ## Recommended Next Phases
 
 ### Phase 2. Add Cleanup Observability

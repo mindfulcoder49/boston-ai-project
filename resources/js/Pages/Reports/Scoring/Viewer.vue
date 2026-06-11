@@ -173,6 +173,7 @@ import { ensureGeoJsonBoundaries, getGeoJsonBoundary } from '@/Utils/h3Boundarie
 const { getName } = useH3Names();
 import GoogleAddressSearch from '@/Components/GoogleAddressSearch.vue';
 import ReportResolutionControl from '@/Components/ReportResolutionControl.vue';
+import { cloneResults as cloneViewerResults, normalizeViewerReport } from '@/Pages/Reports/Scoring/viewerState';
 import 'leaflet/dist/leaflet.css';
 import * as L from 'leaflet';
 import * as h3 from 'h3-js';
@@ -270,24 +271,8 @@ watch(colorSteps, () => {
     void drawMap();
 });
 
-function cloneResults(results) {
-    return JSON.parse(JSON.stringify(results ?? []));
-}
-
-function processLoadedReport(report) {
-    const originalResults = cloneResults(report.scoring_data?.results);
-    const originalLookup = Object.fromEntries(originalResults.map(result => [result.h3_index, result]));
-
-    return {
-        ...report,
-        original_results: originalResults,
-        original_lookup: originalLookup,
-        result_lookup: Object.fromEntries(originalResults.map(result => [result.h3_index, result])),
-    };
-}
-
 function storeLoadedReport(report) {
-    const processed = processLoadedReport(report);
+    const processed = normalizeViewerReport(report);
     reportDataByResolution.value[processed.resolution] = processed;
     return processed;
 }
@@ -570,7 +555,7 @@ function resetWeights() {
     // Reset all resolutions to their original scores
     for (const res in reportDataByResolution.value) {
         const report = reportDataByResolution.value[res];
-        updateReportResults(report, cloneResults(report.original_results));
+        updateReportResults(report, cloneViewerResults(report.original_results));
     }
     resetAndDrawMap();
 }

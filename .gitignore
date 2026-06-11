@@ -67,3 +67,4 @@ tools/exoskeleton/data/*.sqlite3
 
 tools/ 
 
+/test-results

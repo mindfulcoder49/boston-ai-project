@@ -30,7 +30,7 @@ What shipped:
 What still remains is mostly outside the codebase:
 
 - Hostinger cron cutover to `php artisan schedule:run`
-- confirming the external sysadmin runtime publishes the DNS status artifact
+- confirming production points at the Fly scraper base URL and reports a healthy scraper dependency
 - the next approved retention cleanup trial
 
 ## Scope
@@ -214,13 +214,11 @@ Add a new Laravel command:
 - `app:check-ingestion-dependencies`
 
 It should report:
-- scraper hostname resolution
-- scraper HTTP reachability
-- DNS sync status freshness
-- DNS current IP vs EC2 current IP, when available through a shared health artifact
+- configured scraper base URL
+- Fly scraper HTTP reachability
 - recent queue-worker evidence
 
-Because DNS repair lives in `sysadmin/`, keep repair there and expose read-only status outward.
+Because scraper hosting is moving to Fly.io, keep dependency health read-only from Laravel and inspect Fly app health/logs when reachability fails.
 
 Recommended `sysadmin/` addition:
 - a JSON status mode or companion command that outputs:
@@ -242,48 +240,34 @@ Laravel side:
 - new support class such as `App\Support\IngestionDependencyHealth`
 - admin controller and admin UI for display
 
-`sysadmin/` side:
-- [main.py](/home/briarmoss/Documents/boston-ai-project/sysadmin/main.py)
-- [sync_ec2_dns.py](/home/briarmoss/Documents/boston-ai-project/sysadmin/actions/sync_ec2_dns.py)
-- possibly a new uploader/helper if the status artifact is written to S3
-
 ### Implementation Steps
 
-1. Add JSON output support to the DNS sync tool.
-2. Add a way to publish or persist the latest DNS health status.
-3. Add Laravel-side dependency health aggregation.
-4. Add a short-timeout scraper reachability probe.
-5. Add queue-worker evidence, such as:
+1. Add Laravel-side dependency health aggregation.
+2. Add a short-timeout scraper reachability probe.
+3. Add queue-worker evidence, such as:
    - recent `jobs` activity
    - recent successful `RunArtisanCommandJob`
    - or a timestamp file written by the worker path
-6. Optionally run the dependency check as part of `app:dispatch-daily-pipeline`.
+4. Optionally run the dependency check as part of `app:dispatch-daily-pipeline`.
 
 ### Test Plan
 
-Python tests:
-- dry-run/status mode returns valid JSON with expected keys
-- mismatch and already-correct cases serialize correctly
-
 Laravel tests:
-- HTTP reachability check handles success, timeout, and DNS failure
+- HTTP reachability check handles success, timeout, and failure
 - dependency-check command produces expected status payload with mocked inputs
-- stale DNS status artifact is marked unhealthy
 
 Local verification:
-- run the sysadmin status command locally in dry-run mode
 - run `php artisan app:check-ingestion-dependencies`
 
 Production-safe verification:
 - run the dependency check alone on production
-- confirm it reports current scraper/DNS state without mutating anything
+- confirm it reports current Fly scraper health without mutating anything
 
 ### Acceptance Criteria
 
 - dependency health can be reviewed without running the pipeline
-- DNS repair remains in Python tooling
 - Laravel consumes read-only health information only
-- Boston/Everett dependency issues become visible before ingestion failure
+- Everett scraper dependency issues become visible before ingestion failure
 
 ## Workstream 4: Summary-First Logging For Noisy Commands
 

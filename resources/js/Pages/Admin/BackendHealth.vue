@@ -83,6 +83,17 @@
 
             <div class="rounded-md border border-gray-200 p-4">
               <div class="flex items-center justify-between">
+                <div class="font-medium text-gray-800">Scraper Reachability</div>
+                <span :class="pillClass(scraperDependency?.status)" class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold">
+                  {{ scraperDependency?.label ?? 'Unknown' }}
+                </span>
+              </div>
+              <div class="mt-2 break-words text-gray-600">{{ scraperDependency?.message ?? 'No scraper health snapshot available.' }}</div>
+              <div class="mt-1 break-all text-xs text-gray-500">{{ scraperDependency?.endpoint ?? 'No scraper endpoint configured' }}</div>
+            </div>
+
+            <div class="rounded-md border border-gray-200 p-4">
+              <div class="flex items-center justify-between">
                 <div class="font-medium text-gray-800">Queue Worker</div>
                 <span :class="pillClass(snapshot.dependencyHealth?.queue_worker?.status)" class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold">
                   {{ snapshot.dependencyHealth?.queue_worker?.label ?? 'Unknown' }}
@@ -174,9 +185,11 @@ const props = defineProps({
 });
 
 const runtimeDependency = computed(() => {
-  return props.snapshot?.dependencyHealth?.local_ingestion_runtime
-    ?? props.snapshot?.dependencyHealth?.scraper
-    ?? null;
+  return props.snapshot?.dependencyHealth?.local_ingestion_runtime ?? null;
+});
+
+const scraperDependency = computed(() => {
+  return props.snapshot?.dependencyHealth?.scraper ?? null;
 });
 
 const formatDateTime = (dateTimeString) => {

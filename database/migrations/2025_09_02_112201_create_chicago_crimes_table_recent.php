@@ -3,14 +3,17 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
-class CreateChicagoCrimesTableRecent extends Migration
+return new class extends Migration
 {
     protected $connection = 'chicago_db';
 
-    public function up()
+    public function up(): void
     {
+        if (Schema::connection($this->connection)->hasTable('chicago_crimes')) {
+            return;
+        }
+
         Schema::connection($this->connection)->create('chicago_crimes', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
             $table->string('case_number')->nullable()->index();
@@ -37,8 +40,8 @@ class CreateChicagoCrimesTableRecent extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::connection($this->connection)->dropIfExists('chicago_crimes');
     }
-}
+};

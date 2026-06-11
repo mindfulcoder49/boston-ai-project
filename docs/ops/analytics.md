@@ -143,7 +143,9 @@ Some report surfaces are excluded while other public artifact-like surfaces can 
 
 ### 3. Funnel reporting still needs a standing KPI layer
 
-The code has the events, but the weekly reporting habit still needs to be consistent.
+The code has the events, and `pdw-analytics weekly-kpi-report` now writes the standard weekly Markdown summary for the last two complete 7-day windows.
+
+What still needs to be consistent is the operating habit of generating and reading that report every week.
 
 ## Weekly KPI Baseline
 
@@ -168,6 +170,14 @@ The code has the events, but the weekly reporting habit still needs to be consis
 - plan selected
 - checkout started
 - checkout completed
+
+Recommended command:
+
+```bash
+cd tools/analytics
+source .venv/bin/activate
+pdw-analytics weekly-kpi-report
+```
 
 ## Safe Agent-Driven Work
 

@@ -180,7 +180,7 @@ Used by `TrendsController` (index listing) and `StatisticalAnalysisReportControl
 
 Tracks Stage 2 jobs. Key fields: `model_class`, `group_by_col`, `baseline_year`, `job_id`.
 
-Used by `YearlyCountComparisonController` (live API fetch using `job_id`).
+Used by `YearlyCountComparisonController`, which now prefers the pulled-back `AnalysisReportSnapshot` artifact cache keyed by `job_id`.
 
 ### `NewsArticle` Model
 
@@ -200,9 +200,10 @@ Not directly tied to analysis API jobs, but linked to `YearlyCountComparison` re
 ### YearlyCountComparisonController (Stage 2)
 
 1. Looks up `YearlyCountComparison` by `$reportId` → gets `job_id`
-2. **Live HTTP call**: `Http::get("{ANALYSIS_API_URL}/api/v1/jobs/{job_id}/results/stage2_yearly_count_comparison.json")`
-3. Passes `reportData` to `Reports/YearlyCountComparisonViewer` Vue page
-4. **Dependency on API being up** — if API is unreachable, page renders with null data
+2. Resolves `stage2_yearly_count_comparison.json` from `AnalysisReportSnapshot`
+3. Falls back to S3 listing only when the snapshot table is empty
+4. Passes `reportData` to `Reports/YearlyCountComparisonViewer` Vue page
+5. The historical live-API dependency described in earlier docs is no longer the primary render path
 
 ### ScoringReportController (Stage 5 & 6)
 
