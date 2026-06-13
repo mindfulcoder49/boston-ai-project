@@ -35,6 +35,28 @@ class IngestAnalysisArtifactsCommandTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('trends', function (Blueprint $table) {
+            $table->id();
+            $table->string('model_class');
+            $table->string('column_name');
+            $table->string('job_id');
+            $table->unsignedInteger('h3_resolution');
+            $table->decimal('p_value_anomaly', 8, 6);
+            $table->decimal('p_value_trend', 8, 6);
+            $table->json('analysis_weeks_trend')->nullable();
+            $table->unsignedInteger('analysis_weeks_anomaly')->default(4);
+            $table->timestamps();
+        });
+
+        Schema::create('yearly_count_comparisons', function (Blueprint $table) {
+            $table->id();
+            $table->string('model_class');
+            $table->string('group_by_col');
+            $table->unsignedInteger('baseline_year');
+            $table->string('job_id');
+            $table->timestamps();
+        });
+
         $this->artifactRoot = storage_path('framework/testing/analysis-artifacts-' . uniqid());
         File::ensureDirectoryExists($this->artifactRoot);
 
@@ -44,6 +66,8 @@ class IngestAnalysisArtifactsCommandTest extends TestCase
     protected function tearDown(): void
     {
         Cache::flush();
+        Schema::dropIfExists('yearly_count_comparisons');
+        Schema::dropIfExists('trends');
         Schema::dropIfExists('analysis_report_snapshots');
         File::deleteDirectory($this->artifactRoot);
 
@@ -54,13 +78,24 @@ class IngestAnalysisArtifactsCommandTest extends TestCase
     {
         $this->writeJson('job-stage4', 'stage4_h3_anomaly.json', [
             'parameters' => [
+                'model_class' => 'App\\Models\\CrimeData',
+                'column_name' => 'offense_code_group',
                 'h3_resolution' => 8,
                 'p_value_anomaly' => 0.05,
                 'p_value_trend' => 0.05,
+                'analysis_weeks_trend' => [4, 26, 52],
+                'analysis_weeks_anomaly' => 4,
             ],
             'results' => [],
         ]);
-        $this->writeJson('job-stage2', 'stage2_yearly_count_comparison.json', ['status' => 'success']);
+        $this->writeJson('job-stage2', 'stage2_yearly_count_comparison.json', [
+            'status' => 'success',
+            'parameters' => [
+                'model_class' => 'App\\Models\\CrimeData',
+                'group_by_col' => 'offense_code_group',
+                'baseline_year' => 2025,
+            ],
+        ]);
         $this->writeJson('job-score', 'stage6_historical_score_job-score.json', ['status' => 'success']);
         $this->writeJson('job-score', 'scoring_results_job-score.json', ['status' => 'success']);
         $this->writeJson('job-ignore', 'raw_export.json', ['ignored' => true]);
@@ -82,6 +117,18 @@ class IngestAnalysisArtifactsCommandTest extends TestCase
         $this->assertDatabaseMissing('analysis_report_snapshots', [
             'job_id' => 'job-ignore',
             'artifact_name' => 'raw_export.json',
+        ]);
+        $this->assertDatabaseHas('trends', [
+            'model_class' => 'App\\Models\\CrimeData',
+            'column_name' => 'offense_code_group',
+            'job_id' => 'job-stage4',
+            'h3_resolution' => 8,
+        ]);
+        $this->assertDatabaseHas('yearly_count_comparisons', [
+            'model_class' => 'App\\Models\\CrimeData',
+            'group_by_col' => 'offense_code_group',
+            'baseline_year' => 2025,
+            'job_id' => 'job-stage2',
         ]);
     }
 

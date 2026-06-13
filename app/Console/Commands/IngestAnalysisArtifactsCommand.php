@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\AnalysisReportSnapshot;
+use App\Models\Trend;
+use App\Models\YearlyCountComparison;
 use App\Services\TrendSummaryService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -93,6 +95,7 @@ class IngestAnalysisArtifactsCommand extends Command
                 ]
             );
 
+            $this->syncTrackingRow($jobId, $artifactName, $payload);
             $this->clearArtifactCaches($jobId);
 
             if ($artifactName === 'stage4_h3_anomaly.json') {
@@ -187,6 +190,60 @@ class IngestAnalysisArtifactsCommand extends Command
                 '--force' => true,
             ]);
         }
+    }
+
+    private function syncTrackingRow(string $jobId, string $artifactName, array $payload): void
+    {
+        $params = $payload['parameters'] ?? [];
+
+        if ($artifactName === 'stage2_yearly_count_comparison.json') {
+            $modelClass = $params['model_class'] ?? null;
+            $groupByCol = $params['group_by_col'] ?? $params['column_name'] ?? null;
+            $baselineYear = $params['baseline_year'] ?? null;
+
+            if (!$modelClass || !$groupByCol || !$baselineYear) {
+                $this->line("  <fg=yellow>Tracking row skipped for {$jobId}/{$artifactName} — missing Stage 2 metadata.</>");
+                return;
+            }
+
+            YearlyCountComparison::updateOrCreate(
+                [
+                    'model_class' => $modelClass,
+                    'group_by_col' => $groupByCol,
+                    'baseline_year' => (int) $baselineYear,
+                ],
+                ['job_id' => $jobId]
+            );
+
+            return;
+        }
+
+        if ($artifactName !== 'stage4_h3_anomaly.json') {
+            return;
+        }
+
+        $modelClass = $params['model_class'] ?? null;
+        $columnName = $params['column_name'] ?? null;
+
+        if (!$modelClass || !$columnName) {
+            $this->line("  <fg=yellow>Tracking row skipped for {$jobId}/{$artifactName} — missing Stage 4 metadata.</>");
+            return;
+        }
+
+        Trend::updateOrCreate(
+            [
+                'model_class' => $modelClass,
+                'column_name' => $columnName,
+                'h3_resolution' => (int) ($params['h3_resolution'] ?? 8),
+                'p_value_anomaly' => (float) ($params['p_value_anomaly'] ?? 0.05),
+                'p_value_trend' => (float) ($params['p_value_trend'] ?? 0.05),
+                'analysis_weeks_anomaly' => (int) ($params['analysis_weeks_anomaly'] ?? 4),
+            ],
+            [
+                'job_id' => $jobId,
+                'analysis_weeks_trend' => $params['analysis_weeks_trend'] ?? [4, 26, 52],
+            ]
+        );
     }
 
     private function warmTrendSummaries(array $stage4JobIds, bool $fresh): void
