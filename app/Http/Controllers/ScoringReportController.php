@@ -24,8 +24,15 @@ class ScoringReportController extends Controller
             $reports = Cache::rememberForever('scoring_reports_listing_v2', function () {
                 Log::info('Rebuilding scoring reports listing cache.');
 
-                // Fast path: snapshot table (populated by app:pull-analysis-reports)
-                $snapshots = AnalysisReportSnapshot::allForArtifactPrefixes(['scoring_results', 'stage6']);
+                // Fast path: snapshot table. Do not select payload here; score
+                // artifacts can be large and the listing only needs metadata.
+                $snapshots = AnalysisReportSnapshot::query()
+                    ->where(function ($query) {
+                        $query->where('artifact_name', 'like', 'scoring_results%')
+                            ->orWhere('artifact_name', 'like', 'stage6%');
+                    })
+                    ->select(['job_id', 'artifact_name', 's3_last_modified', 'pulled_at', 'updated_at'])
+                    ->get();
                 if ($snapshots->isNotEmpty()) {
                     $reportList = $this->buildReportListFromSnapshots($snapshots);
                 } else {
@@ -62,8 +69,7 @@ class ScoringReportController extends Controller
     {
         $reportList = [];
         foreach ($snapshots as $snapshot) {
-            $fileContent = $snapshot->payload;
-            $parameters  = $fileContent['parameters'] ?? ($fileContent['config'] ?? []);
+            $parameters = $this->parametersFromScoringSnapshotMeta($snapshot->job_id, $snapshot->artifact_name);
             $meta        = $this->resolveReportMeta($snapshot->job_id, $parameters);
             $city        = $this->resolveReportGroupName($parameters, $meta['model_class']);
             $dateRange   = 'N/A';
@@ -80,7 +86,7 @@ class ScoringReportController extends Controller
                 'city'           => $city,
                 'date_range_key' => $dateRange,
                 'resolution'     => $parameters['h3_resolution'] ?? 'N/A',
-                'source_job_id'  => $fileContent['source_job_id'] ?? null,
+                'source_job_id'  => null,
                 'model_class'    => $meta['model_class'],
                 'column_name'    => $meta['column_name'],
                 '_sort_key'      => $snapshot->s3_last_modified ?: optional($snapshot->pulled_at)->getTimestamp() ?: 0,
@@ -88,6 +94,21 @@ class ScoringReportController extends Controller
         }
 
         return $this->dedupeReportList($reportList);
+    }
+
+    private function parametersFromScoringSnapshotMeta(string $jobId, string $artifactName): array
+    {
+        $meta = $this->parseScoringJobIdForMeta($jobId);
+
+        preg_match('/-res(\d+)-/', $jobId, $resolutionMatches);
+
+        return array_filter([
+            'model_class' => $meta['model_class'],
+            'column_name' => $meta['column_name'],
+            'h3_resolution' => isset($resolutionMatches[1]) ? (int) $resolutionMatches[1] : null,
+            'city' => $this->resolveReportGroupName([], $meta['model_class']),
+            'artifact_name' => $artifactName,
+        ], fn($value) => $value !== null && $value !== '');
     }
 
     private function buildReportListFromS3(): array
