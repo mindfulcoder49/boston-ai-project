@@ -6,9 +6,9 @@ This document covers how the PublicDataWatch Laravel app integrates with the `op
 
 ```properties
 # .env
-ANALYSIS_API_URL=http://host.docker.internal:8030  # local dev (when Laravel runs in Docker)
-ANALYSIS_API_URL=http://localhost:8030              # local dev (when Laravel runs natively)
-ANALYSIS_API_URL=https://your-api-domain.com       # production
+ANALYSIS_API_URL=http://open-data-statistics-backend-1:8080  # local Sail network
+ANALYSIS_API_URL=http://localhost:8030                       # local dev when Laravel runs natively
+ANALYSIS_API_URL=https://your-api-domain.com                 # production
 ```
 
 Accessed in code via `config('services.analysis_api.url')`, configured in `config/services.php`.
@@ -30,12 +30,12 @@ Laravel (PublicDataWatch)
   │    YearlyCountComparison model ──────────────────────► Stage 2 job IDs
   │    (Stage 6 jobs logged only, no model yet)
   │
-  ├─ Results stored by open-data-statistics ──────────────► S3 bucket
+  ├─ Results stored by open-data-statistics ──────────────► local disk or S3 bucket
   │
   └─ Laravel controllers serve results to frontend
-       StatisticalAnalysisReportController ────────────── reads S3 directly
-       YearlyCountComparisonController ─────────────────── proxies API (live HTTP)
-       ScoringReportController ──────────────────────────── reads S3 directly
+       AnalysisReportSnapshot table ────────────────────── primary artifact cache
+       S3 ──────────────────────────────────────────────── fallback/archive path
+       Derived tables/caches ───────────────────────────── h3_hotspot_findings, trend summaries, listings
 ```
 
 ---
@@ -139,7 +139,7 @@ php artisan app:dispatch-yearly-count-comparison-jobs CrimeData --columns=offens
 
 **File**: `app/Console/Commands/DispatchHistoricalScoringJobsCommand.php`
 
-Exports model data → submits Stage 6 historical scoring jobs. No Laravel model tracks these job IDs (logged only). Results appear on S3 and show up in `ScoringReportController::index()` on next cache refresh.
+Exports model data → submits Stage 6 historical scoring jobs. No Laravel model tracks these job IDs yet, so the dispatched job IDs are logged. Results become visible after their JSON artifacts are ingested into `analysis_report_snapshots` by `app:ingest-analysis-artifacts` or `app:pull-analysis-reports`.
 
 ```bash
 php artisan app:dispatch-historical-scoring-jobs CrimeData \
@@ -193,9 +193,10 @@ Not directly tied to analysis API jobs, but linked to `YearlyCountComparison` re
 ### StatisticalAnalysisReportController (Stage 4)
 
 1. Looks up `Trend` by `$trendId` → gets `job_id`
-2. Fetches `{job_id}/stage4_h3_anomaly.json` directly from S3 (`Storage::disk('s3')`)
-3. Passes full `reportData` JSON to `Reports/StatisticalAnalysisViewer` Vue page via Inertia
-4. **No live API call at page render** — relies on S3 storage
+2. Resolves `{job_id}/stage4_h3_anomaly.json` from `AnalysisReportSnapshot`
+3. Falls back to S3 only when no local snapshot exists
+4. Passes full `reportData` JSON to `Reports/StatisticalAnalysisViewer` Vue page via Inertia
+5. **No live API call at page render** — relies on the artifact cache
 
 ### YearlyCountComparisonController (Stage 2)
 
@@ -208,18 +209,19 @@ Not directly tied to analysis API jobs, but linked to `YearlyCountComparison` re
 ### ScoringReportController (Stage 5 & 6)
 
 Index:
-1. Scans all S3 directories for files starting with `scoring_results` or `stage6`
-2. Reads metadata from each file's JSON (`parameters.city`, `parameters.date_range`, `parameters.h3_resolution`)
-3. Groups by city → date_range, caches forever under key `scoring_reports_listing_grouped`
-4. Cache cleared by `POST /admin/scoring-reports/refresh`
+1. Reads `AnalysisReportSnapshot` rows whose artifact names start with `scoring_results` or `stage6`
+2. Falls back to scanning S3 when snapshots are unavailable
+3. Reads metadata from each file's JSON (`parameters.city`, `parameters.date_range`, `parameters.h3_resolution`)
+4. Groups by city/date where applicable and caches the listing
+5. Cache is cleared by `app:ingest-analysis-artifacts`, `app:pull-analysis-reports`, or the admin refresh action
 
 Show:
-1. Finds target report in cache by `job_id` + `artifact_name`
-2. Loads all reports in same city+date group from S3 (with `scoring_data` embedded)
+1. Finds target report by `job_id` + `artifact_name`
+2. Resolves report JSON from `AnalysisReportSnapshot` first, then S3
 3. Passes `reportGroup[]` + `initialReport` to `Reports/Scoring/Viewer` Vue page
 
 Client-side API calls (from Viewer Vue page):
-- `POST /api/scoring-reports/score-for-location` → `ScoringReportController::getScoreForLocation()` — reads scoring artifact + source Stage 4 artifact from S3, returns score + analysis for a given H3 index. Source Stage 4 data cached in Laravel by `analysis_data_{sourceJobId}` key.
+- `POST /api/scoring-reports/score-for-location` → `ScoringReportController::getScoreForLocation()` — reads scoring artifact + source Stage 4 artifact from the snapshot cache or S3, returns score + analysis for a given H3 index. Source Stage 4 data cached in Laravel by `analysis_data_{sourceJobId}` key.
 - `GET /api/scoring-reports/source-analysis/{jobId}` → `ScoringReportController::getSourceAnalysisData()` — returns full Stage 4 JSON for a job (cached forever).
 
 ---
@@ -255,10 +257,10 @@ When `getScoreForLocation()` receives an H3 index lookup, it:
 
 ---
 
-## S3 Storage Layout
+## Artifact Storage Layout
 
 ```
-{s3-bucket}/
+{artifact-root}/
   {job_id}/
     stage2_yearly_count_comparison.json    # Stage 2 results
     stage4_h3_anomaly.json                 # Stage 4 results (main analysis)
@@ -268,6 +270,38 @@ When `getScoreForLocation()` receives an H3 index lookup, it:
 
 All scoring report artifacts (Stage 5 and 6) are stored under the job_id of the job that produced them, not under the source Stage 4 job_id. The `ScoringReportController` index scans all directories to find scoring files.
 
+## Local Artifact Ingestion
+
+Use `app:ingest-analysis-artifacts` when `open-data-statistics` writes results to local disk instead of S3. The command accepts a full `storage/results` tree, one job directory, or one JSON artifact file.
+
+```bash
+# Inside a Laravel/Sail container, after artifacts have been copied into the container:
+php artisan app:ingest-analysis-artifacts /tmp/pdw-analysis-results --fresh
+
+# Preview without writing snapshots:
+php artisan app:ingest-analysis-artifacts /tmp/pdw-analysis-results --dry-run
+
+# Limit to one job:
+php artisan app:ingest-analysis-artifacts /tmp/pdw-analysis-results \
+  --job-id=laravel-everett-crime-data-incident_type_group-res8-1781327339 \
+  --fresh
+```
+
+The command ingests these artifact types:
+
+- `stage2_yearly_count_comparison.json`
+- `stage4_h3_anomaly.json`
+- `scoring_results*.json`
+- `stage6*.json`
+
+After a successful write it clears per-artifact caches, materializes newly ingested Stage 4 artifacts into `h3_hotspot_findings`, warms trend summaries, and clears listing caches. This gives the local open-data-statistics flow the same Laravel read path as the S3 pull flow.
+
+For production publishing, prefer uploading artifacts to a Hostinger-local incoming directory and running this artisan command over SSH. Avoid direct production database writes from the dev machine. S3 can remain an archive/fallback, but app reads should be made fresh through `analysis_report_snapshots`.
+
+## S3 Pull Fallback
+
+`app:pull-analysis-reports` remains available for S3-backed artifacts. It scans the bucket for the same artifact names, writes them into `analysis_report_snapshots`, materializes hotspots, warms summaries, and clears caches.
+
 ---
 
 ## Failure Modes to Be Aware Of
@@ -275,7 +309,8 @@ All scoring report artifacts (Stage 5 and 6) are stored under the job_id of the 
 | Scenario | Effect |
 |----------|--------|
 | Analysis API unreachable | `YearlyCountComparisonViewer` renders with null data; dispatch commands fail immediately |
-| S3 unreachable | `StatisticalAnalysisReportController` and `ScoringReportController` return errors |
+| S3 unreachable | Existing snapshots continue to work; S3 fallback/archive reads fail |
+| Local artifact path missing | `app:ingest-analysis-artifacts` exits before writing snapshots |
 | Stale scoring cache | `scoring-reports.index` shows old/missing reports; fix with admin refresh |
-| Stage 4 artifact missing from S3 | `StatisticalAnalysisReportController` renders with null data; `getScoreForLocation` returns 404 for analysis details |
+| Stage 4 artifact missing from snapshots and S3 | `StatisticalAnalysisReportController` renders with null data; `getScoreForLocation` returns 404 for analysis details |
 | CSV export public URL not accessible | Analysis API worker cannot fetch data; job fails |

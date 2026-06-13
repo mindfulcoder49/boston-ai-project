@@ -110,7 +110,19 @@ class DispatchHistoricalScoringJobsCommand extends Command
         $publicUrl = Storage::url($exportFilename);
         Log::info("Public URL for job: " . url($publicUrl));
 
-        $groupWeights = json_decode($this->option('group-weights') ?: '{}', true);
+        $groupWeightsOption = $this->option('group-weights') ?: '{}';
+        $decodedGroupWeights = json_decode($groupWeightsOption, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($decodedGroupWeights)) {
+            Log::error('The --group-weights option must be a valid JSON object.', [
+                'error' => json_last_error_msg(),
+                'value' => $groupWeightsOption,
+            ]);
+
+            return 1;
+        }
+
+        $groupWeights = $decodedGroupWeights === [] ? new \stdClass() : $decodedGroupWeights;
         $cityName = $this->option('city') ?: $modelInstance::getHumanName();
         $resolutions = array_filter(explode(',', $this->option('resolution')), 'strlen');
 
