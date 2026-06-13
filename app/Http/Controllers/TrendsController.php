@@ -78,11 +78,20 @@ class TrendsController extends Controller
 
     private function buildListing(): array
     {
-        $snapshots = AnalysisReportSnapshot::where('artifact_name', 'stage4_h3_anomaly.json')->get()->keyBy('job_id');
+        // Do not select payload for the listing. Stage 4 artifacts can be large,
+        // and most listing metadata is already mirrored into the trends table.
+        $snapshots = AnalysisReportSnapshot::query()
+            ->where('artifact_name', 'stage4_h3_anomaly.json')
+            ->select(['job_id', 'artifact_name', 's3_last_modified', 'pulled_at', 'updated_at'])
+            ->get()
+            ->keyBy('job_id');
         $stage4JobIds = $snapshots->isNotEmpty()
             ? $snapshots->keys()->all()
             : $this->discoverStage4JobIds();
-        $trendsMap    = Trend::all()->keyBy('job_id');
+        $trendsMap = Trend::query()
+            ->whereIn('job_id', $stage4JobIds)
+            ->get()
+            ->keyBy('job_id');
 
         $allAnalyses = [];
 
