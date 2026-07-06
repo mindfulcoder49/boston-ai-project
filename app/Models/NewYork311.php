@@ -11,10 +11,9 @@ class NewYork311 extends Model
 {
     use HasFactory, Mappable;
 
-    // This model points to the full dataset connection.
-    // The seeder will populate a table of the same name/structure
-    // in the 'new_york_db' connection for recent data.
-    protected $connection = 'new_york_311_db';
+    // Runtime surfaces use the recent operational table. Full-history imports,
+    // when needed, are handled explicitly outside the daily production path.
+    protected $connection = 'new_york_db';
     protected $table = 'new_york_311s';
     protected $primaryKey = 'unique_key';
 

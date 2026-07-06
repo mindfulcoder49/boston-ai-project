@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class NewYork311Seeder extends Seeder
 {
+    private const RECENT_DAYS_TO_KEEP = 90;
+
     public function run(bool $resumeHistorical = false)
     {
         $directoryPath = 'datasets/new_york';
@@ -117,6 +119,7 @@ class NewYork311Seeder extends Seeder
             return $normalized;
         }, $header);
 
+        $writeFullHistory = $resumeHistorical;
         $dataToInsertFull = [];
         $dataToInsertRecent = [];
         $rowCount = 0;
@@ -169,18 +172,20 @@ class NewYork311Seeder extends Seeder
                 continue;
             }
 
-            $dataToInsertFull[] = $transformedRecord;
+            if ($writeFullHistory) {
+                $dataToInsertFull[] = $transformedRecord;
+            }
 
             if (isset($transformedRecord['created_date'])) {
                 $recordDate = Carbon::parse($transformedRecord['created_date']);
-                if ($recordDate->greaterThanOrEqualTo(Carbon::now()->subMonths(6))) {
+                if ($recordDate->greaterThanOrEqualTo(Carbon::now()->subDays(self::RECENT_DAYS_TO_KEEP))) {
                     $dataToInsertRecent[] = $transformedRecord;
                 }
             }
 
             $rowCount++;
 
-            if (count($dataToInsertFull) >= $chunkSize) {
+            if ($writeFullHistory && count($dataToInsertFull) >= $chunkSize) {
                 $this->upsertData('new_york_311_db', $fullTableName, $dataToInsertFull, $totalUpsertedFull);
                 $dataToInsertFull = [];
             }
@@ -195,7 +200,7 @@ class NewYork311Seeder extends Seeder
             }
         }
 
-        if (!empty($dataToInsertFull)) {
+        if ($writeFullHistory && !empty($dataToInsertFull)) {
             $this->upsertData('new_york_311_db', $fullTableName, $dataToInsertFull, $totalUpsertedFull);
         }
         if (!empty($dataToInsertRecent)) {

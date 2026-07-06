@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class NewYorkDataPointSeeder extends Seeder
 {
-    private const DAYS_TO_KEEP = 183; // Approx 6 months, matches the recent data import
+    private const DAYS_TO_KEEP = 90; // Matches New York 311 operational table retention.
     private const BATCH_SIZE = 1000;
 
     /**
