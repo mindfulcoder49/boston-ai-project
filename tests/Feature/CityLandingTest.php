@@ -65,6 +65,17 @@ class CityLandingTest extends TestCase
         );
     }
 
+    public function test_cambridge_slug_redirects_to_boston_cambridge_landing_page(): void
+    {
+        $response = $this->get('/cambridge?address=Central%20Square&lat=42.365&lng=-71.103');
+
+        $response->assertRedirect(route('city.landing.boston', [
+            'address' => 'Central Square',
+            'lat' => '42.365',
+            'lng' => '-71.103',
+        ]));
+    }
+
     public function test_chicago_city_landing_uses_chicago_specific_crime_copy(): void
     {
         $response = $this->get(route('city.landing.chicago'));

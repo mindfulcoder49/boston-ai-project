@@ -121,6 +121,10 @@ Route::get('/map/{lat?}/{lng?}', function ($lat = null, $lng = null) {
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
+Route::get('/cambridge', function (Request $request) {
+    return redirect()->route('city.landing.boston', $request->query(), 301);
+})->name('city.landing.cambridge');
+
 foreach (array_keys(config('cities.cities', [])) as $cityKey) {
     $citySlug = str_replace('_', '-', $cityKey);
 
